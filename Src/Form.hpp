@@ -79,6 +79,8 @@ namespace ArsLexis
         
         virtual bool handleMenuCommand(UInt16)
         {return false;}
+        
+        virtual void afterGadgetDraw() {}
             
     public:
         

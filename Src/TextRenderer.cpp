@@ -193,8 +193,8 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
     checkDrawingWindow();
     Graphics graphics(drawingWindow_);
     ActivateGraphics activate(graphics);
-    definition_.extendSelection(graphics, renderingPreferences_, p, tapCount);
-    updateForm(graphics);
+    if (definition_.extendSelection(graphics, renderingPreferences_, p, tapCount))
+        updateForm(graphics);
     return true;
 }
 
@@ -257,8 +257,8 @@ void TextRenderer::handleNilEvent()
         Point p(bounds.topLeft);
         if (winDown == dir)
             p += bounds.extent;
-        definition_.extendSelection(graphics, renderingPreferences_, p, 0);
-        updateForm(graphics);
+        if (definition_.extendSelection(graphics, renderingPreferences_, p, 0))
+            updateForm(graphics);
     }
     if (NULL != scrollBar_)
         doUpdateScrollbar();

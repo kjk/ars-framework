@@ -108,6 +108,7 @@ bool FormGadget::handleGadgetCommand(UInt16 command, void* param)
         case formGadgetDrawCmd:
             drawProxy();
             handled=true;
+            form()->afterGadgetDraw();
             break;
 
         case formGadgetHandleEventCmd:
