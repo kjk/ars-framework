@@ -98,6 +98,19 @@ bool startsWithIgnoreCase(const String& text, const char_t* start, uint_t startO
 
 bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end);
 
+bool startsWith(const char_t* text, ulong_t len, const char_t* prefix, ulong_t plen);
+
+#define StrStartsWith startsWith
+
+inline bool startsWith(const char_t* text, const char_t* prefix) {return startsWith(text, -1, prefix, -1);}
+
+bool equals(const char_t* s1, ulong_t s1len, const char_t* s2, ulong_t s2len);
+inline bool equals(const char_t* s1, const char_t* s2, ulong_t s2len) {return equals(s1, -1, s2, s2len);}
+inline bool equals(const char_t* s1, ulong_t s1len, const char_t* s2) {return equals(s1, s1len, s2, -1);}
+inline bool equals(const char_t* s1, const char_t* s2) {return equals(s1, -1, s2, -1);}
+
+#define StrEquals equals
+
 inline bool equalsIgnoreCase(const String& s1, const char_t* s2)
 {
     using namespace std;

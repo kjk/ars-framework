@@ -1063,7 +1063,46 @@ long bufferToHexCode(const char* in, long inLength, char* out, long outLength)
     return inLength*2;
 }
 
+bool startsWith(const char_t* text, ulong_t len, const char_t* prefix, ulong_t plen)
+{
+    if (ulong_t(-1) == len)
+        len =tstrlen(text);
+    if (ulong_t(-1) == plen)
+        plen = tstrlen(prefix);
+    
+    if (plen > len)
+        return false;
+    
+    while (0 != plen)
+    {
+        if (*text++ != *prefix++)
+            return false;
+        --plen;
+    }   
+    return true;
+}
+
+bool equals(const char_t* s1, ulong_t s1len, const char_t* s2, ulong_t s2len)
+{
+    if (ulong_t(-1) == s1len)
+        s1len = tstrlen(s1);
+    if (ulong_t(-1) == s2len)
+        s2len = tstrlen(s2);
+    if (s1len != s2len)
+        return false;
+    return 0 == tstrncmp(s1, s2, s1len);
+}
+
+
 #ifdef DEBUG
+
+static void test_startsWith()
+{
+    assert(startsWith(_T("prefix0123456787"), -1, _T("prefix"), -1));
+    assert(!startsWith(_T("prefix0123456787"), 4, _T("prefix"), -1));
+    assert(!startsWith(_T("preFix0123456787"), -1, _T("prefix"), -1));
+}
+
 static void test_removeNonDigitsInPlace()
 {
     char_t buf[32];
@@ -1123,6 +1162,7 @@ void test_TextUnitTestAll()
     test_StrEmpty();
     test_StrFind();
     test_HexCode();
+    test_startsWith();
 }
 
 #endif
