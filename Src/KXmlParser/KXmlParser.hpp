@@ -11,8 +11,8 @@ namespace KXml2{
     class KXmlParser : public XmlPullParser
     {
     private:
-        bool    fRelaxed_;
-        XmlReader *reader_;
+        bool        fRelaxed_;
+        XmlReader * reader_;
 
         // static const char_t * UNEXPECTED_EOF = "Unexpected EOF";
         // static const char_t * ILLEGAL_TYPE = "Wrong event type";
@@ -21,16 +21,16 @@ namespace KXml2{
 
         // general
 
-        String version;
-        bool standalone;
+        String          version_;
+        bool            standalone_;
 
-        bool processNsp;
-        bool relaxed;
-        ArsLexis::Hashtable *entityMap;
-        int depth;
-        String elementStack[16];
-        String nspStack[8];
-        int nspCounts[4];
+        bool            processNsp_;
+        bool            relaxed_;
+        ArsLexis::Hashtable *entityMap_;
+        int             depth_;
+        String          elementStack_[16];
+        String          nspStack_[8];
+        int             nspCounts_[4];
 
         // source
     
