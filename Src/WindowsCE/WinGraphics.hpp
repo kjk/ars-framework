@@ -13,28 +13,38 @@ namespace ArsLexis
 
     typedef COLORREF NativeColor_t;
     typedef HDC NativeGraphicsHandle_t;    
-    typedef int NativeGraphicsState_t;
+    typedef struct
+    {
+        int state;
+        WinFont fnt;
+        uint_t fntHeight;
+        uint_t fntDescent;
+    } NativeGraphicsState_t;
+    
     typedef WinFont NativeFont_t;
     
     class Graphics: private NonCopyable
     {
-        struct StackElement
+        /*struct StackElement
         {
             NativeGraphicsState_t state;
             NativeFont_t font;
-        };
-
+        };*/
+        uint_t fntHeight;
+        uint_t fntDescent;
         NativeGraphicsHandle_t handle_;
         NativeFont_t font_;
         HWND hwnd_;
-        std::list<StackElement> fontStack_;
+        LOGPEN pen_;
+        NativeColor_t penColor_;
+        //std::list<StackElement> fontStack_;
 
-        LOGFONT fontDescr_;
-        HFONT newFont_;
-        HGDIOBJ oldFont_;
+        //LOGFONT fontDescr_;
+        //HFONT newFont_;
+        //HGDIOBJ oldFont_;
 
-        void setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall);
-        void resetEffects();
+        //void setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall);
+        //void resetEffects();
 
     public:
     

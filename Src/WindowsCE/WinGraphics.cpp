@@ -7,7 +7,10 @@ namespace ArsLexis
     Graphics::Graphics(const NativeGraphicsHandle_t& handle, HWND hwnd):
         handle_(handle), hwnd_(hwnd)
     {
-        //support_.font.setFontId(FntGetFont());
+        HGDIOBJ hgdiobj = GetStockObject(BLACK_PEN);
+        GetObject(hgdiobj, sizeof(pen_), &pen_);
+        penColor_=pen_.lopnColor;
+        SelectObject(handle_,hgdiobj);
     }
 
     Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
@@ -16,29 +19,49 @@ namespace ArsLexis
         font_=font;
         //FntSetFont(support_.font.withEffects());
         SelectObject(handle_, font.getHandle());
+        FontEffects fx=font_.effects();
+
+        TEXTMETRIC ptm;
+        GetTextMetrics(handle_, &ptm);
+        if (fx.subscript()||fx.superscript())
+            fntHeight = ptm.tmHeight*4/3;
+        else        
+            fntHeight = ptm.tmHeight;        
+        fntDescent = ptm.tmDescent;
+
         return oldOne;
     }
 
     Graphics::State_t Graphics::pushState()
     {
-        StackElement el;
+        /*StackElement el;
         el.font=font_;
         el.state = SaveDC(handle_);
         fontStack_.push_back(el);
-        return el.state;
+        return el.state;*/
+        State_t st;
+        st.state = SaveDC(handle_);
+        st.fnt = font_;
+        st.fntHeight = fntHeight;
+        st.fntDescent = fntDescent;
+
+        return st;
     }
 
     void Graphics::popState(const Graphics::State_t& state)
     {
-        StackElement el;
+        /*StackElement el;
         do 
         {
             el = fontStack_.back();
             fontStack_.pop_back();
         }
         while(el.state!=state);
-        font_=el.font;
-        RestoreDC(handle_,state);
+        font_=el.font;*/
+        RestoreDC(handle_,state.state);
+        font_ = state.fnt;
+        fntHeight = state.fntHeight;
+        fntDescent = state.fntDescent;
     }
     
     Graphics::~Graphics()
@@ -62,14 +85,14 @@ namespace ArsLexis
 
         
         if (fx.subscript())
-            top+=(uint_t)(height*0.4);
+            top+=(height*4)/10;
 
         if (fx.isSmall())
-            top+=(uint_t)(height*0.1);
+            top+=(height*1)/10;
         
        
-        if (fx.mask()!=0)
-            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(),fx.isSmall());
+        //if (fx.mask()!=0)
+            //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(),fx.isSmall());
         
 
         NativeColor_t back;
@@ -92,19 +115,19 @@ namespace ArsLexis
             SetBkColor(handle_,fore);
         }
 
-        if (fx.mask()!=0)            
-            resetEffects();
+        //if (fx.mask()!=0)            
+            //resetEffects();
 
-        if (fx.strikeOut())
+        /*if (fx.strikeOut())
         {
             uint_t baseline=fontBaseline();
             // top=topLeft.y+baseline*0.667;
             top = topLeft.y + ((baseline * 667) / 1000);
             drawLine(topLeft.x, top, topLeft.x+width, top);
-        }
+        }*/
 
-        int style;
-        switch (fx.underline())
+        //int style;
+        /*switch (fx.underline())
         {
             case ArsLexis::FontEffects::underlineDotted:
                 style = PS_DASH;
@@ -112,9 +135,9 @@ namespace ArsLexis
             case ArsLexis::FontEffects::underlineSolid:
                 style = PS_SOLID;
                 break;
-        }
+        }*/
         //Still underlining doesn't work
-        if (fx.underline()!=ArsLexis::FontEffects::underlineNone)
+        /*if (fx.underline()!=ArsLexis::FontEffects::underlineNone)
         {
             LOGPEN pen;
             //TODO: again not effective
@@ -128,7 +151,7 @@ namespace ArsLexis
             drawLine(topLeft.x, top, topLeft.x+width, top);            
             SelectObject(handle_,hgdiobj);
             DeleteObject(newPen);
-        }
+        }*/
 
         //(handle_, topLeft.x , topLeft.y, text, length);
     }
@@ -163,14 +186,10 @@ namespace ArsLexis
 
     NativeColor_t Graphics::setForegroundColor(NativeColor_t color)
     {
-        LOGPEN pen;
-        NativeColor_t old;
-        //TODO: again not effective
         HGDIOBJ hgdiobj = GetCurrentObject(handle_,OBJ_PEN);
-        GetObject(hgdiobj, sizeof(pen), &pen);
-        old = pen.lopnColor;
-        pen.lopnColor = color;
-        HPEN newPen=CreatePenIndirect(&pen);
+        NativeColor_t old = pen_.lopnColor;
+        pen_.lopnColor = color;
+        HPEN newPen=CreatePenIndirect(&pen_);
         SelectObject(handle_,newPen);
         DeleteObject(hgdiobj);
         return old;
@@ -197,15 +216,17 @@ namespace ArsLexis
         //if (fx.superscript() || fx.subscript())
         //    height*=1.333;*/
         
-        FontEffects fx=font_.effects();
+        /*FontEffects fx=font_.effects();
 
         TEXTMETRIC ptm;
         GetTextMetrics(handle_, &ptm);
         if(fx.isSmall())
             return (uint_t)(ptm.tmHeight*0.9);
         else
-            return ptm.tmHeight;
+            return ptm.tmHeight;*/
         //return -fnt.lfHeight;
+        return this->fntHeight;
+        
     }
    
     uint_t Graphics::fontBaseline() const
@@ -213,10 +234,10 @@ namespace ArsLexis
         //uint_t baseline=FntBaseLine();
         //if (support_.font.effects().superscript())
             //baseline+=(FntLineHeight()*0.333);
-        const FontEffects fx=font_.effects();
+        /*const FontEffects fx=font_.effects();
         TEXTMETRIC ptm;
-        GetTextMetrics(handle_, &ptm);
-        return ptm.tmDescent;
+        GetTextMetrics(handle_, &ptm);*/
+        return fntDescent;
     }
 
     // given a string text, determines how many characters of this string can
@@ -228,13 +249,13 @@ namespace ArsLexis
         int     len;
         SIZE    size;
         int     textLen = tstrlen(text);
-        FontEffects fx=font_.effects();
+        //FontEffects fx=font_.effects();
 
-        if (fx.mask()!=0)
-            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
+        //if (fx.mask()!=0)
+            //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
         GetTextExtentExPoint(handle_, text, textLen, width, &len, NULL, &size);
-        if (fx.mask()!=0)
-            resetEffects();
+        //if (fx.mask()!=0)
+            //resetEffects();
 
         if (len==textLen)
             return len;
@@ -243,9 +264,9 @@ namespace ArsLexis
         int curPos = len;
         while (curPos>0) // we don't want to break at first character
         {            
-            if ((text[curPos]==_T(' '))  ||
-                (text[curPos]==_T('\t')) ||
-                (text[curPos]==_T('\n'))
+            if ((text[curPos]==' ')  ||
+                (text[curPos]=='\t') ||
+                (text[curPos]=='\n')
                ) 
             {
                 return curPos;
@@ -260,11 +281,11 @@ namespace ArsLexis
     {
         FontEffects fx=font_.effects();
         SIZE size;
-        if (fx.mask()!=0)            
-            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
+        //if (fx.mask()!=0)            
+            //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
         GetTextExtentPoint(handle_, text, length, &size);
-        if (fx.mask()!=0)
-            resetEffects();
+        //if (fx.mask()!=0)
+            //resetEffects();
         return size.cx;
     }
     
@@ -273,11 +294,11 @@ namespace ArsLexis
         FontEffects fx=font_.effects();
         int   len;
         SIZE  size;
-        if (fx.mask()!=0)
-            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
+        //if (fx.mask()!=0)
+            //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
         GetTextExtentExPoint(handle_, text, length, width, &len, NULL, &size ); 
-        if (fx.mask()!=0)
-            resetEffects();
+        //if (fx.mask()!=0)
+            //resetEffects();
 
         length = len;
         width = size.cx;
@@ -286,7 +307,7 @@ namespace ArsLexis
     Graphics::Font_t Graphics::font() const
     {return font_;}
     
-    void Graphics::setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall)
+    /*void Graphics::setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall)
     {
         oldFont_ = GetCurrentObject(handle_,OBJ_FONT);
         GetObject(oldFont_, sizeof(fontDescr_), &fontDescr_);
@@ -310,12 +331,12 @@ namespace ArsLexis
             fontDescr_.lfHeight = fontDescr_.lfHeight * 9 / 10; // * 0.9
         newFont_ = CreateFontIndirect(&fontDescr_);
         SelectObject(handle_, newFont_);
-    }
+    }*/
     
-    void Graphics::resetEffects()
+    /*void Graphics::resetEffects()
     {
-        SelectObject(handle_, oldFont_);
+        /*SelectObject(handle_, oldFont_);
         DeleteObject(newFont_);
-    }
+    }*/
 
 }

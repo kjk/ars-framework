@@ -4,68 +4,68 @@
 
 #include "WinFont.h"
 
-WinFont::WinFont()
+using namespace ArsLexis;
+
+//400 bytes to speed up operation - 
+//in fact it can be hash table, because it's quite rare
+HFONT WinFont::fontsHandles_[16-6][3][2][2];
+
+void WinFont::createFont(int height, int weight, int realWeight, int isUnder, int isStrike)
 {
     LOGFONT logfnt;
-    HFONT   fnt=(HFONT)GetStockObject(SYSTEM_FONT);
+    HFONT   fnt=(HFONT)GetStockObject(SYSTEM_FONT);    
     GetObject(fnt, sizeof(logfnt), &logfnt);
-    logfnt.lfHeight += 1;
-	// do I need 2003 for this to work?
-    // logfnt.lfQuality = CLEARTYPE_QUALITY;
-    int fontDy = logfnt.lfHeight;
-    HFONT fnt2=(HFONT)CreateFontIndirect(&logfnt);
-    this->fntWrapper = new FontWrapper(fnt2);
+    logfnt.lfWeight = realWeight;
+    logfnt.lfHeight = -height;
+    if(isUnder)
+        logfnt.lfUnderline = TRUE;
+    if(isStrike)
+        logfnt.lfStrikeOut = TRUE;
+    assert(height<maxFontHeight);
+    fontsHandles_[height-6][weight][isUnder][isStrike] = CreateFontIndirect(&logfnt);
+    if(NULL == fontsHandles_[height-6][weight][isUnder][isStrike])
+        fontsHandles_[height-6][weight][isUnder][isStrike] = fnt;
 }
-WinFont WinFont::getSymbolFont()
+        
+HFONT WinFont::getFont(int height, ArsLexis::FontEffects effects)
 {
-    return WinFont(HFONT(GetStockObject(SYSTEM_FONT))); 
-}
+    int weight = 0;
+    int underline = 0;
+    int strike = 0;
+    LONG realWeight = FW_NORMAL;
 
-WinFont::WinFont(HFONT fnt)
-{
-    this->fntWrapper = new FontWrapper(fnt);
-}
+    if(effects.underline()!=FontEffects::underlineNone)
+        underline = 1;
+    if(effects.strikeOut())
+        strike = 1;
+    switch(effects.weight())
+    {
+        case FontEffects::weightPlain:
+            if (effects.italic())
+            {
+                weight = 1;
+                realWeight = FW_BOLD;
+            }
+            break;
+        case FontEffects::weightBold: 
+            weight = 1;
+            realWeight = FW_BOLD;
+            break;
+        case FontEffects::weightBlack:
+            weight = 2;            
+            realWeight = FW_EXTRABOLD;
+            break;
+    };
 
-WinFont::WinFont(const WinFont& r)
-{
-    this->fntWrapper = r.fntWrapper;
-    this->effects_=r.effects_;
-    fntWrapper->attach();
-}
+    if (effects.subscript()||effects.superscript())
+        height = height * 3 / 4;
 
-WinFont& WinFont::operator=(const WinFont& r)
-{
-    if (this==&r) 
-        return *this;
-    this->effects_=r.effects_;
-    fntWrapper->detach();
-    if (!fntWrapper->getRefsCount())
-        delete fntWrapper;
-    this->fntWrapper = r.fntWrapper;
-    this->fntWrapper->attach();
-    return *this;
-}
-
-HFONT WinFont::getHandle() const
-{
-    return fntWrapper->font;
-}
-
-WinFont::~WinFont()
-{
-    fntWrapper->detach();
-    if (!fntWrapper->getRefsCount())
-        delete fntWrapper;
-}
-
-WinFont::FontWrapper::FontWrapper(HFONT fnt):
-    font(fnt),
-    refsCount(1)
-{
+    if (effects.isSmall())
+        height = height * 9 / 10;
+        
     
-}
+    if(NULL==fontsHandles_[height-6][weight][underline][strike])
+        createFont(height, weight, realWeight, underline, strike);
 
-WinFont::FontWrapper::~FontWrapper()
-{
-    DeleteObject(this->font);
+    return fontsHandles_[height-6][weight][underline][strike];
 }
