@@ -1152,7 +1152,7 @@ bool Definition::isLastLinkSelected() const
 #define aTagStart   _T("<a>")
 #define aTagEnd     _T("</a>")
 
-void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink, HyperlinkType hyperlinkType)
+void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink, const char_t* hyperlinkSchema)
 {
     using namespace std;
     uint_t bold=0;
@@ -1160,7 +1160,7 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
     String::size_type pos=start;
     while (true) 
     {
-        String::size_type next=text.find('<', pos);
+        String::size_type next=text.find(_T('<'), pos);
         if (text.npos==next) 
         {
             out.push_back(new GenericTextElement(String(text, start, next)));
@@ -1193,7 +1193,14 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
         {
             GenericTextElement* gText;
             out.push_back(gText = new GenericTextElement(String(text, start, next-pos)));
-            gText->setHyperlink(String(text, start, next-pos), hyperlinkType);
+            String href;
+            if (NULL != hyperlinkSchema)
+            {
+                href = hyperlinkSchema;
+                href += _T(':');
+            }
+            href.append(text, start, next-pos);
+            gText->setHyperlink(href, hyperlinkUrl);
             start=pos=next+tstrlen(aTagEnd);
         }
         else

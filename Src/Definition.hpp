@@ -397,6 +397,6 @@ public:
  *   gText->setHyperlink(text, hyperlinkType);
  *   where text is text between <a> and </a>
  */
-void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink = false, HyperlinkType hyperlinkType = hyperlinkDefault);
+void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink = false, const ArsLexis::char_t* hyperlinkSchema = NULL);
 
 #endif

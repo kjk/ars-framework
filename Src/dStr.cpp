@@ -155,6 +155,7 @@ dStr *dStrAppendStr(dStr *dstr, dStr *toAppend)
     return dStrAppend(dstr, DSTR_STR(toAppend), dStrLen(toAppend));
 }
 
+/*
 // a generic append which appends arbitrary binary data
 // to dStr. Re-allocates the string if neccesary. Note that
 // it means that you shouldn't use dStr passed as an argument
@@ -206,6 +207,7 @@ dStr *dStrAppend(dStr *dstr, char_t *data, UInt32 dataSize)
 
     return dstr;
 }
+*/
 
 // return a C-compatible copy of the string. It might be different
 // than real data if the data has embedded 0, which for C means
