@@ -8,8 +8,7 @@ FormGadget::FormGadget(Form& form, UInt16 id):
     FormObjectWrapper(form, id),
     visible_(false),
     usable_(false),
-    doubleBuffer_(false),
-    hasFocus_(false)
+    doubleBuffer_(false)
 {}        
 
 FormGadget::~FormGadget()

@@ -123,7 +123,13 @@ namespace ArsLexis
             gadget->visible_ = true;            
         }
     }
+    
+    bool FormObject::hasFocus() const
+    {
+        return index_ == form()->focusedControlIndex_;
+    }
         
+/*        
     void FormObject::enableNavigation()
     {   
         assert(valid());
@@ -139,6 +145,7 @@ namespace ArsLexis
         error = FrmSetNavEntry(*form_, id_, after, above, below, flags);
         assert(errNone == error);        
     }
+*/
     
     void FormObject::focus()
     {
@@ -149,6 +156,7 @@ namespace ArsLexis
             HsNavObjectTakeFocus(*form_, id_);
         else if (!isTreo && (frmFieldObj == kind || frmTableObj == kind))
             FrmSetFocus(*form_, index_);
+        form_->focusedControlIndex_ = index_;
         form_->entryFocusControlId_ = id_;
 /*        
 

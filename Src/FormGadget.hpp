@@ -16,8 +16,7 @@ namespace ArsLexis {
         bool visible_;
         bool usable_;
         bool doubleBuffer_;
-        bool hasFocus_;
-        
+
     protected:        
 
         void drawProxy();
@@ -51,8 +50,6 @@ namespace ArsLexis {
         
         bool usable() const
         {return usable_;}
-        
-        bool hasFocus() const {return hasFocus_;}
         
         explicit FormGadget(Form& form, UInt16 id=frmInvalidObjectId);
         

@@ -112,6 +112,7 @@ namespace ArsLexis
         FrmSetFocus(form_, noFocus);
         if (application().runningOnTreo600())
             HsNavRemoveFocusRing(form_);
+        focusedControlIndex_ = frmInvalidObjectId;
     }
     
     void Form::handleObjectFocusChange(const EventType& event)
@@ -121,13 +122,14 @@ namespace ArsLexis
         UInt16 index = FrmGetObjectIndex(form_, data.objectID);
         if (frmInvalidObjectId == index)
             return;
+        bool hasFocus = (event.eType == frmObjectFocusTakeEvent);
+        if (hasFocus)
+            focusedControlIndex_ = index;
         FormObjectKind kind = FrmGetObjectType(form_, index);
         if (frmGadgetObj != kind)
             return;
         FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, index));
         assert(NULL != gadget);
-        bool hasFocus = (event.eType == frmObjectFocusTakeEvent);
-        gadget->hasFocus_ = hasFocus;
         gadget->handleFocusChange(hasFocus ? FormGadget::focusTaking : FormGadget::focusLosing);
     }
     

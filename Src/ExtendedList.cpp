@@ -430,7 +430,8 @@ bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
         delta=-page;
     else if ((optionScrollPagesWithLeftRight & options) && form.fiveWayRightPressed(&event))
         delta=page;
-    else if ((optionFireListSelectOnCenter & options) && form.fiveWayCenterPressed(&event))
+    else if (((optionFireListSelectOnCenter & options) && form.fiveWayCenterPressed(&event)) ||
+        chrLineFeed == event.data.keyDown.chr || chrCarriageReturn == event.data.keyDown.chr)
     {
         if (noListSelection != selection_)
         {
