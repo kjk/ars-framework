@@ -173,8 +173,8 @@ namespace {
     };
 
     // These globals will be removed by dead code elimination.
-    Metrowerks::compile_assert<(sizeof(uint_t) == sizeof(UInt16))> uint_t_the_same_size_as_UInt16;
-    Metrowerks::compile_assert<(sizeof(bool) == sizeof(Boolean))> bool_the_same_size_as_Boolean;
+    ArsLexis::StaticAssert<(sizeof(uint_t) == sizeof(UInt16))> uint_t_the_same_size_as_UInt16;
+    ArsLexis::StaticAssert<(sizeof(bool) == sizeof(Boolean))> bool_the_same_size_as_Boolean;
     
 }
 
@@ -192,7 +192,7 @@ void iPediaApplication::loadPreferences()
     if (errNone!=(error=reader->ErrGetStr(serialNumberPrefId, &text))) 
         goto OnError;
     prefs.serialNumber=text;
-    if (errNone!=(error=reader->ErrGetBool(serialNumberRegFlagPrefId, reinterpret_cast<Boolean*>(&prefs.serialNumberRegistered))))
+    if (errNone!=(error=reader->ErrGetBool(serialNumberRegFlagPrefId, safe_reinterpret_cast<Boolean*>(&prefs.serialNumberRegistered))))
         goto OnError;
     if (errNone!=(error=prefs.renderingPreferences.serializeIn(*reader, renderingPrefsFirstPrefId)))
         goto OnError;

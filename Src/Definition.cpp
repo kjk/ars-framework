@@ -6,8 +6,9 @@
  */
 #include "Definition.hpp"
 #include "DefinitionElement.hpp"
-#include "Utility.hpp"
+#include <Utility.hpp>
 #include "GenericTextElement.hpp"
+#include <algorithm>
 
 using ArsLexis::Point;
 using ArsLexis::ObjectDeleter;
@@ -49,6 +50,30 @@ void Definition::HotSpot::move(const Point& delta, const ArsLexis::Rectangle& va
     }
 }
 
+namespace {
+
+    inline 
+    static bool operator<(const ArsLexis::Rectangle& rect1, const ArsLexis::Rectangle& rect2) {
+         if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
+            return true;
+        return false;
+    }
+    
+}
+
+void Definition::HotSpot::addRectangle(const ArsLexis::Rectangle& rect)
+{
+    rectangles_.insert(std::lower_bound(rectangles_.begin(), rectangles_.end(), rect), rect);
+}
+
+bool Definition::HotSpot::operator<(const Definition::HotSpot& other) const
+{
+    assert(!rectangles_.empty());
+    assert(!other.rectangles_.empty());
+    return (*rectangles_.begin())<(*other.rectangles_.begin());
+}
+
+
 Definition::Definition():
     firstLine_(0),
     lastLine_(0),
@@ -57,7 +82,15 @@ Definition::Definition():
 
 void Definition::addHotSpot(HotSpot* hotSpot)
 {
-    hotSpots_.push_front(hotSpot);
+    struct HotSpotGreater {
+        const HotSpot* hotSpot;
+        HotSpotGreater(const HotSpot* hs): hotSpot(hs) {}
+        bool operator()(const HotSpot* hs) const 
+        {
+            return !((*hs)<(*hotSpot));
+        }
+    };
+    hotSpots_.insert(std::find_if(hotSpots_.begin(), hotSpots_.end(), HotSpotGreater(hotSpot)), hotSpot);
 }
 
 void Definition::clearHotSpots()
@@ -205,40 +238,65 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
     }
 }
 
-void Definition::renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint)
+bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint)
 {
+    bool finished=false;
     renderContext.usedWidth=0;
     renderContext.usedHeight=line->height;
     
+    bool doRender=false;
     if (0==elementToRepaint)
-        renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
-    
-    renderContext.baseLine=line->baseLine;
-    renderContext.renderingProgress=line->renderingProgress;
-    ElementPosition_t last=elements_.end();
-    ElementPosition_t current=line->firstElement;
-    bool lineFinished=false;    
-    while (!lineFinished && current!=last)
     {
-        (*current)->render(renderContext);
-        if (renderContext.isElementCompleted())
+        renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+        doRender=true;
+    }
+    else
+    {
+        LinePosition_t nextLine=line;
+        ++nextLine;
+        ElementPosition_t lastElement=elements_.end();
+        if (nextLine!=lines_.end())
         {
-            ++current;
-            renderContext.renderingProgress=0;
-            if (renderContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(renderContext.preferences))
+            lastElement=nextLine->firstElement;
+            if (nextLine->renderingProgress!=0)
+                ++lastElement;
+        }                
+        ElementPosition_t found=std::find(line->firstElement, lastElement, elementToRepaint);
+        if (found!=lastElement)
+            doRender=true;
+    }
+    
+    if (doRender)
+    {
+        renderContext.baseLine=line->baseLine;
+        renderContext.renderingProgress=line->renderingProgress;
+        ElementPosition_t last=elements_.end();
+        ElementPosition_t current=line->firstElement;
+        bool lineFinished=false;    
+        while (!lineFinished && current!=last)
+        {
+            (*current)->render(renderContext);
+            if (renderContext.isElementCompleted())
+            {
+                ++current;
+                renderContext.renderingProgress=0;
+                if (renderContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(renderContext.preferences))
+                    lineFinished=true;
+            }
+            else
                 lineFinished=true;
         }
-        else
-            lineFinished=true;
-    }
+    }        
     renderContext.top+=renderContext.usedHeight;
+    return finished;
 }
 
 void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, const Definition::LinePosition_t& begin, const Definition::LinePosition_t& end, uint_t topOffset, DefinitionElement* elementToRepaint)
 {
     RenderingContext renderContext(graphics, prefs, *this, bounds_.x(), bounds_.y()+topOffset, bounds_.width());
     for (Lines_t::iterator line=begin; line!=end; ++line)
-        renderLine(renderContext, line, elementToRepaint);
+        if (renderLine(renderContext, line, elementToRepaint))
+            break;
 }
 
 void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress)

@@ -26,7 +26,8 @@ class Definition: private ArsLexis::NonCopyable
      * @internal
      * Type used to store @c DefinitonElement objects that represent various parts of definition.
      */
-    typedef std::list<DefinitionElement*> Elements_t;
+//    typedef std::list<DefinitionElement*> Elements_t;
+    typedef std::vector<DefinitionElement*> Elements_t;
     
     /**
      * @internal
@@ -126,6 +127,7 @@ public:
     class HotSpot: private ArsLexis::NonCopyable
     {
         typedef std::list<ArsLexis::Rectangle> Rectangles_t;
+//        typedef std::vector<ArsLexis::Rectangle> Rectangles_t;
         
         /**
          * @internal 
@@ -143,8 +145,7 @@ public:
      
         HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement& element);
         
-        void addRectangle(const ArsLexis::Rectangle& rect)
-        {rectangles_.push_back(rect);}
+        void addRectangle(const ArsLexis::Rectangle& rect);
         
         bool hitTest(const ArsLexis::Point& point) const;
         
@@ -160,6 +161,8 @@ public:
         
         bool valid() const
         {return !rectangles_.empty();}
+        
+        bool operator<(const HotSpot& other) const;
         
         ~HotSpot();
         
@@ -253,7 +256,8 @@ private:
     
     void calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int delta=0);
     
-    void renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint=0);
+    //! @return @c true if @c elementToRepaint!=0 and it was completed with this line, @c false otherwise.
+    bool renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint=0);
     
     void renderLineRange(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& begin, const LinePosition_t& end, uint_t topOffset, DefinitionElement* elementToRepaint=0);
 
