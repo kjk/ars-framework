@@ -6,13 +6,13 @@
 
 namespace ArsLexis {
 
-    int getInternationalCountryCodesCount();
+    int getCountryCodesCount();
     
-    void getInternationalCountryName(int pos,ArsLexis::String& nameOut);
+    const char_t* getCountryName(int pos);
     
-    void getInternationalCountryCode(int pos, ArsLexis::String& symbolOut);
+    const char_t* getCountryCode(int pos);
     
-    int getInternationalCountryIndexByFirstChar(ArsLexis::char_t inChar);
+    int getCountryIndexByFirstChar(char_t inChar);
     
 }
 

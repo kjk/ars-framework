@@ -8,6 +8,12 @@
 
 namespace ArsLexis
 {
+    
+    static const FontID fontScalingDisabled = 0x40;
+    static const FontID tinyFont = FontID(stdFont | fontScalingDisabled);
+    static const FontID tinyBoldFont = FontID(boldFont | fontScalingDisabled);
+    static const FontID smallFont = FontID(largeFont | fontScalingDisabled);
+    static const FontID smallBoldFont = FontID(largeBoldFont | fontScalingDisabled);
 
     class PalmFont
     {
@@ -17,7 +23,7 @@ namespace ArsLexis
             
     public:
     
-        PalmFont(FontID id=stdFont):
+        PalmFont(FontID id = stdFont):
             fontId_(id)
         {}            
         

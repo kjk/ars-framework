@@ -59,6 +59,7 @@ public:
     bool empty() const {return header_.empty();}
     
     uint_t dataLength() {return data_.length();}
+    
 };
 
 template<> 

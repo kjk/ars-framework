@@ -4,21 +4,45 @@
 namespace ArsLexis
 {
 
+    class ScalingSetter: private NonCopyable {
+        UInt32 oldFlags_;
+        bool disable_;
+        
+    public:
+        
+        ScalingSetter(const Graphics& gr):
+            disable_(gr.disableFontScaling_)
+        {
+            if (disable_)
+                oldFlags_ = WinSetScalingMode(kTextScalingOff);
+        }
+        
+        ~ScalingSetter() 
+        {
+            if (disable_)
+                WinSetScalingMode(oldFlags_);
+        }
+        
+    };
+
     Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
     {
-        Font_t oldOne=font_;
-        font_=font;
-        FntSetFont(font_.withEffects());
-        effectiveLineHeight_=lineHeight_=FntLineHeight();
+        Font_t oldOne = font_;
+        font_ = font;
+        FontID id = font_.withEffects();
+        disableFontScaling_ = 0 != (id & fontScalingDisabled);
+        ScalingSetter setScaling(*this);
+        FntSetFont(FontID(id & ~fontScalingDisabled));
+        effectiveLineHeight_ = lineHeight_ = FntLineHeight();
         FontEffects fx=font_.effects();
         if (fx.superscript() || fx.subscript())
         {
             effectiveLineHeight_*=4;
             effectiveLineHeight_/=3;
         }
-        effectiveBaseline_=baseline_=FntBaseLine();
+        effectiveBaseline_=baseline_ = FntBaseLine();
         if (font_.effects().superscript())
-            effectiveBaseline_+=(lineHeight_/3);
+            effectiveBaseline_ += (lineHeight_/3);
         return oldOne;
     }
 
@@ -57,10 +81,12 @@ namespace ArsLexis
         
     void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
     {
-        FontEffects fx=font_.effects();    
+        FontEffects fx = font_.effects();    
         PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
-        
-        uint_t height=fontHeight();
+
+        ScalingSetter setScaling(*this);
+
+        uint_t height = fontHeight();
         uint_t top=topLeft.y;
         if (fx.subscript())
             top+=(height/3);
@@ -70,9 +96,9 @@ namespace ArsLexis
             WinDrawChars(text, length, topLeft.x, top);
         if (fx.strikeOut())
         {
-            uint_t baseline=fontBaseline();
-            top=topLeft.y+(baseline*2)/3;
-            uint_t width=FntCharsWidth(text, length);
+            uint_t baseline = fontBaseline();
+            top=topLeft.y + (baseline*2)/3;
+            uint_t width = FntCharsWidth(text, length);
             Color_t color=setTextColor(0);
             setTextColor(color); // Quite strange method of querying current text color...
             color=setForegroundColor(color);
@@ -84,10 +110,12 @@ namespace ArsLexis
                 WinSetDrawMode(old);
             setForegroundColor(color);
         }
-    }
+      }
 
     void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
     {
+
+        ScalingSetter setScaling(*this);
 
         Int16 w=width;
 //        Int16 len=length;
@@ -96,11 +124,15 @@ namespace ArsLexis
 //        length=len;
         length = FntWidthToOffset(text, length, width, NULL, &w);
         width=w;
-    }
+
+   }
 
     uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
     {
+        ScalingSetter setScaling(*this);
+
         int charsThatFit = FntWordWrap(text, availableDx);
+
         textDx = textWidth(text, charsThatFit);
         return charsThatFit;
     }
@@ -122,7 +154,8 @@ namespace ArsLexis
         lineHeight_(0),
         effectiveLineHeight_(0),
         baseline_(0),
-        effectiveBaseline_(0)
+        effectiveBaseline_(0),
+        disableFontScaling_(false)
     {
         setFont(FntGetFont());
     }
@@ -167,4 +200,16 @@ namespace ArsLexis
         WinInvertRectangle(&r, 0);
     }
     
+    uint_t Graphics::textWidth(const char_t* text, uint_t length)
+    {
+        ScalingSetter setScaling(*this);
+        return FntCharsWidth(text, length);
+    }
+        
+
+    uint_t Graphics::wordWrap(const char_t* text, uint_t width)
+    {
+        ScalingSetter setScaling(*this);
+        return FntWordWrap(text, width);
+    }
 }

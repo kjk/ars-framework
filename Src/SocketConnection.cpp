@@ -281,8 +281,10 @@ namespace ArsLexis
         status_t error = socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
 #else        
         status_t error = errNone;
-        if (!(underSimulator() && isTreo600())) // These fatal alerts on Treo600 sim really piss me.
+# ifdef _PALM_OS
+        if (!(underSimulator() && isTreo600())) // These fatal alerts on Treo600 sim really piss me off.
             error = socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
+# endif
 #endif
             
         if (error)

@@ -15,7 +15,7 @@ typedef struct FontCacheEntry_ {
 
 #define MAX_FONT_CACHE_ENTRIES 20
 
-FontCacheEntry_t g_fontCache[MAX_FONT_CACHE_ENTRIES];
+static FontCacheEntry_t g_fontCache[MAX_FONT_CACHE_ENTRIES];
 static int g_cacheEntriesUsed = 0;
 
 static HFONT FindFont(int dy, LONG weight, bool fUnderline, bool fStrike)
@@ -81,7 +81,7 @@ static HFONT createFont(int dy, LONG weight, bool fUnderline, bool fStrike)
         return stdFont;
 }
 
-HFONT getFont(int height, FontEffects effects)
+HFONT ArsLexis::getFont(int height, FontEffects effects)
 {
     LONG weight = FW_NORMAL;
 

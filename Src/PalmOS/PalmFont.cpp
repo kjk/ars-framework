@@ -5,8 +5,9 @@ namespace ArsLexis
 
     FontID PalmFont::withEffects() const
     {
-        FontID result=fontId_;
-        if ((effects_.weight()!=FontEffects::weightPlain) || effects_.italic())
+        FontID mask = FontID(fontId_ & fontScalingDisabled);
+        FontID result = FontID(fontId_ & ~fontScalingDisabled);
+        if ((effects_.weight() != FontEffects::weightPlain) || effects_.italic())
         {
             switch (fontId_)
             {
@@ -18,7 +19,7 @@ namespace ArsLexis
                     break;
             }
         }
-        return result;
+        return FontID(result | mask);
     }
     
 }    

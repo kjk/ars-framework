@@ -17,7 +17,8 @@ namespace ArsLexis {
         uint_t effectiveLineHeight_;
         uint_t baseline_;
         uint_t effectiveBaseline_;
-
+        bool disableFontScaling_;
+        
     public:
     
         typedef WinHandle Handle_t;
@@ -167,13 +168,11 @@ namespace ArsLexis {
         
         void drawCenteredText(const char_t* str, const Point& topLeft, uint_t width);
         
-        uint_t wordWrap(const char_t* text, uint_t width)
-        {return FntWordWrap(text, width);}
+        uint_t wordWrap(const char_t* text, uint_t width);
 
         uint_t wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx);
 
-        uint_t textWidth(const char_t* text, uint_t length)
-        {return FntCharsWidth(text, length);}
+        uint_t textWidth(const char_t* text, uint_t length);
         
         void charsInWidth(const char_t* text, uint_t& length, uint_t& width);
         
@@ -194,6 +193,8 @@ namespace ArsLexis {
     private:
         void drawTextInBoundsInternal(const ArsLexis::String& text, const Rectangle& itemBounds, int totalLines, bool allowCenter, int lines);
 
+        friend class ScalingSetter;
+        
     public:
         void invertRectangle(const Rectangle& rect); 
 

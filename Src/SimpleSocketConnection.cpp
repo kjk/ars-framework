@@ -146,8 +146,10 @@ Exit:
             status_t ignore = socket().getMaxTcpSegmentSize(size);
 #else
             status_t ignore = errNone;
-            if (!(underSimulator() && isTreo600())) // These fatal alerts on Treo600 sim really piss me.
+# ifdef _PALM_OS
+            if (!(underSimulator() && isTreo600())) // These fatal alerts on Treo600 sim really piss me off.
                 ignore = socket().getMaxTcpSegmentSize(size);
+# endif
 #endif                
             if (errNone == ignore)
             {

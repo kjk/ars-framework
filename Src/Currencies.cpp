@@ -26,15 +26,17 @@ namespace ArsLexis{
 
     static const CurrencyArrayEntry currencies[]=
     {
-        {_T("USD"), _T("United States Dollars"), _T("Ecuador, Micronesia (Federated States of), Palau") },
+/*    
+        {_T("USD"), _T("United States Dollars"), _T("USA, Ecuador, Micronesia (Federated States of), Palau") },
         {_T("EUR"), _T("Euro"), _T("Austria, Belgium, Finland, France, Greece, Eire (Ireland), Italy, Luxembourg, Martinique, Portugal, Spain") },
         {_T("JPY"), _T("Yen"), _T("Japan") },
         {_T("GBP"), _T("Pounds"), _T("Britain (United Kingdom)") },
+ */        
         {_T("AED"), _T("Dirhams"), _T("United Arab Emirates") },
         {_T("AFA"), _T("Afghanis"), _T("Afghanistan") },
         {_T("ALL"), _T("Leke"), _T("Albania") },
         {_T("AMD"), _T("Drams"), _T("Armenia") },
-        {_T("ANG"), _T("Netherlands Antilles Guilders"), _T("Aruba, Aruba") },
+        {_T("ANG"), _T("Netherlands Antilles Guilders"), _T("Aruba") },
         {_T("AOA"), _T("Kwanza"), _T("Angola") },
         {_T("ARS"), _T("Pesos"), _T("Argentina") },
         {_T("AUD"), _T("Dollars"), _T("Australia") },
@@ -68,7 +70,7 @@ namespace ArsLexis{
         {_T("DZD"), _T("Dinars"), _T("Algeria") },
         {_T("EEK"), _T("Krooni"), _T("Estonia") },
         {_T("EGP"), _T("Pounds"), _T("Egypt") },
-        {_T("ETB"), _T("Ethiopia Birr"), _T("Eritrea, Eritrea") },
+        {_T("ETB"), _T("Ethiopia Birr"), _T("Eritrea") },
         {_T("EUR"), _T("Euro"), _T("Austria, Belgium, Finland, France, Greece, Eire (Ireland), Italy, Luxembourg, Martinique, Portugal, Spain") },
         {_T("FJD"), _T("Dollars"), _T("Fiji") },
         {_T("GBP"), _T("Pounds"), _T("Britain (United Kingdom)") },
@@ -117,13 +119,13 @@ namespace ArsLexis{
         {_T("MZM"), _T("Meticais"), _T("Mozambique") },
         {_T("NAD"), _T("Dollars"), _T("Namibia") },
         {_T("NGN"), _T("Nairas"), _T("Nigeria") },
-        {_T("NIO"), _T("Gold Cordobas"), _T("Nicaragua, Nicaragua") },
+        {_T("NIO"), _T("Gold Cordobas"), _T("Nicaragua") },
         {_T("NOK"), _T("Norway Kroner"), _T("Bouvet Island") },
         {_T("NPR"), _T("Rupees"), _T("Nepal") },
         {_T("NZD"), _T("New Zealand Dollars"), _T("Cook Islands") },
         {_T("OMR"), _T("Rials"), _T("Oman") },
         {_T("PAB"), _T("Balboa"), _T("Panama") },
-        {_T("PEN"), _T("Nuevos Soles"), _T("Peru, Peru") },
+        {_T("PEN"), _T("Nuevos Soles"), _T("Peru") },
         {_T("PGK"), _T("Kina"), _T("Papua New Guinea") },
         {_T("PHP"), _T("Pesos"), _T("Philippines") },
         {_T("PKR"), _T("Rupees"), _T("Pakistan") },
@@ -154,15 +156,15 @@ namespace ArsLexis{
         {_T("TZS"), _T("Shillings"), _T("Tanzania") },
         {_T("UAH"), _T("Hryvnia"), _T("Ukraine") },
         {_T("UGX"), _T("Shillings"), _T("Uganda") },
-        {_T("USD"), _T("United States Dollars"), _T("Ecuador, Micronesia (Federated States of), Palau") },
+        {_T("USD"), _T("United States Dollars"), _T("USA, Ecuador, Micronesia (Federated States of), Palau") },
         {_T("UYU"), _T("Pesos"), _T("Uruguay") },
         {_T("UZS"), _T("Sums"), _T("Uzbekistan") },
         {_T("VEB"), _T("Bolivares"), _T("Venezuela") },
         {_T("VUV"), _T("Vatu"), _T("Vanuatu") },
         {_T("WST"), _T("Tala"), _T("Western Samoa (Samoa)") },
-        {_T("XAF"), _T("Communaut&eacute; Financi&egrave;re Africaine Francs"), _T("Cameroon, Central African Republic, Chad, Congo/Brazzaville, Equatorial Guinea, Gabon") },
+        {_T("XAF"), _T("Communauté Financiere Africaine Francs"), _T("Cameroon, Central African Republic, Chad, Congo/Brazzaville, Equatorial Guinea, Gabon") },
         {_T("XCD"), _T("East Caribbean Dollars"), _T("Antigua and Barbuda, Grenada") },
-        {_T("XOF"), _T("Communaut&eacute; Financi&egrave;re Africaine Francs"), _T("Benin, Burkina Faso, Mali, Niger, Senegal, Togo") },
+        {_T("XOF"), _T("Communauté Financiere Africaine Francs"), _T("Benin, Burkina Faso, Mali, Niger, Senegal, Togo") },
         {_T("YER"), _T("Rials"), _T("Yemen") },
         {_T("ZAR"), _T("South Africa Rand"), _T("Lesotho") },
         {_T("ZMK"), _T("Kwacha"), _T("Zambia") },
@@ -174,28 +176,74 @@ namespace ArsLexis{
         return ARRAY_SIZE(currencies);
     }
 
-    Currency getCurrency(int pos)
+    const char_t* getCurrencySymbol(uint_t pos)
     {
-       assert (pos<ARRAY_SIZE(currencies));
-        return Currency(currencies[pos].name, currencies[pos].abbrev, currencies[pos].countries);
+        assert (pos<ARRAY_SIZE(currencies));
+        return currencies[pos].abbrev;
         
     }
-        // always return index value in (0, statesCount-1)   
-    int getCurrencyIndexByFirstChar(ArsLexis::char_t inChar)
+
+    const char_t* getCurrencyName(uint_t pos)
     {
-        inChar = ArsLexis::toUpper(inChar);
+        assert (pos<ARRAY_SIZE(currencies));
+        return currencies[pos].name;
+        
+    }
+
+    const char_t* getCurrencyRegion(uint_t pos)
+    {
+        assert (pos<ARRAY_SIZE(currencies));
+        return currencies[pos].countries;
+        
+    }
+
+    static bool currencyLess(const CurrencyArrayEntry& e1, const CurrencyArrayEntry& e2)
+    {
+        return e1.abbrev[0] < e2.abbrev[0];
+    }
+
+    // always return index value in [0, statesCount-1)   
+    uint_t getCurrencyIndexByFirstChar(char_t inChar)
+    {
+        uint_t count = ARRAY_SIZE(currencies);
         // skip four first currencies USD, EUR, GBP and JPY
         // the rest is set alphabetically
-        for (int i = 4; i < getCurrenciesCount(); i++)
-        {
-            char_t foundChar = currencies[i].abbrev[0];
-            if (inChar <= foundChar)
-                return i;
-        }
-        return getCurrenciesCount()-1;
-    }    
-}
-
-namespace {
-    static const ArsLexis::StaticAssert<ArsLexis::currenciesCount == ARRAY_SIZE(ArsLexis::currencies)> global_and_local_currencies_count_equal = {};
+        const CurrencyArrayEntry* end = currencies + count;
+        // Use static allocation to reduce stack usage
+        static CurrencyArrayEntry entry;
+        char* abbrev = const_cast<char*>(entry.abbrev);
+        abbrev[0] = toUpper(inChar);
+        const CurrencyArrayEntry* p = std::lower_bound(currencies, end, entry, currencyLess);
+        if (end == p)
+            --p;
+        return p - currencies;
+    }
+    
+    static bool currencyLessFull(const CurrencyArrayEntry& e1, const CurrencyArrayEntry& e2)
+    {
+        return 0 > tstrcmp(e1.abbrev, e2.abbrev);
+    }
+    
+    int getCurrencyIndex(const char_t* symbol)
+    {
+        assert(3 == tstrlen(symbol));
+        uint_t count = ARRAY_SIZE(currencies);
+        // skip four first currencies USD, EUR, GBP and JPY
+        // the rest is set alphabetically
+        const CurrencyArrayEntry* end = currencies + count;
+        // Use static allocation to reduce stack usage
+        static CurrencyArrayEntry entry;
+        char* abbrev = const_cast<char*>(entry.abbrev);
+        abbrev[0] = symbol[0];
+        abbrev[1] = symbol[1];
+        abbrev[2] = symbol[2];
+        abbrev[3] = _T('\0');
+        const CurrencyArrayEntry* p = std::lower_bound(currencies, end, entry, currencyLessFull);
+        if (end == p)
+            return -1;
+        if (0 != tstrcmp(p->abbrev, entry.abbrev))
+            return -1;
+        return p - currencies;
+    }
+    
 }

@@ -739,7 +739,7 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
     LinePosition_t end = lines_.begin() + lastLine_;
     Coord_t actHeight = 0;
     for (LinePosition_t line = lines_.begin() + firstLine_; line != end; ++line)
-        if (height >= actHeight && height < actHeight + line->height)
+        if (height >= actHeight && height < actHeight + int(line->height))
             return line;
         else
             actHeight += line->height;
