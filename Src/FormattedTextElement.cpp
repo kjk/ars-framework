@@ -10,8 +10,10 @@ FormattedTextElement::FormattedTextElement(const String& text):
 
 void FormattedTextElement::applyFormatting(Graphics& graphics, const RenderingPreferences& preferences)
 {
-    GenericTextElement::applyFormatting(graphics, preferences);
     const RenderingPreferences::StyleFormatting& styleFormat=preferences.styleFormatting(style());
     Graphics::Font_t font=styleFormat.font;
-    font.addEffects(fontEffects());    graphics.setFont(font);
+    font.addEffects(fontEffects());
+    graphics.setFont(font);
+    graphics.setTextColor(styleFormat.textColor);
+    applyHyperlinkDecorations(graphics, preferences);
 }

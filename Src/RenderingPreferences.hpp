@@ -20,6 +20,11 @@ enum ElementStyle
 
 class RenderingPreferences
 {
+
+    enum {
+        stylesCount_=2,
+        hyperlinkTypesCount_=3,
+    };        
     
 public:
 
@@ -47,28 +52,6 @@ public:
     BulletType bulletType() const
     {return bulletCircle;}
 
-    struct HyperlinkDecoration
-    {
-        UnderlineModeType underlineMode;
-        ArsLexis::Graphics::Color_t textColor;
-        
-        HyperlinkDecoration():
-            underlineMode(grayUnderline),
-            textColor(UIColorGetTableEntryIndex(UIObjectForeground))
-        {}
-        
-        HyperlinkDecoration(UnderlineModeType um, ArsLexis::Graphics::Color_t tc):
-            underlineMode(um),
-            textColor(tc)
-        {}
-    };
-    
-    const HyperlinkDecoration& hyperlinkDecoration(HyperlinkType hyperlinkType) const
-    {
-        assert(hyperlinkType<3);
-        return hyperlinkDecorations_[hyperlinkType];
-    }
-    
     struct StyleFormatting
     {
         ArsLexis::Graphics::Font_t font;
@@ -81,25 +64,28 @@ public:
         
     };
     
+    const StyleFormatting& hyperlinkDecoration(HyperlinkType hyperlinkType) const
+    {
+        assert(hyperlinkType<hyperlinkTypesCount_);
+        return hyperlinkDecorations_[hyperlinkType];
+    }
+    
     const StyleFormatting& styleFormatting(ElementStyle style) const
     {
-        assert(style<2);
+        assert(style<stylesCount_);
         return styles_[style];
     }
     
     uint_t standardIndentation() const
     {return 20;}
     
-    UnderlineModeType standardUnderline() const
-    {return solidUnderline;}
-    
-    IndexedColorType backgroundColor() const
+    ArsLexis::Graphics::Color_t backgroundColor() const
     {return 0;}
 
 private:
     
-    HyperlinkDecoration hyperlinkDecorations_[3];
-    StyleFormatting styles_[2];
+    StyleFormatting hyperlinkDecorations_[hyperlinkTypesCount_];
+    StyleFormatting styles_[stylesCount_];
 };
 
 

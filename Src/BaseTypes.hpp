@@ -13,11 +13,23 @@ namespace ArsLexis
     
 #if defined(_WIN32_WCE)
 
-    typedef wchar_t char_t;
-
+    typedef TCHAR char_t;
+    
 #else
     
     typedef char char_t;
+    
+    #define _T(a) a
+
+    #if defined(__PALMOS_H__)    
+    
+        #define tprintf StrPrintF
+        
+    #else
+        
+        #define tprintf sprintf
+        
+    #endif
     
 #endif
 

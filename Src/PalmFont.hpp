@@ -103,6 +103,12 @@ namespace ArsLexis
             impl_->setFontId(fontId);
         }
         
+        FontEffects& effects() 
+        {
+            selfish();
+            return impl_->effects();
+        }
+        
         friend class Graphics;
     };
 

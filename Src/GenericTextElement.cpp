@@ -6,6 +6,7 @@ using ArsLexis::char_t;
 using ArsLexis::Rectangle;
 using ArsLexis::isWhitespace;
 using ArsLexis::Graphics;
+using ArsLexis::Point;
 
 GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
     resource(res),
@@ -40,21 +41,23 @@ static uint_t findNextWhitespace(const String& text, uint_t fromPos)
 void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
 {
     assert(!layoutContext.isElementCompleted());
-    applyFormatting(layoutContext.graphics, layoutContext.preferences);
+    Graphics& graphics=layoutContext.graphics;
+    applyFormatting(graphics, layoutContext.preferences);
 
-    layoutContext.usedWidth=std::max(layoutContext.usedWidth, indentation());
-    uint_t baseLine=layoutContext.graphics.fontBaseline();
-    uint_t lineHeight=layoutContext.graphics.fontHeight();
+    uint_t indent=indentation();
+    layoutContext.usedWidth=std::max(layoutContext.usedWidth, indent);
+    uint_t baseLine=graphics.fontBaseline();
+    uint_t lineHeight=graphics.fontHeight();
     
     const char_t* text=text_.c_str()+layoutContext.renderingProgress;
     left+=layoutContext.usedWidth;
     top+=(layoutContext.baseLine-baseLine);
 
     uint_t nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
-    Int16 length=FntWordWrap(text, layoutContext.availableWidth());
+    uint_t length=graphics.wordWrap(text, layoutContext.availableWidth());
     if (0==layoutContext.renderingProgress && !layoutContext.isFirstInLine() && length<nextWhitespace)
     {
-        uint_t newLineLength=FntWordWrap(text, layoutContext.screenWidth);
+        uint_t newLineLength=graphics.wordWrap(text, layoutContext.screenWidth-indent);
         if (nextWhitespace<=newLineLength)
         {
             layoutContext.usedWidth+=layoutContext.availableWidth();
@@ -65,14 +68,14 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     if (!render)
         layoutContext.extendHeight(lineHeight, baseLine);
 
-    Int16 width=FntCharsWidth(text, length);
+    uint_t width=graphics.textWidth(text, length);
 
     if (render)
     {
         uint_t charsToDraw=length;
         while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
             --charsToDraw;
-        WinDrawChars(text, charsToDraw, left, top);
+        graphics.drawText(text, charsToDraw, Point(left, top));
         if (isHyperlink())
             defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
     }
@@ -85,30 +88,25 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         layoutContext.renderingProgress+=length;
         layoutContext.usedWidth+=width;
         nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
-        length=FntWordWrap(text, layoutContext.screenWidth);
+        length=graphics.wordWrap(text, layoutContext.screenWidth-indent);
         if (length<nextWhitespace)
         {
-            uint_t newLineLength=FntWordWrap(text, layoutContext.screenWidth);
-            if (newLineLength<nextWhitespace)
-            {
-                length=StrLen(text);
-                width=layoutContext.availableWidth();
-                Boolean notTruncated=false;
-                FntCharsInWidth(text, &width, &length, &notTruncated);
+            length=text_.length()-layoutContext.renderingProgress;
+            width=layoutContext.availableWidth();
+            graphics.charsInWidth(text, length, width);
 
-                if (render)
-                {
-                    uint_t charsToDraw=length;
-                    while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
-                        --charsToDraw;
-                    WinDrawChars(text, length, left, top);
-                    if (isHyperlink())
-                        defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
-                }
-                
-                layoutContext.renderingProgress+=length;
-                layoutContext.usedWidth+=layoutContext.availableWidth();
+            if (render)
+            {
+                uint_t charsToDraw=length;
+                while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
+                    --charsToDraw;
+                graphics.drawText(text, length, Point(left, top));
+                if (isHyperlink())
+                    defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
             }
+            
+            layoutContext.renderingProgress+=length;
+            layoutContext.usedWidth+=layoutContext.availableWidth();
         }
     }
     else
@@ -131,8 +129,8 @@ void GenericTextElement::applyHyperlinkDecorations(Graphics& graphics, const Ren
 {
     if (isHyperlink())
     {
-        const RenderingPreferences::HyperlinkDecoration& decor=preferences.hyperlinkDecoration(hyperlink_->type);
-        WinSetUnderlineMode(decor.underlineMode);
+        const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlink_->type);
+        graphics.setFont(decor.font);
         graphics.setTextColor(decor.textColor);
         graphics.setForegroundColor(decor.textColor);
     }

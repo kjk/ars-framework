@@ -53,6 +53,26 @@ namespace ArsLexis
         return baseline;
     }
 
+    inline uint_t Graphics::wordWrap(const char_t* text, uint_t width)
+    {
+        return FntWordWrap(text, width);
+    }
+
+    inline uint_t Graphics::textWidth(const char_t* text, uint_t length)
+    {
+        return FntCharsWidth(text, length);
+    }
+    
+    inline void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
+    {
+        Int16 w=width;
+        Int16 len=length;
+        Boolean dontMind;
+        FntCharsInWidth(text, &w, &len, &dontMind);
+        length=len;
+        width=w;
+    }
+
 }
 
 #endif

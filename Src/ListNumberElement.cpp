@@ -22,7 +22,7 @@ void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
         assert(false);
 
     // Assuming we have properly set totalCount_, we'll get all the ListNumbers indented the same.
-    StrPrintF(buffer, "%hd. ", wideNumber);
+    tprintf(buffer, _T("%hd. "), wideNumber);
     String str(buffer);
     swapText(str);
 
@@ -30,7 +30,7 @@ void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
     GenericTextElement::calculateLayout(layoutContext);
     childIndentation_=layoutContext.usedWidth-widthBefore;
 
-    StrPrintF(buffer, "%hd. ", number_);
+    tprintf(buffer, _T("%hd. "), number_);
     str=buffer;
     swapText(str);
 }
