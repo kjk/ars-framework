@@ -7,8 +7,22 @@ class LineBreakElement: public DefinitionElement
 {
     void calculateOrRender(LayoutContext& layoutContext, bool render=false);
 
+    // those scale the dy (height) of the line break element. To obtain final
+    // dy we multiply by mult_ and divide by div_ the original dy.
+    // i.e. mult_=1 and div_=2 => dyFinal = dyOrig / 2
+    int mult_;
+    int div_;
+
 public:
-    
+
+    LineBreakElement() : DefinitionElement(), mult_(1), div_(1)
+    {}
+
+    LineBreakElement(int mult, int div) : DefinitionElement(), mult_(mult), div_(div)
+    {}
+
+    void setSize(int mult, int div);
+
     bool breakBefore(const RenderingPreferences& preferences) const
     {return true;}
 
