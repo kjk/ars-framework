@@ -7,18 +7,14 @@
 
 using namespace ArsLexis;
 
-
 iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
-    SimpleSocketConnection(manager),
-    parser_(0),
+    FieldPayloadProtocolConnection(manager),
     transactionId_(random((UInt32)-1)),
-    inPayload_(false),
     definitionNotFound_(false),
     registering_(false),
     formatVersion_(0),
-    payloadStart_(0),
-    payloadLength_(0),
-    processedSoFar_(0),
+    definitionParser_(0),
+    payloadType_(payloadNone),
     historyChange_(historyReplaceForward),
     serverError_(serverErrorNone)
 {
@@ -26,21 +22,7 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
 
 iPediaConnection::~iPediaConnection()
 {
-    delete parser_;
-}
-
-#define fieldSeparator ": "
-#define lineSeparator "\n"
-static const uint_t fieldSeparatorLength=2;
-static const uint_t lineSeparatorLength=1;
-
-static void appendField(String& out, const char* fieldName, const String& value)
-{
-    assert(fieldName!=0);
-    uint_t fieldLen=StrLen(fieldName);
-    uint_t len=out.length()+fieldLen+fieldSeparatorLength+value.length()+lineSeparatorLength;
-    out.reserve(len);
-    out.append(fieldName, fieldLen).append(fieldSeparator, fieldSeparatorLength).append(value).append(lineSeparator, lineSeparatorLength);
+    delete definitionParser_;
 }
 
 #define protocolVersion "1"
@@ -79,28 +61,8 @@ void iPediaConnection::prepareRequest()
     if (registering_)
         appendField(request, registerField, app.preferences().serialNumber);
         
-    request+=lineSeparator;
+    request+='\n';
     setRequest(request); 
-}
-
-static String extractFieldValue(const String& text, UInt16 fieldStart, UInt16 fieldEnd)
-{
-    String value;
-    String::size_type pos=text.find(fieldSeparator, fieldStart);
-    if (text.npos!=pos && pos+fieldSeparatorLength<fieldEnd)
-        value.assign(text, pos+fieldSeparatorLength, fieldEnd-pos-fieldSeparatorLength);
-    return value;
-}
-
-static Err extractFieldIntValue(const String& text, UInt16 fieldStart, UInt16 fieldEnd, Int32& value, UInt16 base=10)
-{
-    Err error=errNone;
-    String textValue=extractFieldValue(text, fieldStart, fieldEnd);
-    if (!textValue.empty())
-        error=numericValue(textValue.data(), textValue.data()+textValue.length(), value, base);
-    else
-        error=sysErrParamErr;
-    return error;
 }
 
 void iPediaConnection::open()
@@ -109,156 +71,116 @@ void iPediaConnection::open()
     SimpleSocketConnection::open();
 }
 
-void iPediaConnection::processLine(UInt16 start, UInt16 end)
+Err iPediaConnection::handleField(const String& name, const String& value)
 {
-    Int32 value=0;
+    std::int32_t numValue;
     Err error=errNone;
-    const char* line=response().data()+start;
-    if (start==response().find(transactionIdField, start)) ;
+    if (0==name.find(transactionIdField))
+    {
         //! @todo Handle transactionid field.
-    else if (start==response().find(definitionNotFoundField, start))
-        definitionNotFound_=true;
-    else if (start==response().find(formatVersionField, start))
-    {
-        error=extractFieldIntValue(response(), start, end, value);
-        if (!error)
-            formatVersion_=value;
-        else
-            error=iPediaApplication::errMalformedResponse;
     }
-    else if (start==response().find(definitionForField, start))
-        definitionForTerm_=extractFieldValue(response(), start, end);
-    else if (start==response().find(definitionField, start)) 
+    else if (0==name.find(definitionNotFoundField))
+        definitionNotFound_=true;
+    else if (0==name.find(formatVersionField))
     {
-        error=extractFieldIntValue(response(), start, end, value);
+        error=numericValue(value, numValue);
+        if (!error)
+            formatVersion_=numValue;
+        else
+            error=sockConnErrResponseMalformed;
+    }
+    else if (0==name.find(definitionForField))
+        definitionForTerm_=value;
+    else if (0==name.find(definitionField))
+    {
+        error=numericValue(value, numValue);
         if (!error)
         {
-            inPayload_=true;
-            payloadStart_=end+lineSeparatorLength;
-            payloadLength_=value;
-            delete parser_;
-            parser_=new DefinitionParser(response(), payloadStart_);
+            DefinitionParser* parser=new DefinitionParser();
+            startPayload(parser, numValue);
+            payloadType_=payloadDefinition;
         }
         else
-            error=iPediaApplication::errMalformedResponse;
+            error=sockConnErrResponseMalformed;
     }
-    else if (start==response().find(cookieField, start))
+    else if (0==name.find(cookieField))
     {
-        String cookie=extractFieldValue(response(), start, end);
         iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
-        if (cookie.length()!=iPediaApplication::Preferences::cookieLength)
-            error=iPediaApplication::errMalformedResponse;
+        if (value.length()!=iPediaApplication::Preferences::cookieLength)
+            error=sockConnErrResponseMalformed;
         else
-            StrCopy(app.preferences().cookie, cookie.c_str());
+        {
+            
+//            StrNCopy(app.preferences().cookie, value.data(), value.length());
+//            app.preferences().cookie[value.length()]=chrNull;
+            app.preferences().cookie=value;
+        }
     }
-    else if (start==response().find(errorField, start))
+    else if (0==name.find(errorField))
     {
-        error=extractFieldIntValue(response(), start, end, value);
+        error=numericValue(value, numValue);
         if (!error)
         {
-            if (value>=serverErrorFirst && value<=serverErrorLast)
-                serverError_=static_cast<ServerError>(value);
+            if (numValue>=serverErrorFirst && numValue<=serverErrorLast)
+                serverError_=static_cast<ServerError>(numValue);
             else
-                error=iPediaApplication::errMalformedResponse;
+                error=sockConnErrResponseMalformed;
         }            
         else
-            error=iPediaApplication::errMalformedResponse;
+            error=sockConnErrResponseMalformed;
     }
-
-    if (error)
-        handleError(error);
+    else 
+        error=FieldPayloadProtocolConnection::handleField(name, value);
+    return error;
 }
 
-void iPediaConnection::processResponseIncrement(bool finish)
+Err iPediaConnection::notifyFinished()
 {
-    bool goOn=false;
-    do 
+    Err error=FieldPayloadProtocolConnection::notifyFinished();
+    if (!error)
     {
-        if (!inPayload_)
+        if (!serverError_)
         {
-            String::size_type end=response().find(lineSeparator, processedSoFar_);
-            goOn=(response().npos!=end);
-            if (finish || goOn)
+            iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
+            if (definitionParser_!=0)
             {
-                if (!goOn)
-                    end=response().length();
-                processLine(processedSoFar_, end);
-                processedSoFar_=end+lineSeparatorLength;
+                MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
+                if (form)
+                {
+                    definitionParser_->updateDefinition(form->definition());
+                    switch (historyChange_)
+                    {
+                        case historyMoveForward:
+                            form->history().moveForward();
+                            break;
+                        
+                        case historyMoveBack:
+                            form->history().moveBack();
+                            break;
+                        
+                        case historyReplaceForward:
+                            form->history().replaceForward(definitionForTerm_);
+                            break;
+                        
+                        default:
+                            assert(false);
+                    }                    
+                    form->setDisplayMode(MainForm::showDefinition);
+                    form->synchronizeWithHistory();
+                    form->update();
+                }
             }
+
+            if (registering_ && !serverError_)
+                app.preferences().serialNumberRegistered=true;
+            
+            if (definitionNotFound_)
+                app.sendDisplayAlertEvent(definitionNotFoundAlert);
         }
         else
-        {
-            assert(parser_!=0);
-            if (response().length()-payloadStart_>=payloadLength_+lineSeparatorLength)
-            {
-                if (processedSoFar_<payloadStart_+payloadLength_)
-                    parser_->parseIncrement(payloadStart_+payloadLength_, true);
-                inPayload_=false;
-                processedSoFar_=payloadStart_+payloadLength_+lineSeparatorLength;
-                goOn=true;
-            }
-            else
-            {
-                bool finishPayload=(response().length()-payloadStart_>=payloadLength_);
-                parser_->parseIncrement(response().length(), finishPayload);
-                processedSoFar_=response().length();
-                goOn=false;
-            }
-        }
-    } while (goOn);
-}
-
-void iPediaConnection::reportProgress()
-{
-    if (!(sending() || response().empty()))
-        processResponseIncrement();
-}
-
-void iPediaConnection::finalize()
-{
-    processResponseIncrement(true);
-    if (!serverError_)
-    {
-        iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
-        if (parser_!=0)
-        {
-            MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
-            if (form)
-            {
-                parser_->updateDefinition(form->definition());
-                switch (historyChange_)
-                {
-                    case historyMoveForward:
-                        form->history().moveForward();
-                        break;
-                    
-                    case historyMoveBack:
-                        form->history().moveBack();
-                        break;
-                    
-                    case historyReplaceForward:
-                        form->history().replaceForward(definitionForTerm_);
-                        break;
-                    
-                    default:
-                        assert(false);
-                }                    
-                form->setDisplayMode(MainForm::showDefinition);
-                form->synchronizeWithHistory();
-                form->update();
-            }
-        }
-        
-        if (registering_ && !serverError_)
-            app.preferences().serialNumberRegistered=true;
-        
-        if (definitionNotFound_)
-            FrmAlert(definitionNotFoundAlert);
+            handleServerError();
     }
-    else
-        handleServerError();
-        
-    SimpleSocketConnection::finalize();
+    return error;        
 }
 
 void iPediaConnection::handleError(Err error)
@@ -266,16 +188,23 @@ void iPediaConnection::handleError(Err error)
     UInt16 alertId=frmInvalidObjectId;
     switch (error)
     {
-        case netErrBufTooSmall:
+        case sockConnErrResponseTooLong:
             alertId=definitionTooBigAlert;
             break;
             
-        case iPediaApplication::errMalformedResponse:
+        case sockConnErrResponseMalformed:
             alertId=malformedResponseAlert;
             break;
+        
+        case netErrTimeout:
+            alertId=connectionTimedOutAlert;
+            break;
+        
+        default:
+            alertId=connectionErrorAlert;
     }
-    if (frmInvalidObjectId!=alertId)
-        FrmAlert(alertId);
+    iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
+    app.sendDisplayAlertEvent(alertId);
     SimpleSocketConnection::handleError(error);
 }
 
@@ -292,4 +221,16 @@ void iPediaConnection::handleServerError()
     assert(serverErrorNone!=serverError_);
     assert(serverErrorLast>=serverError_);
     FrmAlert(serverErrorAlerts[serverError_-1]);
+}
+
+void iPediaConnection::notifyPayloadFinished()
+{
+    assert(payloadNone!=payloadType_);
+    if (payloadDefinition==payloadType_)
+    {
+        delete definitionParser_;
+        definitionParser_=static_cast<DefinitionParser*>(releasePayloadHandler());
+    }
+    payloadType_=payloadNone;
+    FieldPayloadProtocolConnection::notifyPayloadFinished();
 }

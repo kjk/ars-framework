@@ -225,6 +225,8 @@ public:
     void goToBookmark(const ArsLexis::String& bookmark)
     {}
     
+    void selectionToText(ArsLexis::String& out) const;
+    
 private:
 
     HyperlinkHandler* hyperlinkHandler_;

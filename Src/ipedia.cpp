@@ -1,6 +1,5 @@
 
 #include "iPediaApplication.hpp"
-#include "ipedia_Rsc.h"
 
 void std::__msl_error(const char* str)
 {

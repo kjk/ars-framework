@@ -17,6 +17,11 @@ public:
     
     void render(RenderingContext& renderingContext);
     
+    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+    {
+        appendTo.append("\n----");
+    }
+    
 };
 
 #endif

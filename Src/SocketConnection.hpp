@@ -2,6 +2,7 @@
 #define __ARSLEXIS_SOCKET_CONNECTION_HPP__
 
 #include "Socket.hpp"
+#include "ErrBase.h"
 #include <vector>
 
 namespace ArsLexis

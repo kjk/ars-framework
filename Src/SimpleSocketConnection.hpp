@@ -23,13 +23,11 @@ namespace ArsLexis
         
         void notifyReadable();
         
-        virtual void finalize()
-        {abortConnection();}
+        virtual Err notifyFinished()
+        {return errNone;}
         
-        void notifyException();
-        
-        virtual void reportProgress()
-        {}
+        virtual Err notifyProgress()
+        {return errNone;}
         
         void setRequest(const String& request)
         {request_=request;}

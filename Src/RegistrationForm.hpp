@@ -11,9 +11,9 @@ protected:
 
     void resize(const ArsLexis::Rectangle& screenBounds);
     
-    Boolean handleEvent(EventType& event);
+    bool handleEvent(EventType& event);
     
-    Boolean handleOpen();
+    bool handleOpen();
     
 public:
 

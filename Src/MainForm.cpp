@@ -21,7 +21,7 @@ MainForm::~MainForm()
 {
 }
 
-Boolean MainForm::handleOpen()
+bool MainForm::handleOpen()
 {
     FormObject object(*this, termInputField);
     object.focus();
@@ -40,20 +40,15 @@ void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
     bounds.height()=screenBounds.extent.y-36;
     object.setBounds(bounds);
     
-    object.attach(termLabel);
-    object.bounds(bounds);
-    bounds.y()=screenBounds.extent.y-14;
-    object.setBounds(bounds);
-
     object.attach(termInputField);
     object.bounds(bounds);
     bounds.y()=screenBounds.extent.y-14;
-    bounds.width()=screenBounds.extent.x-73;
+    bounds.width()=screenBounds.extent.x-63;
     object.setBounds(bounds);
 
-    object.attach(goButton);
+    object.attach(searchButton);
     object.bounds(bounds);
-    bounds.x()=screenBounds.extent.x-26;
+    bounds.x()=screenBounds.extent.x-42;
     bounds.y()=screenBounds.extent.y-14;
     object.setBounds(bounds);
     
@@ -246,7 +241,7 @@ void MainForm::handleControlSelect(const ctlSelect& data)
 {
     switch (data.controlID)
     {
-        case goButton:
+        case searchButton:
             {
                 Field field(*this, termInputField);
                 const char* textPtr=field.text();
@@ -268,9 +263,9 @@ void MainForm::handleControlSelect(const ctlSelect& data)
     }
 }
 
-Boolean MainForm::handleEvent(EventType& event)
+bool MainForm::handleEvent(EventType& event)
 {
-    Boolean handled=false;
+    bool handled=false;
     switch (event.eType)
     {
         case keyDownEvent:
@@ -363,7 +358,7 @@ bool MainForm::handleKeyPress(const EventType& event)
         case chrLineFeed:
         case chrCarriageReturn:
             {
-                Control control(*this, goButton);
+                Control control(*this, searchButton);
                 control.hit();
             }                
             handled=true;
@@ -372,9 +367,9 @@ bool MainForm::handleKeyPress(const EventType& event)
     return handled;
 }
 
-Boolean MainForm::handleMenuCommand(UInt16 itemId)
+bool MainForm::handleMenuCommand(UInt16 itemId)
 {
-    Boolean handled=false;
+    bool handled=false;
     switch (itemId)
     {
         case useDictPcMenuItem:
@@ -392,9 +387,24 @@ Boolean MainForm::handleMenuCommand(UInt16 itemId)
             handled=true;
             break;
             
+        case copyMenuItem:
+            copySelectionToClipboard();
+            handled=true;
+            break;
+            
         default:
             handled=iPediaForm::handleMenuCommand(itemId);
     }
     return handled;
+}
+
+void MainForm::copySelectionToClipboard()
+{
+    if (showDefinition==displayMode())
+    {
+        ArsLexis::String text;
+        definition_.selectionToText(text);
+        ClipboardAddItem(clipboardText, text.data(), text.length());
+    }
 }
 

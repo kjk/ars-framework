@@ -6,7 +6,12 @@ namespace ArsLexis
 
     Boolean Form::routeEventToForm(EventType* event)
     {
-        UInt16 formId=FrmGetActiveFormID();
+        UInt16 formId;
+        eventsEnum eventType=event->eType;
+        if ((frmLoadEvent<=eventType && frmTitleSelectEvent>=eventType) && frmSaveEvent!=eventType)
+            formId=event->data.frmLoad.formID;  // All of these events take formID as their first data member.
+        else
+            formId=FrmGetActiveFormID();
         Application& app=Application::instance();
         Form* form=app.getOpenForm(formId);
         assert(form!=0);
@@ -48,9 +53,9 @@ namespace ArsLexis
         application_.unregisterForm(*this);
     }
     
-    Boolean Form::handleEvent(EventType& event)
+    bool Form::handleEvent(EventType& event)
     {
-        Boolean handled=false;
+        bool handled=false;
         switch (event.eType)
         {
             case frmOpenEvent:
@@ -80,20 +85,20 @@ namespace ArsLexis
         return result;
     }
 
-    Boolean Form::handleClose() 
+    bool Form::handleClose() 
     {
         delete this;        
         return false;
     }
     
-    Boolean Form::handleOpen()
+    bool Form::handleOpen()
     {
         deleteOnClose=false;
         update();
         return true;
     }
     
-    Boolean Form::handleUpdate(UInt16 updateCode)
+    bool Form::handleUpdate(UInt16 updateCode)
     {
         draw(updateCode);
         return true;

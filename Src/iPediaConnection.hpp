@@ -1,42 +1,42 @@
 #ifndef __DEFINITION_REQUEST_CONNECTION_HPP__
 #define __DEFINITION_REQUEST_CONNECTION_HPP__
 
-#include "SimpleSocketConnection.hpp"
+#include "FieldPayloadProtocolConnection.hpp"
 
 class DefinitionParser;
 
-class iPediaConnection: public ArsLexis::SimpleSocketConnection
+class iPediaConnection: public ArsLexis::FieldPayloadProtocolConnection
 {
-    DefinitionParser* parser_;
     UInt32 transactionId_;
     ArsLexis::String term_;
 
-    UInt16 inPayload_:1;
-    UInt16 definitionNotFound_:1;
-    UInt16 registering_:1;
-    UInt16 formatVersion_:13;
-    
-    UInt16 payloadStart_;    
-    UInt16 payloadLength_;
-    UInt16 processedSoFar_;
+    uint_t definitionNotFound_:1;
+    uint_t registering_:1;
+    uint_t formatVersion_;
     
     ArsLexis::String definitionForTerm_;
-    
-    Err processField(UInt16 fieldStart, UInt16 fieldEnd);
+    DefinitionParser* definitionParser_;
     
     void prepareRequest();
     
-    void processLine(UInt16 start, UInt16 end);
+    enum PayloadType 
+    {
+        payloadNone,
+        payloadDefinition,
+        payloadTermList
+    };
     
-    void processResponseIncrement(bool finish=false);
+    PayloadType payloadType_;
     
 protected:
 
-    void reportProgress();
-    
-    void finalize();
+    Err notifyFinished();
     
     void handleError(Err error);
+    
+    Err handleField(const ArsLexis::String& name, const ArsLexis::String& value);
+    
+    void notifyPayloadFinished();
 
 public:
 
@@ -45,6 +45,17 @@ public:
         historyMoveBack,
         historyMoveForward,
         historyReplaceForward
+    };
+
+    enum ServerError
+    {
+        serverErrorNone,
+        serverErrorFailure,
+        serverErrorFirst=serverErrorFailure,
+        serverErrorUnsupportedDevice,
+        serverErrorInvalidAuthorization,
+        serverErrorMalformedRequest,
+        serverErrorLast=serverErrorMalformedRequest
     };
 
     void open();
@@ -59,17 +70,6 @@ public:
     void setHistoryChange(HistoryChange hc)
     {historyChange_=hc;}
     
-    enum ServerError
-    {
-        serverErrorNone,
-        serverErrorFailure,
-        serverErrorFirst=serverErrorFailure,
-        serverErrorUnsupportedDevice,
-        serverErrorInvalidAuthorization,
-        serverErrorMalformedRequest,
-        serverErrorLast=serverErrorMalformedRequest
-    };
-
 private:
     
     HistoryChange historyChange_;

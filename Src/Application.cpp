@@ -3,6 +3,11 @@
 #include "Utility.hpp"
 #include <memory>
 
+// Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
+template class std::basic_string<ArsLexis::char_t>;
+template class std::char_traits<ArsLexis::char_t>;
+template class std::list<ArsLexis::Form*>;
+
 namespace ArsLexis
 {
     
@@ -131,9 +136,9 @@ namespace ArsLexis
         }            
     }
     
-    Boolean Application::handleApplicationEvent(EventType& event)
+    bool Application::handleApplicationEvent(EventType& event)
     {
-        Boolean handled=false;
+        bool handled=false;
         if (frmLoadEvent==event.eType)
         {
             loadForm(event.data.frmLoad.formID);

@@ -65,6 +65,8 @@ public:
     
     void performAction(Definition& definition);
     
+    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const;
+    
 };
 
 #endif

@@ -172,7 +172,7 @@ namespace ArsLexis
          * @param event The event to handle.
          * @return @c true if @c event is fully processed, @c false otherwise.
          */
-        virtual Boolean handleApplicationEvent(EventType& event);
+        virtual bool handleApplicationEvent(EventType& event);
         
         /**
          * Waits for next event.
@@ -279,6 +279,11 @@ namespace ArsLexis
         enum Error
         {
             errFirstAvailable=appErrorClass
+        };
+        
+        enum Event
+        {
+            appFirstAvailableEvent=firstUserEvent
         };
 
     };

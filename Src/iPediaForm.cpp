@@ -1,9 +1,9 @@
 #include "iPediaForm.hpp"
 #include "SysUtils.hpp"
 
-Boolean iPediaForm::handleEvent(EventType& event)
+bool iPediaForm::handleEvent(EventType& event)
 {
-    Boolean handled=false;
+    bool handled=false;
     switch (event.eType)
     {
         case winDisplayChangedEvent:

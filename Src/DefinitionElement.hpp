@@ -39,6 +39,8 @@ public:
     
     uint_t indentation() const;
     
+    virtual void toText(ArsLexis::String& appendTo, uint_t from=0, uint_t to=elementCompletedProgress) const=0;
+    
 };
 
 #endif

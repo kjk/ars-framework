@@ -22,12 +22,21 @@ namespace ArsLexis
     
     Err numericValue(const char* begin, const char* end, std::int32_t& result, uint_t base=10);
     
+    inline Err numericValue(const String& text, std::int32_t& result, uint_t base=10)
+    {
+        return numericValue(text.data(), text.data()+text.length(), result, base);
+    }
+    
     String hexBinEncode(const String& in);
 
     inline void hexBinEncodeInPlace(String& inOut)
     {
         inOut=hexBinEncode(inOut);
     }
+    
+    // detect a web browser app and return cardNo and dbID of its *.prc.
+    // returns true if detected some viewer, false if none was found
+    bool fDetectViewer(UInt16 *cardNoOut, LocalID *dbIDOut);
     
 }
 

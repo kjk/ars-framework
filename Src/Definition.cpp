@@ -342,3 +342,10 @@ void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& pr
         rangeHeight+=lines_[i].height;
     graphics.erase(Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
 }
+
+void Definition::selectionToText(ArsLexis::String& out) const
+{
+    Elements_t::const_iterator end=elements_.end();
+    for (Elements_t::const_iterator it=elements_.begin(); it!=end; ++it)
+        (*it)->toText(out);
+}

@@ -24,6 +24,8 @@ class MainForm: public iPediaForm
     
     void updateScrollBar();
     
+    void copySelectionToClipboard();
+    
 protected:
 
     void resize(const ArsLexis::Rectangle& screenBounds);
@@ -32,11 +34,11 @@ protected:
     
     Err initialize();
     
-    Boolean handleEvent(EventType& event);
+    bool handleEvent(EventType& event);
     
-    Boolean handleOpen();
+    bool handleOpen();
     
-    Boolean handleMenuCommand(UInt16 itemId);
+    bool handleMenuCommand(UInt16 itemId);
 
 public:
     

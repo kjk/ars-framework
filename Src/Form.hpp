@@ -28,19 +28,19 @@ namespace ArsLexis
          * This function calls <code>delete this</code>, so when overriding it should be called last, 
          * unless you know what you're doing.
          */
-        virtual Boolean handleClose();
+        virtual bool handleClose();
         
         /**
          * Handles @c frmOpenEvent.
          * Updates form and prevents calling FrmDeleteForm() in destructor.
          */
-        virtual Boolean handleOpen();
+        virtual bool handleOpen();
         
         /**
          * Handles @c frmUpdateEvent.
          * Calls redraw().
          */
-        virtual Boolean handleUpdate(UInt16 updateCode);
+        virtual bool handleUpdate(UInt16 updateCode);
         
         /**
          * Redraws form.
@@ -49,12 +49,12 @@ namespace ArsLexis
         virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
         {FrmDrawForm(form_);}
         
-        virtual Boolean handleEvent(EventType& event);
+        virtual bool handleEvent(EventType& event);
         
         WinHandle windowHandle() const
         {return FrmGetWindowHandle(form_);}
         
-        virtual Boolean handleMenuCommand(UInt16 itemId)
+        virtual bool handleMenuCommand(UInt16 itemId)
         {return false;}
             
     public:
@@ -103,7 +103,7 @@ namespace ArsLexis
         operator FormType* ()
         {return form_;}
         
-        Boolean visible() const
+        bool visible() const
         {return FrmVisible(form_);}
         
         void bounds(Rectangle& out) const

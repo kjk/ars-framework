@@ -118,23 +118,27 @@ namespace ArsLexis
             error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
             if (!error)
                 error=socket_.connect(*address_, transferTimeout());
-            if (!error || netErrWouldBlock==error)
+            if (netErrWouldBlock==error)
+                error=errNone;
+            if (!error)
             {
                 registerEvent(SocketSelector::eventException);
                 registerEvent(SocketSelector::eventWrite);
             }
-            else 
-                handleError(error);
         }
-        else
+        if (error)
             handleError(error);
     }
 
     void SocketConnection::notifyException()
     {
         Err error=socketStatus();
-        if (error!=errNone)
-            abortConnection();
+        if (errNone==error)
+        {
+            assert(false);
+            error=netErrTimeout;
+        }
+        handleError(error);
     }
 
     Err SocketConnection::socketStatus() const

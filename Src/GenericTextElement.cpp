@@ -182,3 +182,9 @@ void GenericTextElement::performAction(Definition& definition)
             handler->handleHyperlink(hyperlink_->resource, hyperlink_->type);
     }
 }
+
+void GenericTextElement::toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+{
+    appendTo.append(text(), from, (to==elementCompletedProgress?text().npos:to));
+}
+

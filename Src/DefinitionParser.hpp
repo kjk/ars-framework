@@ -2,7 +2,7 @@
 #define __DEFINITION_PARSER_HPP__
 
 #include "Debug.hpp"
-#include "RenderingPreferences.hpp"
+#include "FieldPayloadProtocolCOnnection.hpp"
 #include "Definition.hpp"
 #include "HTMLCharacterEntityReferenceDecoder.hpp"
 #include <list>
@@ -25,7 +25,7 @@ class ListNumberElement;
  * When all data is received @c parseIncrement(true) should be called to parse all the
  * remeining lines.
  */
-class DefinitionParser
+class DefinitionParser: public ArsLexis::FieldPayloadProtocolConnection::PayloadHandler
 {
     bool openEmphasize_;
     bool openStrong_;
@@ -109,7 +109,7 @@ class DefinitionParser
     void manageListNesting(const ArsLexis::String& newNesting);
     
     Definition definition_;
-    const ArsLexis::String& text_;
+    const ArsLexis::String* text_;
     uint_t parsePosition_;
     uint_t lineEnd_;
     uint_t lastElementStart_;
@@ -166,9 +166,15 @@ class DefinitionParser
     
 public:
 
-    DefinitionParser(const ArsLexis::String& text, uint_t initialOffset=0);
+    DefinitionParser();
+    
+    void initialize(const ArsLexis::String& text, uint_t startOffset)
+    {
+        text_=&text;
+        parsePosition_=startOffset;
+    }
 
-    void parseIncrement(uint_t end, bool finish=false);
+    Err handleIncrement(uint_t end, bool finish=false);
     
     void updateDefinition(Definition& definition);
     

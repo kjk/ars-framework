@@ -113,7 +113,7 @@ namespace ArsLexis
         setRequest(request);
     }
     
-    void ResolverConnection::finalize()
+    Err ResolverConnection::notifyFinished()
     {
         Err error=errNone;
         const char* data=response().data();
@@ -174,9 +174,8 @@ namespace ArsLexis
             }                        
         }
         if (!error)
-            SimpleSocketConnection::finalize();
-        else
-            handleError(error);            
+            error=SimpleSocketConnection::notifyFinished();
+        return error;
     }
     
     String ResolverConnection::decodeName(const char*& data)

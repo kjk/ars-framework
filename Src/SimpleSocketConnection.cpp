@@ -37,9 +37,10 @@ namespace ArsLexis
             }
             else
                 registerEvent(SocketSelector::eventWrite);                
-            reportProgress();
+            error=notifyProgress();
         }
-        else
+        
+        if (error)
             handleError(error);
     }
     
@@ -48,35 +49,36 @@ namespace ArsLexis
         assert(!sending_);
         UInt16 dataSize=0;
         UInt16 responseSize=response_.size();
+        Err error=errNone;
+        bool finished=false;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             response_.resize(responseSize+chunkSize_);
-            Err error=socket_.receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout());
+            error=socket_.receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout());
             if (!error)
             {
                 assert(dataSize<=chunkSize_);
                 response_.resize(responseSize+dataSize);
                 if (0==dataSize)
-                    finalize();
+                {   
+                    finished=true;
+                    error=notifyFinished();
+                }
                 else
                 {
                     registerEvent(SocketSelector::eventException);
                     registerEvent(SocketSelector::eventRead);
-                    reportProgress();
+                    error=notifyProgress();
                 }
             }
-            else
-                handleError(error);
         }
         else
-            handleError(netErrBufTooSmall);                
+            error=sockConnErrResponseTooLong;                
+            
+        if (error)
+            handleError(error);
+        else if (finished)
+            abortConnection();
     }
         
-    void SimpleSocketConnection::notifyException()
-    {
-        Err error=socketStatus();
-        assert(error!=errNone);
-        handleError(error);
-    }
-
 }

@@ -18,6 +18,11 @@ public:
     void render(RenderingContext& rc)
     {calculateOrRender(rc, true);}
 
+    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+    {
+        appendTo.append(1, '\n');
+    }
+
 };
 
 #endif

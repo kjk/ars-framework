@@ -24,6 +24,8 @@ class iPediaApplication: public ArsLexis::Application
     iPediaHyperlinkHandler hyperlinkHandler_;
     ArsLexis::Resolver* resolver_;
     
+    ArsLexis::String termList_;
+        
     void detectViewer();
 
 protected:
@@ -35,6 +37,8 @@ protected:
     void waitForEvent(EventType& event);
     
     ArsLexis::Form* createForm(UInt16 formId);
+
+    bool handleApplicationEvent(EventType& event);
     
 public:
 
@@ -63,19 +67,16 @@ public:
         RenderingPreferences renderingPreferences;
         
         enum {cookieLength=32};
-        char cookie[cookieLength+1]; // Don't use String in any code that may run with non-global lauch code!
+        ArsLexis::String cookie;
         
         enum {serialNumberLength=32};
-        char serialNumber[serialNumberLength+1];
+        ArsLexis::String serialNumber;
         
         bool serialNumberRegistered;
         
         Preferences():
             serialNumberRegistered(false)
-        {
-            MemSet(cookie, sizeof(cookie), 0);
-            MemSet(serialNumber, sizeof(serialNumber), 0);
-        }
+        {}
 
     };
     
@@ -88,14 +89,27 @@ public:
     const RenderingPreferences& renderingPreferences() const
     {return preferences().renderingPreferences;}
     
-    enum Error
-    {
-        errMalformedResponse=Application::errFirstAvailable,
-        errFirstAvailable
-    };
-    
     const ArsLexis::DIA_Support& diaSupport() const
     {return diaSupport_;}
+    
+    enum Event
+    {
+        appDisplayAlertEvent=appFirstAvailableEvent,
+        appFirstAvailableEvent
+    };
+    
+    struct DisplayAlertEventData
+    {
+        UInt16 alertId;
+    };
+    
+    void setTermList(const ArsLexis::String& termList)
+    {termList_=termList;}
+    
+    const ArsLexis::String& termList() const
+    {return termList_;}
+    
+    void sendDisplayAlertEvent(UInt16 alertId);
     
 private:
     

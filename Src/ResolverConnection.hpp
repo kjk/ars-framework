@@ -36,7 +36,7 @@ namespace ArsLexis
     
         void handleError(Err error);
         
-        void finalize();
+        Err notifyFinished();
     
     public:
 

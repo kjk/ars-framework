@@ -31,6 +31,13 @@ public:
     {return true;}
 
     void calculateLayout(LayoutContext& mc);
+
+    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+    {
+        if (0==from)
+            appendTo.append(1, '\n');
+        GenericTextElement::toText(appendTo, from, to);
+    }
 };
 
 #endif

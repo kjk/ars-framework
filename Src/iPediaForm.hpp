@@ -9,7 +9,7 @@ class iPediaForm: public ArsLexis::Form
 {
 protected:
 
-    Boolean handleEvent(EventType& event);
+    bool handleEvent(EventType& event);
     
     virtual void resize(const ArsLexis::Rectangle& screenBounds)
     {}
