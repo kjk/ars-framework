@@ -88,7 +88,12 @@ namespace ArsLexis {
         Err processHeaderLine(const String& line);
 
         class BodyReader: public Reader {
+        protected:
+        
             HttpConnection& connection_;
+            
+        private:
+        
             uint_t charsRead_;
             
             //! Number of chars to read before we start removing them from start of body.
@@ -102,6 +107,8 @@ namespace ArsLexis {
             bool eof() const
             {return connection_.finished_;}
             
+        protected:            
+            
             void flush();
                 
         public:
@@ -114,7 +121,31 @@ namespace ArsLexis {
             
         };
         
+        class ChunkedBodyReader: public BodyReader {
+            
+            String chunkHeader_;
+            enum State {
+                stateInHeader,
+                stateAfterHeader,
+                stateInBody,
+                stateAfterBodyCr,
+                stateAfterBodyLf
+            } state_;
+            uint_t chunkPosition_;
+            uint_t chunkLength_;
+            
+            status_t parseChunkHeader();
+            
+        public:
+
+            explicit ChunkedBodyReader(HttpConnection& conn);
+
+            status_t read(int& chr);
+            
+        };
+        
         friend class BodyReader;
+        friend class ChunkedBodyReader;
 
         typedef std::auto_ptr<BodyReader> ReaderPtr;
         ReaderPtr reader_;

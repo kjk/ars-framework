@@ -232,8 +232,7 @@ namespace ArsLexis {
     {
         bodyContentsAvailable_=true;
         if (!reader_.get())
-            //! @todo Handle chunkedEncoding_ flag creating ChunkedBodyReader.
-            reader_.reset(new BodyReader(*this));
+            reader_.reset(chunkedEncoding_?new ChunkedBodyReader(*this):new BodyReader(*this));
         return processBodyContents(*reader_);
     }
 
@@ -294,7 +293,7 @@ namespace ArsLexis {
         for (int pos=0; pos<range; pos++)
         {
             int chr;
-            status_t error=BodyReader::read(chr);
+            status_t error=read(chr);
             if (errNone!=error)
                 return error;
             if (npos!=chr)
@@ -336,5 +335,94 @@ namespace ArsLexis {
             return processResponseHeaders(false);
         return errNone;
     }
+
+    HttpConnection::ChunkedBodyReader::ChunkedBodyReader(HttpConnection& conn):
+        BodyReader(conn),
+        state_(stateInHeader),
+        chunkPosition_(0),
+        chunkLength_(0)
+    {}
+
+    status_t HttpConnection::ChunkedBodyReader::read(int& chr) 
+    {
+        status_t error;
+        int c;
+        if (stateAfterBodyCr==state_)
+        {
+            error=BodyReader::read(c);
+            if (errNone!=error)
+                return error;
+            if ('\r'!=c)
+                return SocketConnection::errResponseMalformed;
+            state_=stateAfterBodyLf;
+        }
+        if (stateAfterBodyLf==state_)
+        {
+            error=BodyReader::read(c);
+            if (errNone!=error)
+                return error;
+            if ('\n'!=c)
+                return SocketConnection::errResponseMalformed;
+            state_=stateInHeader;
+            chunkHeader_.clear();
+        }
+        if (stateInHeader==state_)
+        {
+            while (stateInHeader==state_)
+            {
+                error=BodyReader::read(c);
+                if (errNone!=error)
+                    return error;
+                if (npos==c)
+                    return SocketConnection::errResponseMalformed;
+                if ('\r'==c)
+                {
+                    state_=stateAfterHeader;
+                    error=parseChunkHeader();
+                    if (errNone!=error)
+                        return error;
+                    chunkPosition_=0;
+                }
+                else
+                    chunkHeader_.append(1, c);
+            }
+        }
+        if (stateAfterHeader==state_)
+        {
+            error=BodyReader::read(c);
+            if (errNone!=error)
+                return error;
+            if ('\n'!=c)
+                return SocketConnection::errResponseMalformed;
+            state_=stateInBody;
+        }
+        assert(stateInBody==state_);
+        if (0==chunkLength_)
+        {
+            flush();
+            connection_.insideResponseBody_=false;
+            chr=npos;
+            return errNone;
+        }
+        assert(chunkPosition_<chunkLength_);
+        error=BodyReader::read(chr);
+        if (errNone!=error)
+            return error;
+        if (++chunkPosition_==chunkLength_)
+            state_=stateAfterBodyCr;
+        return errNone;
+    }   
+    
+    status_t HttpConnection::ChunkedBodyReader::parseChunkHeader()
+    {
+        String::size_type end=chunkHeader_.find(';');
+        if (chunkHeader_.npos==end)
+            end=chunkHeader_.length();
+        long val;
+        status_t error=numericValue(chunkHeader_.data(), chunkHeader_.data()+end, val, 16);        if (errNone!=error)
+            return SocketConnection::errResponseMalformed;
+        chunkLength_=val;
+        return errNone;
+    }   
     
 }
