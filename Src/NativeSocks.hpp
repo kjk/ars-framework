@@ -21,6 +21,8 @@ namespace ArsLexis
     typedef NetSocketLingerType NativeSocketLinger_t;
     typedef NetSocketAddrEnum NativeSockAddrFamily_t;
     typedef NetSocketTypeEnum NativeSocketType_t;
+    
+    const NativeSocket_t invalidSock = -1;
     const NetSocketAddrEnum socketAddrINET = netSocketAddrINET;
     const NetSocketTypeEnum socketTypeStream = netSocketTypeStream;
     const NetSocketOptLevelEnum socketOptLevelSocket  = netSocketOptLevelSocket;
@@ -40,7 +42,8 @@ namespace ArsLexis
     typedef SOCKET NativeSocket_t;
     typedef int NativeSockAddrFamily_t;
     typedef int NativeSocketType_t;
-
+    
+    const NativeSocket_t invalidSock = INVALID_SOCKET;
     const short socketTypeStream = SOCK_STREAM;
     const short socketAddrINET = AF_INET;
     const int socketOptSockLinger = SO_LINGER;

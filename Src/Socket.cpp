@@ -30,6 +30,7 @@ namespace ArsLexis
         assert(!socket_);
         status_t error;
         socket_= netLib_.socketOpen(domain, type, protocol, timeout, error);
+        //Shouldn't be here socket_!=-1
         assert(error || (socket_!=0));
         return error;
     }
