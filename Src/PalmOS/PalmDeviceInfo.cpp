@@ -15,18 +15,17 @@
 namespace ArsLexis
 {
 
+// "PL" tag
 static status_t getPlatform(String& out)
 {
     out.append("Palm");
     return errNone;
 }
 
+// "HN" tag - handspring serial number, seems to be unique (at least on Treo 600)
 static status_t getHsSerialNum(String& out)
 {
     char  versionStr[hsVersionStringSize];
-
-    if (!isTreo600())
-        return sysErrNotAllowed;
 
     MemSet (versionStr, hsVersionStringSize, 0);
     if (HsGetVersionString (hsVerStrSerialNo, versionStr, NULL) != errNone)
@@ -39,7 +38,8 @@ static status_t getHsSerialNum(String& out)
     return errNone;
 }
 
-
+// "SN" tag, doesn't seem to be available (at least not on Treo600). On simulator
+// it's "SERIAL NUMBER"
 status_t getDeviceSerialNumber(String& out)
 {
     char* data;
@@ -55,6 +55,7 @@ status_t getDeviceSerialNumber(String& out)
     return error;
 }
 
+// "OC" tag
 status_t getOEMCompanyId(String& out)
 {
     UInt32  id;
@@ -68,6 +69,7 @@ status_t getOEMCompanyId(String& out)
     return error;
 }
 
+// "OD" tag
 status_t getOEMDeviceId(String& out)
 {
     UInt32  id;
@@ -81,6 +83,7 @@ status_t getOEMDeviceId(String& out)
     return error;
 }
 
+// "HN" tag
 status_t getHotSyncName(String& out)
 {
     char  nameBuffer[dlkUserNameBufSize];
@@ -96,6 +99,7 @@ status_t getHotSyncName(String& out)
     return error;
 }
 
+// "PN" tag, should be unique
 status_t getPhoneNumber(String& out)
 {
     bool libLoaded=false;
