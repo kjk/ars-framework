@@ -403,11 +403,12 @@ char_t* StringCopy(const char_t *curStr)
 }
 
 // note: caller needs to free memory with free
-char_t* StringCopy2(const char_t *curStr)
+char_t* StringCopy2(const char_t *curStr, int len)
 {
     using namespace std;
-    int len = tstrlen(curStr);
-    char_t *newStr = (char_t*) malloc(sizeof(char_t)*(len+1));
+    if (-1 == len)
+        len = tstrlen(curStr);
+    char_t *newStr = (char_t*) malloc( sizeof(char_t)*(len+1) );
     if (NULL==newStr)
         return NULL;
 

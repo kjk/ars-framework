@@ -2,11 +2,12 @@
 #include <SysUtils.hpp>
 #include <Text.hpp>
 
-using ArsLexis::char_t;
+using namespace ArsLexis;
 
 static void *buildDataForEvent(ulong_t eventId, ulong_t magicNumber, ulong_t type, char *eventData, ulong_t dataLen)
 {
-    char* data = (char*)malloc(sizeof(eventId)+sizeof(magicNumber)+sizeof(type)+dataLen);
+    ulong_t l =  sizeof(eventId)+sizeof(magicNumber)+sizeof(type)+dataLen;
+    char* data = (char*)malloc(l);
     if (NULL == data) 
         return NULL;
     void* p = data;
@@ -22,7 +23,19 @@ static void *buildDataForEvent(ulong_t eventId, ulong_t magicNumber, ulong_t typ
 
 void *createExtendedEventText(ulong_t eventId, const char_t* txt, ulong_t length)
 {
-    return buildDataForEvent(eventId, EVT_MAGIC_NUMBER, EXT_EVT_TEXT_TYPE, (char*)txt, sizeof(char_t)*(length+1));
+    ulong_t l = sizeof(length) + (length + 1)*sizeof(char_t);
+    char* data = (char*)malloc(l);
+    if (NULL == data)
+        return NULL;
+    ulong_t* p = (ulong_t*)data;
+    *p = length;
+    data += sizeof(length);
+    MemMove(data, txt, length * sizeof(char_t));
+    data += sizeof(char_t) * length;
+    MemSet(data, sizeof(char_t), 0);
+    void* res = buildDataForEvent(eventId, EVT_MAGIC_NUMBER, EXT_EVT_TEXT_TYPE, (char*)p, l);
+    free(p);
+    return res;
 };
 
 void sendTextEvent(ulong_t eventId, const ArsLexis::char_t *txt)
@@ -74,25 +87,27 @@ ulong_t getExtendedEventType(void *eventData)
     return *typePtr;
 }
 
-char_t *getTextEventDataCopy(void *eventData)
-{
-    assert(EVT_MAGIC_NUMBER == getExtendedEventMagicNumber(eventData));
-    char_t *data = (char_t*)((char*)eventData+sizeof(ulong_t)+sizeof(ulong_t)+sizeof(ulong_t));
-    return ArsLexis::StringCopy2(data);
-}   
-
-char_t *getTextEventDataCopy(EventType *event)
-{
-    void *data = *reinterpret_cast<void**>(&event->data);
-    return getTextEventDataCopy(data);
-}
-
 const char_t* getTextEventData(EventType* event)
 {
     void *eventData = *reinterpret_cast<void**>(&event->data);
     assert(EVT_MAGIC_NUMBER == getExtendedEventMagicNumber(eventData));
-    const char_t *data = (const char_t*)((const char*)eventData+sizeof(ulong_t)+sizeof(ulong_t)+sizeof(ulong_t));
+    const char_t *data = (const char_t*)((const char*)eventData+sizeof(ulong_t)+sizeof(ulong_t)+sizeof(ulong_t) + sizeof(ulong_t));
     return data;
+}
+
+ulong_t getTextEventDataLength(EventType* event)
+{
+    void *eventData = *reinterpret_cast<void**>(&event->data);
+    assert(EVT_MAGIC_NUMBER == getExtendedEventMagicNumber(eventData));
+    const ulong_t* data = (const ulong_t*)((const char*)eventData+sizeof(ulong_t)+sizeof(ulong_t)+sizeof(ulong_t));
+    return *data;
+}
+
+char_t* getTextEventDataCopy(EventType *event, ulong_t& length)
+{
+    length = getTextEventDataLength(event);
+    char_t* p = StringCopy2(getTextEventData(event), length);
+    return p;
 }
 
 void freeExtendedEvent(EventType *event)

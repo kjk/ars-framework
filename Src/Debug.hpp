@@ -112,5 +112,4 @@ inline void operator delete[](void *ptr, const char*, int line)
 # define new new (__FILE__, __LINE__)
 #endif
 
-
 #endif

@@ -150,7 +150,7 @@ namespace ArsLexis
 
     String GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd);
 
-    char_t* StringCopy2(const char_t *curStr);
+    char_t* StringCopy2(const char_t *curStr, int len = -1);
 
     char_t *StringCopy(const char_t *str);
 
