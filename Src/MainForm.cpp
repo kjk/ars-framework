@@ -433,7 +433,12 @@ bool MainForm::handleEvent(EventType& event)
         case iPediaApplication::appLookupProgressEvent:
             update(redrawProgressIndicator);
             break;
-    
+
+        case iPediaApplication::appGetArticlesCountEvent:
+            checkArticleCount();
+            handled = true;
+            break;
+
         case penDownEvent:
             handlePenDown(event);
             break;
@@ -653,8 +658,8 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
             setControlsState(!lookupManager->lookupInProgress());
         }
         if (!checkedArticleCount_ && app.preferences().checkArticleCountAtStartup)
-            checkArticleCount();
-    }        
+            app.sendEvent(iPediaApplication::appGetArticlesCountEvent);
+    }
     return iPediaForm::handleWindowEnter(data);
 }
 
