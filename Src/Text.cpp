@@ -70,12 +70,13 @@ char *Utf16ToStr(const char_t *txt, long txtLen)
 #ifdef _PALM_OS
     return StringCopy2N(txt, txtLen);
 #else
-    uint_t   txtLen = tstrlen(txt);    
+    if (-1 == txtLen)
+        txtLen = tstrlen(txt);    
     char_t * res = malloc(txtLen+1);
     if (NULL == res)
         return NULL;
 
-    for (uint_t i=0; i<txtLen; i++)
+    for (long i=0; i<txtLen; i++)
     {
         res[i] = Utf16ToChar(txt[i]);
     }
@@ -109,11 +110,11 @@ char_t *StrToUtf16(const char *txt, long txtLen)
 #else
     if (-1 == txtLen)
         txtLen = strlen(txt);
-    char_t * res = malloc((txtLen+1)*sizeof(char_t));
+    char_t * res = (char_t*)malloc((txtLen+1)*sizeof(char_t));
     if (NULL == res)
         return NULL;
 
-    for (uint_t i=0; i<txtLen; i++)
+    for (long i=0; i<txtLen; i++)
     {
         res[i] = CharToUtf16(txt[i]);
     }

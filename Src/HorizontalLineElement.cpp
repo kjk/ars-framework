@@ -16,8 +16,14 @@ void HorizontalLineElement::render(RenderingContext& renderingContext)
     
     //const RenderingPreferences::StyleFormatting& format=renderingContext.preferences.styleFormatting(styleDefault);
     //Graphics::ColorSetter setForeColor(renderingContext.graphics, Graphics::colorForeground, format.textColor);
+#if 0
+    // I don't really get this code and it breaks windows
+    // shouldn't it be:
+    //renderingContext.graphics.applyStyle(getStyle(), isHyperlink());
+    //???
     Graphics gr;
     gr.applyStyle(getStyle(), isHyperlink());
+#endif
 
     renderingContext.graphics.drawLine(left+2, top, left+renderingContext.availableWidth()-2, top);
     

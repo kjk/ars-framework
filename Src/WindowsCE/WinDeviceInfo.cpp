@@ -12,8 +12,6 @@
 using ArsLexis::String;
 using ArsLexis::status_t;
 using ArsLexis::char_t;
-using ArsLexis::HexBinEncodeBlob;
-using ArsLexis::hexBinEncode;
 
 static status_t getSystemParameter(String& out, UINT uiAction)
 {
@@ -152,7 +150,7 @@ static void renderDeviceIdentifierToken(String& out, const char_t* prefix, Token
     }
 }
 
-String ArsLexis::deviceInfoToken()
+String deviceInfoToken()
 {
     String out;
     renderDeviceIdentifierToken(out, _T("SN"), getUUID);

@@ -156,7 +156,7 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
     //(handle_, topLeft.x , topLeft.y, text, length);
 }
 
-void Graphics::erase(const ArsLexis::ArsRectangle& rect)
+void Graphics::erase(const ArsRectangle& rect)
 {
     NativeRectangle_t nr=toNative(rect);
     HBRUSH hbr = CreateSolidBrush(GetBkColor(handle_));

@@ -18,7 +18,7 @@ Point& Point::operator=(const NativePoint_t& nativePoint)
     return *this;
 }
 
-ArsRectangle& Rectangle::operator=(const NativeRectangle_t& nativeRect)
+ArsRectangle& ArsRectangle::operator=(const NativeRectangle_t& nativeRect)
 {        
     topLeft=Point(nativeRect.left,nativeRect.top);
     extent=Point(nativeRect.right-nativeRect.left,

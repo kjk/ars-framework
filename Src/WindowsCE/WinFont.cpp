@@ -81,7 +81,7 @@ static HFONT createFont(int dy, LONG weight, bool fUnderline, bool fStrike)
         return stdFont;
 }
 
-HFONT ArsLexis::getFont(int height, FontEffects effects)
+HFONT getFont(int height, FontEffects effects)
 {
     LONG weight = FW_NORMAL;
 

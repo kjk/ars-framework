@@ -7,8 +7,10 @@
 #define MAX_LOGGERS_COUNT 3
 
 enum LoggerType {
+#if defined(_PALM_OS)
     loggerTypeMemo,
     loggerTypeFile,
+#endif
     loggerTypeDebugger
 };
 
@@ -18,12 +20,16 @@ typedef struct LoggerInfoTag {
     // log everything above this threshold
     LogLevel        threshold;
 
+#if defined(_PALM_OS)
     // only for loggerTypeMemo
     DmOpenRef       db;
+#endif
 
     // fileName and file are only for loggerTypeFile
+#if defined(_PALM_OS)
     const char_t *  fileName; 
     HostFILEType *  file;
+#endif
 } LoggerInfo;
 
 typedef struct LoggingGlobalsTag {
@@ -79,7 +85,7 @@ void DeinitLogging()
                 HostFClose(lg->loggers[i].file);
             }
         }
-#endif
+
         if (loggerTypeMemo == lg->loggers[i].type)
         {
 
@@ -89,7 +95,7 @@ void DeinitLogging()
                 lg->loggers[i].db = NULL;
             }
         }
-
+#endif
         if (loggerTypeDebugger == lg->loggers[i].type)
         {
             // do nothing
@@ -205,9 +211,9 @@ static void LogRaw(LoggingGlobals *lg, LogLevel level, char_t *txt)
     {
         if (lg->loggers[i].threshold >= level)
         {
+#if defined(_PALM_OS)
             if (loggerTypeMemo == lg->loggers[i].type)
             {
-#if defined(_PALM_OS)
                 if (0 != lg->loggers[i].db)
                 {
                     // only log if we were able to open a database
@@ -228,16 +234,15 @@ static void LogRaw(LoggingGlobals *lg, LogLevel level, char_t *txt)
                     }
                     DmReleaseRecord(lg->loggers[i].db, index, true);
                 }
-#endif
             }
+
             if (loggerTypeFile == lg->loggers[i].type)
             {
-#if defined(_PALM_OS)
                 assert(lg->loggers[i].file);
                 HostFPutS(txt, lg->loggers[i].file);
                 HostFFlush(lg->loggers[i].file);
-#endif
             }
+#endif
 
             if (loggerTypeDebugger == lg->loggers[i].type)
             {
