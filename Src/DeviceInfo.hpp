@@ -19,7 +19,8 @@ namespace ArsLexis
     Err getPhoneNumber(String& out);
 
     String deviceInfoToken();
-    
+
+    bool isTreo600();    
 }
 
 #endif

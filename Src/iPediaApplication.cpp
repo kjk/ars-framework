@@ -1,6 +1,7 @@
 
 #include "iPediaApplication.hpp"
 #include <SysUtils.hpp>
+#include <DeviceInfo.hpp>
 #include "MainForm.hpp"
 #include "RegistrationForm.hpp"
 #include "SearchResultsForm.hpp"
@@ -86,6 +87,14 @@ Err iPediaApplication::normalLaunch()
 {
     history_=new LookupHistory();
     loadPreferences();
+#ifdef INTERNAL_BUILD
+    // make it easier for me to run the app
+    // if running on Treo 600 set the default server to my server
+    if (isTreo600())
+    {
+        server_ = serverDictPcArslexis;
+    }
+#endif
     gotoForm(mainForm);
     runEventLoop();
     savePreferences();

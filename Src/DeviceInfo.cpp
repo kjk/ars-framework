@@ -55,7 +55,6 @@ namespace ArsLexis
         return error;
     }
 
-
     Err getHotSyncName(String& out)
     {
         char  nameBuffer[dlkUserNameBufSize];
@@ -143,6 +142,23 @@ namespace ArsLexis
         renderDeviceIdentifierToken(out, "OC", getOEMCompanyId);
         renderDeviceIdentifierToken(out, "OD", getOEMDeviceId);
         return out;
+    }
+
+
+    // return true if running on real Treo 600 device
+    bool isTreo600()
+    {
+        UInt32 id;
+
+        FtrGet(sysFtrCreator, sysFtrNumOEMCompanyID, &id);
+        if (id != 'hspr')
+            return false;
+
+        FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
+        if (id != 'H101')
+            return false;
+
+        return true;
     }
 
 }
