@@ -10,7 +10,7 @@
 using ArsLexis::String;
 using ArsLexis::isWhitespace;
 
-DefinitionParser::DefinitionParser():
+DefinitionParser::DefinitionParser(const String& text):
     openEmphasize_(false),
     openStrong_(false),
     openVeryStrong_(false),
@@ -19,6 +19,7 @@ DefinitionParser::DefinitionParser():
     openStrikeout_(0),
     openUnderline_(0),
     openNowiki_(0),
+    text_(text),
     parsePosition_(0),
     lineEnd_(0),
     lastElementStart_(0),
@@ -82,36 +83,6 @@ void DefinitionParser::applyCurrentFormatting(FormattedTextElement* element)
         formatting.setStrikeOut(true);
     if (openUnderline_)
         formatting.setUnderline(true);
-}
-
-void DefinitionParser::reset()
-{
-    openEmphasize_=false;
-    openStrong_=false;
-    openVeryStrong_=false;
-    openTypewriter_=0;
-    openSmall_=0;
-    openStrikeout_=0;
-    openUnderline_=0;
-    openNowiki_=0;
-    parsePosition_=0;
-    lineEnd_=0;
-    lineType_=emptyLine;
-    previousLineType_=emptyLine;
-    lastElementStart_=0;
-    lastElementEnd_=0;
-    unnamedLinksCount_=0;
-    text_.clear();
-}
-    
-    
-void DefinitionParser::parse(const String& text, Definition& definition)
-{
-    text_=text;
-    parse();
-    definition.swap(definition_);
-    definition_.clear();
-    reset();
 }
 
 static const char entityReferenceStart='&';
@@ -446,44 +417,49 @@ void DefinitionParser::appendElement(DefinitionElement* element)
     definition_.appendElement(element);
 }
 
-void DefinitionParser::detectLineType()
+bool DefinitionParser::detectNextLine(bool finish)
 {
     String::size_type end=text_.find('\n', parsePosition_);
-    lineEnd_=(text_.npos==end?text_.length():end);
-    
-    lineType_=textLine;
-    if (0==openNowiki_)
+    bool goOn=(text_.npos!=end);
+    if (finish || goOn)
     {
-        if (lineEnd_==parsePosition_)
-            lineType_=emptyLine;
-        else {
-            switch (text_[parsePosition_])
-            {
-                case indentLineChar:
-                    lineType_=indentedLine;
-                    break;
+        previousLineType_=lineType_;
+        lineEnd_=(text_.npos==end?text_.length():end);
+        lineType_=textLine;
+        if (0==openNowiki_)
+        {
+            if (lineEnd_==parsePosition_)
+                lineType_=emptyLine;
+            else {
+                switch (text_[parsePosition_])
+                {
+                    case indentLineChar:
+                        lineType_=indentedLine;
+                        break;
+                        
+                    case bulletChar:
+                    case numberedListChar:
+                        lineType_=listElementLine;
+                        break;
                     
-                case bulletChar:
-                case numberedListChar:
-                    lineType_=listElementLine;
-                    break;
-                
-                case definitionListChar:
-                    lineType_=definitionListLine;
-                    break;
-                
-                case headerChar:
-                    if (text_.find(sectionString, parsePosition_)==parsePosition_)
-                        lineType_=headerLine;
-                    break;
+                    case definitionListChar:
+                        lineType_=definitionListLine;
+                        break;
                     
-                case horizontalLineChar:
-                    if (text_.find(horizontalLineString, parsePosition_)==parsePosition_)
-                        lineType_=horizontalBreakLine;
-                    break;
-            }       
+                    case headerChar:
+                        if (text_.find(sectionString, parsePosition_)==parsePosition_)
+                            lineType_=headerLine;
+                        break;
+                        
+                    case horizontalLineChar:
+                        if (text_.find(horizontalLineString, parsePosition_)==parsePosition_)
+                            lineType_=horizontalBreakLine;
+                        break;
+                }       
+            }
         }
     }
+    return goOn;
 }
 
 void DefinitionParser::parseTextLine()
@@ -497,56 +473,62 @@ void DefinitionParser::parseTextLine()
     parseText(lineEnd_, styleDefault);                
 }
 
-void DefinitionParser::parse()
+void DefinitionParser::parseIncrement(bool finish)
 {
-    previousLineType_=lineType_;
-    while (parsePosition_<text_.length())
+    bool goOn=false;
+    do 
     {
-        detectLineType();
-
-        if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ && listElementLine!=previousLineType_)
-            popParent(); 
-            
-        if (listElementLine==previousLineType_ && listElementLine!=lineType_)
-            manageListNesting(String());
-            
-        switch (lineType_)
+        goOn=detectNextLine(finish);
+        if (goOn)
         {
-            case headerLine:
-                parseHeaderLine();
-                break;
+            if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ && listElementLine!=previousLineType_)
+                popParent(); 
                 
-            case textLine:
-                parseTextLine();
-                break;                    
-            
-            case horizontalBreakLine:
-                appendElement(new HorizontalLineElement());
-                break;
+            if (listElementLine==previousLineType_ && listElementLine!=lineType_)
+                manageListNesting(String());
                 
-            case emptyLine:
-                appendElement(new LineBreakElement());
-                break;
+            switch (lineType_)
+            {
+                case headerLine:
+                    parseHeaderLine();
+                    break;
+                    
+                case textLine:
+                    parseTextLine();
+                    break;                    
                 
-            case listElementLine:
-                parseListElementLine();
-                break;
-                
-            case indentedLine:
-                parseIndentedLine();
-                break;
-                
-            case definitionListLine:
-                parseDefinitionListLine();
-                break;
-                
-            default:
-                assert(false);        
+                case horizontalBreakLine:
+                    appendElement(new HorizontalLineElement());
+                    break;
+                    
+                case emptyLine:
+                    appendElement(new LineBreakElement());
+                    break;
+                    
+                case listElementLine:
+                    parseListElementLine();
+                    break;
+                    
+                case indentedLine:
+                    parseIndentedLine();
+                    break;
+                    
+                case definitionListLine:
+                    parseDefinitionListLine();
+                    break;
+                    
+                default:
+                    assert(false);        
+            }
+            parsePosition_=lineEnd_+1;
         }
-        parsePosition_=lineEnd_+1;
-        previousLineType_=lineType_;
-    }
+    } while (goOn);
 }
+
+void DefinitionParser::updateDefinition(Definition& definition)
+{
+    assert(parsePosition_>=text_.length()); // This should generally happen after parsing is finished...
+    std::swap(definition, definition_); }
 
 //! @todo Add header indexing
 void DefinitionParser::parseHeaderLine()

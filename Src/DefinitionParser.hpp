@@ -100,7 +100,7 @@ class DefinitionParser
     void manageListNesting(const ArsLexis::String& newNesting);
     
     Definition definition_;
-    ArsLexis::String text_;
+    const ArsLexis::String& text_;
     UInt16 parsePosition_;
     UInt16 lineEnd_;
     UInt16 lastElementStart_;
@@ -149,7 +149,7 @@ class DefinitionParser
     
     void parseListElementLine();
     
-    void detectLineType();
+    bool detectNextLine(bool finish);
     
     Boolean detectHTMLTag(UInt16 textEnd);
     
@@ -161,9 +161,11 @@ class DefinitionParser
     
 public:
 
-    DefinitionParser();
+    DefinitionParser(const ArsLexis::String& text);
+
+    void parseIncrement(bool finish=false);
     
-    void parse(const ArsLexis::String& text, Definition& definition);
+    void updateDefinition(Definition& definition);
     
     ~DefinitionParser();
 

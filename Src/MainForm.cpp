@@ -191,8 +191,9 @@ Err MainForm::initialize()
 "* [http://www.infinityplus.co.uk/index.htm Infinity Plus: Online new works in sci-fi, fantasy and horror]\n"
 "* [http://greatsfandf.com/ Great Science-Fiction & Fantasy Works]: an attempt to extract the more literate authors and works from the morass.\n"
     );        
-        DefinitionParser parser;
-        parser.parse(text, definition_);                
+        DefinitionParser parser(text);
+        parser.parseIncrement(true);
+        parser.updateDefinition(definition_);
     }
     return error;
 }
@@ -223,7 +224,8 @@ void MainForm::handleControlSelect(const ctlSelect& data)
         assert(manager);
         SimpleSocketConnection* connection=new SimpleSocketConnection(*manager);
         connection->setTransferTimeout(app.ticksPerSecond()*15L);
-        error=connection->open(INetSocketAddress(0xcf2c860b, 80), "GET / HTTP/1.0\r\n\r\n");
+//        error=connection->open(INetSocketAddress(0xcf2c860b, 80), "GET / HTTP/1.0\r\n\r\n");
+        error=connection->open(INetSocketAddress(0x7f000001, 9000), "Term: Science fiction\r\n");
         if (!(errNone==error || netErrWouldBlock==error))
             delete connection;
     }
