@@ -20,6 +20,9 @@ namespace ArsLexis
         
         void updateForm(Graphics& graphics);
         
+        void doUpdateScrollbar();
+        
+        bool handleMouseEvent(const EventType& event);
         
     public:
  
@@ -82,6 +85,10 @@ namespace ArsLexis
         void drawProxy();
 
         void handleDraw(Graphics& graphics);
+        
+        bool handleEvent(EventType& event);
+        
+        bool handleEnter(const EventType& event);
         
     private:
         

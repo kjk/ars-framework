@@ -13,7 +13,14 @@ TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* s
     drawingWindowIsOffscreen_(false),
     lastRenderingError_(errNone),
     renderingErrorListener_(NULL)
-{}
+{
+    definition_.setInteractionBehavior(  
+        Definition::behavMouseSelection 
+        | Definition::behavUpDownScroll 
+        | Definition::behavHyperlinkNavigation 
+        | Definition::behavDoubleClickSelection
+    );
+}
 
 TextRenderer::~TextRenderer() {
     if (NULL != drawingWindow_ && drawingWindowIsOffscreen_)
@@ -36,7 +43,7 @@ void TextRenderer::checkDrawingWindow()
     }
     if (NULL == drawingWindow_)
     {
-        assert(drawingWindowIsOffscreen_);
+        assert(!drawingWindowIsOffscreen_);
         drawingWindow_ = form->windowHandle();
         drawingWindowBounds_ = bounds;
         Err error;
@@ -75,9 +82,12 @@ void TextRenderer::drawProxy()
         Graphics graphics(drawingWindow_);
         ActivateGraphics activate(graphics);
         handleDraw(graphics);
-        updateForm(graphics);
+        if (errNone == lastRenderingError_)
+            updateForm(graphics);
     }
-    if (errNone != lastRenderingError_ && NULL != renderingErrorListener_)
+    if (errNone == lastRenderingError_ && NULL != scrollBar_)
+        doUpdateScrollbar();
+   if (errNone != lastRenderingError_ && NULL != renderingErrorListener_)
         renderingErrorListener_->handleRenderingError(*this, lastRenderingError_);
 }
 
@@ -100,9 +110,67 @@ void TextRenderer::scroll(WinDirectionType direction, uint_t items, ScrollbarUpd
     {
         Graphics graphics(drawingWindow_);
         ActivateGraphics activate(graphics);
-        definition_.scroll(graphics, renderingPreferences_, i); 
-        updateForm(graphics);
+        definition_.scroll(graphics, renderingPreferences_, i);
+        if (errNone == lastRenderingError_)
+            updateForm(graphics);
     }
+    if (errNone == lastRenderingError_ && updateScrollbar == update && NULL != scrollBar_)
+        doUpdateScrollbar();
     if (errNone != lastRenderingError_ && NULL != renderingErrorListener_)
         renderingErrorListener_->handleRenderingError(*this, lastRenderingError_);
 }
+
+void TextRenderer::doUpdateScrollbar() 
+{
+    assert(NULL != scrollBar_);
+    if (visibleLinesCount() == linesCount())
+        scrollBar_->hide();
+    else
+    {
+        uint_t visible = visibleLinesCount();
+        uint_t total = linesCount();
+        uint_t top = topLine();
+        scrollBar_->setPosition(top, 0, total - visible, visible);
+        scrollBar_->show();
+        scrollBar_->draw();
+    }    
+}
+
+
+bool TextRenderer::handleEvent(EventType& event) 
+{
+    bool handled = false;
+    switch (event.eType)
+    {
+        case penMoveEvent:
+        case penUpEvent:
+            handled = handleMouseEvent(event);
+            break;
+            
+        default:
+            handled = FormGadget::handleEvent(event);
+    }
+    return handled;
+}
+
+bool TextRenderer::handleEnter(const EventType& event)
+{
+    return handleMouseEvent(event);
+}
+
+bool TextRenderer::handleMouseEvent(const EventType& event)
+{
+    UInt16 tapCount = 0;
+    Point p(event.screenX, event.screenY);
+    if (penUpEvent == event.eType)
+        tapCount = event.tapCount;
+    checkDrawingWindow();
+    Graphics graphics(drawingWindow_);
+    ActivateGraphics activate(graphics);
+    bool handled = definition_.extendSelection(graphics, renderingPreferences_, p, tapCount);
+    updateForm(graphics);
+    if (NULL != scrollBar_)
+        doUpdateScrollbar();
+    return handled;
+}
+
