@@ -16,10 +16,6 @@ namespace ArsLexis
     typedef int NativeGraphicsState_t;
     typedef WinFont NativeFont_t;
     
-    
-    
-
-
     class Graphics: private NonCopyable
     {
         struct StackElement

@@ -184,33 +184,39 @@ namespace ArsLexis
         return ptm.tmDescent;
     }
 
+    // given a string text, determines how many characters of this string can
+    // be displayed in a given width. If text is bigger than width, a line
+    // break will be on newline, tab or a space.
+    // Mimics Palm OS function FntWordWrap()
     uint_t Graphics::wordWrap(const char_t* text, uint_t width)
     {
-        //return FntWordWrap(text, width);
-        int len;
-        SIZE size;
-        GetTextExtentExPoint(handle_, text, _tcslen(text),
-            width, &len, NULL, &size);
-        //length = len;
-        width = size.cx;
-		int textLen = (int)_tcslen(text);
-        if(textLen==len)
+        int     len;
+        SIZE    size;
+        int     textLen = tstrlen(text);
+
+        GetTextExtentExPoint(handle_, text, textLen, width, &len, NULL, &size);
+        if (len==textLen)
             return len;
-        bool found=false;
-        for(int i=len;(i>0)&&(!found);i--)
-        {
-            if ((text[i]==TCHAR(' '))||
-                (text[i]==TCHAR('\t'))||
-                (text[i]==TCHAR('\n'))
+
+        // the string is too big so try to find a line-breaking spot
+        int curPos = len;
+        while (curPos>0) // we don't want to break at first character
+        {            
+            if ((text[curPos]==_T(' '))  ||
+                (text[curPos]==_T('\t')) ||
+                (text[curPos]==_T('\n'))
                ) 
-                 return i+1;
+            {
+                return curPos;
+            }
+            --curPos;
         }
+        // we didn't find a line-breaking spot, so return everything that'll fit
         return len;
     }
 
     uint_t Graphics::textWidth(const char_t* text, uint_t length)
     {
-        //return FntCharsWidth(text, length);
         SIZE size;
         GetTextExtentPoint(handle_, text, length, &size);
         return size.cx;
@@ -218,13 +224,10 @@ namespace ArsLexis
     
     void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
     {
-        int len;
-        SIZE size;
-        //Boolean dontMind;
-        //FntCharsInWidth(text, &w, &len, &dontMind);
-        GetTextExtentExPoint(handle_, text, length, width, 
-                &len, NULL, &size ); 
-        length=len;
+        int   len;
+        SIZE  size;
+        GetTextExtentExPoint(handle_, text, length, width, &len, NULL, &size ); 
+        length = len;
         width = size.cx;
     }
 

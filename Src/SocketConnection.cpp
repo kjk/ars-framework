@@ -278,12 +278,18 @@ namespace ArsLexis
 
 
     status_t SocketConnection::notifyWritable()
-    {return errNone;}
+    {
+        return errNone;
+    }
         
     status_t SocketConnection::notifyReadable()
-    {return errNone;}
+    {
+        return errNone;
+    }
         
     void SocketConnection::handleError(status_t)
-    {abortConnection();}
+    {
+        abortConnection();
+    }
         
 }

@@ -44,7 +44,7 @@ namespace ArsLexis
     status_t NetLibrary::getHostByName(const char_t* name, HostInfoBuffer& buffer, long timeout)
     {
         status_t error=0;
-        char* sbcsname = new char[_tcslen(name)+1];
+        char* sbcsname = new char[tstrlen(name)+1];
         sprintf( sbcsname , "%ls", name);
         struct hostent * hinfo = gethostbyname(sbcsname);
         delete [] sbcsname;
@@ -60,7 +60,7 @@ namespace ArsLexis
         status_t error=0;
         IPAddr ip;
         
-        char* sbcsaddr = new char[_tcslen(addr)+1];
+        char* sbcsaddr = new char[tstrlen(addr)+1];
         sprintf( sbcsaddr, "%ls", addr);
         ip.ip= inet_addr(sbcsaddr);
         delete [] sbcsaddr;

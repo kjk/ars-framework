@@ -4,13 +4,14 @@
 
 #include "WinFont.h"
 
-
 WinFont::WinFont()
 {
     LOGFONT logfnt;
     HFONT   fnt=(HFONT)GetStockObject(SYSTEM_FONT);
     GetObject(fnt, sizeof(logfnt), &logfnt);
-    logfnt.lfHeight+=1;
+    logfnt.lfHeight += 1;
+	// do I need 2003 for this to work?
+    // logfnt.lfQuality = CLEARTYPE_QUALITY;
     int fontDy = logfnt.lfHeight;
     HFONT fnt2=(HFONT)CreateFontIndirect(&logfnt);
     this->fntWrapper = new FontWrapper(fnt2);
