@@ -3,6 +3,7 @@
 
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
+#include <Utility.hpp>
 
 // Defines a public, abstract interface for a class that provides
 // input for XmlPullParser. We use our own abstraction, instead of using
@@ -10,7 +11,7 @@
 // provide good Palm implementation
 namespace ArsLexis {
 
-    class Reader
+    class Reader: public NonCopyable
     {
     public:
     

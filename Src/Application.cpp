@@ -3,8 +3,8 @@
 #include <memory>
 
 #if defined(__MWERKS__)
-//# pragma inline_depth(100)
-//# pragma inline_bottom_up on
+# pragma inline_depth(100)
+# pragma inline_bottom_up on
 #endif
 
 
@@ -234,7 +234,8 @@ namespace ArsLexis
     {
         EvtGetEvent(&event, eventTimeout_);
     }
-    
+
+/*    
     UInt32 Application::creator()
     {
         UInt16 cardNo;
@@ -246,10 +247,12 @@ namespace ArsLexis
         assert(errNone==error);
         return creatorId;
     }
+*/
 
     Application& Application::instance()
     {
-        Application* app=getInstance(creator());
+        UInt32 crId;
+        Application* app=getInstance(crId=creator());
         assert(app!=0); \
         return  *app;\
     }

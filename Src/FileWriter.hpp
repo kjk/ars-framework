@@ -11,7 +11,7 @@ namespace ArsLexis {
 #if defined(_PALM_OS)
         typedef FileHand FileHandle_t;
         enum {invalidFileHandle=0};
-#elif define(_WIN32)
+#elif defined(_WIN32)
         typedef HANDLE FileHandle_t;
         enum {invalidFileHandle=INVALID_HANDLE_VALUE};
 #else
@@ -30,7 +30,7 @@ namespace ArsLexis {
 
         status_t open(const char_t* name, ulong_t openMode=fileModeReadWrite, ulong_t type=0, ulong_t creator=0, uint_t cardNo=0);
         
-#elif define(_WIN32)
+#elif defined(_WIN32)
 
         //! @todo Transform parameter names into human-readable form. 
         //! @note If all the parameters except fileName will have sensible default values then it'll be possible to use the same call to open() on both platforms.
@@ -54,7 +54,7 @@ namespace ArsLexis {
         status_t flush();
         
         bool isOpen() const
-        {return static_cast<FileHandle_t>(invalidFileHandle)!=handle_;}
+        {return reinterpret_cast<FileHandle_t>(invalidFileHandle)!=handle_;}
 
         ~FileWriter();    
 

@@ -359,20 +359,11 @@ namespace ArsLexis
  * @note remember not to put semicolon after this macro, otherwise you'll get some pretty misleading error message.
  * @param creatorId application creator id. In most apps this would be stationery-generated @c appFileCreator.
  */
-#define IMPLEMENT_APPLICATION_INSTANCE(creatorId) \
-
-/*
+#define IMPLEMENT_APPLICATION_CREATOR(creatorId) \
 namespace ArsLexis { \
-    Application& Application::instance() { \
-        Application* app=getInstance((creatorId)); \
-        assert(app!=0); \
-        return  *app;\
-    } \
-    \
     UInt32 Application::creator() {\
         return (creatorId); \
     }\
 } 
-*/
 
 #endif

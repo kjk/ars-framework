@@ -9,7 +9,7 @@
 namespace ArsLexis {
 
     FileWriter::FileWriter():
-        handle_(static_cast<FileHandle_t>(invalidFileHandle))
+        handle_(reinterpret_cast<FileHandle_t>(invalidFileHandle))
     {}
 
     FileWriter::~FileWriter()
@@ -25,7 +25,7 @@ namespace ArsLexis {
         status_t error=FileClose(handle_);
         if (errNone!=error)
             FileClearerr(handle_);
-        handle_=static_cast<FileHandle_t>(invalidFileHandle);
+        handle_=reinterpret_cast<FileHandle_t>(invalidFileHandle);
         return error;
     }
     
@@ -76,7 +76,7 @@ namespace ArsLexis {
         if (errNone!=error)
         {
             FileClearerr(handle_);
-            handle_=static_cast<FileHandle_t>(invalidFileHandle);
+            handle_=reinterpret_cast<FileHandle_t>(invalidFileHandle);
         }
         return error;
     }

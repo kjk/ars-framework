@@ -4,6 +4,7 @@
 #ifdef __MWERKS__
 # pragma pcrelconstdata on
 # pragma far_code
+# pragma inline_bottom_up on
 #endif
 
 namespace ArsLexis {

@@ -1,7 +1,8 @@
 #include <Text.hpp>
 
 #ifdef __MWERKS__
-#pragma pcrelconstdata on
+# pragma pcrelconstdata on
+# pragma inline_bottom_up on
 #endif
 
 namespace ArsLexis 
@@ -146,7 +147,7 @@ void ArsLexis::urlEncode(ArsLexis::String& out, const ArsLexis::String& in)
 {
     const char_t* begin=in.data();
     const char_t* end=begin+in.length();
-    out.clear();
+    out.resize(0);
     out.reserve(in.length());
     while (begin!=end)
     {        
