@@ -28,6 +28,17 @@ UInt32 DynStrLen(DynStr *dstr)
     return dstr->strLen;
 }
 
+/* returns how much data do we have left in the buffer.
+   that's how much data we can add to the string without re-allocating it */
+static UInt32 DynStrLeft(DynStr *dstr)
+{
+    if (0 == dstr->bufSize)
+        return 0;
+
+    assert( dstr->bufSize - dstr->strLen >= 1 );
+    return dstr->bufSize - dstr->strLen - 1;
+}
+
 // truncate the string (remove everything after len characters)
 // In extreme case len is 0 and we clear the string
 // The good thing about this function is that it doesn't
@@ -38,10 +49,15 @@ void   DynStrTruncate(DynStr *dstr, UInt32 len)
     assert(NULL != dstr);
     assert(dstr->strLen >= len);
 
-    DYNSTR_STR(dstr)[len] = '\0';
-    dstr->strLen = len;
+    if (NULL != dstr->str)
+    {
+        dstr->str[len] = '\0';
+        dstr->strLen = len;
+    }
 }
 
+/* free memory used by DynStr. Use for structures allocated on stack and
+   initialized with DynStrInit */
 inline void DynStrFree(DynStr *dstr)
 {
     assert(NULL != dstr);
@@ -49,10 +65,33 @@ inline void DynStrFree(DynStr *dstr)
         free(dstr->str);
 }
 
+/* free memory used by DynStr as well as the DynStr itself.
+   Use on data returned by DynStrNew, DynStrFromCharP* etc. functions. */
 void DynStrDelete(DynStr *dstr)
 {
     DynStrFree(dstr);
     free(dstr);
+}
+
+/* given a pointer to uninitialized DynStr structure,
+   initialize it and allocate buffer of size bufSize.
+   returns NULL if failed for any reason (currently
+   only memory allocation failure) */
+DynStr * DynStrInit(DynStr* dstr, UInt32 bufSize)
+{
+    dstr->reallocIncrement = 0;
+
+    dstr->str = NULL;
+    if (0 != bufSize)
+    {
+        dstr->str = (char_t*)malloc(bufSize);
+        assert( NULL != dstr->str );
+        if (NULL == dstr->str)
+            return NULL;
+    }
+    dstr->bufSize = bufSize;
+    dstr->strLen = 0;
+    return dstr;
 }
 
 DynStr * DynStrNew__(UInt32 bufSize, const char_t* file, int line)
@@ -78,15 +117,12 @@ DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* f
     if (NULL == dstr)
         return NULL;
 
-    dstr->reallocIncrement = 0;
-    dstr->str = (Char*)malloc__(bufSize, file, line + 1);
-    if (NULL == dstr->str)
+    if (NULL == DynStrInit(dstr, bufSize))
     {
         free(dstr);
         return NULL;
     }
 
-    dstr->bufSize = bufSize;
     dstr->strLen = strLen;
     MemMove( DYNSTR_STR(dstr), str, strLen + 1);
 
@@ -118,7 +154,7 @@ DynStr *DynStrFromCharP2(const char_t *strOne, const char_t *strTwo)
     dstrNew = DynStrAppendCharPBuf(dstr, strTwo, strTwoLen);
     assert(NULL != dstrNew);
     assert(dstrNew == dstr);
-    assert(0==DYNSTR_SIZE_LEFT(dstr));
+    assert(0==DynStrLeft(dstr));
     return dstr;
 }
 
@@ -147,7 +183,7 @@ DynStr *DynStrFromCharP3(const char_t *strOne, const char_t *strTwo, const char_
     dstrNew = DynStrAppendCharPBuf(dstr, strThree, strThreeLen);
     assert(NULL != dstrNew);
     assert(dstrNew == dstr);
-    assert(0==DYNSTR_SIZE_LEFT(dstr));
+    assert(0==DynStrLeft(dstr));
     return dstr;
 }
 
@@ -183,12 +219,12 @@ DynStr *DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend)
 // THE ORIGINAL DynStr - the client has to do it by himself.
 DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
 {
-    char   *    curEnd;
-    UInt32      newStrLen;
-    char   *    newData;
-    UInt32      newBufSize;
+    char *  curEnd;
+    UInt32  newStrLen;
+    char *  newStr;
+    UInt32  newBufSize;
 
-    if ( dataSize > DYNSTR_SIZE_LEFT(dstr) )
+    if ( dataSize > DynStrLeft(dstr) )
     {
         // need to re-allocate the buffer
         newBufSize = dstr->strLen+1+dataSize;
@@ -200,22 +236,29 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
                 newBufSize = dstr->bufSize + dstr->reallocIncrement;
             }
         }
-        newData = (char_t *)malloc(newBufSize);
-        if (NULL == newData)
+        newStr = (char*)malloc(newBufSize);
+        assert( NULL != newStr );
+        if (NULL == newStr)
             return NULL;
-        MemMove(newData, DYNSTR_STR(dstr), DynStrLen(dstr)*sizeof(char_t));
-        free(DYNSTR_STR(dstr));
-        dstr->str     = (char_t*)newData;
+        if (NULL != dstr->str)
+        {
+            MemMove(newStr, dstr->str, DynStrLen(dstr));
+            free(dstr->str);
+        }
+        dstr->str     = newStr;
         dstr->bufSize = newBufSize;
     }
 
     // here we're sure we have enough space
-    assert( dataSize <= DYNSTR_SIZE_LEFT(dstr) );
+    assert( dataSize <= DynStrLeft(dstr) );
 
-    curEnd = DYNSTR_STR(dstr) + (dstr->strLen*sizeof(char_t));
-    MemMove(curEnd, data, dataSize);
-    newStrLen = dstr->strLen + dataSize/sizeof(char_t);
-    DYNSTR_STR(dstr)[newStrLen] = _T('\0');
+    if (NULL != dstr->str)
+    {
+        curEnd = DYNSTR_STR(dstr) + dstr->strLen;
+        MemMove(curEnd, data, dataSize);
+    }
+    newStrLen = dstr->strLen + dataSize;
+    DYNSTR_STR(dstr)[newStrLen] = '\0';
     dstr->strLen = newStrLen;
 
     return dstr;
@@ -226,11 +269,19 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
 // end of string
 char_t * DynStrCharPCopy(DynStr *dstr)
 {
-    UInt32 strLen = tstrlen(DYNSTR_STR(dstr));
-    char_t *result = (char_t*)malloc(strLen+1);
+    UInt32 strLen;
+    char_t *result;
+
+    if (NULL == dstr->str)
+        strLen = 0;
+    else
+        strLen = tstrlen(dstr->str);
+    result = (char_t*)malloc(strLen+1);
     if (NULL == result)
         return NULL;
-    MemMove(result, DYNSTR_STR(dstr), strLen+1);
+    if (strLen > 0)
+        MemMove(result, dstr->str, strLen);
+    result[strLen] = '\0';
     return result;
 }
 
@@ -238,25 +289,30 @@ char_t * DynStrCharPCopy(DynStr *dstr)
 // of lenght len.
 // e.g. DynStrRemoveStartLen("hello", 1, 2) => "hlo" (removed "el")
 // len can be zero to simplify client code
-// start has to be withint string
+// start has to be within string <0 - strLen-1>
 void DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len)
 {
-    char_t *  str = DYNSTR_STR(dstr);
+    Char *  str = dstr->str;
     UInt32  toMove;
 
     if (0==len)
         return;
 
-    assert(start<DynStrLen(dstr));
+    assert(start < dstr->strLen);
+    assert(len <= dstr->strLen);
 
     // TODO: should I really quit? this hides errors in retail
     // on the plus side, it won't currupt memory in shipped software
-    if (start<DynStrLen(dstr))
+    if (start >= dstr->strLen)
         return;
 
-    toMove = DynStrLen(dstr) - start - len;
+    if (len > dstr->strLen)
+        return;
+
+    toMove = dstr->strLen - start - len;
     MemMove(str+start, str+start+len, toMove);
     dstr->strLen -= len;
+    dstr->str[dstr->strLen] = '\0';
 }
 
 DynStr * DynStrAppendChar(DynStr *dstr, char_t c)
@@ -343,12 +399,90 @@ void DynStrReplace(DynStr *dstr, char_t orig, char_t replace)
 }
 
 #ifdef DEBUG
-void test_DynStrReplace()
+static void test_DynStrReplace()
 {
     DynStr *dstr = DynStrFromCharP(_T("hello"), 0);
     DynStrReplace(dstr, _T('h'), _T('p'));
     assert( 0 == tstrcmp(_T("pello"), DYNSTR_STR(dstr)) );
     DynStrReplace(dstr, _T('z'), _T('k'));
     assert( 0 == tstrcmp(_T("pello"), DYNSTR_STR(dstr)) );
+    DynStrDelete(dstr);
 }
+
+static void test_DynStrAppendToNull()
+{
+    DynStr dstr;
+    DynStrInit(&dstr,0);
+    DynStrAppendCharP(&dstr, "Hello");
+    DynStrFree(&dstr);
+}
+
+static void test_DynStrRemoveStartLen()
+{
+    char    *str = NULL;
+
+    DynStr *dstr = DynStrFromCharP("hello", 32);
+    assert( 5 == DynStrLen(dstr) );
+    DynStrRemoveStartLen(dstr, 0, 1);
+    // should be "ello" now
+    assert( 4 == DynStrLen(dstr) );
+    str = DynStrGetCStr(dstr);
+    assert( 0 == StrCompare("ello", str) );
+    DynStrRemoveStartLen(dstr, 3, 1);
+    // should be "ell" now
+    assert( 3 == DynStrLen(dstr) );
+    str = DynStrGetCStr(dstr);
+    assert( 0 == StrCompare("ell", str) );
+    DynStrAppendCharP(dstr, "blast");
+    // should be "ellblast" now
+    assert( 8 == DynStrLen(dstr) );
+    str = DynStrGetCStr(dstr);
+    assert( 0 == StrCompare("ellblast", str) );
+    DynStrRemoveStartLen(dstr, 2, 4);
+    // should be "elst" now
+    assert( 4 == DynStrLen(dstr) );
+    str = DynStrGetCStr(dstr);
+    assert( 0 == StrCompare("elst", str) );
+    DynStrDelete(dstr);
+}
+
+static void test_DynStrTruncate()
+{
+    char    *str = NULL;
+    DynStr  dstr;
+
+    DynStrInit(&dstr, 0);
+    assert(0 == DynStrLen(&dstr));
+    DynStrTruncate(&dstr,0);
+    assert(0 == DynStrLen(&dstr));
+    DynStrAppendCharP(&dstr, "hello");
+    assert(5 == DynStrLen(&dstr));
+    DynStrTruncate(&dstr, 3);
+    assert(3 == DynStrLen(&dstr));
+    str = DynStrGetCStr(&dstr);
+    assert( 0 == StrCompare("hel", str) );
+
+    DynStrTruncate(&dstr, 2);
+    assert(2 == DynStrLen(&dstr));
+    str = DynStrGetCStr(&dstr);
+    assert( 0 == StrCompare("he", str) );
+
+    DynStrTruncate(&dstr, 0);
+    assert(0 == DynStrLen(&dstr));
+    str = DynStrGetCStr(&dstr);
+    assert( 0 == StrCompare("", str) );
+
+    DynStrFree(&dstr);    
+
+}
+
+
+void test_DynStrAll()
+{
+    test_DynStrReplace();
+    test_DynStrAppendToNull();
+    test_DynStrRemoveStartLen();
+    test_DynStrTruncate();
+}
+
 #endif

@@ -116,17 +116,9 @@ namespace ArsLexis
          * Queues @c frmUpdateEvent for this form.
          */
         void update(UInt16 updateCode=frmRedrawUpdateCode);
-        
-        /**
-         * Calls @c handleClose(), preventing a call to @c FrmDeleteForm() in destructor. 
-         * Next calls @c FrmReturnToForm().
-         * @note Keep in mind that after call to this function form is deleted. 
-         */
+  
         void returnToForm(UInt16 formId);
 
-        /**
-         * Calls @c returnToForm(0).
-         */
         void closePopup()
         {returnToForm(0);}
         

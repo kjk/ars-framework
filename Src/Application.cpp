@@ -86,7 +86,6 @@ namespace ArsLexis
         databaseId_(0),
         creatorId_(creator()),
         runningOnTreo600_(isTreo600()),
-        underSimulator_(ArsLexis::underSimulator()),
         ticksPerSecond_(SysTicksPerSecond())
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);

@@ -124,7 +124,6 @@ namespace ArsLexis
         const UInt32 creatorId_;
         
         bool runningOnTreo600_;
-        bool underSimulator_;
         
         UInt32 ticksPerSecond_;
 
@@ -323,8 +322,6 @@ namespace ArsLexis
         };
         
         bool runningOnTreo600() const {return runningOnTreo600_;}
-        
-        bool underSimulator() const {return underSimulator_;}
 
         friend void logAllocation(void*, size_t, bool, const char*, int);
         friend void processReadyUiEvents();

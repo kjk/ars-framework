@@ -38,10 +38,8 @@ typedef struct DynStrTag {
 #define DYNSTR_DATA(dstr) (dstr->str)
 /* length of the data inside DynStr */
 #define DYNSTR_LEN(dstr) (dstr->strLen)
-/* this macro defines how much data do we have left in the buffer.
-   that's how much we can add to the string without re-allocating it */
-#define DYNSTR_SIZE_LEFT(dstr) (dstr->bufSize - (dstr->strLen - 1)*sizeof(char_t))
 
+DynStr *   DynStrInit(DynStr* dstr, UInt32 bufSize);
 DynStr *   DynStrNew__(UInt32 bufSize, const char_t* file, int line);
 DynStr *   DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* file, int line);
 
@@ -86,7 +84,7 @@ public:
 };
 
 #ifdef DEBUG
-void test_DynStrReplace();
+void test_DynStrAll();
 #endif
 
 #endif // _DYNSTR_H_
