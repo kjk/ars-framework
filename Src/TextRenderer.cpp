@@ -53,6 +53,7 @@ void TextRenderer::checkDrawingWindow()
             drawingWindowIsOffscreen_ = true;
             Graphics offscreen(offscreenWindow);
             this->bounds(bounds);
+            bounds.explode(1, 1, -2, -2);
             formWindow.copyArea(bounds, offscreen, bounds.topLeft);
         }
     }
@@ -65,6 +66,7 @@ void TextRenderer::updateForm(Graphics& graphics)
         return;
     Rectangle bounds;
     this->bounds(bounds);
+    bounds.explode(1, 1, -2, -2);
     Graphics formWindow(form()->windowHandle());
     graphics.copyArea(bounds, formWindow, bounds.topLeft);
 }
@@ -95,6 +97,7 @@ void TextRenderer::handleDraw(Graphics& graphics)
 {
     Rectangle bounds;
     this->bounds(bounds);
+    bounds.explode(1, 1, -2, -2);
     lastRenderingError_ = definition_.render(graphics, bounds, renderingPreferences_, false);
 }
 
@@ -169,6 +172,7 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
     Point p(event.screenX, event.screenY);
     Rectangle bounds;
     this->bounds(bounds);
+    bounds.explode(1, 1, -2, -2);
     if (penUpEvent == event.eType)
         tapCount = event.tapCount;
     if (p && bounds)
@@ -259,6 +263,7 @@ void TextRenderer::handleNilEvent()
         definition_.scroll(graphics, renderingPreferences_, i);
         Rectangle bounds;
         this->bounds(bounds);
+        bounds.explode(1, 1, -2, -2);
         Point p(bounds.topLeft);
         if (winDown == dir)
             p += bounds.extent;

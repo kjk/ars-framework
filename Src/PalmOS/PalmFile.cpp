@@ -61,7 +61,8 @@ status_t File::open(const char_t* name, ulong_t openMode, uint_t cardNo, ulong_t
         close();
     status_t error;
     if (anyCard == cardNo)
-        cardNo = findCardNumber(name, openMode, type, creator);    handle_=FileOpen(cardNo, name, type, creator, openMode, &error);
+        cardNo = findCardNumber(name, openMode, type, creator);
+    handle_=FileOpen(cardNo, name, type, creator, openMode, &error);
     if (errNone!=error)
     {
         FileClearerr(handle_);
