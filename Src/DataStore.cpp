@@ -1,6 +1,7 @@
+#include <bitset>
 #include <DataStore.hpp>
 #include <File.hpp>
-#include <bitset>
+#include <Text.hpp>
 
 #ifdef _PALM_OS
 #include <Application.hpp>
@@ -45,8 +46,8 @@ namespace {
     
 }
 
-DataStore::StreamHeader::StreamHeader(const String& n, uint_t i, File::Position f):
-    name(n),
+DataStore::StreamHeader::StreamHeader(const char_t* n, ulong_t nlen, uint_t i, File::Position f):
+    name(n, nlen),
     index(i),
     firstFragment(f)
 {}  
@@ -58,7 +59,10 @@ DataStore::FragmentHeader::FragmentHeader(File::Position s, uint_t o, uint_t l, 
     nextFragment(n)
 {}    
   
-DataStore::DataStore(const char_t* fileName): fileName_(fileName) {}
+DataStore::DataStore(): 
+    fileName_(NULL)
+{
+}
 
 DataStore::~DataStore()
 {
@@ -68,7 +72,7 @@ DataStore::~DataStore()
     if (file_.isOpen()) 
         file_.close();
     else
-        return;
+        goto Finish;
     UInt32 creator = Application::creator();
     DmSearchStateType searchState;
     LocalID localId;
@@ -82,12 +86,12 @@ DataStore::~DataStore()
     {
         error = DmGetNextDatabaseByTypeCreator(firstSearch, &searchState, sysFileTFileStream, creator, true, &cardNo, &localId);
         if (errNone != error)
-            return;
+            goto Finish;
         firstSearch = false;
         error = DmDatabaseInfo(cardNo, localId, name, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         if (errNone != error)
-            return;
-        if (fileName_ == name)
+            goto Finish;
+        if (0 == tstrcmp(fileName_, name))
         {
             found = true;
             break;
@@ -97,6 +101,8 @@ DataStore::~DataStore()
     attribs |= dmHdrAttrBackup;
     error = DmSetDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 #endif
+Finish:
+    free(fileName_);
 }
 
 status_t DataStore::createIndex()
@@ -140,19 +146,23 @@ status_t DataStore::readIndex()
             return errStoreCorrupted;
         if (entry.used)
         {
-            uint_t nameLength = std::find(entry.name, entry.name + maxStreamNameLength, _T('\0')) - entry.name;
-            String name(entry.name, nameLength);
-            streamHeaders_.insert(new StreamHeader(name, i, entry.firstFragment));
+            ulong_t nameLength = std::find(entry.name, entry.name + maxStreamNameLength, _T('\0')) - entry.name;
+            streamHeaders_.insert(new StreamHeader(entry.name, nameLength, i, entry.firstFragment));
         }
     }
     return errNone;
 }
 
-status_t DataStore::open()
+status_t DataStore::open(const char_t* fileName)
 {
-    status_t error = file_.open(fileName_.c_str(), fileModeUpdate);
+    free(fileName_);
+    fileName_ = StringCopy2(fileName);
+    if (NULL == fileName_)
+        return memErrNotEnoughSpace;
+        
+    status_t error = file_.open(fileName_, fileModeUpdate);
     if (errNone != error)
-        return error;
+        goto OnError;
 /*        
 #ifdef _PALM_OS 
     DmOpenRef ref = file_.databaseHandle();
@@ -188,9 +198,27 @@ OnError:
     return error;
 }
 
-status_t DataStore::create()
+status_t DataStore::open(const char_t* fileName, CreateOption c)
 {
-    status_t error = file_.open(fileName_.c_str(), fileModeUpdate);
+    status_t error = open(fileName);
+    if (errNone != error)
+    {
+        if (createAsNeeded == c)
+            return create(fileName);
+        else
+            return error;
+    }
+    return errNone;
+}
+
+status_t DataStore::create(const char_t* fileName)
+{
+    free(fileName_);
+    fileName_ = StringCopy2(fileName);
+    if (NULL == fileName_)
+        return memErrNotEnoughSpace;
+
+    status_t error = file_.open(fileName_, fileModeUpdate);
     if (errNone != error)
         return error;
     error = createIndex();
@@ -234,13 +262,13 @@ status_t DataStore::readHeadersForOwner(const DataStore::StreamHeader& streamHea
     return errNone;
 }
 
-status_t DataStore::removeStream(const String& name)
+status_t DataStore::removeStream(const char_t* name)
 {  
-    StreamHeader sh(name, 0, 0);
+    StreamHeader sh(name, tstrlen(name), 0, 0);
     StreamHeaders_t::iterator it = streamHeaders_.find(&sh);
     if (streamHeaders_.end() == it)
         return errNotFound;
-    File::Position pos = (*it)->index*sizeof(StreamIndexEntry);
+    File::Position pos = (*it)->index * sizeof(StreamIndexEntry);
     status_t error = file_.seek(pos, File::seekFromBeginning);
     if (errNone != error)
         return error;
@@ -254,14 +282,15 @@ status_t DataStore::removeStream(const String& name)
     return errNone;
 }
 
-status_t DataStore::createStream(const String& name, StreamHeader*& header)
+status_t DataStore::createStream(const char_t* name, StreamHeader*& header)
 {
-    if (maxStreamNameLength < name.length())
+    ulong_t nlen = tstrlen(name);
+    if (maxStreamNameLength < nlen)
         return errNameTooLong;
     if (maxStreamsCount == streamHeaders_.size())
         return errTooManyStreams;
     StreamHeaders_t::const_iterator end = streamHeaders_.end();
-    StreamHeader sh(name, 0, 0);
+    StreamHeader sh(name, nlen, 0, 0);
     if (end != streamHeaders_.find(&sh))
     {
         status_t error = removeStream(name);
@@ -277,16 +306,16 @@ status_t DataStore::createStream(const String& name, StreamHeader*& header)
         if (!usage.test(index))
             break;
     assert(index < maxStreamsCount);
-    status_t error = file_.seek(index*sizeof(StreamIndexEntry), File::seekFromBeginning);
+    status_t error = file_.seek(index * sizeof(StreamIndexEntry), File::seekFromBeginning);
     if (errNone != error)
         return error;
     StreamIndexEntry indexEntry;
     indexEntry.used = true;
-    MemMove(indexEntry.name, name.data(), name.length()*sizeof(char_t));
+    MemMove(indexEntry.name, name, nlen * sizeof(char_t));
     error = file_.write(&indexEntry, sizeof(indexEntry));
     if (errNone != error)
         return error;
-    header = *streamHeaders_.insert(new StreamHeader(name, index, invalidFragmentStart)).first;
+    header = *streamHeaders_.insert(new StreamHeader(name, nlen, index, invalidFragmentStart)).first;
     return errNone;
 }
 
@@ -510,9 +539,9 @@ status_t DataStore::writeStream(StreamPosition& position, const void* buffer, ui
     return errNone;        
 }
 
-status_t DataStore::findStream(const String& name, StreamHeader*& header)
+status_t DataStore::findStream(const char_t* name, StreamHeader*& header)
 {
-    StreamHeader sh(name, 0, 0);
+    StreamHeader sh(name, tstrlen(name), 0, 0);
     StreamHeaders_t::iterator it = streamHeaders_.find(&sh);
     if (streamHeaders_.end() == it)
         return errNotFound;
@@ -542,7 +571,7 @@ DataStoreReader::DataStoreReader(DataStore& store): store_(store) {}
 
 DataStoreReader::~DataStoreReader() {}
 
-status_t DataStoreReader::open(const String& name)
+status_t DataStoreReader::open(const char_t* name)
 {
     DataStore::StreamHeader* header = NULL;
     status_t error = store_.findStream(name, header);
@@ -566,7 +595,7 @@ DataStoreWriter::~DataStoreWriter()
     store_.findEof();
 }
 
-status_t DataStoreWriter::open(const String& name, bool dontCreate)
+status_t DataStoreWriter::open(const char_t* name, bool dontCreate)
 {
     DataStore::StreamHeader* header = NULL;
     status_t error = store_.findStream(name, header);
@@ -602,10 +631,8 @@ DataStore* DataStore::instance()
 status_t DataStore::initialize(const char_t* fileName)
 {
     assert(NULL == store);
-    std::auto_ptr<DataStore> ds(new DataStore(fileName));
-    status_t error = ds->open();
-    if (errNone != error)
-        error = ds->create();
+    std::auto_ptr<DataStore> ds(new DataStore());
+    status_t error = ds->open(fileName, DataStore::createAsNeeded);
     if (errNone != error)
         return error;
     store = ds.release();

@@ -13,10 +13,10 @@ namespace ArsLexis {
 
     class DataStore: private NonCopyable {
     
-        explicit DataStore(const char_t* fileName);
-    
     public:
         
+        explicit DataStore();
+    
         enum {
             maxStreamNameLength=32,
             maxStreamsCount=32
@@ -24,11 +24,19 @@ namespace ArsLexis {
         
         ~DataStore();
         
-        status_t open();
+        enum CreateOption
+        {
+            createNot,
+            createAsNeeded
+        };
         
-        status_t create();
+        status_t open(const char_t* fileName);
         
-        status_t removeStream(const String& name);
+        status_t open(const char_t* fileName, CreateOption c);
+        
+        status_t create(const char_t* fileName);
+        
+        status_t removeStream(const char_t* name);
         
         enum {
             errStoreCorrupted=dsErrorClass,
@@ -52,7 +60,7 @@ namespace ArsLexis {
         
         status_t readHeaders();
         
-        String fileName_;
+        char_t* fileName_;
         File file_;
         
         struct StreamHeader {
@@ -60,7 +68,7 @@ namespace ArsLexis {
             uint_t index;
             File::Position firstFragment;
             
-            StreamHeader(const String& name, uint_t index, File::Position firstFragment);
+            StreamHeader(const char_t* name, ulong_t nameLength, uint_t index, File::Position firstFragment);
             
         };
         
@@ -94,9 +102,9 @@ namespace ArsLexis {
         typedef std::set<FragmentHeader*, FragmentHeaderLess> FragmentHeaders_t;
         FragmentHeaders_t fragmentHeaders_;
         
-        status_t findStream(const String& name, StreamHeader*& header);
+        status_t findStream(const char_t* name, StreamHeader*& header);
         
-        status_t createStream(const String& name, StreamHeader*& header);
+        status_t createStream(const char_t* name, StreamHeader*& header);
         
         enum { minFragmentLength = sizeof(FragmentHeader) + 128};
         
@@ -150,7 +158,7 @@ namespace ArsLexis {
         
         ~DataStoreReader();
         
-        status_t open(const String& name);
+        status_t open(const char_t* name);
         
         status_t readRaw(void* buffer, uint_t& length);
         
@@ -167,7 +175,7 @@ namespace ArsLexis {
         
         ~DataStoreWriter();
         
-        status_t open(const String& name, bool dontCreate = false);
+        status_t open(const char_t* name, bool dontCreate = false);
         
         status_t writeRaw(const void* buffer, uint_t length);
         

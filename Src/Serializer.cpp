@@ -18,7 +18,8 @@ Serializer::Serializer(Reader& reader):
     writer_(NULL), 
     direction_(directionInput),
     isIndexed_(false),
-    skipLastRecord_(false) {
+    skipLastRecord_(false) 
+{
     reader_->mark();
 }
 
@@ -29,11 +30,15 @@ Serializer::Serializer(Reader& reader, Writer& writer, Direction dir):
     writer_(&writer), 
     direction_(dir),
     isIndexed_(false),
-    skipLastRecord_(false) {
+    skipLastRecord_(false) 
+{
     reader_->mark();
 }
 
-Serializer::~Serializer() {delete reader_;}
+Serializer::~Serializer() 
+{
+    delete reader_;
+}
 
 void Serializer::serializeChunk(void* buffer, uint_t length)
 {

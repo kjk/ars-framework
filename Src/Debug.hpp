@@ -129,4 +129,6 @@ inline void operator delete[](void* p, NewDontThrowTag, const char*, int)
 # define malloc(a) malloc__(a)
 #endif
 
+using namespace ArsLexis;
+
 #endif
