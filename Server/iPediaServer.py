@@ -219,7 +219,7 @@ class iPediaProtocol(basic.LineReceiver):
 		history=[self.term]
 		while not finished:
 #			query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(self.term.replace(' ', '_'))
-			query="""select 1, cur_title, cur_text from enwiki.cur where cur_title='%s' order by cur_timestamp desc limit 1""" % db.escape_string(self.term.replace(' ', '_'))
+			query="""select 1, cur_title, cur_text from enwiki.cur where cur_title='%s' and cur_namespace=0 order by cur_timestamp desc limit 1""" % db.escape_string(self.term.replace(' ', '_'))
 			cursor.execute(query)
 			row=cursor.fetchone()
 			if row:
