@@ -63,29 +63,28 @@ namespace ArsLexis
                 SocketConnection* conn=connections_[i];
                 if (conn)
                 {
-                    if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
-                    {
-                        unregisterEvents(*conn);
-                        conn->notifyReadable();
-                        if (!--eventsCount)
-                            break;
-                    }
-                    if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
-                    {
-                        unregisterEvents(*conn);
-                        conn->notifyWritable();
-                        if (!--eventsCount)
-                            break;
-                    } 
                     //! @bug There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
                     //! Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
                     if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventException))
                     {
                         unregisterEvents(*conn);
                         conn->notifyException();
-                        if (!--eventsCount)
-                            break;
+                        --eventsCount;                        
                     }                        
+                    else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
+                    {
+                        unregisterEvents(*conn);
+                        conn->notifyWritable();
+                        --eventsCount;                        
+                    } 
+                    else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
+                    {
+                        unregisterEvents(*conn);
+                        conn->notifyReadable();
+                        --eventsCount;                        
+                    }
+                    if (0==eventsCount)
+                        break;
                 }
             }
         }

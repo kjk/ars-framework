@@ -141,6 +141,7 @@ namespace ArsLexis
     void Form::setTitle(const String& title)
     {
         assert(form_!=0);
+//        FrmSetTitle(form_, "");
         title_=title;
         //! @bug On Sony Clie (OS 4.1) I experience bug described in Reference as corrected in post-OS 3.0... (Previous title is not erased)
         if (visible())
