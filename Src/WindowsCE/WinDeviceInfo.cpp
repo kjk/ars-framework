@@ -11,7 +11,7 @@
 #include <Text.hpp>
 
 #include <aygshell.h>
-#ifndef PPC
+#ifndef WIN32_PLATFORM_PSPC
 #include <tpcshell.h>
 #endif
 #include <winuser.h>
@@ -73,7 +73,7 @@ namespace ArsLexis
 
     status_t getPhoneNumber(String& out)
     {
-        #ifndef PPC
+#ifndef WIN32_PLATFORM_PSPC
         SMS_ADDRESS address;
         memset(&address,0,sizeof(SMS_ADDRESS));
         HRESULT res = SmsGetPhoneNumber(&address);
@@ -82,18 +82,18 @@ namespace ArsLexis
             out.append(address.ptsAddress);
             return errNone;
         }
-        #endif
+#endif
         return sysErrParamErr;
     }
 
     status_t getPlatform(String& out)
     {
         // TODO: make it different for Pocket PC
-        #ifdef PPC
+#ifdef WIN32_PLATFORM_PSPC
             out.append(_T("Pocket PC 2002"));
-        #else
+#else
             out.append(_T("Smartphone"));
-        #endif
+#endif
         return errNone;
     }
 
