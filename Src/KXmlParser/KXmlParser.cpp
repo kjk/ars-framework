@@ -25,8 +25,8 @@ void KXmlParser::setInput(XmlReader *reader)
     degenerated = false;
     attributeCount = -1;
     encoding = "";
-    version = "";
-    standalone = "";
+    version_ = "";
+    standalone_ = "";
 
     if (reader == NULL)
         return;
@@ -34,14 +34,17 @@ void KXmlParser::setInput(XmlReader *reader)
     srcPos = 0;
     srcCount = 0;
     peekCount = 0;
-    depth = 0;
+    depth_ = 0;
 
-    entityMap = new ArsLexis::Hashtable();
-    entityMap->put("amp", "&");
-    entityMap->put("apos", "'");
-    entityMap->put("gt", ">");
-    entityMap->put("lt", "<");
-    entityMap->put("quot", "\"");
+    if (entityMap_)
+        delete entityMap_
+
+    entityMap_ = new ArsLexis::Hashtable();
+    entityMap_->put("amp", "&");
+    entityMap_->put("apos", "'");
+    entityMap_->put("gt", ">");
+    entityMap_->put("lt", "<");
+    entityMap_->put("quot", "\"");
 }
 
 void KXmlParser::setFeature(String feature, bool flag)

@@ -68,16 +68,14 @@ namespace KXml2{
         bool unresolved;
         bool token;
     
-
-
     public:
         KXmlParser();
-        void setInput(XmlReader *reader);
-        void setFeature(String feature, bool flag);
-        void nextToken();
-        void next();
-        String getPositionDescription();
-        int getEventType();
+        void    setInput(XmlReader *reader);
+        void    setFeature(String feature, bool flag);
+        void    nextToken();
+        void    next();
+        String  getPositionDescription();
+        int     getEventType();
     };
 }
 

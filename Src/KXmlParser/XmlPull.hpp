@@ -12,12 +12,12 @@ namespace KXml2{
         public:
             static const int END_DOCUMENT = 1;
             static const int START_DOCUMENT = 2;
-    	    virtual void setInput(XmlReader *reader) = 0;
-            virtual void setFeature(String feature, bool flag) = 0;
-            virtual void nextToken() = 0;
-            virtual void next() = 0;
-            virtual String getPositionDescription() = 0;
-            virtual int getEventType() = 0;
+            virtual void    setInput(XmlReader *reader) = 0;
+            virtual void    setFeature(String feature, bool flag) = 0;
+            virtual void    nextToken() = 0;
+            virtual void    next() = 0;
+            virtual String  getPositionDescription() = 0;
+            virtual int     getEventType() = 0;
     };
 }
 
