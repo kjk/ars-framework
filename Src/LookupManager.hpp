@@ -31,11 +31,10 @@ class LookupManager: private ArsLexis::NonCopyable
         historyReplaceForward
     };
 
-    HistoryChange historyChange_;    
-    
     ArsLexis::String statusText_;
     uint_t percentProgress_;    
-    uint_t lookupInProgress_:1;
+    
+    
     
 public:
 
@@ -78,7 +77,8 @@ public:
         history_(history),
         historyChange_(historyMoveForward),
         percentProgress_(percentProgressDisabled),
-        lookupInProgress_(false)
+        lookupInProgress_(false),
+        articleCount_(articleCountNotChecked)
     {}
     
     ~LookupManager();
@@ -118,6 +118,13 @@ public:
     
     void handleLookupFinishedInForm(const LookupFinishedEventData& data);
     
+    void checkArticleCount();
+    
+    long articleCount() const
+    {return articleCount_;}
+
+    enum {articleCountNotChecked=-1L};
+    
 private:
     
     void handleServerError(ServerError serverError);
@@ -148,6 +155,14 @@ private:
     {lastSearchExpression_=se;}
     
     friend class iPediaConnection;
+
+    HistoryChange historyChange_:7; // I don't remember how many bits it needs. I assume 7 will do.
+    bool lookupInProgress_:1;
+    
+    long articleCount_;    
+    
+    void setArticleCount(long count)
+    {articleCount_=count;}
 
 };
 

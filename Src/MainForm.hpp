@@ -77,6 +77,8 @@ class MainForm: public iPediaForm
     
     RenderingProgressReporter renderingProgressReporter_;
     
+    void checkArticleCount();
+    
 protected:
 
     void resize(const ArsLexis::Rectangle& screenBounds);
@@ -127,9 +129,10 @@ public:
     
 private:
     
-    DisplayMode displayMode_;
     UInt32 lastPenDownTimestamp_;
-    bool updateDefinitionOnEntry_;
+    DisplayMode displayMode_:4;
+    bool updateDefinitionOnEntry_:1;
+    bool checkedArticleCount_:1;
     
 };
 

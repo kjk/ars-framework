@@ -46,6 +46,8 @@ iPediaConnection::~iPediaConnection()
 #define notFoundField           "Not-Found"
 #define searchField             "Search"
 #define searchResultsField      "Search-Results"
+#define getArticleCountField    "Get-Article-Count"
+#define articleCountField       "Article-Count"
 
 void iPediaConnection::prepareRequest()
 {
@@ -73,6 +75,10 @@ void iPediaConnection::prepareRequest()
         assert(term_.empty());
         appendField(request, getRandomDefField);
     }
+    
+    if (lookupManager_.articleCountNotChecked==lookupManager_.articleCount())
+        appendField(request, getArticleCountField);
+
     request+='\n';
     setRequest(request); 
 }
@@ -83,7 +89,7 @@ Err iPediaConnection::enqueue()
     if (error)
         return error;
 
-#ifdef DEBUG
+#ifdef INTERNAL_BUILD
     String status;
     getResource(connectionStatusStrings, statusStringOpeningConnection, status);
 #else
@@ -220,6 +226,14 @@ Err iPediaConnection::handleField(const String& name, const String& value)
             else
                 error=errResponseMalformed;
         }            
+        else
+            error=errResponseMalformed;
+    }
+    else if (0==name.find(articleCountField))
+    {
+        error=numericValue(value, numValue);
+        if (!error)
+            lookupManager_.setArticleCount(numValue);
         else
             error=errResponseMalformed;
     }

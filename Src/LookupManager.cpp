@@ -205,3 +205,11 @@ void LookupManager::showProgress(ArsLexis::Graphics& graphics, const ArsLexis::R
         graphics.drawText(buffer, length, p);
     }
 }
+
+void LookupManager::checkArticleCount()
+{
+    articleCount_=articleCountNotChecked;
+    iPediaConnection* conn=new iPediaConnection(*this);
+    conn->setAddress(iPediaApplication::instance().server());
+    conn->enqueue();
+}

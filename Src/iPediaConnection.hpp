@@ -95,10 +95,10 @@ private:
     
     LookupManager::ServerError serverError_;
 
-    uint_t notFound_:1;
-    uint_t registering_:1;
-    uint_t performFullTextSearch_:1;
-    uint_t getRandom_:1;
+    bool notFound_:1;
+    bool registering_:1;
+    bool performFullTextSearch_:1;
+    bool getRandom_:1;
     
 };
 

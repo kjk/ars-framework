@@ -12,7 +12,8 @@ MainForm::MainForm(iPediaApplication& app):
     renderingProgressReporter_(*this),
     displayMode_(showSplashScreen),
     lastPenDownTimestamp_(0),
-    updateDefinitionOnEntry_(false)
+    updateDefinitionOnEntry_(false),
+    checkedArticleCount_(false)
 {
     definition_.setRenderingProgressReporter(&renderingProgressReporter_);
     definition_.setHyperlinkHandler(&app.hyperlinkHandler());
@@ -114,6 +115,17 @@ void MainForm::drawSplashScreen(Graphics& graphics, const ArsLexis::Rectangle& b
     setFont.changeTo(font);
     
     graphics.drawCenteredText("http://www.arslexis.com", point, rect.width());
+    
+    const LookupManager* lookupManager=app.getLookupManager();
+    if (0!=lookupManager && lookupManager->articleCountNotChecked!=lookupManager->articleCount())
+    {
+        point.y+=20;
+        ArsLexis::String articleCountText="Number of articles: ";
+        char buffer[16];
+        int len=StrPrintF(buffer, "%ld", lookupManager->articleCount());
+        articleCountText.append(buffer, len);
+        graphics.drawCenteredText(articleCountText.c_str(), point, rect.width());
+    }
 }
 
 void MainForm::updateScrollBar()
@@ -641,6 +653,8 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
             }
             setControlsState(!lookupManager->lookupInProgress());
         }
+        if (!checkedArticleCount_ && app.preferences().checkArticleCountAtStartup)
+            checkArticleCount();
     }        
     return iPediaForm::handleWindowEnter(data);
 }
@@ -773,4 +787,14 @@ void MainForm::RenderingProgressReporter::reportProgress(uint_t percent)
     WinPaintRectangle(&nativeRec, 0);
     WinSetPatternType(oldPattern);        
 #endif    
+}
+
+void MainForm::checkArticleCount() 
+{
+    assert(!checkedArticleCount_);
+    checkedArticleCount_=true;
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager(true);
+    if (lookupManager && !lookupManager->lookupInProgress())
+        lookupManager->checkArticleCount();
 }

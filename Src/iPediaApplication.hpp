@@ -79,9 +79,11 @@ public:
         ArsLexis::String serialNumber;
         
         bool serialNumberRegistered;
+        bool checkArticleCountAtStartup;
         
         Preferences():
-            serialNumberRegistered(false)
+            serialNumberRegistered(false),
+            checkArticleCountAtStartup(true)
         {}
 
     };
