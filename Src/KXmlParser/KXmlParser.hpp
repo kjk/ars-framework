@@ -33,6 +33,7 @@ namespace KXml2{
 
         bool            processNsp_;
         bool            relaxed_;
+        bool            completlyLoose_;
         typedef std::map<String, String> EntityMap_t;
         EntityMap_t entityMap_;
         int             depth_;

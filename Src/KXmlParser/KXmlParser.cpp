@@ -40,6 +40,7 @@ const XmlPullParser::TypeDescription_t XmlPullParser::TYPES[XmlPullParser::types
 };
 
 const char_t* XmlPullParser::FEATURE_PROCESS_NAMESPACES = _T("http://xmlpull.org/v1/doc/features.html#process-namespaces");
+const char_t* XmlPullParser::FEATURE_COMPLETLY_LOOSE = _T("http://dev.arslexis.com/w/index.php/KXmlCompletlyLoose");
 
 inline XmlPullParser::EventType KXmlParser::getEventType()
 {
@@ -49,7 +50,8 @@ inline XmlPullParser::EventType KXmlParser::getEventType()
 KXmlParser::KXmlParser():
     reader_(0)
 {
-    fRelaxed_ = false;    
+    fRelaxed_ = false;   
+    completlyLoose_ = false;
     srcBuf_.resize(128);
     txtBuf_.resize(128);
     attributes_.resize(16);
@@ -337,6 +339,7 @@ error_t KXmlParser::readName(String& ret)
     } while ((c >= _T('a') && c <= _T('z'))
         || (c >= _T('A') && c <= _T('Z'))
         || (c >= _T('0') && c <= _T('9'))
+        || (completlyLoose_ && c == _T('\"'))
         || c == _T('_')
         || c == _T('-')
         || c == _T(':')
@@ -1044,7 +1047,10 @@ error_t KXmlParser::setFeature(const String& feature, bool flag)
         if (isProp(feature, false, _T("relaxed")))
             relaxed_ = flag;
         else
-            return eUnsupportedFeature;
+            if(FEATURE_COMPLETLY_LOOSE == feature)
+                completlyLoose_ = flag;
+            else
+                return eUnsupportedFeature;
 
     return eNoError;
 }
@@ -1100,7 +1106,10 @@ bool KXmlParser::getFeature(const String& feature)
         if (isProp(feature, false, _T("relaxed")))
             return relaxed_;
         else
-            return false;
+            if(XmlPullParser::FEATURE_COMPLETLY_LOOSE == feature)
+                return completlyLoose_;
+            else
+                return false;
 }
 
 inline String KXmlParser::getInputEncoding() 

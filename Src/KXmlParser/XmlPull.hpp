@@ -34,6 +34,7 @@ namespace KXml2{
         static const TypeDescription_t TYPES[typesArrayLength];
 
         static const char_t* FEATURE_PROCESS_NAMESPACES;
+        static const char_t* FEATURE_COMPLETLY_LOOSE;
 
         virtual error_t setInput(Reader& reader) = 0;
         virtual error_t setFeature(const String& feature, bool flag) = 0;
