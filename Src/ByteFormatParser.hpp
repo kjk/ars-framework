@@ -48,9 +48,9 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
         
         bool parseHeader(const ArsLexis::char_t* inText);
         
-    public:
+        DefinitionModel* model_;
 
-        Definition::Elements_t  elems;
+    public:
 
         ByteFormatParser();
 
@@ -65,13 +65,7 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
          */
         ArsLexis::status_t parseAll(const ArsLexis::char_t*  inputText, UInt32 inputTextLen);
 
-//        void replaceElements(Definition::Elements_t& el);
-
-        DefinitionModel* releaseModel()
-        {
-            // TODO: implement
-            return NULL;
-        }
+        DefinitionModel* releaseModel();
 };
 
 #endif

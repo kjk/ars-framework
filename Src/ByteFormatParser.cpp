@@ -56,6 +56,7 @@ ByteFormatParser::ByteFormatParser():
     elementsCount_(0),
     version_(0),
     totalSize_(0),
+    model_(NULL),
     headerParsed_(false)
 {
     inText_.clear();
@@ -64,12 +65,18 @@ ByteFormatParser::ByteFormatParser():
 
 ByteFormatParser::~ByteFormatParser()
 {
-    DestroyElements(elems);
+    delete model_;
 }
+
+DefinitionModel* ByteFormatParser::releaseModel()
+{
+    return model_;
+    model_ = NULL;
+}
+
 
 void ByteFormatParser::reset()
 {
-    DestroyElements(elems);
     stack_.clear();
     start_ = 0;
     inLength_ = 0;
@@ -84,6 +91,9 @@ void ByteFormatParser::reset()
     version_ = 0;
     totalSize_ = 0;
     headerParsed_ = false;
+
+    delete model_;
+    model_ = NULL;
 }
 
 /*
@@ -248,31 +258,31 @@ void ByteFormatParser::parseElementParams()
     switch(currentElementType_)
     {
         case typeLineBreakElement:
-            elems.push_back(currentElement_ = new LineBreakElement());
+            model_->elements.push_back(currentElement_ = new LineBreakElement());
             break;
 
         case typeHorizontalLineElement:
-            elems.push_back(currentElement_ = new HorizontalLineElement());
+            model_->elements.push_back(currentElement_ = new HorizontalLineElement());
             break;
 
         case typeGenericTextElement:
-            elems.push_back(currentElement_ = new GenericTextElement());
+            model_->elements.push_back(currentElement_ = new GenericTextElement());
             break;
 
         case typeBulletElement:
-            elems.push_back(currentElement_ = new BulletElement());
+            model_->elements.push_back(currentElement_ = new BulletElement());
             break;
 
         case typeListNumberElement:
-            elems.push_back(currentElement_ = new ListNumberElement());
+            model_->elements.push_back(currentElement_ = new ListNumberElement());
             break;
 
         case typeParagraphElement:
-            elems.push_back(currentElement_ = new ParagraphElement());
+            model_->elements.push_back(currentElement_ = new ParagraphElement());
             break;
 
         case typeIndentedParagraphElement:
-            elems.push_back(currentElement_ = new ParagraphElement(true));
+            model_->elements.push_back(currentElement_ = new ParagraphElement(true));
             break;
 
         case typeStylesTableElement:
@@ -380,6 +390,13 @@ status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inp
     inLength_ += inputLength;
     start_ = 0;
     finish_ = finish;
+
+    if (NULL == model_)
+    {
+        model_ = new_nt DefinitionModel();
+        if (NULL == model_) 
+            return memErrNotEnoughSpace;
+    }           
     
     if (!headerParsed_)
     {
@@ -406,6 +423,13 @@ status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inp
 status_t ByteFormatParser::parseAll(const char_t* inputText, UInt32 inputTextLen)
 {
     start_ = 0;
+
+    if (NULL == model_)
+    {
+        model_ = new_nt DefinitionModel();
+        if (NULL == model_) 
+            return memErrNotEnoughSpace;
+    }           
 
     parseHeader(inputText);
     assert(totalSize_ == inputTextLen || (UInt32)(-1) == inputTextLen);
