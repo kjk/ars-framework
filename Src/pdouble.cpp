@@ -21,7 +21,7 @@
 /**********************************************************************/
 #define NUM_DIGITS   10
 #define MIN_FLOAT    4
-#define ROUND_FACTOR 1.00000000005 /* NUM_DIGITS zeros */
+#define ROUND_FACTOR 0.00000000005 /* NUM_DIGITS zeros */
 
 /**********************************************************************/
 /* FP conversion constants                                            */
@@ -39,14 +39,14 @@ static const double pow2[] = {
 };
 
 void printDouble(double x, char *s);
-void printDoubleRound(double x, char *s, double roundFactor, int numDigits);
+void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit);
 
 void printDouble(double x, char *s)
 {
-    printDoubleRound(x,s,ROUND_FACTOR, NUM_DIGITS);
+    printDoubleRound(x,s,ROUND_FACTOR, NUM_DIGITS, -1);
 }
 
-void printDoubleRound(double x, char *s, double roundFactor, int numDigits)
+void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit)
 {
     FlpCompDouble fcd;
     short   e, e1, i;
@@ -58,7 +58,7 @@ void printDoubleRound(double x, char *s, double roundFactor, int numDigits)
     /* Round to desired precision                                       */
     /* (this doesn't always provide a correct last digit!)              */
     /*------------------------------------------------------------------*/
-    x = x * roundFactor;
+    x = x + roundFactor;
 
     /*------------------------------------------------------------------*/
     /* check for NAN, +INF, -INF, 0                                     */
@@ -125,7 +125,10 @@ void printDoubleRound(double x, char *s, double roundFactor, int numDigits)
             *s++ = '.';
             dec = -1;
             while (--e)
+            {
                 *s++ = '0';
+                dec--;
+            }
         }
         else
             sign = '-';
@@ -150,10 +153,11 @@ void printDoubleRound(double x, char *s, double roundFactor, int numDigits)
     /*----------------------------------------------------------------*/
     /* Extract decimal digits of mantissa                             */
     /*----------------------------------------------------------------*/
-    for (i = 0; i < numDigits; ++i, --dec)
+    for (i = 0; i < numDigits+1+precLimit; ++i, --dec)
     {
         Int32 d = fcd.d;
-        *s++ = d + '0';
+        if ((-1 != precLimit)&&(dec >= -precLimit))
+            *s++ = d + '0';
         if (!dec)
             *s++ = '.';
         fcd.d = fcd.d - (double)d;
@@ -163,10 +167,13 @@ void printDoubleRound(double x, char *s, double roundFactor, int numDigits)
     /*----------------------------------------------------------------*/
     /* Remove trailing zeros and decimal point                        */
     /*----------------------------------------------------------------*/
-    while (s[-1] == '0')
-        *--s = '\0';
-    if (s[-1] == '.')
-        *--s = '\0';
+    if (-1 == precLimit)
+    {
+        while (s[-1] == '0')
+            *--s = '\0';
+        if (s[-1] == '.')
+            *--s = '\0';
+    }
 
     /*----------------------------------------------------------------*/
     /* Append exponent                                                */
