@@ -6,6 +6,7 @@
 #include <Logging.hpp>
 #include <SocketAddress.hpp>
 #include <Resolver.hpp>
+#include <NetLibrary.hpp>
 #include <list>
 
 namespace ArsLexis
@@ -15,7 +16,7 @@ namespace ArsLexis
 
     class SocketConnectionManager: private NonCopyable
     {
-        NetLibrary& netLib_;
+        NetLibrary netLib_;
         SocketSelector selector_;
         Resolver resolver_;
         
@@ -29,9 +30,11 @@ namespace ArsLexis
         NetLibrary& netLibrary()
         {return netLib_;}
         
+        Err openNetLib();
+        
     public:
     
-        SocketConnectionManager(NetLibrary& netLib);
+        SocketConnectionManager();
 
         ~SocketConnectionManager();
         
@@ -110,6 +113,7 @@ namespace ArsLexis
         {
             errResponseTooLong=sockConnErrorClass,
             errResponseMalformed,
+            errNetLibUnavailable,
             errFirstAvailable
         };
         

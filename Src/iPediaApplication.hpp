@@ -65,9 +65,6 @@ public:
     UInt16 ticksPerSecond() const
     {return ticksPerSecond_;}
     
-    iPediaHyperlinkHandler& hyperlinkHandler()
-    {return hyperlinkHandler_;}
-    
     struct Preferences
     {
         RenderingPreferences renderingPreferences;

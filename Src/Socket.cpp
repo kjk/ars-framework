@@ -12,9 +12,7 @@ namespace ArsLexis
         log_("SocketBase"),
         netLib_(netLib),
         socket_(0)
-    {
-        assert(netLib_.refNum());
-    }
+    {}
     
     SocketBase::~SocketBase()
     {

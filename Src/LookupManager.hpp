@@ -2,8 +2,6 @@
 #define __LOOKUP_MANAGER_HPP__
 
 #include <SocketConnection.hpp>
-#include <NetLibrary.hpp>
-#include <Resolver.hpp>
 #include <Utility.hpp>
 #include "Definition.hpp"
 
@@ -18,7 +16,6 @@ class LookupHistory;
 class LookupManager: private ArsLexis::NonCopyable
 {
     LookupHistory& history_;
-    ArsLexis::NetLibrary netLibrary_;
     ArsLexis::SocketConnectionManager connectionManager_;
     Definition lastDefinition_;
 
@@ -41,8 +38,6 @@ class LookupManager: private ArsLexis::NonCopyable
     uint_t lookupInProgress_:1;
     
 public:
-
-    Err initialize();
 
     enum ServerError
     {
@@ -79,13 +74,14 @@ public:
         {}
     };
 
-    LookupManager(LookupHistory& history):
+    LookupManager(LookupHistory& history, Definition::HyperlinkHandler* hyperlinkHandler=0):
         history_(history),
-        connectionManager_(netLibrary_),
         historyChange_(historyMoveForward),
         percentProgress_(percentProgressDisabled),
         lookupInProgress_(false)
-    {}
+    {
+        lastDefinition_.setHyperlinkHandler(hyperlinkHandler);
+    }
     
     ~LookupManager();
 

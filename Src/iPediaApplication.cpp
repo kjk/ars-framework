@@ -90,14 +90,7 @@ LookupManager* iPediaApplication::getLookupManager(bool create)
 {
     Err error=errNone;
     if (!lookupManager_ && create)
-    {
-        std::auto_ptr<LookupManager> tmp(new LookupManager(history_));
-        error=tmp->initialize();
-        if (errNone==error)
-            lookupManager_=tmp.release();
-        else
-            sendDisplayAlertEvent(networkUnavailableAlert);
-    }
+        lookupManager_=new LookupManager(history_, &hyperlinkHandler_);
     return lookupManager_;
 }
 

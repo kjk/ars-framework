@@ -4,23 +4,8 @@
 #include <Graphics.hpp>
 #include <Text.hpp>
 
-Err LookupManager::initialize()
-{
-    UInt16 ifError;
-    Err error=netLibrary_.initialize(ifError);
-    if (errNone==error && errNone!=ifError)
-        error=ifError;
-    if (!error)
-    {
-        iPediaApplication& app=iPediaApplication::instance();
-        lastDefinition_.setHyperlinkHandler(&app.hyperlinkHandler());        
-    }
-    return error;
-}
-
 LookupManager::~LookupManager()
-{
-}
+{}
 
 namespace {
 
@@ -55,6 +40,10 @@ void LookupManager::handleConnectionError(Err error)
             
         case SocketConnection::errResponseMalformed:
             alertId=malformedResponseAlert;
+            break;
+            
+        case SocketConnection::errNetLibUnavailable:
+            alertId=networkUnavailableAlert;
             break;
         
         case netErrTimeout:

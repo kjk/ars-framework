@@ -16,10 +16,9 @@ namespace ArsLexis
         selector_.unregisterSocket(socket, SocketSelector::eventException);
     }
     
-    SocketConnectionManager::SocketConnectionManager(NetLibrary& netLib):
-        netLib_(netLib),
-        selector_(netLib, false),
-        resolver_(netLib)
+    SocketConnectionManager::SocketConnectionManager():
+        selector_(netLib_, false),
+        resolver_(netLib_)
     {}
     
     SocketConnectionManager::~SocketConnectionManager()
@@ -34,6 +33,16 @@ namespace ArsLexis
             {return state==conn->state();}
         };
     }
+    
+    Err SocketConnectionManager::openNetLib()
+    {
+        assert(netLib_.closed());
+        UInt16 ifError;
+        Err error=netLib_.initialize(ifError);
+        if (error || ifError)
+            error=SocketConnection::errNetLibUnavailable;
+        return error;
+    }
 
     Err SocketConnectionManager::manageConnectionEvents(Int32 timeout)
     {
@@ -46,11 +55,19 @@ namespace ArsLexis
             done=true;
         }
         if (done)
+        {
+            if (connections_.empty())
+                netLib_.close();
             return errNone;
+        }
         it=std::find_if(connections_.begin(), connections_.end(), ConnStateEquals<SocketConnection::stateUnresolved>());
         if (connections_.end()!=it)
         {
-            Err error=(*it)->resolve(resolver_);
+            Err error=errNone;
+            if (netLib_.closed())
+                error=openNetLib();
+            if (!error)                
+                error=(*it)->resolve(resolver_);
             if (error)
             {
                 (*it)->handleError(error);

@@ -8,9 +8,10 @@ namespace ArsLexis
 
     class INetSocketAddress;
 
-    class NetLibrary: public Library
+    class NetLibrary: private Library
     {
-        Boolean closed_;
+        bool closed_:1;
+        bool libraryOpened_:1;
         
     public:
         
@@ -22,12 +23,15 @@ namespace ArsLexis
             defaultConfig
         };
         
+        operator UInt16() const
+        {return Library::refNum();}
+        
         Err initialize(UInt16& ifError, UInt16 configIndex=defaultConfig, UInt32 openFlags=0);
         
-        Boolean closed() const 
+        bool closed() const 
         {return closed_;}
         
-        Err close(Boolean immediate=false);
+        Err close(bool immediate=false);
         
         Err getSetting(UInt16 setting, void* value, UInt16& valueLength) const;
         Err setSetting(UInt16 setting, const void* value, UInt16 valueLength);
