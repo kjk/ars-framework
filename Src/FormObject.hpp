@@ -66,10 +66,10 @@ namespace ArsLexis
         {FrmSetFocus(*form_, index_);}
         
         void hide()
-        {FrmShowObject(*form_, index_);}
+        {FrmHideObject(*form_, index_);}
         
         void show()
-        {FrmHideObject(*form_, index_);}
+        {FrmShowObject(*form_, index_);}
         
     };
     
@@ -131,6 +131,19 @@ namespace ArsLexis
         {FldDrawField(object());}
         
     };
+    
+    class Control: public FormObjectWrapper<ControlType>
+    {
+    public:
+    
+        explicit Control(Form& form, UInt16 id=frmInvalidObjectId):
+            FormObjectWrapper(form, id)
+        {}
+        
+        void hit()
+        {CtlHitControl(object());}
+        
+    };        
     
 }
 

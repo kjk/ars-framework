@@ -103,6 +103,13 @@ void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
     graphics.drawCenteredText("http://www.arslexis.com", point, bounds.width());
 }
 
+void MainForm::updateScrollBar()
+{
+    ScrollBar scrollBar(*this, definitionScrollBar);
+    scrollBar.setPosition(definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
+    scrollBar.show();
+}
+
 void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
 {
     const iPediaApplication& app=static_cast<iPediaApplication&>(application());
@@ -111,12 +118,8 @@ void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
     graphics.erase(bounds);
     bounds.explode(2, 2, -12, -4);
     definition_.render(graphics, bounds, app.renderingPreferences());
-    
-    ScrollBar scrollBar(*this, definitionScrollBar);
-    scrollBar.show();
-    scrollBar.setPosition(definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
+    updateScrollBar();    
 }
-
 
 void MainForm::draw(UInt16 updateCode)
 {
@@ -176,6 +179,15 @@ void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
     }
 }
 
+void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
+{
+    Graphics graphics(windowHandle());
+    if (scrollPage==unit)
+        units*=(definition_.shownLinesCount()/2);    definition_.scroll(graphics, units);
+    updateScrollBar();
+}
+
+
 void MainForm::lookupTerm(const ArsLexis::String& newTerm)
 {
     if (newTerm!=term())
@@ -196,12 +208,15 @@ void MainForm::handleControlSelect(const ctlSelect& data)
         lookupTerm(textPtr);
 }
 
-
 Boolean MainForm::handleEvent(EventType& event)
 {
     Boolean handled=false;
     switch (event.eType)
     {
+        case keyDownEvent:
+            handled=handleKeyPress(event);
+            break;
+            
         case ctlSelectEvent:
             handleControlSelect(event.data.ctlSelect);
             break;
@@ -231,4 +246,52 @@ void MainForm::setTerm(const ArsLexis::String& term)
 {
     term_=term;
     updateCurrentTermField();
+}
+
+bool MainForm::handleKeyPress(const EventType& event)
+{
+    bool handled=false;
+    switch (event.data.keyDown.chr)
+    {
+        case chrPageDown:
+            if (displayMode()==showDefinition)
+            {
+                scrollDefinition(1, scrollPage);
+                handled=true;
+            }
+            break;
+            
+        case chrPageUp:
+            if (displayMode()==showDefinition)
+            {
+                scrollDefinition(-1, scrollPage);
+                handled=true;
+            }
+            break;
+        
+        case chrDownArrow:
+            if (displayMode()==showDefinition)
+            {
+                scrollDefinition(1, scrollLine);
+                handled=true;
+            }
+            break;
+
+        case chrUpArrow:
+            if (displayMode()==showDefinition)
+            {
+                scrollDefinition(-1, scrollLine);
+                handled=true;
+            }
+            break;
+            
+        case vchrRockerCenter:
+        case chrLineFeed:
+        case chrCarriageReturn:
+            Control control(*this, goButton);
+            control.hit();
+            handled=true;
+            break;
+    }
+    return handled;
 }

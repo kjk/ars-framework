@@ -20,7 +20,6 @@ class iPediaApplication: public ArsLexis::Application
     Err getNetLibrary(ArsLexis::NetLibrary*& netLib);
     
     UInt16 ticksPerSecond_;
-    RenderingPreferences renderingPrefs_;
     
     iPediaHyperlinkHandler hyperlinkHandler_;
     ArsLexis::Resolver* resolver_;
@@ -58,14 +57,12 @@ public:
     UInt16 ticksPerSecond() const
     {return ticksPerSecond_;}
     
-    const RenderingPreferences& renderingPreferences() const
-    {return renderingPrefs_;}
-    
     iPediaHyperlinkHandler& hyperlinkHandler()
     {return hyperlinkHandler_;}
     
     struct Preferences
     {
+        RenderingPreferences renderingPreferences;
         ArsLexis::String cookie;
     };
     
@@ -74,6 +71,9 @@ public:
     
     const Preferences& preferences() const
     {return preferences_;}
+    
+    const RenderingPreferences& renderingPreferences() const
+    {return preferences().renderingPreferences;}
     
 private:
     

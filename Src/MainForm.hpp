@@ -17,12 +17,14 @@ class MainForm: public iPediaForm
     void handleScrollRepeat(const sclRepeat& data);
     void handlePenUp(const EventType& event);
     void handleControlSelect(const ctlSelect& data);
+    bool handleKeyPress(const EventType& event);
     
     void drawSplashScreen(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     void drawDefinition(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     void startLookupConnection(const ArsLexis::String& term);
     
     void updateCurrentTermField();
+    void updateScrollBar();
     
 protected:
 
@@ -77,6 +79,14 @@ public:
     
 //    bool historyHasNext() const
 //    {return termHistory_.end()!=historyPosition_ && termHistory_.end()!=historyPosition_+1;}
+
+    enum ScrollUnit
+    {
+        scrollLine,
+        scrollPage
+    };
+    
+    void scrollDefinition(int units, ScrollUnit unit);
     
 private:
     
