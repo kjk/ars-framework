@@ -3,7 +3,7 @@
 
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
-import MySQLdb, random, _mysql_exceptions, datetime
+import MySQLdb, random, _mysql_exceptions, datetime, re
 
 lineSeparator =     "\n"
 fieldSeparator =    ": "
@@ -272,20 +272,42 @@ class iPediaProtocol(basic.LineReceiver):
                     else:
                         return None
         
-    def findExactDefinition(self, db, cursor):
-        query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(self.requestedTerm)
+    def findExactDefinition(self, db, cursor, term):
+        query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(term)
         cursor.execute(query)
         row=cursor.fetchone()
         if row:
             definition=None
             idTermDef=self.findTarget(db, cursor, (row[0], row[1], row[2]))
-            if idTermDef:
-                self.definitionId, self.term, definition=idTermDef
-            return definition
+            return idTermDef
         else:
             return None
+        
+    internalLinkRe=re.compile(r'\[\[(.*?)(\|(.*?))?\]\]', re.S)
+                
+    def validateInternalLinks(self, db, cursor, definition):
+        matches=[]
+        for iter in iPediaProtocol.internalLinkRe.finditer(definition):
+            matches.append(iter)
+        matches.reverse()
+        tested=[]
+        valid=[]
+        for match in matches:
+            term=match.group(1)
+            print "Verifiying: ", term
+            if len(term) and (term not in tested):
+                idTermDef=self.findExactDefinition(db, cursor, term)
+                if idTermDef:
+                    print "Validated..."
+                    valid.append(term)
+            if term not in valid:
+                name=match.group(match.lastindex).replace('_', ' ')
+                print "Replacing with: ", name
+                definition=definition[:match.start()]+name+definition[match.end():]
+        return definition
 
-    def preprocessDefinition(self, definition):
+    def preprocessDefinition(self, db, cursor, definition):
+        definition=self.validateInternalLinks(db, cursor, definition)
         definition=definition.replace("__NOTOC__", '')
         definition=definition.replace("{{CURRENTMONTH}}", str(datetime.date.today().month));
         definition=definition.replace("{{CURRENTMONTHNAME}}", datetime.date.today().strftime("%B"))
@@ -297,9 +319,9 @@ class iPediaProtocol(basic.LineReceiver):
         definition=definition.replace("{{NUMBEROFARTICLES}}", str(self.factory.articleCount))
         return definition
         
-    def findFullTextMatches(self, db, cursor):
+    def findFullTextMatches(self, db, cursor, reqTerm):
         print "Performing full text search..."
-        query="""select id, term, definition from definitions where match(term, definition) against('%s') limit %d""" % (db.escape_string(self.requestedTerm), listLengthLimit)
+        query="""select id, term, definition from definitions where match(term, definition) against('%s') limit %d""" % (db.escape_string(reqTerm), listLengthLimit)
         cursor.execute(query)
         tupleList=[]
         row=cursor.fetchone()
@@ -338,11 +360,14 @@ class iPediaProtocol(basic.LineReceiver):
         try:
             db=self.getDatabase()
             cursor=db.cursor()
-            definition=self.findExactDefinition(db, cursor)
+            idTermDef=self.findExactDefinition(db, cursor, self.requestedTerm)
+            if idTermDef:
+                self.definitionId, self.term, definition=idTermDef
+#               definition=self.findExactDefinition(db, cursor)
             if definition:
-                self.outputDefinition(self.preprocessDefinition(definition))
+                self.outputDefinition(self.preprocessDefinition(db, cursor, definition))
             else:
-                self.termList=self.findFullTextMatches(db, cursor)
+                self.termList=self.findFullTextMatches(db, cursor, self.requestedTerm)
                 if self.termList:
                     self.outputField(definitionNotFoundField)
                 else:
