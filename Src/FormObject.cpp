@@ -93,5 +93,41 @@ namespace ArsLexis
         makeItemVisible(curSelection);
     }
 
+    List::CustomDrawHandler::CustomDrawHandler():
+        form_(0),
+        listId_(frmInvalidObjectId)
+#ifdef __MWERKS__        
+        , drawCallbackThunk_(drawCallback)
+#endif
+    {}
 
+    void List::setCustomDrawHandler(List::CustomDrawHandler* handler)
+    {
+        if (handler)
+        {
+            handler->form_=form();
+            handler->listId_=id();
+#ifdef __MWERKS__        
+            LstSetDrawFunction(object(), reinterpret_cast<ListDrawDataFuncPtr>(&handler->drawCallbackThunk_.thunkData));
+#else
+            LstSetDrawFunction(object(), CustomDrawHandler::drawCallback);
+#endif
+            LstSetListChoices(object(), reinterpret_cast<Char**>(handler), handler->itemsCount());
+        }
+        else
+        {
+            LstSetDrawFunction(object(), 0);
+            LstSetListChoices(object(), 0, 0);
+        }
+    }
+    
+    void List::CustomDrawHandler::drawCallback(Int16 itemNum, RectangleType* rect, Char** itemsText)
+    {
+        CustomDrawHandler* handler=reinterpret_cast<CustomDrawHandler*>(itemsText);
+        assert(0!=handler);
+        Rectangle bounds(*rect);
+        List list(*handler->form_, handler->listId_);
+        handler->drawItem(list, itemNum, bounds);
+    }
+    
 }

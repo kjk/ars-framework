@@ -3,11 +3,9 @@
 #include <Text.hpp>
 #include <BaseTypes.hpp>
 
-#if !(defined(_WIN32_WCE) || defined(_WIN32))
-#include <cctype>
-#include <cstring>
+#ifdef __MWERKS__
+# pragma far_code
 #endif
-
 
 namespace ArsLexis
 {

@@ -3,6 +3,10 @@
 
 #include <Form.hpp>
 
+#ifdef __MWERKS__
+#include <CWCallbackThunks.h>
+#endif // __MWERKS__
+
 namespace ArsLexis
 {
 
@@ -22,6 +26,9 @@ namespace ArsLexis
 
         const void* wrappedObject() const
         {return object_;}
+        
+        Form* form()
+        {return form_;}
 
     public:
 
@@ -198,7 +205,7 @@ namespace ArsLexis
             FormObjectWrapper(form, id)
         {}
         
-        void setChoices(const char** choices, uint_t choicesCount)
+        void setChoices(const char* choices[], uint_t choicesCount)
         {LstSetListChoices(object(), const_cast<char**>(choices), choicesCount);}
         
         uint_t visibleItems() const
@@ -223,6 +230,32 @@ namespace ArsLexis
         {return LstGetNumberOfItems(object()); }
 
         void setSelectionDelta(int delta);
+        
+        class CustomDrawHandler {
+
+            Form* form_;
+            UInt16 listId_;
+
+#ifdef __MWERKS__        
+            _CW_CallbackThunk drawCallbackThunk_;
+#endif
+        
+            static void drawCallback(Int16 itemNum, RectangleType* rect, Char** itemsText);
+        
+        public:
+        
+            CustomDrawHandler();
+        
+            virtual void drawItem(List& list, uint_t item, const Rectangle& listBounds)=0;
+            
+            virtual uint_t itemsCount() const=0;
+
+            virtual ~CustomDrawHandler() {}
+
+            friend class List;               
+        };
+        
+        void setCustomDrawHandler(CustomDrawHandler* handler);
 
     };
     
