@@ -1,8 +1,8 @@
-# Connection: rabban
-# Host: rabban
-# Saved: 2004-03-12 20:42:42
+# Connection: localhost
+# Host: localhost
+# Saved: 2004-03-16 19:49:06
 # 
-# Host: rabban
+# Host: localhost
 # Database: ipedia
 # Table: 'cookies'
 # 
@@ -15,7 +15,7 @@ CREATE TABLE `cookies` (
   UNIQUE KEY `cookie_unique` (`cookie`)
 ) TYPE=MyISAM; 
 
-# Host: rabban
+# Host: localhost
 # Database: ipedia
 # Table: 'definitions'
 # 
@@ -28,7 +28,7 @@ CREATE TABLE `definitions` (
   UNIQUE KEY `term_index` (`term`)
 ) TYPE=MyISAM; 
 
-# Host: rabban
+# Host: localhost
 # Database: ipedia
 # Table: 'registered_users'
 # 
@@ -41,18 +41,20 @@ CREATE TABLE `registered_users` (
   PRIMARY KEY  (`id`)
 ) TYPE=MyISAM; 
 
-# Host: rabban
+# Host: localhost
 # Database: ipedia
-# Table: 'term_requests'
+# Table: 'requests'
 # 
-CREATE TABLE `term_requests` (
+CREATE TABLE `requests` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `requested_term` varchar(255) NOT NULL default '',
-  `cookie` varchar(32) binary NOT NULL default '',
+  `client_ip` int(10) unsigned NOT NULL default '0',
   `transaction_id` int(10) unsigned NOT NULL default '0',
-  `cookie_id` int(10) unsigned NOT NULL default '0',
-  `definition_id` int(10) unsigned NOT NULL default '0',
-  `request_date` timestamp(14) NOT NULL,
+  `has_get_cookie_field` tinyint(1) NOT NULL default '0',
+  `cookie_id` int(10) unsigned default '0',
+  `has_register_field` tinyint(1) NOT NULL default '0',
+  `requested_term` varchar(255) default '',
+  `error` int(10) unsigned NOT NULL default '0',
+  `definition_id` int(10) unsigned default '0',
   PRIMARY KEY  (`id`)
 ) TYPE=MyISAM; 
 
