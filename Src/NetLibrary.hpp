@@ -23,7 +23,7 @@ namespace ArsLexis
 
         ~NetLibrary();
 
-        static const uint_t defaultConfig;
+        enum {defaultConfig};
 
         status_t initialize(uint_t& ifError, uint_t configIndex=defaultConfig, ulong_t openFlags=0);
 

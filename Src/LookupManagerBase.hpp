@@ -12,11 +12,17 @@ namespace ArsLexis {
     class LookupProgressReportingSupport {
         String statusText_;
         uint_t percentProgress_;
+        ulong_t bytesProgress_;
         
     public:
         
         static const uint_t percentProgressDisabled=(uint_t)-1;
     
+        LookupProgressReportingSupport():
+            percentProgress_(percentProgressDisabled),
+            bytesProgress_(0)
+        {}
+        
         const String& statusText() const
         {return statusText_;}
         
@@ -28,6 +34,9 @@ namespace ArsLexis {
         
        void setPercentProgress(uint_t progress)
        {percentProgress_=progress;}
+
+       void setBytesProgress(ulong_t bytes)
+       {bytesProgress_=bytes;}
 
         virtual void showProgress(Graphics& graphics, const Rectangle& bounds) const;
         
@@ -45,6 +54,10 @@ namespace ArsLexis {
     
         virtual void handleLookupFinished(const LookupFinishedData& data)
         {}
+
+        using ProgressReportingSupport::setBytesProgress;
+        using ProgressReportingSupport::setPercentProgress;
+        using ProgressReportingSupport::setStatusText;
 
     public:
     

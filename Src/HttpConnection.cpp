@@ -44,7 +44,9 @@ namespace ArsLexis {
         skippingInfoResponse_(false),
         bodyContentsAvailable_(false),
         finished_(false),
-        chunkedBodyFinished_(false)
+        chunkedBodyFinished_(false),
+        contentLength_(contentLengthUnavailable),
+        readContentLength_(0)
     {}        
 
     HttpConnection::~HttpConnection() 
@@ -282,10 +284,14 @@ namespace ArsLexis {
                 return errNone;
             }
             else
-                chr=body()[charsRead_++];
+                goto charAvailable;
         }
         else 
+        {
+charAvailable:        
+            ++connection_.readContentLength_;
             chr=body()[charsRead_++];
+        }            
         if (chunkLength==charsRead_) 
             flush();
         return errNone;

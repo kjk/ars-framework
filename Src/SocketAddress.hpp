@@ -30,8 +30,8 @@ namespace ArsLexis
     {
         struct INetSocketAddr {
             short family;
-            uint_t port;
-           IPAddr ip;
+            ushort_t port;
+            IPAddr ip;
         };
         
         INetSocketAddr& address() 

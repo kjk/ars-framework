@@ -99,7 +99,7 @@ namespace ArsLexis
     union IPAddr
     {
         unsigned long ip;
-        NativeIPAddr_t navtive;
+        NativeIPAddr_t native;
     } ;
     
 

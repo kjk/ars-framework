@@ -76,11 +76,12 @@ namespace ArsLexis
     {
         assert(refNum());
         status_t error=errNone;
-        NetIPAddr ip=NetLibAddrAToIN(refNum(), addr);
-        if (-1==ip)
+        IPAddr a;
+        a. ip=NetLibAddrAToIN(refNum(), addr);
+        if (-1==a.ip)
             error=netErrParamErr;
         else
-            out.setIpAddress(ip);
+            out.setIpAddress(a);
         return error;
     }
     
@@ -109,9 +110,9 @@ namespace ArsLexis
         return NetLibReceive(*this, socket, buf, bufLen, flags, fromAddrP, reinterpret_cast<UInt16*>(fromLen), timeout, &err);
     }
 
-    int NetLibrary::socketConnect(NativeSocket_t  socket, const NativeSocketAddr_t& sockAddrP, uint_t addrLen, long timeout, status_t& err)
+    int NetLibrary::socketConnect(NativeSocket_t  socket, const SocketAddr& sockAddr, uint_t addrLen, long timeout, status_t& err)
     {
-        return NetLibSocketConnect(*this, socket, const_cast<NativeSocketAddr_t*>(&sockAddrP), addrLen, timeout, &err);
+        return NetLibSocketConnect(*this, socket, const_cast<NativeSocketAddr_t*>(&sockAddr.native), addrLen, timeout, &err);
     }
     
     int NetLibrary::select(uint_t width, NativeFDSet_t* readFDs, NativeFDSet_t* writeFDs, NativeFDSet_t* exceptFDs, long timeout, status_t& err) 

@@ -120,7 +120,7 @@ namespace ArsLexis
         }
         AddressCache_t::const_iterator it=cache_.find(validAddress);
 //      AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
-        if (!(it==cache_.end()))
+        if (!(cache_.end()==it))
         {
             addr.setIpAddress((*it).second);
             addr.setPort(port);

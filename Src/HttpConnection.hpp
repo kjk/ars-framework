@@ -64,6 +64,15 @@ namespace ArsLexis {
         bool bodyContentsAvailable_:1;
         bool finished_:1;
         bool chunkedBodyFinished_:1;
+
+    protected:        
+        
+        static const ulong_t contentLengthUnavailable=(ulong_t)-1;
+        
+    private:        
+        
+        ulong_t contentLength_;
+        ulong_t readContentLength_;
         
         String uri_;
         String messageBody_;
@@ -173,6 +182,12 @@ namespace ArsLexis {
         {return bodyContentsAvailable_;}
         
         virtual Err processBodyContents(Reader& reader);
+        
+        ulong_t contentLength() const
+        {return contentLength_;}
+        
+        ulong_t readContentLength() const
+        {return readContentLength_;}
         
     };
 
