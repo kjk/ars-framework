@@ -3,18 +3,18 @@
  *
  * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
  */
-#include <DeviceInfo.hpp>
-#include <SysUtils.hpp>
-#include <Text.hpp>
+#include <winuser.h>
+#include <winbase.h>
+#include <uniqueid.h>
+#include <sms.h>
 
-#include <aygshell.h>
 #ifdef WIN32_PLATFORM_WFSP
 #include <tpcshell.h>
 #endif
-#include <winuser.h>
-#include <winbase.h>
-#include <sms.h>
-#include <uniqueid.h>
+
+#include <SysUtils.hpp>
+#include <Text.hpp>
+#include <DeviceInfo.hpp>
 
 namespace ArsLexis
 {
