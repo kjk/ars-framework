@@ -80,7 +80,7 @@ namespace ArsLexis
         return error;    
     }
 
-#define HEX_DIGITS "0123456789ABSCDEF"
+#define HEX_DIGITS "0123456789ABCDEF"
 
     String hexBinEncode(const String& in)
     {
