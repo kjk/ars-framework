@@ -57,7 +57,7 @@ namespace ArsLexis
 
         void setHyperlinkHandler(HyperlinkHandler* handler) {definition_.setHyperlinkHandler(handler);}
 
-        void selectionToText(ArsLexis::String& out) const {definition_.selectionToText(out);}
+        void selectionOrAllToText(ArsLexis::String& out) const {definition_.selectionToText(out);}
 
         typedef Definition::RenderingProgressReporter RenderingProgressReporter;
         void setRenderingProgressReporter(RenderingProgressReporter* reporter) {definition_.setRenderingProgressReporter(reporter);}
@@ -82,7 +82,7 @@ namespace ArsLexis
         
         void draw() {drawProxy();}
         
-        bool copySelection() const;
+        bool copySelectionOrAll() const;
         
         enum InteractionBehaviorOption {
             behavDoubleClickSelection = Definition::behavDoubleClickSelection,
@@ -151,7 +151,7 @@ namespace ArsLexis
         void disposeOffscreenWindow();
         
         RenderingErrorListener* renderingErrorListener_;
-	
+
         UInt32 scheduledNilEventTicks_;
         
         enum ScheduledScrollDirection {

@@ -336,10 +336,10 @@ void TextRenderer::removeFocusRing()
     FormGadget::removeFocusRing();
 }
 
-bool TextRenderer::copySelection() const
+bool TextRenderer::copySelectionOrAll() const
 {
     String text;
-    definition_.selectionToText(text);
+    definition_.selectionOrAllToText(text);
     if (text.empty())
         return false;
     ClipboardAddItem(clipboardText, text.data(), text.length());
@@ -385,7 +385,7 @@ bool TextRenderer::handleMenuEvent(const EventType& event)
         if (frmFieldObj == kind || frmTableObj == kind)
             return false;
     }
-    return copySelection();         
+    return copySelectionOrAll();         
 }
 
 bool TextRenderer::handleEventInForm(EventType& event)

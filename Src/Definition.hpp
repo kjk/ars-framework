@@ -265,9 +265,13 @@ public:
     
     void goToBookmark(const ArsLexis::String&)
     {}
-    
+
+    void allToText(ArsLexis::String& out) const;
+
     void selectionToText(ArsLexis::String& out) const;
-    
+
+    void selectionOrAllToText(ArsLexis::String& out) const;
+
     bool empty() const
     {return elements_.empty();}
     

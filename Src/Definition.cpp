@@ -563,9 +563,19 @@ void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& pr
         graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
 }
 
+// if there is selection, copy selection to text. Otherwise, copy
+// the whole definition
+void Definition::selectionOrAllToText(String& out) const
+{
+    if (hasSelection())
+        selectionToText(out);
+    else
+        allToText(out);
+}
+
 void Definition::selectionToText(String& out) const
 {
-    if (selectionStartElement_ == elements_.end())
+    if (!hasSelection())
         return;
     Elements_t::const_iterator end=elements_.end();
     uint_t start, stop;
@@ -583,6 +593,24 @@ void Definition::selectionToText(String& out) const
                 stop = LayoutContext::progressCompleted;
             (*it)->toText(out, start, stop);
         }
+    }
+}
+
+void Definition::allToText(String& out) const
+{
+    Elements_t::const_iterator end=elements_.end();
+    uint_t start, stop;
+    for (Elements_t::const_iterator it=elements_.begin(); it!=end; ++it)
+    {
+        if (it == selectionStartElement_)
+            start = selectionStartProgress_;
+        else 
+            start = 0;
+        if (it == selectionEndElement_)
+            stop = selectionEndProgress_;
+        else
+            stop = LayoutContext::progressCompleted;
+        (*it)->toText(out, start, stop);
     }
 }
 
