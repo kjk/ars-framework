@@ -510,8 +510,10 @@ void DefinitionParser::finishCurrentNumberedList()
         currentNumberedList_.clear();
 }
 
-void DefinitionParser::manageListNesting(const String& newNesting)
+void DefinitionParser::manageListNesting(const String& requestedNesting)
 {
+    static const uint_t maxNestingDepth=8;
+    String newNesting(requestedNesting, 0, maxNestingDepth);
     uint_t lastNestingDepth=lastListNesting_.length();
     uint_t newNestingDepth=newNesting.length();
     if (lastNestingDepth || newNestingDepth)

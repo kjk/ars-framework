@@ -107,7 +107,8 @@ namespace ArsLexis
         
     Err SocketConnectionManager::manageConnectionEvents(Int32 timeout)
     {
-        if (manageFinishedConnections())            return errNone;
+        if (manageFinishedConnections())
+            return errNone;
             
         if (manageUnresolvedConnections())            
             return errNone;

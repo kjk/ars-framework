@@ -35,7 +35,10 @@ public:
     {}
     
     void setParent(DefinitionElement* parent)
-    {parent_=parent;}
+    {
+        assert(parent!=this);
+        parent_=parent;
+    }
     
     uint_t indentation() const;
     
