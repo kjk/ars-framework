@@ -563,6 +563,12 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             handled=true;
             break;
 
+		case arslexisWebsiteMenuItem:
+            if ( errNone != ErrWebBrowserCommand(false, 0, sysAppLaunchCmdGoToURL, "http://www.arslexis.com/pda/ipedia.html",NULL) )
+                FrmAlert(noWebBrowserAlert);
+			handled = true;
+			break;
+
         case aboutMenuItem:
             handleAbout();
             handled=true;

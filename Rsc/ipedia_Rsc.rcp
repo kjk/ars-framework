@@ -34,6 +34,7 @@ BEGIN
     BEGIN
         MENUITEM "Register" ID registerMenuItem  "G"
         MENUITEM SEPARATOR
+		MENUITEM "ArsLexis website"        ID arslexisWebsiteMenuItem   "W"
         MENUITEM "About" ID aboutMenuItem  "A"
     END
 END	
@@ -125,6 +126,14 @@ ALERT ID malformedRequestAlert
 BEGIN
     TITLE "Malformed Request"
     MESSAGE "Server rejected your query."
+    BUTTONS "OK"
+END
+
+ALERT ID noWebBrowserAlert
+INFORMATION
+BEGIN
+    TITLE "No web browser"
+    MESSAGE "Web browser is not installed on this device."
     BUTTONS "OK"
 END
 
@@ -261,3 +270,6 @@ STRINGTABLE ID connectionStatusStrings  "" "Resolving host address..." "Opening 
 
 
 STRING ID layoutProgressWaitText "Wait... %d%%"             
+
+
+

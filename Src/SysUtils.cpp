@@ -194,4 +194,46 @@ namespace ArsLexis
         return error;
     }
 
+    Err ErrWebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, char *parameterP, UInt32 *resultP)
+    {
+        UInt16  cardNo;
+        LocalID dbID;
+        UInt32  result;
+        Err     error;
+
+        if (resultP)
+            *resultP = errNone;
+
+        if (!fDetectViewer(&cardNo,&dbID))
+            return 1;
+
+        if (subLaunch)
+        {
+            SysAppLaunch(cardNo, dbID, launchFlags, command, parameterP, &result);
+            if (resultP) 
+                *resultP = result;
+        }
+        else
+        {
+            char *newParamP = NULL;
+            if (parameterP)
+            {
+                newParamP=(char*)MemPtrNew( StrLen(parameterP) +1 );
+                if (newParamP == NULL) 
+                    error = memErrNotEnoughSpace;
+                else
+                {
+                    StrCopy(newParamP, parameterP);
+                    MemPtrSetOwner(newParamP, 0); // The OS now owns this memory
+                }
+            }
+            if (error == errNone)
+            {
+                SysUIAppSwitch(cardNo, dbID, command, newParamP);
+            }
+        }
+        return error;
+    } 
+
+
 }

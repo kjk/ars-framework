@@ -36,12 +36,13 @@ namespace ArsLexis
     // detect a web browser app and return cardNo and dbID of its *.prc.
     // returns true if detected some viewer, false if none was found
     bool fDetectViewer(UInt16 *cardNoOut, LocalID *dbIDOut);
-    
-    
+   
     Err getResource(UInt16 tableId, UInt16 index, String& out);
     
     Err getResource(UInt16 stringId, String& out);
-    
+
+	Err  ErrWebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, char *parameterP, UInt32 *resultP);
+
 }
 
 #endif

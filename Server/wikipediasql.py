@@ -83,7 +83,7 @@ class WikipediaArticleFromSql:
             self.redirect = redirect.replace(" ", "_")
             if int(row[CUR_IS_REDIRECT])==0:
                 # redirect not marked as such
-                print "%s is a redirect but not marked as such" % getTitle()
+                print "%s is a redirect but not marked as such" % self.getTitle()
         else:
             self.row[CUR_TEXT] = txt.strip()
     def getId(self):  return int(self.row[CUR_ID])
