@@ -1,11 +1,7 @@
 #ifndef _WINFONT_H_
 #define _WINFONT_H_
-
 #include <windows.h>
-//#include <wingdi.h>
 #include "FontEffects.hpp"
-
-#define maxFontHeight 16;
 
 using ArsLexis::FontEffects;
 

@@ -6,104 +6,106 @@
 using namespace ArsLexis;
 
 typedef struct FontCacheEntry_ {
-    HFONT fntHandle;
-
+    HFONT fntHandle_;
+    int   dy_;
+    LONG   weight_;
+    bool  fUnderline_;
+    bool  fStrike_;
 } FontCacheEntry_t;
 
-// cache of font handles
-HFONT g_fontHandles[16-6][3][2][2];
+#define MAX_FONT_CACHE_ENTRIES 20
 
-static void InitFontHandles()
+FontCacheEntry_t g_fontCache[MAX_FONT_CACHE_ENTRIES];
+static int g_cacheEntriesUsed = 0;
+
+static HFONT FindFont(int dy, LONG weight, bool fUnderline, bool fStrike)
 {
-    static bool g_fInitialized = false;
-    if (g_fInitialized)
-        return;
-
-    for (int a=0; a<16-6; a++)
+    for (int i=0; i<g_cacheEntriesUsed; i++)
     {
-        for (int b=0; b<3; b++)
+        if ( (dy==g_fontCache[i].dy_) &&
+             (weight==g_fontCache[i].weight_) &&
+             (fUnderline==g_fontCache[i].fUnderline_) &&
+             (fStrike==g_fontCache[i].fStrike_) )
         {
-            for (int c=0; c<2; c++)
-            {
-                for (int d=0; d<2; d++)
-                {
-                    g_fontHandles[a][b][c][d];
-                }
-            }
+            return g_fontCache[i].fntHandle_;
         }
     }
-    g_fInitialized = true;
+    return NULL;
 }
 
-static HFONT createFont(int height, int weight, int realWeight, int isUnder, int isStrike)
+static void AddCacheEntry(HFONT fntHandle, int dy, LONG weight, bool fUnderline, bool fStrike)
 {
-    // InitFontHandles();
+    assert(NULL==FindFont(dy,weight,fUnderline,fStrike));
+    if (g_cacheEntriesUsed==MAX_FONT_CACHE_ENTRIES)
+        return;
+    g_fontCache[g_cacheEntriesUsed].fntHandle_ = fntHandle;
+    g_fontCache[g_cacheEntriesUsed].dy_ = dy;
+    g_fontCache[g_cacheEntriesUsed].weight_ = weight;
+    g_fontCache[g_cacheEntriesUsed].fUnderline_ = fUnderline;
+    g_fontCache[g_cacheEntriesUsed].fStrike_ = fStrike;
+    g_cacheEntriesUsed++;
+}
 
-    assert( (height-6>=0) && (height-6<16-6) );
-    assert( (weight>=0) && (weight<3) );
-    assert( (isUnder>=0) && (isUnder<2) );
-    assert( (isStrike>=0) && (isStrike<2) );
-
-/*    if (NULL != g_fontHandles[height-6][weight][isUnder][isStrike])
-        return g_fontHandles[height-6][weight][isUnder][isStrike];*/
+static HFONT createFont(int dy, LONG weight, bool fUnderline, bool fStrike)
+{
+    assert(dy>=4);
+    HFONT fnt = FindFont(dy, weight, fUnderline, fStrike);
+    if (NULL!=fnt)
+        return fnt;
 
     LOGFONT logfnt;
     HFONT   stdFont = (HFONT)GetStockObject(SYSTEM_FONT);
     GetObject(stdFont, sizeof(logfnt), &logfnt);
 
-    logfnt.lfWeight = realWeight;
-    logfnt.lfHeight = -height;
+    logfnt.lfWeight = weight;
+    logfnt.lfHeight = -dy;
 
-    if (isUnder)
+    if (fUnderline)
         logfnt.lfUnderline = TRUE;
-    if (isStrike)
+    else
+        logfnt.lfUnderline = FALSE;
+
+    if (fStrike)
         logfnt.lfStrikeOut = TRUE;
-    assert(height<maxFontHeight);
+    else
+        logfnt.lfStrikeOut = FALSE;
 
     HFONT newFont = CreateFontIndirect(&logfnt);
 
     if (newFont)
+    {
+        AddCacheEntry(newFont, dy, weight, fUnderline, fStrike);
         return newFont;
+    }
     else
         return stdFont;
-
-/*    if (NULL == newFont)
-        g_fontHandles[height-6][weight][isUnder][isStrike] = stdFont;
-    else
-        g_fontHandles[height-6][weight][isUnder][isStrike] = newFont;
-
-    return g_fontHandles[height-6][weight][isUnder][isStrike]; */
 }
 
 HFONT getFont(int height, FontEffects effects)
 {
-    LONG realWeight = FW_NORMAL;
+    LONG weight = FW_NORMAL;
 
-    int underline = 0;
+    bool fUnderline = false;
     if (effects.underline() != FontEffects::underlineNone)
-        underline = 1;
+        fUnderline = true;
 
-    int strike = 0;
+    bool fStrike = false;
     if (effects.strikeOut())
-        strike = 1;
+        fStrike = true;
 
-    int weight = 0;
     switch (effects.weight())
     {
         case FontEffects::weightPlain:
             if (effects.italic())
             {
-                weight = 1;
-                realWeight = FW_BOLD;
+                weight = FW_BOLD;
             }
             break;
         case FontEffects::weightBold: 
-            weight = 1;
-            realWeight = FW_BOLD;
+            weight = FW_BOLD;
             break;
         case FontEffects::weightBlack:
-            weight = 2;            
-            realWeight = FW_EXTRABOLD;
+            weight = FW_EXTRABOLD;
             break;
     };
 
@@ -113,5 +115,5 @@ HFONT getFont(int height, FontEffects effects)
     if (effects.isSmall())
         height = height * 9 / 10;
 
-    return createFont(height, weight, realWeight, underline, strike);
+    return createFont(height, weight, fUnderline, fStrike);
 }
