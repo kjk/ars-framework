@@ -4,10 +4,15 @@
 # Emulates client (Palm) application by issuing requests to the server.
 # For testing the server.
 #
+# Usage:
+#   -perfrandom N : do a performance test for Get-Random-Definitions by issuing N requests
+#   -get term : get and display a definition of term
+#   -getrandom
+#
 # TODO:
 #   add cmd line options -get term, -get-random for driving the script from cmd line
-
-import sys, re, socket, random, pickle
+#
+import sys, re, socket, random, pickle, time
 
 # server string must be of form "name:port"
 g_serverList = ["localhost:9000", "dict-pc.arslexis.com:9000"]
@@ -27,6 +32,46 @@ PROTOCOL_VER    = "Protocol-Version:"
 CLIENT_VER      = "Client-Version:"
 GET_DEF         = "Get-Definition:"
 GET_RANDOM      = "Get-Random-Definition:"
+
+g_startTime = None
+g_endTime = None
+
+def startTiming():
+    global g_startTime
+    g_startTime = time.clock()
+
+def endTiming():
+    global g_endTime
+    g_endTime = time.clock()
+
+def dumpTiming():
+    global g_startTime, g_endTime
+    dur = g_endTime - g_startTime
+    str = "duration %f seconds\n" % dur
+    sys.stderr.write(str)
+
+# given argument name in argName, tries to return argument value
+# in command line args and removes those entries from sys.argv
+# return None if not found
+def getRemoveCmdArg(argName):
+    argVal = None
+    try:
+        pos = sys.argv.index(argName)
+        argVal = sys.argv[pos+1]
+        sys.argv[pos:pos+2] = []
+    except:
+        pass
+    return argVal
+
+def fDetectRemoveCmdFlag(flag):
+    fFlagPresent = False
+    try:
+        pos = sys.argv.index(flag)
+        fFlagPresent = True
+        sys.argv[pos:pos+1] = []
+    except:
+        pass
+    return fFlagPresent
 
 g_pickleFileName = "client_pickled_data.dat"
 def pickleState():
@@ -186,11 +231,27 @@ def doGetDef(term):
         print "Found cookie: %s" % parsedResponse[COOKIE]
         g_cookie = parsedResponse[COOKIE]
 
-def doGetRandomDef():
+def doGetRandomDef(fSilent=False,fDoTiming=False):
+    global g_cookie
+    startTiming()
+    defResponse = getRandomDef()
+    endTiming()
+    if not fSilent:
+        print "# response:"
+        print defResponse
+    parsedResponse = parseServerResponse(defResponse)
+    if not parsedResponse:
+        print "FAILURE in parseServerResponse"
+        sys.exit(0)
+    if not getGlobalCookie() and parsedResponse.has_key(COOKIE):
+        print "Found cookie: %s" % parsedResponse[COOKIE]
+        g_cookie = parsedResponse[COOKIE]
+    if fDumpTiming:
+        dumpTiming()
+
+def doGetRandomDefNoTiming():
     global g_cookie
     defResponse = getRandomDef()
-    print "# response:"
-    print defResponse
     parsedResponse = parseServerResponse(defResponse)
     if not parsedResponse:
         print "FAILURE in parseServerResponse"
@@ -199,14 +260,33 @@ def doGetRandomDef():
         print "Found cookie: %s" % parsedResponse[COOKIE]
         g_cookie = parsedResponse[COOKIE]
 
-def main():
-    #doGetDef("home")
-    doGetRandomDef()
+def doRandomPerf(count):
+    startTiming()
+    for i in range(count):
+        doGetRandomDefNoTiming()
+    endTiming()
+    dumpTiming()
+    print "Number of runs: %d" % count
+
+def usageAndExit():
+    print "client.py [-perfrandom N] [-getrandom] [-get term]"
 
 if __name__=="__main__":
     try:
         unpickleState()
-        main()
+        randomCount = getRemoveCmdArg("-perfrandom")
+        if randomCount != None:
+            doRandomPerf(int(randomCount))
+        else:
+            fGetRandom = fDetectRemoveCmdFlag("-getrandom")
+            if fGetRandom:
+                doGetRandomDef(False,True)
+            else:
+                term = getRemoveCmdArg("-get")
+                if term:
+                    doGetDef(term)
+                else:
+                    usageAndExit()
     finally:
         # make sure that we pickle the state even if we crash
         pickleState()

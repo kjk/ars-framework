@@ -10,10 +10,17 @@
 #   -silent : will supress most of the messages logged to stdout. TODO: in the
 #             future will be replaced with -verbose flag (i.e. we'll be silent
 #             by default)
+#   -usepsyco : will use psyco, if available
 
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 import sys, re, random, datetime, MySQLdb, _mysql_exceptions
+try:
+    import psyco
+    g_fPsycoAvailable = True
+except:
+    print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
+    g_fPsycoAvailable = False
 
 # if true we'll log terms that redirect to themselves to a file
 g_fLogCircularReferences = True
@@ -673,10 +680,15 @@ def fDetectRemoveCmdFlag(flag):
     return fFlagPresent
 
 def main():
-    global g_fVerbose
+    global g_fVerbose, g_fPsycoAvailable
     g_fVerbose = True
     if fDetectRemoveCmdFlag( "-silent" ):
         g_fVerbose = False
+
+    fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
+    if g_fPsycoAvailable and fUsePsyco:
+        print "using psyco"
+        psyco.full()
 
     reactor.listenTCP(9000, iPediaFactory())
     reactor.run()
