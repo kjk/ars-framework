@@ -26,10 +26,14 @@ public:
     UnderlineModeType   underline; // -1 if not defined
     
     void reset();
+    
+    DefinitionStyle& operator|=(const DefinitionStyle& other);
 };
 
 #ifdef DEBUG
 void test_StaticStyleTable();
 #endif
+
+enum { styleDefaultIndex = 0 };
 
 #endif

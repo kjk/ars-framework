@@ -14,6 +14,7 @@
 #include <Graphics.hpp>
 #include "Rendering.hpp"
 #include <RenderingPreferences.hpp>
+#include <DefinitionStyle.hpp>
 
 class DefinitionElement;
 class Definition;

@@ -233,3 +233,8 @@ uint_t Graphics::wordWrap(const char_t* text, uint_t width)
     return FntWordWrap(text, width);
 }
 
+void Graphics::applyStyle(const DefinitionStyle& style)
+{
+    //TODO:
+
+}

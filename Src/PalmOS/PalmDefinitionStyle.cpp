@@ -16,8 +16,14 @@ struct StaticStyleEntry
     
 };
 
-#define COLOR_NOT_DEF  {-1,0,0,0}
-#define RGB(r,g,b)  {0,r,g,b}
+#define COLOR_NOT_DEF_INDEX -1
+#define COLOR_DEF_INDEX 0
+#define COLOR_NOT_DEF_COLOR 0
+
+StaticAssert<COLOR_NOT_DEF_INDEX != COLOR_DEF_INDEX>;
+
+#define COLOR_NOT_DEF  {COLOR_NOT_DEF_INDEX, COLOR_NOT_DEF_COLOR, COLOR_NOT_DEF_COLOR, COLOR_NOT_DEF_COLOR}
+#define RGB(r,g,b)  {COLOR_DEF_INDEX,r,g,b}
 #define WHITE    RGB(255,255,255)
 #define BLACK    RGB(0,0,0)
 #define GREEN    RGB(0,196,0)
@@ -41,9 +47,12 @@ struct StaticStyleEntry
 #define COLOR_AND_FONT_BOLD(name, color, font) \
     {(name), {color, COLOR_NOT_DEF, font, TRUE, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, UNDERLINE_NOT_DEF}}
 
+// keep this array sorted!
 static const StaticStyleEntry staticStyleTable[] =
 {
-    //TODO: add more and more:)
+    //default style must be first entry
+    {".default", {BLACK, WHITE, stdFont, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, noUnderline}},
+
     COLOR("black",BLACK),
     COLOR("blue",BLUE),
     COLOR_BOLD("bold",COLOR_NOT_DEF),
@@ -52,6 +61,8 @@ static const StaticStyleEntry staticStyleTable[] =
     {"hyperlink", {BLUE, COLOR_NOT_DEF, FONT_NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, TRUE, NOT_DEF, NOT_DEF, grayUnderline}},
     COLOR_AND_FONT("large", COLOR_NOT_DEF, largeFont),
     COLOR("red",RED)
+    //TODO: add more and more:)
+    
 };
 
 
@@ -114,6 +125,38 @@ void DefinitionStyle::reset()
     strike = NOT_DEF;
     underline = UNDERLINE_NOT_DEF;
 }
+
+inline static bool isColorDefined(const RGBColorType& col)
+{
+    return COLOR_NOT_DEF_INDEX != col.index;
+}
+
+DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)
+{
+    if (NOT_DEF != other.bold)
+        bold = other.bold;
+    if (NOT_DEF != other.italic)
+        italic = other.italic;
+    if (NOT_DEF != other.small)
+        small = other.small;
+    if (NOT_DEF != other.strike)
+        strike = other.strike;
+    if (NOT_DEF != other.subscript)
+        subscript = other.subscript;
+    if (NOT_DEF != other.superscript)
+        superscript = other.superscript;
+    if (UNDERLINE_NOT_DEF != other.underline)
+        underline = other.underline;
+
+    if (FONT_NOT_DEF != other.fontId)
+        fontId = other.fontId;
+    if (isColorDefined(other.foregroundColor))
+        foregroundColor = other.foregroundColor;
+    if (isColorDefined(other.backgroundColor))
+        backgroundColor = other.backgroundColor;
+    return *this;
+}
+
 
 #ifdef DEBUG
 void test_StaticStyleTable()

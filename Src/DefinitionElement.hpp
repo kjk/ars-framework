@@ -109,7 +109,21 @@ public:
 
     virtual void setStyle(ElementStyle style) = 0;
 
+    const DefinitionStyle* getStyle() const;
+
+    enum StyleOwnerFlag
+    {
+        ownStyleNot,
+        ownStyle
+    };     
+    
+    void setStyle(DefinitionStyle* style, StyleOwnerFlag own=ownStyleNot);
+   
 private:
+    
+    DefinitionStyle* definitionStyle_;
+    
+    StyleOwnerFlag styleOwner_;
     
     Justification justification_;
     

@@ -6,6 +6,7 @@
 #include <Geometry.hpp>
 #include <Utility.hpp>
 #include <PalmFont.hpp>
+#include <DefinitionStyle.hpp>
 
 using ArsLexis::char_t;
 
@@ -200,6 +201,7 @@ private:
 public:
     void invertRectangle(const Rectangle& rect); 
 
+    void applyStyle(const DefinitionStyle& style);
 };
 
 class ActivateGraphics: private NonCopyable

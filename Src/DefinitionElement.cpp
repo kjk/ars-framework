@@ -5,7 +5,9 @@ DefinitionElement::DefinitionElement():
     justification_(justifyInherit),
     hyperlink_(NULL),
     actionCallback_(NULL),
-    actionCallbackData_(NULL)
+    actionCallbackData_(NULL),
+    styleOwner_(ownStyleNot),
+    definitionStyle_(NULL)
 {}
 
 
@@ -22,6 +24,8 @@ DefinitionElement::Justification DefinitionElement::justification() const
 DefinitionElement::~DefinitionElement()
 {
     delete hyperlink_;
+    if (ownStyle == styleOwner_)
+        delete definitionStyle_;
 }
 
 void DefinitionElement::performAction(Definition& definition, const Point* point)
@@ -69,4 +73,15 @@ void DefinitionElement::setHyperlink(const ArsLexis::String& resource, Hyperlink
     }
 }
 
-    
+void DefinitionElement::setStyle(DefinitionStyle* style, StyleOwnerFlag own)
+{
+    if (ownStyle == styleOwner_)
+        delete definitionStyle_;
+    definitionStyle_ = style;
+    styleOwner_ = own;
+}    
+
+const DefinitionStyle* DefinitionElement::getStyle() const
+{
+    return definitionStyle_;
+}    
