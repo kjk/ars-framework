@@ -65,6 +65,7 @@ void       DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len);
 DynStr *   DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend);
 DynStr *   DynStrUrlEncode(DynStr *srcUrl);
 void       DynStrReplace(DynStr *dstr, char_t orig, char_t replace);
+DynStr* DynStrResize(DynStr* dstr, UInt32 newLen);
 
 class CDynStr : public DynStr
 {
@@ -80,7 +81,8 @@ public:
     CDynStr *AppendCharP(const char_t *str) { return (CDynStr*)DynStrAppendCharP(this, str); }
     CDynStr *AppendCharPBuf(const char_t *str, UInt32 strLen) { return (CDynStr*)DynStrAppendCharPBuf(this, str, strLen); }
     CDynStr *AppendChar(const char_t c) { return (CDynStr*)DynStrAppendChar(this, c); }
-    CDynStr *Append(CDynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }
+    CDynStr *Append(DynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }
+    CDynStr* Resize(UInt32 newLen) {return (CDynStr*)DynStrResize(this, newLen); }
 };
 
 #ifdef DEBUG

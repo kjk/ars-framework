@@ -183,6 +183,7 @@ namespace ArsLexis
     bool strToDouble(const char* str, double *dbl);
 
     int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo);    
+    
 }
 
 using ArsLexis::char_t;
@@ -195,6 +196,10 @@ char_t *StringCopy2__(const char_t *curStr, int len, const char_t* file, int lin
 char_t *StringCopyN(const char_t *str, int strLen);
 
 bool StrEmpty(const char_t *str);
+
+// Find char chr in string str. If len == -1 assume that str is null-terminated and calculate length first.
+// If not found return -1.
+long StrFind(const char_t* str, long len, char_t chr);
 
 #ifdef DEBUG
 void test_TextUnitTestAll();

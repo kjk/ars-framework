@@ -894,6 +894,20 @@ bool StrEmpty(const char_t *str)
     return true;
 }
 
+long StrFind(const char_t* str, long len, char_t chr)
+{
+    if (NULL == str)
+        return -1;
+    if (-1 == len)
+        len = tstrlen(str);
+
+    for (long i = 0; i < len; ++i)
+        if (str[i] == chr)
+            return i;    
+    return -1;
+}
+
+
 #ifdef DEBUG
 
 static void test_StrEmpty()
@@ -905,9 +919,18 @@ static void test_StrEmpty()
     assert(false == StrEmpty(" a"));
 }
 
+static void test_StrFind()
+{
+    assert(-1 == StrFind(NULL, -1, ' '));
+    assert(-1 == StrFind("abcd", -1, 'e'));
+    assert(1 == StrFind("abcd", -1, 'b'));
+    assert(-1 == StrFind("abcd", 3, 'd'));
+}
+
 void test_TextUnitTestAll()
 {
     test_StrEmpty();
+    test_StrFind();
 }
 
 #endif

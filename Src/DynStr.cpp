@@ -394,6 +394,28 @@ void DynStrReplace(DynStr *dstr, char_t orig, char_t replace)
     }
 }
 
+DynStr* DynStrResize(DynStr* dstr, UInt32 newLen)
+{
+    
+    if (newLen + 1 >= dstr->bufSize)
+    {
+        UInt32 l = newLen + 1;
+        if (dstr->bufSize + dstr->reallocIncrement > l)
+            l = dstr->bufSize + dstr->reallocIncrement;
+            
+        using namespace std;
+        char_t* d = (char_t*)realloc(dstr->str, l * sizeof(char_t));
+        if (NULL == d)
+            return NULL;
+
+        dstr->str = d;
+    }
+    dstr->strLen = newLen;
+    dstr->str[newLen] = _T('\0');
+    return dstr;
+}
+
+
 #ifdef DEBUG
 static void test_DynStrReplace()
 {
@@ -496,6 +518,21 @@ static void test_DynStrFromCharP()
     DynStrDelete(dstr);
 }
 
+static void test_DynStrResize()
+{
+    CDynStr str;
+    str.AppendCharP("test");
+    assert(4 == str.Len());
+    str.Resize(3);
+    assert(3 == str.Len());
+    str.AppendCharP("test");
+    assert(7 == str.Len());
+    assert(0 == StrCompare("testest", str.GetCStr()));
+    str.Resize(10);
+    assert(10 == str.Len());
+    assert(0 == StrCompare("testest", str.GetCStr()));
+}
+
 void test_DynStrAll()
 {
     test_DynStrFromCharP();
@@ -503,6 +540,7 @@ void test_DynStrAll()
     test_DynStrAppendToNull();
     test_DynStrRemoveStartLen();
     test_DynStrTruncate();
+    test_DynStrResize();
 }
 
 #endif
