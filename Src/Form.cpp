@@ -225,7 +225,7 @@ bool Form::handleEvent(EventType& event)
         case frmObjectFocusLostEvent:
             handled = handleObjectFocusChange(event);                
             break;
-            
+
         case winEnterEvent:
             handled=handleWindowEnter(event.data.winEnter);
             break;
@@ -249,19 +249,19 @@ bool Form::handleEvent(EventType& event)
         case menuEvent:
             handled=handleMenuCommand(event.data.menu.itemID);
             break;
-            
+
         case fldEnterEvent:
             focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.fldEnter.fieldID);
             break;
-        
+
         case frmGadgetEnterEvent:
             focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.gadgetEnter.gadgetID);
             break;
-        
+
         case tblEnterEvent:
             focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.tblEnter.tableID);
             break;
-        
+
         case extEvent: 
             handled = handleExtendedEvent(event);
             break;
@@ -272,8 +272,8 @@ bool Form::handleEvent(EventType& event)
 
 UInt16 Form::showModal()
 {
-    assert(form_!=0);
-    UInt16 result=FrmDoDialog(form_);
+    assert(form_ != 0);
+    UInt16 result = FrmDoDialog(form_);
     return result;
 }
 

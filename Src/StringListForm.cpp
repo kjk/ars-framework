@@ -31,9 +31,7 @@ void StringListForm::resize(const ArsRectangle& screenBounds)
     ArsRectangle rect(bounds());
     if (screenBounds==rect)
         return;
-
     setBounds(screenBounds);
-    
     {
         List list(*this, stringListId_);
         list.bounds(rect);
@@ -42,7 +40,6 @@ void StringListForm::resize(const ArsRectangle& screenBounds)
         list.setBounds(rect);
         list.adjustVisibleItems();
     }
-
     {
         FormObject object(*this, cancelButtonId_);
         object.bounds(rect);
@@ -55,14 +52,14 @@ void StringListForm::resize(const ArsRectangle& screenBounds)
         rect.y() = screenBounds.height()-14;
         rect.x() = 2;
         object.setBounds(rect);
-    }        
+    }
     update();
 }
 
 void StringListForm::handleListSelect(const EventType& event)
 {
     Control selButton(*this, selectButtonId_);
-    selButton.hit();        
+    selButton.hit();
 }
 
 bool StringListForm::handleKeyPress(const EventType& event)
@@ -74,17 +71,17 @@ bool StringListForm::handleKeyPress(const EventType& event)
     {
         list.setSelectionDelta(-list.visibleItemsCount());
         handled = true;
-    } 
+    }
     else if (fiveWayRightPressed(&event))
     {
         list.setSelectionDelta(list.visibleItemsCount());
         handled = true;
-    } 
+    }
     else if (fiveWayUpPressed(&event))
     {
         list.setSelectionDelta(-1);
         handled = true;
-    } 
+    }
     else if (fiveWayDownPressed(&event))
     {
         list.setSelectionDelta(1);
@@ -98,12 +95,12 @@ bool StringListForm::handleKeyPress(const EventType& event)
                 list.setSelectionDelta(list.visibleItemsCount());
                 handled = true;
                 break;
-                
+
             case chrPageUp:
                 list.setSelectionDelta(-list.visibleItemsCount());
                 handled = true;
                 break;
-            
+
             case chrDownArrow:
                 list.scroll(winDown, 1);
                 handled = true;
@@ -123,14 +120,14 @@ bool StringListForm::handleKeyPress(const EventType& event)
                 handled = true;
             }
             break;
-    
+
             case chrLineFeed:
             case chrCarriageReturn:
             {
                 Control control(*this, selectButtonId_);
                 control.hit();
                 handled = true;
-            }                
+            }
             break;
         }
     }
@@ -142,7 +139,6 @@ bool StringListForm::handleEvent(EventType& event)
     bool handled = false;
     switch (event.eType)
     {
-            
         case lstSelectEvent:
             handleListSelect(event);
             handled = true;
@@ -175,4 +171,4 @@ int StringListForm::showModalAndGetSelection()
             return sel;
     }
 }
-    
+

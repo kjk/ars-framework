@@ -7,30 +7,30 @@
 
 class TextRenderer: public FormGadget 
 {
-    Definition definition_;
-    ScrollBar* scrollBar_;
-    WinHandle drawingWindow_;
-    bool drawingWindowIsOffscreen_;
-    ArsRectangle drawingWindowBounds_;
-    Err lastRenderingError_;
-    
+    Definition      definition_;
+    ScrollBar*      scrollBar_;
+    WinHandle       drawingWindow_;
+    bool            drawingWindowIsOffscreen_;
+    ArsRectangle    drawingWindowBounds_;
+    Err             lastRenderingError_;
+
     void checkDrawingWindow();
-    
+
     void updateForm(Graphics& graphics);
-    
+
     void doUpdateScrollbar();
-    
+
     bool handleMouseEvent(const EventType& event);
-    
+
     bool handleNavigatorKey(Definition::NavigatorKey navKey);
-    
+
 public:
 
     typedef PopupMenuModel* (*SelectionMenuModelBuilder)(const String& text);
-    
+
     SelectionMenuModelBuilder selectionMenuModelBuilder;
     uint_t selectionMenuId;
-    
+
     void setupSelectionMenu(SelectionMenuModelBuilder modelBuilder, uint_t id)
     {
         selectionMenuModelBuilder = modelBuilder;
@@ -40,7 +40,7 @@ public:
     TextRenderer(Form& form, ScrollBar* scrollBar = NULL);
 
     ~TextRenderer();
-    
+
     typedef Definition::const_iterator const_iterator;
     typedef Definition::iterator iterator;
 
@@ -71,29 +71,26 @@ public:
 
     typedef Definition::RenderingProgressReporter RenderingProgressReporter;
     void setRenderingProgressReporter(RenderingProgressReporter* reporter) {definition_.setRenderingProgressReporter(reporter);}
-    
+
     class RenderingErrorListener {
     public:
-    
         virtual void handleRenderingError(TextRenderer& renderer, Err error) = 0;
-        
         virtual ~RenderingErrorListener();
-        
     };
-    
+
     void setRenderingErrorListener(RenderingErrorListener* listener) {renderingErrorListener_ = listener;}
-    
+
     enum ScrollbarUpdateOption {
         updateScrollbarNot,
         updateScrollbar
     };
-    
+
     void scroll(WinDirectionType direction, uint_t items, ScrollbarUpdateOption update = updateScrollbar);
-    
+
     void draw() {drawProxy();}
-    
+
     bool copySelectionOrAll() const;
-    
+
     enum InteractionBehaviorOption {
         behavDoubleClickSelection = Definition::behavDoubleClickSelection,
         behavMouseSelection = Definition::behavMouseSelection,
