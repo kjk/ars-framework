@@ -56,7 +56,7 @@ void Hashtable::put(String entity, String value)
             value_[i] = new (char_t[size+1]);
             for(int j=0;j<size;j++)
                 (value_[i])[j] = value[j];
-            (value_[i])[j] = 0;
+            (value_[i])[size] = 0;
             return;
         }
     }
@@ -68,13 +68,13 @@ void Hashtable::put(String entity, String value)
     value_[i] = new (char_t[size+1]);
     for(int j=0;j<size;j++)
         (value_[i])[j] = value[j];
-    (value_[i])[j] = 0;
-    
+    (value_[i])[size] = 0;
+
     size = entity.size();
     entity_[i] = new (char_t[size+1]);
     for(int j=0;j<size;j++)
         (entity_[i])[j] = entity[j];
-    (entity_[i])[j] = 0;
+    (entity_[i])[size] = 0;
 }
 
 String Hashtable::get(String code)
