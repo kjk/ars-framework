@@ -14,7 +14,8 @@ namespace ArsLexis {
         
         ~Table();
         
-        void redraw() {TblRedrawTable(object());}
+        void redraw() {TblRedrawTable(object());}
+
         void invalidate() {TblMarkTableInvalid(object());}
         
         void invalidateRow(UInt16 row) {TblMarkRowInvalid(object(), row);}
@@ -56,6 +57,14 @@ namespace ArsLexis {
         Int16 itemInt(UInt16 row, UInt16 column) const {return TblGetItemInt(object(), row, column);}
         
         void* itemPtr(UInt16 row, UInt16 column) const {return TblGetItemPtr(object(), row, column);}
+        
+        void setColumnUsable(UInt16 column, bool usable) {TblSetColumnUsable(object(), column, usable);}
+        
+        void setCustomDrawFunction(UInt16 column, TableDrawItemFuncType* function) {TblSetCustomDrawProcedure(object(), column, function);}
+        
+        void setRowHeight(UInt16 row, Coord height) {TblSetRowHeight(object(), row, height);}
+        
+        void adjustVisibleItems();
         
         
     };

@@ -43,10 +43,10 @@ namespace ArsLexis {
     
         LookupProgressReportingSupport();
 
-        const char_t * statusText_;
+        const char_t* statusText;
         
         void setStatusText(const char_t *text)
-        {statusText_=text;}
+        {statusText=text;}
         
         uint_t percentProgress() const
         {return percentProgress_;}

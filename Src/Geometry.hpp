@@ -166,7 +166,23 @@ namespace ArsLexis
         
         bool operator!=(const Rectangle& rect) const
         {return (topLeft!=rect.topLeft) || (extent!=rect.extent);}
-              
+
+        Rectangle& assign(const Point& tl, const Point& ext) 
+        {
+            topLeft = tl;
+            extent = ext;
+            return *this;
+        }
+        
+        Rectangle& assign(Coord_t x, Coord_t y, Coord_t width, Coord_t height)
+        {   
+            topLeft.x = x;
+            topLeft.y = y;
+            extent.x = width;
+            extent.y = height;
+            return *this;
+        }
+                      
     };
     
     inline bool operator && (const Point& p, const Rectangle& r)
