@@ -1,4 +1,4 @@
-#include "GenericTextElement.hpp"
+#include "TextElement.hpp"
 #include <BaseTypes.hpp>
 #include <Text.hpp>
 #include <memory>

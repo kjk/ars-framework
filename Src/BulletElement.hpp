@@ -1,7 +1,7 @@
 #ifndef __BULLET_ELEMENT_HPP__
 #define __BULLET_ELEMENT_HPP__
 
-#include "GenericTextElement.hpp"
+#include "TextElement.hpp"
 
 class BulletElement: public TextElement
 {

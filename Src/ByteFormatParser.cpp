@@ -2,7 +2,7 @@
 
 #include <Text.hpp>
 
-#include <GenericTextElement.hpp>
+#include <TextElement.hpp>
 #include <LineBreakElement.hpp>
 #include <HorizontalLineElement.hpp>
 #include <ParagraphElement.hpp>

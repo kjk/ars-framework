@@ -1,7 +1,7 @@
 #ifndef __LIST_NUMBER_ELEMENT_HPP__
 #define __LIST_NUMBER_ELEMENT_HPP__
 
-#include "GenericTextElement.hpp"
+#include "TextElement.hpp"
 
 class ListNumberElement: public TextElement
 {

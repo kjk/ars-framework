@@ -7,7 +7,7 @@
 #include "Definition.hpp"
 #include "DefinitionElement.hpp"
 #include <Utility.hpp>
-#include "GenericTextElement.hpp"
+#include "TextElement.hpp"
 #include <algorithm>
 #include <Text.hpp>
 #include "LineBreakElement.hpp"
