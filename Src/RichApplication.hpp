@@ -63,6 +63,8 @@ namespace ArsLexis {
         void toggleShowAlerts(bool enable)
         {showAlerts_=enable;}
         
+        static RichApplication& instance() {return static_cast<RichApplication&>(Application::instance());}
+        
     };
 
 }
