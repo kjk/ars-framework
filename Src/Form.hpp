@@ -131,6 +131,12 @@ namespace ArsLexis
         
         void* getObject(UInt16 index) const
         {return FrmGetObjectPtr(form_, index);}
+        
+        void focus(UInt16 index)
+        {FrmSetFocus(form_, index);}
+        
+        UInt16 focusedObject() const
+        {return FrmGetFocus(form_);}
 
         friend class Application;
     };

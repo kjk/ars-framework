@@ -19,7 +19,7 @@ namespace ArsLexis
     {
         updateCacheEntry("localhost", 0x7f000001);
     }
-    
+
     Resolver::~Resolver()
     {
     }

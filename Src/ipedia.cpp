@@ -11,6 +11,9 @@ void std::__msl_error(const char* str)
 void ArsLexis::handleBadAlloc()
 {
     FrmAlert(notEnoughMemoryAlert);
+    Application* app=Application::getInstance(appFileCreator);
+    if (app)
+        app->abort();
     std::abort();
 }
 

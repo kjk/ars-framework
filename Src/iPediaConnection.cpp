@@ -3,6 +3,7 @@
 #include "DefinitionParser.hpp"
 #include "SysUtils.hpp"
 #include "MainForm.hpp"
+#include "DeviceInfo.hpp"
 
 using namespace ArsLexis;
 
@@ -28,16 +29,16 @@ iPediaConnection::~iPediaConnection()
 
 #define fieldSeparator ": "
 #define lineSeparator "\n"
-static const unsigned int fieldSeparatorLength=2;
-static const unsigned int lineSeparatorLength=1;
+static const uint_t fieldSeparatorLength=2;
+static const uint_t lineSeparatorLength=1;
 
 static void appendField(String& out, const char* fieldName, const String& value)
 {
     assert(fieldName!=0);
-    out+=fieldName;
-    out+=fieldSeparator;
-    out+=value;
-    out+=lineSeparator;
+    uint_t fieldLen=StrLen(fieldName);
+    uint_t len=out.length()+fieldLen+fieldSeparatorLength+value.length()+lineSeparatorLength;
+    out.reserve(len);
+    out.append(fieldName, fieldLen).append(fieldSeparator, fieldSeparatorLength).append(value).append(lineSeparator, lineSeparatorLength);
 }
 
 #define protocolVersion "1"
@@ -65,7 +66,7 @@ void iPediaConnection::prepareRequest()
     StrPrintF(buffer, "%lx", transactionId_);
     appendField(request, transactionIdField, buffer);
     if (app.preferences().cookie.empty())
-        appendField(request, getCookieField, deviceIdToken());
+        appendField(request, getCookieField, deviceInfoToken());
     else
         appendField(request, cookieField, app.preferences().cookie);
         

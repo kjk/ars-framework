@@ -36,14 +36,6 @@ namespace ArsLexis
         return result;
     }
 
-
-    String deviceIdToken()
-    {
-        //! @todo Implement deviceIdToken() (well... copy from iNoah should be enough)
-        return "TEST";
-    }
-    
-    
     Err numericValue(const char* begin, const char* end, std::int32_t& result, uint_t base)
     {
         Err error=errNone;
@@ -87,5 +79,23 @@ namespace ArsLexis
     OnError:
         return error;    
     }
+
+#define HEX_DIGITS "0123456789ABSCDEF"
+
+    String hexBinEncode(const String& in)
+    {
+        String out;
+        out.reserve(2*in.length());
+        String::const_iterator it=in.begin();
+        String::const_iterator end=in.end();
+        while (it!=end)
+        {
+            UInt8 b=*(it++);
+            out.append(1, HEX_DIGITS[b/16]);
+            out.append(1, HEX_DIGITS[b%16]);
+        }
+        return out;
+    }
+
 
 }

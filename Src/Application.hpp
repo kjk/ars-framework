@@ -54,7 +54,6 @@ namespace ArsLexis
          * Type used to store @c Form objects through application's lifetime.
          */
         typedef std::list<Form*> Forms_t;
-//        typedef std::list<Form*, Allocator<Form*> > Forms_t;
         
         /**
          * @internal 
@@ -236,6 +235,9 @@ namespace ArsLexis
          * Destructor. Unregisters current instance.
          */
         virtual ~Application();
+        
+        virtual void abort()
+        {delete this;}
 
         /**
          * Gets currently registered @c Application instance.
@@ -273,6 +275,8 @@ namespace ArsLexis
         
         UInt16 romVersionMinor() const
         {return sysGetROMVerMinor(romVersion());}
+        
+        friend void handleBadAlloc();
 
     };
     

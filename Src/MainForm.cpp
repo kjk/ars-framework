@@ -10,59 +10,20 @@ using namespace ArsLexis;
 
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
-    displayMode_(showSplashScreen)
+    displayMode_(showSplashScreen),
+    historyPosition_(termHistory_.begin())
 {
-/*
-    FormattedTextElement* ft;
-    definition_.appendElement(ft=new FormattedTextElement("This is a piece of text written in standard font. "));
-    definition_.appendElement(ft=new FormattedTextElement("This is striked out. "));
-    ft->fontEffects().setStrikeOut(true);
-    definition_.appendElement(ft=new FormattedTextElement("This is once again a piece of text written in standard font. "));
-    definition_.appendElement(ft=new FormattedTextElement("This is underlined. "));
-    ft->fontEffects().setUnderline(FontEffects::underlineSolid);    
-    definition_.appendElement(ft=new FormattedTextElement("This is yet another piece of text written in standard font. "));
-    definition_.appendElement(ft=new FormattedTextElement("Bold. "));
-    ft->fontEffects().setWeight(FontEffects::weightBold);    
-    definition_.appendElement(ft=new FormattedTextElement("This is next piece of text written in standard font. "));
-    definition_.appendElement(ft=new FormattedTextElement("superscript "));
-    ft->fontEffects().setSuperscript(true);
-    definition_.appendElement(ft=new FormattedTextElement("Standard again. "));
-    definition_.appendElement(ft=new FormattedTextElement("subscript "));
-    ft->fontEffects().setSubscript(true);
-    definition_.appendElement(ft=new FormattedTextElement("And finally standard once more. "));
-    definition_.appendElement(ft=new FormattedTextElement("This is a piece of text written in standard font. "));
-    ft->setStyle(styleHeader);
-    definition_.appendElement(ft=new FormattedTextElement("This is striked out. "));
-    ft->fontEffects().setStrikeOut(true);
-    ft->setStyle(styleHeader);
-    definition_.appendElement(ft=new FormattedTextElement("This is once again a piece of text written in standard font. "));
-    ft->setStyle(styleHeader);
-    definition_.appendElement(ft=new FormattedTextElement("This is underlined. "));
-    ft->setStyle(styleHeader);
-    ft->fontEffects().setUnderline(FontEffects::underlineSolid);    
-    definition_.appendElement(ft=new FormattedTextElement("This is yet another piece of text written in standard font. "));
-    ft->setStyle(styleHeader);
-    definition_.appendElement(ft=new FormattedTextElement("Bold. "));
-    ft->setStyle(styleHeader);
-    ft->fontEffects().setWeight(FontEffects::weightBold);    
-    definition_.appendElement(ft=new FormattedTextElement("This is next piece of text written in standard font. "));
-    ft->setStyle(styleHeader);
-    definition_.appendElement(ft=new FormattedTextElement("superscript "));
-    ft->setStyle(styleHeader);
-    ft->fontEffects().setSuperscript(true);
-    definition_.appendElement(ft=new FormattedTextElement("Standard again. "));
-    ft->setStyle(styleHeader);
-    definition_.appendElement(ft=new FormattedTextElement("subscript "));
-    ft->setStyle(styleHeader);
-    ft->fontEffects().setSubscript(true);
-    definition_.appendElement(ft=new FormattedTextElement("And finally standard once more. "));
-    ft->setStyle(styleHeader);
-    setDisplayMode(showDefinition);    
-*/    
 }
 
 MainForm::~MainForm()
 {
+}
+
+Boolean MainForm::handleOpen()
+{
+    UInt16 index=getObjectIndex(termInputField);
+    focus(index);
+    return iPediaForm::handleOpen();
 }
 
 
@@ -85,7 +46,7 @@ void MainForm::resize(const RectangleType& screenBounds)
     index=getObjectIndex(termInputField);
     getObjectBounds(index, bounds);
     bounds.topLeft.y=screenBounds.extent.y-14;
-    bounds.extent.x=screenBounds.extent.x-60;
+    bounds.extent.x=screenBounds.extent.x-73;
     setObjectBounds(index, bounds);
 
     index=getObjectIndex(goButton);
@@ -214,8 +175,6 @@ void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
             resolver->resolveAndConnect(conn, "localhost:9000");
         }            
     }
-    else ;
-        //! @todo Show alert that connection failed.
 }
 
 void MainForm::lookupTerm(const ArsLexis::String& newTerm)
@@ -261,4 +220,18 @@ Boolean MainForm::handleEvent(EventType& event)
             handled=iPediaForm::handleEvent(event);
     }
     return handled;
+}
+
+void MainForm::updateCurrentTermField()
+{
+    UInt16 index=getObjectIndex(currentTermField);
+    FieldType* field=static_cast<FieldType*>(getObject(index));
+    FldSetTextPtr(field, const_cast<char*>(term_.c_str()));
+    FldDrawField(field);
+}
+
+void MainForm::setTerm(const ArsLexis::String& term)
+{
+    term_=term;
+    updateCurrentTermField();
 }

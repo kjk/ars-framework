@@ -20,9 +20,15 @@ namespace ArsLexis
      */
     std::uint32_t random(std::uint32_t range);
     
-    String deviceIdToken();
-    
     Err numericValue(const char* begin, const char* end, std::int32_t& result, uint_t base=10);
+    
+    String hexBinEncode(const String& in);
+
+    inline void hexBinEncodeInPlace(String& inOut)
+    {
+        inOut=hexBinEncode(inOut);
+    }
+    
 }
 
 #endif

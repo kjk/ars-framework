@@ -3,11 +3,16 @@
 
 #include "iPediaForm.hpp"
 #include "Definition.hpp"
+#include <deque>
 
 class MainForm: public iPediaForm
 {
+    enum {historyLength_=20};
     Definition definition_;
     ArsLexis::String term_;
+    typedef std::deque<ArsLexis::String> TermHistory_t;
+    TermHistory_t termHistory_;
+    TermHistory_t::iterator historyPosition_; 
     
     void handleScrollRepeat(const sclRepeat& data);
     void handlePenUp(const EventType& event);
@@ -16,6 +21,8 @@ class MainForm: public iPediaForm
     void drawSplashScreen(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     void drawDefinition(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     void startLookupConnection(const ArsLexis::String& term);
+    
+    void updateCurrentTermField();
     
 protected:
 
@@ -27,6 +34,7 @@ protected:
     
     Boolean handleEvent(EventType& event);
     
+    Boolean handleOpen();
 
 public:
     
@@ -37,8 +45,7 @@ public:
     Definition& definition()
     {return definition_;}
     
-    void setTerm(const ArsLexis::String& term)
-    {term_=term;}
+    void setTerm(const ArsLexis::String& term);
     
     const ArsLexis::String& term() const
     {return term_;}
@@ -51,11 +58,25 @@ public:
     
     DisplayMode displayMode() const
     {return displayMode_;}
-    
+
+/*    
+    enum RedrawCommand
+    {
+        redrawAll=frmRedrawUpdateCode,
+        redrawInputBar
+    };
+*/
+
     void setDisplayMode(DisplayMode displayMode)
     {displayMode_=displayMode;}
     
     void lookupTerm(const ArsLexis::String& term);
+    
+    bool historyHasPrevious() const
+    {return termHistory_.begin()!=historyPosition_;}
+    
+    bool historyHasNext() const
+    {return termHistory_.end()!=historyPosition_ && termHistory_.end()!=historyPosition_+1;}
     
 private:
     
