@@ -20,6 +20,11 @@
 typedef std::list<const ArsLexis::char_t *> CharPtrList_t;
 typedef std::list<ArsLexis::String> StringList_t;
 
+# if defined(_PALM_OS)    
+    extern void printDouble(double x, char *s);
+    extern Boolean strToDouble(const char* str, double *dbl);
+#endif
+
 namespace ArsLexis
 {
 
