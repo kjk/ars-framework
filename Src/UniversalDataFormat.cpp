@@ -77,7 +77,7 @@ const ArsLexis::char_t* UniversalDataFormat::getItemTextAndLen(int itemNo, int e
     else if (header_.size() > itemNo+1)
         nextOffset = header_[itemNo+1][0] - 1;
     else
-        nextOffset = data_.length();
+        nextOffset = data_.length()-1;
     const ArsLexis::char_t *txt = data_.data();
     txt += offset;
     if (NULL!=lenOut)
