@@ -112,7 +112,7 @@ private:
     
     LinePosition_t lineAtHeight(ArsLexis::Coord_t height);
     
-    void elementAtWidth(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, ArsLexis::Coord_t width, ElementPosition_t& elem, uint_t& progress);
+    void elementAtWidth(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, ArsLexis::Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word = false);
     
     void removeSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs);
     

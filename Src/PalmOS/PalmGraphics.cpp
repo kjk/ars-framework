@@ -88,11 +88,13 @@ namespace ArsLexis
 
     void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
     {
+
         Int16 w=width;
-        Int16 len=length;
-        Boolean dontMind;
-        FntCharsInWidth(text, &w, &len, &dontMind);
-        length=len;
+//        Int16 len=length;
+//        Boolean dontMind;
+//        FntCharsInWidth(text, &w, &len, &dontMind);
+//        length=len;
+        length = FntWidthToOffset(text, length, width, NULL, &w);
         width=w;
     }
 

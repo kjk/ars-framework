@@ -260,7 +260,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
     }
 }
 
-void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress) 
+void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word) 
 {
     ElementPosition_t end = elements_.end();
     if (lines_.end() == line)
@@ -286,9 +286,14 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
         ++nextElem;
         if (end != nextElem && (*nextElem)->isTextElement())
             layoutContext.nextTextElement = static_cast<GenericTextElement*>(*nextElem);
-        progress = (*elem)->charIndexAtOffset(layoutContext, width);
+        LayoutContext after = layoutContext;
+        progress = (*elem)->charIndexAtOffset(after, width);
         if (DefinitionElement::offsetOutsideElement != progress)
             break;
+            
+        layoutContext.renderingProgress = after.renderingProgress;
+        layoutContext.usedWidth = after.usedWidth;
+        
         ++elem;
         layoutContext.renderingProgress = 0;
         progress = 0;
@@ -297,6 +302,8 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
         --elem;
         progress = DefinitionElement::offsetOutsideElement;
     }
+    if (word && DefinitionElement::offsetOutsideElement != progress)
+        (*elem)->wordAtIndex(layoutContext, progress, progress, wordEnd);
 }
 
 void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line, ElementPosition_t begin, ElementPosition_t end)
@@ -677,22 +684,21 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
     ElementPosition_t elem;
     uint_t progress;
     LinePosition_t line = lineAtHeight(p.y);
-    elementAtWidth(graphics, prefs, line, p.x, elem, progress);
+    uint_t wordEnd;
     if (2 == clickCount && usesDoubleClickSelection())
     {
+        elementAtWidth(graphics, prefs, line, p.x, elem, progress, wordEnd, true);
         trackingSelection_ = false;
         if (elements_.end() == elem || DefinitionElement::offsetOutsideElement == progress)
             return false;
         selectionStartElement_ = selectionEndElement_ = elem;
-        selectionStartProgress_ = 0;
-        selectionEndProgress_ = LayoutContext::progressCompleted;
-/*        
-        (*elem)->wordAtIndex(graphics, prefs, 
-   */     
+        selectionStartProgress_ = progress;
+        selectionEndProgress_ = wordEnd;
         ++elem;
         renderElementRange(graphics, prefs, selectionStartElement_, selectionEndElement_);
         return true;
     }
+    elementAtWidth(graphics, prefs, line, p.x, elem, progress, wordEnd, false);
     if (!trackingSelection_) 
     {
         mouseDownElement_ = selectionStartElement_ = selectionEndElement_ = elem;
