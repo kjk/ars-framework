@@ -86,6 +86,12 @@ namespace ArsLexis
         
         static void appendField(String& out, const char_t* name, const char_t* value=0)
         {appendField(out, name, tstrlen(name), value, (value?tstrlen(value):0));}
+        
+        static void appendField(String& out, const char_t* name, const String& value)
+        {appendField(out, name, tstrlen(name), value.data(), value.length());}
+        
+        static void appendField(String& out, const String& name, const char_t* value)
+        {appendField(out, name.data(), name.length(), value, (value?tstrlen(value):0));}
 
         bool inPayload_;
 
