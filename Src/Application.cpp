@@ -56,7 +56,7 @@ namespace ArsLexis
     }
     
     Application::Application(UInt32 creatorId):
-        logAllocation_(true),
+        logAllocation_(0),
         eventTimeout_(evtWaitForever),
 #ifdef __MWERKS__        
         formEventHandlerThunk_(Form::routeEventToForm),

@@ -2,7 +2,8 @@
 #include <Text.hpp>
 
 #ifdef __MWERKS__
-#pragma pcrelconstdata on
+# pragma pcrelconstdata on
+# pragma far_code
 #endif
 
 namespace ArsLexis {

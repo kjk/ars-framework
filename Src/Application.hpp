@@ -116,9 +116,9 @@ namespace ArsLexis
         
         UInt32 romVersion_;
         
-    protected:
+        int logAllocation_;
     
-        bool logAllocation_;
+    protected:
     
 #ifdef appFileCreator    
         explicit Application(UInt32 creatorId=appFileCreator);

@@ -38,16 +38,12 @@ namespace ArsLexis
 
     typedef unsigned short LocalID;
     
-    typedef unsigned int new_return_type;
-    
-    typedef bool boolean_t;
-
 # define tstrlen _tcslen
 # define tprintf _stprintf
 # define ticks   GetTickCount
 // Using xtoi functions is dangerous as they don't have any way to inform on invalid format. Use ArsLexis::numericValue() instead.
 //# define tatoi _wtoi
-// Please explain me what malloc() has to do with TCHAR type that you prefixed it with 't'?
+
 #else
 
 namespace ArsLexis
@@ -63,10 +59,6 @@ namespace ArsLexis
     
     // One would ask: why some stupid status_t and not error_t? Because PalmOS Cobalt is coming...
     typedef Err status_t;
-
-    typedef unsigned long   new_return_type;
-
-    typedef Boolean         boolean_t;
 
 #  define ticks TimGetTicks
     

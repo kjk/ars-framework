@@ -17,9 +17,12 @@
 
 #include <new>          // I include <new> & <memory> here so that definitions from there are included before I redefine new
 #include <memory>
-#if defined(_PALM_OS)
-#include <cassert>
+
+#if defined(__MWERKS__)
+using std::size_t;
+# include <cassert>
 #endif
+
 #include <BaseTypes.hpp>
 
 
@@ -40,7 +43,7 @@ namespace ArsLexis
  * to MSL new (nothrow) that simply catches exception
  * thrown by new.
  */
-inline void* operator new(ArsLexis::new_return_type size)
+inline void* operator new(size_t size)
 {
     void* ptr=0;
     if (size) 
@@ -52,7 +55,7 @@ inline void* operator new(ArsLexis::new_return_type size)
     return ptr;
 }
 
-inline void* operator new(ArsLexis::new_return_type size, const char* file, int line)
+inline void* operator new(size_t size, const char* file, int line)
 {
     void* ptr=::operator new(size);
     ArsLexis::logAllocation(ptr, false, file, line);
@@ -70,12 +73,17 @@ inline void operator delete(void *ptr)
     }        
 }
 
-inline void* operator new[](ArsLexis::new_return_type size)
+inline void operator delete(void* ptr, const char*, int)
+{
+    ::operator delete(ptr);
+}
+
+inline void* operator new[](size_t size)
 {
     return ::operator new(size);
 }
 
-inline void* operator new[](ArsLexis::new_return_type size, const char* file, int line)
+inline void* operator new[](size_t size, const char* file, int line)
 {
     void* ptr=::operator new[](size);
     ArsLexis::logAllocation(ptr, false, file, line);
@@ -87,8 +95,14 @@ inline void operator delete[](void *ptr)
     ::operator delete(ptr);
 }
 
-#ifndef NDEBUG
-#define new new (__FILE__, __LINE__)
+inline void operator delete[](void *ptr, const char*, int line)
+{
+    ::operator delete(ptr);
+}
+
+#if !defined(NDEBUG) && !defined(_MSC_VER)
+// MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
+# define new new (__FILE__, __LINE__)
 #endif
 
 

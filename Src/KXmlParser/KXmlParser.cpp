@@ -10,12 +10,10 @@ using namespace std;
 using namespace KXml2;
 
 #ifdef __MWERKS__
-
-#pragma pcrelconstdata on
-#pragma far_code
-#pragma inline_bottom_up on 
-#pragma inline_depth(100)
-
+# pragma pcrelconstdata on
+# pragma far_code
+# pragma inline_bottom_up on 
+# pragma inline_depth(100)
 #endif
 
 #define MUSTDO

@@ -30,6 +30,8 @@ namespace ArsLexis {
          */
         virtual status_t read(int& num, String& dst, int offset, int range)=0;
         
+        status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
+        
         virtual ~Reader() {}
         
     };
