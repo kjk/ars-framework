@@ -13,6 +13,11 @@ struct StaticStyleEntry
     {
         return tstrcmp(name, other.name) < 0;
     }
+
+    bool operator!=(const StaticStyleEntry& other) const
+    {
+        return tstrcmp(name, other.name) != 0;
+    }
     
 };
 
@@ -109,7 +114,15 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
     StaticStyleEntry entry = COLOR(nameBuf, COLOR_NOT_DEF);
     const StaticStyleEntry* end = staticStyleTable + ARRAY_SIZE(staticStyleTable);
     const StaticStyleEntry* res = std::lower_bound(staticStyleTable, end, entry);
-
+    
+    // return null if res != entry
+    if (end != res)
+        if (entry != *res)
+        {
+            free(nameBuf);
+            return NULL;
+        }
+            
     free(nameBuf);
 
     if (end == res)
@@ -119,12 +132,15 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
 
 DefinitionStyle* parseStyle(const char* style, ulong_t length)
 {
+    DefinitionStyle* s = new DefinitionStyle();
+    s->reset();
+
     //TODO: 
 
 
 
     //return new DefinitionStyle();
-    return NULL;
+    return s;
 }
 
 void DefinitionStyle::reset()
