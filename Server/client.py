@@ -9,7 +9,7 @@
 #   -get term : get and display a definition of term
 #   -getrandom
 #
-import sys, re, socket, random, pickle, time
+import sys, re, socket, random, pickle, time, arsutils
 
 # server string must be of form "name:port"
 g_serverList = ["localhost:9000", "dict-pc.arslexis.com:9000"]
@@ -29,46 +29,6 @@ PROTOCOL_VER    = "Protocol-Version:"
 CLIENT_VER      = "Client-Version:"
 GET_DEF         = "Get-Definition:"
 GET_RANDOM      = "Get-Random-Definition:"
-
-g_startTime = None
-g_endTime = None
-
-def startTiming():
-    global g_startTime
-    g_startTime = time.clock()
-
-def endTiming():
-    global g_endTime
-    g_endTime = time.clock()
-
-def dumpTiming():
-    global g_startTime, g_endTime
-    dur = g_endTime - g_startTime
-    str = "duration %f seconds\n" % dur
-    sys.stderr.write(str)
-
-# given argument name in argName, tries to return argument value
-# in command line args and removes those entries from sys.argv
-# return None if not found
-def getRemoveCmdArg(argName):
-    argVal = None
-    try:
-        pos = sys.argv.index(argName)
-        argVal = sys.argv[pos+1]
-        sys.argv[pos:pos+2] = []
-    except:
-        pass
-    return argVal
-
-def fDetectRemoveCmdFlag(flag):
-    fFlagPresent = False
-    try:
-        pos = sys.argv.index(flag)
-        fFlagPresent = True
-        sys.argv[pos:pos+1] = []
-    except:
-        pass
-    return fFlagPresent
 
 g_pickleFileName = "client_pickled_data.dat"
 def pickleState():
@@ -229,9 +189,9 @@ def doGetDef(term):
 
 def doGetRandomDef(fSilent=False,fDoTiming=False):
     global g_cookie
-    startTiming()
+    timer = arsutils.Timer(fStart=True)
     defResponse = getRandomDef()
-    endTiming()
+    timer.stop()
     if not fSilent:
         print "# response:"
         print defResponse
@@ -243,7 +203,7 @@ def doGetRandomDef(fSilent=False,fDoTiming=False):
         print "Found cookie: %s" % parsedResponse[COOKIE]
         g_cookie = parsedResponse[COOKIE]
     if fDumpTiming:
-        dumpTiming()
+        timer.dumpInfo()
 
 def doGetRandomDefNoTiming():
     global g_cookie
@@ -257,11 +217,11 @@ def doGetRandomDefNoTiming():
         g_cookie = parsedResponse[COOKIE]
 
 def doRandomPerf(count):
-    startTiming()
+    timer = arsutils.Timer(fStart=True)
     for i in range(count):
         doGetRandomDefNoTiming()
-    endTiming()
-    dumpTiming()
+    timer.stop()
+    timer.dumpInfo()
     print "Number of runs: %d" % count
 
 def usageAndExit():
@@ -270,15 +230,15 @@ def usageAndExit():
 if __name__=="__main__":
     try:
         unpickleState()
-        randomCount = getRemoveCmdArg("-perfrandom")
+        randomCount = arsutils.getRemoveCmdArgInt("-perfrandom")
         if randomCount != None:
-            doRandomPerf(int(randomCount))
+            doRandomPerf(randomCount)
         else:
-            fGetRandom = fDetectRemoveCmdFlag("-getrandom")
+            fGetRandom = arsutils.fDetectRemoveCmdFlag("-getrandom")
             if fGetRandom:
                 doGetRandomDef(False,True)
             else:
-                term = getRemoveCmdArg("-get")
+                term = arsutils.getRemoveCmdArg("-get")
                 if term:
                     doGetDef(term)
                 else:

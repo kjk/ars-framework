@@ -12,9 +12,10 @@
 #             by default)
 #   -usepsyco : will use psyco, if available
 
+import sys, re, random, datetime, MySQLdb, _mysql_exceptions
+import arsutils,iPediaDatabase
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
-import sys, re, random, datetime, MySQLdb, _mysql_exceptions, iPediaDatabase
 try:
     import psyco
     g_fPsycoAvailable = True
@@ -463,36 +464,13 @@ class iPediaFactory(protocol.ServerFactory):
 
     protocol = iPediaProtocol
 
-# given argument name in argName, tries to return argument value
-# in command line args and removes those entries from sys.argv
-# return None if not found
-def getRemoveCmdArg(argName):
-    argVal = None
-    try:
-        pos = sys.argv.index(argName)
-        argVal = sys.argv[pos+1]
-        sys.argv[pos:pos+2] = []
-    except:
-        pass
-    return argVal
-
-def fDetectRemoveCmdFlag(flag):
-    fFlagPresent = False
-    try:
-        pos = sys.argv.index(flag)
-        fFlagPresent = True
-        sys.argv[pos:pos+1] = []
-    except:
-        pass
-    return fFlagPresent
-
 def main():
     global g_fVerbose, g_fPsycoAvailable
     g_fVerbose, iPediaDatabase.g_fVerbose = True, True
-    if fDetectRemoveCmdFlag( "-silent" ):
+    if arsutils.fDetectRemoveCmdFlag( "-silent" ):
         g_fVerbose, iPediaDatabase.g_fVerbose = False, False
 
-    fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
+    fUsePsyco = arsutils.fDetectRemoveCmdFlag("-usepsyco")
     if g_fPsycoAvailable and fUsePsyco:
         print "using psyco"
         psyco.full()

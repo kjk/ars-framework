@@ -25,7 +25,8 @@
 #  - when using -title and doesn't find the aritcle in main, should also check
 #    *_redirects.txt file
 #
-import sys,os,os.path,string,re,random,time,md5,bz2,wikipediasql,dumpSqlToTxt,articleconvert
+import sys,os,os.path,string,re,random,time,md5,bz2
+import arsutils,wikipediasql,dumpSqlToTxt,articleconvert
 try:
     import process
 except:
@@ -55,26 +56,6 @@ g_DiffTool = DIFF_WINDIFF
 
 if g_DiffTool == DIFF_ARAXIS:
     g_reformatLongLines = False
-
-def getRemoveCmdArg(argName):
-    argVal = None
-    try:
-        pos = sys.argv.index(argName)
-        argVal = sys.argv[pos+1]
-        sys.argv[pos:pos+2] = []
-    except:
-        pass
-    return argVal
-
-def fDetectRemoveCmdFlag(flag):
-    fFlagPresent = False
-    try:
-        pos = sys.argv.index(flag)
-        fFlagPresent = True
-        sys.argv[pos:pos+1] = []
-    except:
-        pass
-    return fFlagPresent
 
 def usageAndExit():
     print "Usage: diffConvert.py [-limit N] [-random] [-title foo] fileName"
@@ -360,20 +341,18 @@ def dumpArticle(fileName,title):
         return
 
 if __name__=="__main__":
-    limit = getRemoveCmdArg("-limit")
+    limit = arsutils.getRemoveCmdArgInt("-limit")
     if None == limit:
         limit = 9999999 # very big number
-    else:
-        limit = int(limit)
 
-    fRandom = fDetectRemoveCmdFlag("-random")
-    fDump = fDetectRemoveCmdFlag("-dump")
+    fRandom = arsutils.fDetectRemoveCmdFlag("-random")
+    fDump = arsutils.fDetectRemoveCmdFlag("-dump")
 
     if fDump and fRandom:
         print "Can't use -dump and -random at the same time"
         usageAndExit()
 
-    title = getRemoveCmdArg("-title")
+    title = arsutils.getRemoveCmdArg("-title")
 
     if title and fRandom:
         print "Can't use -title and -random at the same time"

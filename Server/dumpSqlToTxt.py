@@ -22,7 +22,7 @@
 #   -force : recreate the files even if they exist
 #   fileName : which file to process
 
-import sys,os,os.path,string,time,md5,bz2,wikipediasql
+import sys,os,os.path,string,time,md5,bz2,arsutils,wikipediasql
 try:
     import psyco
     g_fPsycoAvailable = True
@@ -79,51 +79,6 @@ def dumpMostViewed():
     print "Most viewed articles:"
     for (key,val) in l:
         print "%9d %s" % (val,key)
-
-def fFileExists(filePath):
-    try:
-        st = os.stat(filePath)
-    except OSError:
-        # TODO: should check that Errno is 2
-        return False
-    return True
-
-def getRemoveCmdArg(argName):
-    argVal = None
-    try:
-        pos = sys.argv.index(argName)
-        argVal = sys.argv[pos+1]
-        sys.argv[pos:pos+2] = []
-    except:
-        pass
-    return argVal
-
-def fDetectRemoveCmdFlag(flag):
-    fFlagPresent = False
-    try:
-        pos = sys.argv.index(flag)
-        fFlagPresent = True
-        sys.argv[pos:pos+1] = []
-    except:
-        pass
-    return fFlagPresent
-
-g_startTime = None
-g_endTime = None
-
-def startTiming():
-    global g_startTime
-    g_startTime = time.clock()
-
-def endTiming():
-    global g_endTime
-    g_endTime = time.clock()
-
-def dumpTiming():
-    global g_startTime, g_endTime
-    dur = g_endTime - g_startTime
-    str = "duration %f seconds\n" % dur
-    sys.stderr.write(str)
 
 def usageAndExit():
     print "Usage: dumpSqlToTxt.py [-limit N] [-usepsyco] [-juststats] [-force] fileName"
@@ -222,7 +177,7 @@ def convertFile(inName,limit,fJustStats=False,fSkipIfExists=False):
         idxFileName = getIdxFileName(inName)
         redirectsFileName = getRedirectsFileName(inName)
 
-        if fFileExists(txtName) and fFileExists(idxFileName) and fFileExists(redirectsFileName):
+        if arsutils.fFileExists(txtName) and arsutils.fFileExists(idxFileName) and arsutils.fFileExists(redirectsFileName):
             if fSkipIfExists:
                 print "files exist and fSkipIfExists==True so skipping creation"
                 return
@@ -234,7 +189,7 @@ def convertFile(inName,limit,fJustStats=False,fSkipIfExists=False):
         foRedirects = open(redirectsFileName, "wb")
     stats = WikipediaStats()
     count = 0
-    startTiming()
+    timer = arsutils.Timer(fStart=True)
     curPos = 0
     for article in wikipediasql.iterWikipediaArticles(inName):
         #print sqlArgs
@@ -269,24 +224,24 @@ def convertFile(inName,limit,fJustStats=False,fSkipIfExists=False):
         foTxt.close()
         foIdx.close()
         foRedirects.close()
-    endTiming()
+    timer.stop()
     stats.dumpStats()
     dumpMostViewed()
-    dumpTiming()
+    timer.dumpInfo()
 
 if __name__=="__main__":
-    limit = getRemoveCmdArg("-limit")
+    limit = arsutils.getRemoveCmdArg("-limit")
     if None == limit:
         limit = 9999999 # very big number
     else:
         limit = int(limit)
     #print "limit=%d" % limit
-    fJustStats = fDetectRemoveCmdFlag("-juststats")
+    fJustStats = arsutils.fDetectRemoveCmdFlag("-juststats")
 
-    fForce = fDetectRemoveCmdFlag("-force")
+    fForce = arsutils.fDetectRemoveCmdFlag("-force")
     fSkipIfExists = not fForce
 
-    fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
+    fUsePsyco = arsutils.fDetectRemoveCmdFlag("-usepsyco")
     if g_fPsycoAvailable and fUsePsyco:
         print "using psyco"
         psyco.full()

@@ -18,7 +18,7 @@
 #             The idea is that we want to compare those files using windiff or
 #             some other diffing program but they don't handle the files as big
 #             as we produce (>300 MB)
-import sys, string, re, datetime, unicodedata, MySQLdb, converter
+import sys, string, re, datetime, unicodedata, arsutils, MySQLdb, converter
 
 g_conn        = None
 
@@ -196,41 +196,15 @@ def dumpAllWithConverted(articleLimit,fileOrig,fileConverted,splitPartsCount):
         curOffset += rowsPerQuery
     closeFiles()
 
-def fDetectRemoveCmdFlag(flag):
-    fFlagPresent = False
-    try:
-        pos = sys.argv.index(flag)
-        fFlagPresent = True
-        sys.argv[pos:pos+1] = []
-    except:
-        pass
-    return fFlagPresent
-
-# given argument name in argName, tries to return argument value
-# in command line args and removes those entries from sys.argv
-# return None if not found
-def getRemoveCmdArg(argName):
-    argVal = None
-    try:
-        pos = sys.argv.index(argName)
-        argVal = sys.argv[pos+1]
-        sys.argv[pos:pos+2] = []
-    except:
-        pass
-    return argVal
-
 if __name__=="__main__":
 
-    testGenSplitFileName()
+    testGenSplitFileName()
     initDatabase()
-    limit = getRemoveCmdArg("-limit")
-    if limit:
-        limit = int(limit)
-    origFile = getRemoveCmdArg("-orig")
-    convertedFile = getRemoveCmdArg("-converted")
-    splitPartsCount = getRemoveCmdArg("-split")
+    limit = arsutils.getRemoveCmdArgInt("-limit")
+    origFile = arsutils.getRemoveCmdArg("-orig")
+    convertedFile = arsutils.getRemoveCmdArg("-converted")
+    splitPartsCount = arsutils.getRemoveCmdArgInt("-split")
     if splitPartsCount:
-        splitPartsCount = int(splitPartsCount)
         if not origFile or not convertedFile:
             print "Usage: if -split given, must also give -orig and -converted"
             sys.exit(0)

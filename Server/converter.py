@@ -27,7 +27,7 @@
 # -usepsyco : if used, will use psyco for speeding up, false by default
 # -validateonly : perform only validation of existing articles
 
-import MySQLdb, sys, datetime, time
+import MySQLdb, sys, datetime, time, arsutils
 import wikipediasql,articleconvert, iPediaDatabase
 try:
     import psyco
@@ -303,77 +303,34 @@ def validateOneTerm(term):
             updQuery="""UPDATE definitions SET definition='%s' WHERE id=%d""" % (dbEscape(modText), defId)
             writeCur.execute(updQuery)
         writeCur.close()
-
-def fDetectRemoveCmdFlag(flag):
-    fFlagPresent = False
-    try:
-        pos = sys.argv.index(flag)
-        fFlagPresent = True
-        sys.argv[pos:pos+1] = []
-    except:
-        pass
-    return fFlagPresent
-
-# given argument name in argName, tries to return argument value
-# in command line args and removes those entries from sys.argv
-# return None if not found
-def getRemoveCmdArg(argName):
-    argVal = None
-    try:
-        pos = sys.argv.index(argName)
-        argVal = sys.argv[pos+1]
-        sys.argv[pos:pos+2] = []
-    except:
-        pass
-    return argVal
-
-g_startTime = None
-g_endTime = None
-
-def startTiming():
-    global g_startTime
-    g_startTime = time.clock()
-
-def endTiming():
-    global g_endTime
-    g_endTime = time.clock()
-
-def dumpTimingInfo():
-    global g_startTime, g_endTime
-    dur = g_endTime - g_startTime
-    str = "duration %f seconds\n" % dur
-    sys.stderr.write(str)
     
 g_fValidateOnly=False
     
 if __name__=="__main__":
 
-    fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
+    fUsePsyco = arsutils.fDetectRemoveCmdFlag("-usepsyco")
     if g_fPsycoAvailable and fUsePsyco:
         print "using psyco"
         psyco.full()
 
     initDatabase()
 
-    g_fForceConvert = fDetectRemoveCmdFlag( "-force" )
-    g_fVerbose = fDetectRemoveCmdFlag( "-verbose" )
+    g_fForceConvert = arsutils.fDetectRemoveCmdFlag( "-force" )
+    g_fVerbose = arsutils.fDetectRemoveCmdFlag( "-verbose" )
     iPediaDatabase.g_fVerbose=g_fVerbose
-    g_fShowDups = fDetectRemoveCmdFlag( "-showdups" )
-    g_timestamp = getRemoveCmdArg( "-ts" )
-    g_fSlowVersion = fDetectRemoveCmdFlag( "-slow" )
-    g_fValidateOnly = fDetectRemoveCmdFlag( "-validateonly" )
+    g_fShowDups = arsutils.fDetectRemoveCmdFlag( "-showdups" )
+    g_timestamp = arsutils.getRemoveCmdArg( "-ts" )
+    g_fSlowVersion = arsutils.fDetectRemoveCmdFlag( "-slow" )
+    g_fValidateOnly = arsutils.fDetectRemoveCmdFlag( "-validateonly" )
     if g_timestamp and not g_fSlowVersion:
         print "-ts only supported if -slow is used"
         sys.exit(0)
 
     #print "g_fShowDups=%d" % g_fShowDups
-    articleLimit = getRemoveCmdArg("-limit")
-    if articleLimit:
-        articleLimit = int(articleLimit)
-
-    fromSql = getRemoveCmdArg("-fromsql")
-    termToConvert = getRemoveCmdArg("-one")
-    startTiming()
+    articleLimit = arsutils.getRemoveCmdArgInt("-limit")
+    fromSql = arsutils.getRemoveCmdArg("-fromsql")
+    termToConvert = arsutils.getRemoveCmdArg("-one")
+    timer = arsutils.Timer(fStart=True)
     if not g_fValidateOnly:
         if None!=termToConvert:
             g_fVerbose = True
@@ -389,7 +346,7 @@ if __name__=="__main__":
             validateOneTerm(termToConvert)
         else:
             validateAll(articleLimit)
-    endTiming()
+    timer.stop()
     deinitDatabase()
-    dumpTimingInfo()
+    timer.dumpInfo()
 
