@@ -19,6 +19,7 @@ PopupMenu::~PopupMenu()
         list.form()->removeObject(list.index());
         list.detach();
     }
+    delete model_;
 }
 
 bool PopupMenu::handleEventInForm(EventType& event)
@@ -74,7 +75,7 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
         
     list.attachByIndex(index);
     list.setCustomDrawHandler(model_);
-    if (noListSelection != initialSelection)
+    if (noListSelection != initialSelection && list.itemsCount() > initialSelection)
         list.setSelection(initialSelection);
     
     const char_t* hyperlink = NULL;
