@@ -555,10 +555,11 @@ void Definition::extendSelection(ArsLexis::Graphics& graphics, const RenderingPr
     if (selectedHotSpot_ && endTracking)
     {
         HotSpot* hs = selectedHotSpot_;
-        hs->element().performAction(*this);
+        //hs->element().performAction(*this);
         selectionStartProgress_=selectionEndProgress_=LayoutContext::progressCompleted;
         selectionStartElement_=selectionEndElement_=elements_.end();
         renderSingleElement(graphics, prefs, hs->element());
+        hs->element().performAction(*this);
         selectedHotSpot_ = NULL;
     }        
 }
