@@ -80,16 +80,34 @@ namespace ArsLexis
         
         void draw() {drawProxy();}
         
-        bool handleScrollRepeat(const EventType& event);
-        
-        bool handleKeyDownEvent(const EventType& event);
-        
         bool copySelection() const;
         
-        bool handleMenuCmdBarOpen(EventType& event);
+        enum InteractionBehaviorOption {
+            behavDoubleClickSelection = Definition::behavDoubleClickSelection,
+            behavMouseSelection = Definition::behavMouseSelection,
+            behavUpDownScroll = Definition::behavUpDownScroll,
+            behavHyperlinkNavigation = Definition::behavHyperlinkNavigation,
+            behavMenuBarCopyButton = behavHyperlinkNavigation << 1,
+        };
         
-        bool handleMenuEvent(const EventType& event);
+        void setInteractionBehavior(uint_t ib) {definition_.setInteractionBehavior(ib);}
+        
+        uint_t interactionBehavior() const {return definition_.interactionBehavior();}
+        
+        bool usesInteractionBehavior(InteractionBehaviorOption ibo) const {return 0 != (definition_.interactionBehavior() & ibo);}
 
+        bool usesDoubleClickSelection() const { return usesInteractionBehavior(behavDoubleClickSelection);}
+
+        bool usesMouseSelection() const { return usesInteractionBehavior(behavMouseSelection);}
+
+        bool usesUpDownScroll() const { return usesInteractionBehavior(behavUpDownScroll);}
+
+        bool usesHyperlinkNavigation() const { return usesInteractionBehavior(behavHyperlinkNavigation);}
+        
+        bool usesMenuBarCopyButton() const {return usesInteractionBehavior(behavMenuBarCopyButton);}
+        
+        bool handleEventInForm(EventType& event);
+                
     protected:
     
         void drawFocusRing();
@@ -107,7 +125,15 @@ namespace ArsLexis
         void notifyHide();
        
     private:
+
+        bool handleScrollRepeat(const EventType& event);
+        
+        bool handleKeyDownEvent(const EventType& event);
     
+        bool handleMenuCmdBarOpen(EventType& event);
+
+        bool handleMenuEvent(const EventType& event);
+
         void disposeOffscreenWindow();
         
         RenderingErrorListener* renderingErrorListener_;

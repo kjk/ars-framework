@@ -16,11 +16,12 @@ TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* s
     renderingErrorListener_(NULL),
     scheduledScrollDirection_(scheduledScrollAbandoned)
 {
-    definition_.setInteractionBehavior(  
-        Definition::behavMouseSelection 
-        | Definition::behavUpDownScroll 
-        | Definition::behavHyperlinkNavigation 
-        | Definition::behavDoubleClickSelection
+    setInteractionBehavior(  
+        behavMouseSelection 
+        | behavUpDownScroll 
+        | behavHyperlinkNavigation 
+//        | behavDoubleClickSelection
+        | behavMenuBarCopyButton
     );
 }
 
@@ -181,7 +182,8 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
             scheduledNilEventTicks_ = time + form()->application().ticksPerSecond()/7;
             EvtSetNullEventTick(scheduledNilEventTicks_);
         }
-        else if (time >= scheduledNilEventTicks_)        {
+        else if (time >= scheduledNilEventTicks_)
+        {
             EvtSetNullEventTick(time+1);
         } 
     }
@@ -263,6 +265,8 @@ void TextRenderer::handleNilEvent()
 
 bool TextRenderer::handleKeyDownEvent(const EventType& event)
 {
+    if (form()->application().runningOnTreo600() && !hasFocus())
+        return false;
     Definition::NavigatorKey key = Definition::NavigatorKey(-1);
     Form& form = *this->form();
     if (form.fiveWayUpPressed(&event) ||  chrUpArrow == event.data.keyDown.chr)
@@ -318,12 +322,16 @@ bool TextRenderer::copySelection() const
 
 bool TextRenderer::handleMenuCmdBarOpen(EventType& event)
 {
+    if (!usesMenuBarCopyButton())
+        return false;
     if (!visible())
         return false;
     if (!definition_.hasSelection())
         return false;
-    if (!hasFocus())
+    if (noFocus != FrmGetFocus(*form()))
         return false;
+//    if (!hasFocus())
+//        return false;
     event.data.menuCmdBarOpen.preventFieldButtons = true;
     Err error = MenuCmdBarAddButton(menuCmdBarOnLeft, BarCopyBitmap, menuCmdBarResultMenuItem, sysEditMenuCopyCmd, "Copy");
     return false;
@@ -331,13 +339,41 @@ bool TextRenderer::handleMenuCmdBarOpen(EventType& event)
 
 bool TextRenderer::handleMenuEvent(const EventType& event)
 {
+    if (!usesMenuBarCopyButton())
+        return false;
     if (!visible())
         return false;
     if (!definition_.hasSelection())
         return false;
-    if (!hasFocus())
+    if (noFocus != FrmGetFocus(*form()))
         return false;
+//    if (!hasFocus())
+//        return false;
     if (sysEditMenuCopyCmd != event.data.menu.itemID)
         return false;
     return copySelection();         
+}
+
+bool TextRenderer::handleEventInForm(EventType& event)
+{
+    bool handled = false;
+    switch (event.eType)
+    {
+        case menuCmdBarOpenEvent:
+            handled = handleMenuCmdBarOpen(event);
+            break;
+        
+        case menuEvent:
+            handled = handleMenuEvent(event);
+            break;
+            
+        case keyDownEvent:
+            handled = handleKeyDownEvent(event);
+            break;
+            
+        case sclRepeatEvent:
+            handleScrollRepeat(event);
+            break;
+    }
+    return handled;            
 }

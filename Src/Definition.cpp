@@ -602,8 +602,7 @@ static bool insideHotSpot(const Point& p, Definition::ElementPosition_t begin, D
         const GenericTextElement::HyperlinkProperties* props = textElem->hyperlinkProperties();
         assert(NULL != props);
         const Definition::HotSpot* hotSpot = props->hotSpot;
-        assert(NULL != hotSpot);
-        if (hotSpot->hitTest(p))
+        if (NULL != hotSpot && hotSpot->hitTest(p))
             return true;
         ++begin;
     }
@@ -902,6 +901,18 @@ bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPrefe
             case navKeyLeft:
                 return navigateHyperlink(graphics, prefs, false);
             
+            case navKeyCenter:
+                if (!selectionIsHyperlink_)
+                    return false;
+                assert(inactiveSelectionStartElement_ != elements_.end());
+                selectionIsHyperlink_ = false;
+                trackingSelection_ = false;
+                selectionStartElement_ = selectionEndElement_ = elements_.end();
+                selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
+                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+                (*inactiveSelectionStartElement_)->performAction(*this);
+                inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+                return true;
             
         }
     }
