@@ -10,31 +10,47 @@ class RenderingPreferences;
 class MainForm: public iPediaForm
 {
     Definition* getDefinition();
+    
     const LookupHistory* getLookupHistory() const;
+    
     const RenderingPreferences& renderingPreferences() const
     {return static_cast<const iPediaApplication&>(application()).renderingPreferences();}
     
     void handleScrollRepeat(const EventType& data);
+    
     void handlePenUp(const EventType& event);
+    
     void handleControlSelect(const EventType& data);
+    
     bool handleKeyPress(const EventType& event);
     
     void drawSplashScreen(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds);
+    
     void drawDefinition(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds);
     
     void updateScrollBar(const Definition& def);
  
     void randomArticle();
+    
     void copySelectionToClipboard();
 
     void updateAfterLookup();
     
     void moveHistory(bool forward);
+    
     void switchServer(const char* server);
     
     void setControlsState(bool enabled);
     
     void handleToggleStressMode();
+    
+    void handleAbout();
+    
+    void search(bool fullText=false);
+    
+    void handlePenDown(const EventType& event);
+    
+    void handleLookupFinished(const EventType& event);
     
 protected:
 
@@ -77,6 +93,7 @@ public:
 private:
     
     DisplayMode displayMode_;
+    UInt32 searchPenDownTimestamp_;
     
 };
 

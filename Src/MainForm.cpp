@@ -7,7 +7,8 @@ using namespace ArsLexis;
 
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
-    displayMode_(showSplashScreen)
+    displayMode_(showSplashScreen),
+    searchPenDownTimestamp_(0)
 {
 }
 
@@ -193,12 +194,15 @@ inline void MainForm::handleScrollRepeat(const EventType& event)
 
 void MainForm::handlePenUp(const EventType& event)
 {
-    Definition* definition=getDefinition();
-    if (definition)
+    if (showDefinition==displayMode())
     {
-        Point point(event.screenX, event.screenY);
-        if (definition->bounds() && point)
-            definition->hitTest(point);
+        Definition* definition=getDefinition();
+        if (definition)
+        {
+            Point point(event.screenX, event.screenY);
+            if (definition->bounds() && point)
+                definition->hitTest(point);
+        }
     }
 }
 
@@ -231,16 +235,10 @@ void MainForm::handleControlSelect(const EventType& event)
     {
         case searchButton:
             {
-                Field field(*this, termInputField);
-                const char* textPtr=field.text();
-                if (textPtr!=0)
-                {
-                    LookupManager* lookupManager=app.getLookupManager(true);
-                    if (lookupManager && !lookupManager->lookupInProgress())
-                        if (!lookupManager->lookupIfDifferent(textPtr) && showDefinition!=displayMode())
-                            updateAfterLookup();
-                }
-            }
+                UInt32 timestamp=TimGetTicks();
+                 // If button held for more than 200msec, perform full text search.
+                search(timestamp-searchPenDownTimestamp_>app.ticksPerSecond()/5);
+            }                
             break;
             
         case backButton:
@@ -281,6 +279,51 @@ void MainForm::setControlsState(bool enabled)
     }
 }
 
+void MainForm::handleLookupFinished(const EventType& event)
+{
+    setControlsState(true);
+    const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
+    if (data.outcomeDefinition==data.outcome)
+        updateAfterLookup();
+    else if (data.outcomeList==data.outcome)
+        Application::popupForm(searchResultsForm);
+    else
+        update();
+
+    const iPediaApplication& app=iPediaApplication::instance();
+    if (app.inStressMode())
+    {
+        EventType event;
+        MemSet(&event, sizeof(event), 0);
+        event.eType=penDownEvent;
+        event.penDown=true;
+        event.tapCount=1;
+        event.screenX=1;
+        event.screenY=50;
+        EvtAddEventToQueue(&event);
+        MemSet(&event, sizeof(event), 0);
+        event.eType=penUpEvent;
+        event.penDown=false;
+        event.tapCount=1;
+        event.screenX=1;
+        event.screenY=50;
+        EvtAddEventToQueue(&event);
+        randomArticle();
+    }        
+}
+
+void MainForm::handlePenDown(const EventType& event)
+{
+    Coord x=event.screenX;
+    Coord y=event.screenY;
+    WinDisplayToWindowPt(&x, &y);
+    Point point(x, y);
+    Control control(*this, searchButton);
+    Rectangle bounds(control.bounds());
+    if (bounds && point)
+        searchPenDownTimestamp_=TimGetTicks();
+}
+
 bool MainForm::handleEvent(EventType& event)
 {
     bool handled=false;
@@ -303,37 +346,7 @@ bool MainForm::handleEvent(EventType& event)
             break;
             
         case iPediaApplication::appLookupFinishedEvent:
-            {
-                setControlsState(true);
-                const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
-                if (data.outcomeDefinition==data.outcome)
-                    updateAfterLookup();
-                else if (data.outcomeList==data.outcome)
-                    Application::popupForm(searchResultsForm);
-                else
-                    update(redrawProgressIndicator);
-
-                const iPediaApplication& app=iPediaApplication::instance();
-                if (app.inStressMode())
-                {
-                    EventType event;
-                    MemSet(&event, sizeof(event), 0);
-                    event.eType=penDownEvent;
-                    event.penDown=true;
-                    event.tapCount=1;
-                    event.screenX=1;
-                    event.screenY=50;
-                    EvtAddEventToQueue(&event);
-                    MemSet(&event, sizeof(event), 0);
-                    event.eType=penUpEvent;
-                    event.penDown=false;
-                    event.tapCount=1;
-                    event.screenX=1;
-                    event.screenY=50;
-                    EvtAddEventToQueue(&event);
-                    randomArticle();
-                }        
-            }
+            handleLookupFinished(event);
             break;     
             
         case iPediaApplication::appLookupStartedEvent:
@@ -341,6 +354,10 @@ bool MainForm::handleEvent(EventType& event)
             
         case iPediaApplication::appLookupProgressEvent:
             update(redrawProgressIndicator);
+            break;
+    
+        case penDownEvent:
+            handlePenDown(event);
             break;
     
         default:
@@ -358,9 +375,7 @@ void MainForm::updateAfterLookup()
         setDisplayMode(showDefinition);
         const LookupHistory& history=lookupManager->history();
         if (!history.empty())
-        {
             setTitle(history.currentTerm());
-        }
         
         {
             Control control(*this, backButton);
@@ -476,11 +491,7 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             break;
 
         case aboutMenuItem:
-            if (showSplashScreen!=displayMode())
-            {
-                setDisplayMode(showSplashScreen);
-                update();
-            }                
+            handleAbout();
             handled=true;
             break;
 
@@ -525,11 +536,12 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
         FormObject object(*this, termInputField);
         object.focus();
 
+        
         iPediaApplication& app=static_cast<iPediaApplication&>(application());
         LookupManager* lookupManager=app.getLookupManager();
         if (lookupManager)
         {
-            if (!lookupManager->lastDefinition().empty())
+            if (showDefinition==displayMode())
                 updateAfterLookup();
             setControlsState(!lookupManager->lookupInProgress());
         }
@@ -547,4 +559,45 @@ void MainForm::handleToggleStressMode()
         app.toggleStressMode(true);
         randomArticle();
     }        
+}
+
+void MainForm::handleAbout()
+{
+    if (showDefinition==displayMode())
+    {
+        setDisplayMode(showSplashScreen);
+        update();
+    }
+    else 
+    {
+        Definition* definition=getDefinition();
+        if (definition)
+        {
+            setDisplayMode(showDefinition);
+            update();
+        }
+    }                
+}
+
+void MainForm::search(bool fullText)
+{
+    Field field(*this, termInputField);
+    const char* text=field.text();
+    uint_t textLen;
+    if (0==text || 0==(textLen=StrLen(text)))
+        return;
+        
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager(true);
+    if (!lookupManager || lookupManager->lookupInProgress())
+        return;
+
+    String term(text, textLen);
+    if (!fullText)
+    {
+        if (!lookupManager->lookupIfDifferent(term) && showDefinition!=displayMode())
+            updateAfterLookup();
+    }
+    else
+        lookupManager->search(term);
 }

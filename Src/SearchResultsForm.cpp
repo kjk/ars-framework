@@ -119,7 +119,8 @@ void SearchResultsForm::refineSearch()
         return;
     
     String expression(lookupManager->lastSearchExpression());
-    expression.reserve(expression.length()+textLen+1);    expression.append(1, ' ').append(text, textLen);
+    expression.reserve(expression.length()+textLen+1);
+    expression.append(1, ' ').append(text, textLen);
     lookupManager->search(expression);
 }
 

@@ -20,7 +20,7 @@ namespace ArsLexis
     {
         assert(sending_);
         Err error=getSocketErrorStatus();
-        assert(errNone==error);
+//        assert(errNone==error);
         UInt16 requestSize=request_.size();
         UInt16 requestLeft=requestSize-requestBytesSent_;
         if (requestLeft>chunkSize_)
@@ -54,7 +54,7 @@ namespace ArsLexis
     {
         assert(!sending_);
         Err error=getSocketErrorStatus();
-        assert(errNone==error);
+//        assert(errNone==error);
         UInt16 dataSize=0;
         UInt16 responseSize=response_.size();
         error=errNone;
