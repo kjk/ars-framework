@@ -1,35 +1,40 @@
 #include <FieldPayloadProtocolConnection.hpp>
 #include <Text.hpp>
 
+#define lineSeparator _T("\n")
+static const uint_t lineSeparatorLength=1;
+
 namespace ArsLexis
 {
-
-
-    namespace {
-
-#define fieldSeparator _T(": ")
-#define lineSeparator _T("\n")
-
-        static const uint_t fieldSeparatorLength=2;
-        static const uint_t lineSeparatorLength=1;
-        
-    }
-    
     FieldPayloadProtocolConnection::PayloadHandler::~PayloadHandler()
     {}
 
     FieldPayloadProtocolConnection::~FieldPayloadProtocolConnection()
     {}
 
+    // The rules are:
+    // - if field has a value, we do "$field" ":" " " "$value" lineSeparator
+    // - if field doesn't have value, we do "$field" ":" lineSeparator
     void FieldPayloadProtocolConnection::appendField(String& out, const char_t* name, uint_t nameLength, const char_t* value, uint_t valueLength)
     {
-        uint_t length=out.length()+nameLength+lineSeparatorLength;
-        if (valueLength)
-            length+=fieldSeparatorLength+valueLength;
-        out.reserve(length);
+        assert(nameLength>0);
+        assert(':' != name[nameLength-1]);
+
+        uint_t len;
+        if (valueLength>0)
+            len = out.length() + 2 + valueLength + lineSeparatorLength; // 2 is for ":" and " "
+        else
+            len = out.length() + 1 + lineSeparatorLength; // 1 is for ":"
+
+        out.reserve(len);
         out.append(name, nameLength);
-        if (valueLength)
-            out.append(fieldSeparator, fieldSeparatorLength).append(value, valueLength);
+        if (valueLength>0)
+        {
+            out.append(_T(": "),2);
+            out.append(value, valueLength);
+        }
+        else
+            out.append(_T(":"),1);
         out.append(lineSeparator, lineSeparatorLength);
     }
 
@@ -107,22 +112,43 @@ namespace ArsLexis
         } while (goOn && !error);
         return error;
     }
- 
+
+    // The rules are:
+    // - if field has a value, we do "$field" ":" " " "$value" lineSeparator
+    // - if field doesn't have value, we do "$field" ":" lineSeparator 
+    // We extract field and value, passing them to handleField()
     status_t FieldPayloadProtocolConnection::processLine(uint_t lineEnd)
     {
         String name, value;
         String resp;
         ByteStreamToText(response(), resp);
-        String::size_type separatorPos=resp.find(fieldSeparator);
-        if (resp.npos!=separatorPos && separatorPos<lineEnd)
-        {
-            name.assign(resp, 0, separatorPos);
-            separatorPos+=fieldSeparatorLength;
-            value.assign(resp, separatorPos, lineEnd-separatorPos);
-        }
-        else
-            name.assign(resp, 0, lineEnd);
-        return (name.length()?handleField(name, value):errNone);
+        String::size_type separatorPos=resp.find(_T(":"));
+
+        // empty line means end of response
+        if (0==lineEnd)
+            return errNone;
+        // didn't find the separator => error
+        if ((resp.npos==separatorPos) || (separatorPos>=lineEnd))
+            return errResponseMalformed;
+
+        name.assign(resp, 0, separatorPos);
+        assert(separatorPos>0);
+        // if ":" is at the end, it means a field with not value
+        // TODO: should we detect fields with arguments that shouldn't have arguments
+        // and vice-versa?
+        if (separatorPos==lineEnd)
+            return handleField(name, value);
+
+        // we must have space after ":"
+        String::size_type expectedSpacePos = separatorPos+1;
+        if (_T(' ') != resp[expectedSpacePos])
+            return errResponseMalformed;
+
+        String::size_type valueStartPos = separatorPos+2;
+        assert(valueStartPos<=lineEnd);
+
+        value.assign(resp, valueStartPos,lineEnd-valueStartPos);
+        return handleField(name, value);
     }
     
     status_t FieldPayloadProtocolConnection::notifyFinished()
