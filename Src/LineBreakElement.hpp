@@ -44,9 +44,6 @@ public:
     
     ~LineBreakElement();
     
-    void setHyperlink(const ArsLexis::String& resource, HyperlinkType type)
-    {}
-
     void setStyle(ElementStyle style)
     {}
 

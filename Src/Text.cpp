@@ -767,7 +767,8 @@ int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
     return -1;
 }
 
-
+// Andrzej: IMHO this is bad idea to put these functions in Text.h/cpp as they are to closely 
+// related to bytecode parser and it's not so obvious what they do in other contexts.
 ulong_t readUnaligned32(const char_t* addr)
 {
 	return
@@ -784,5 +785,6 @@ void writeUnaligned32(char_t* addr, ulong_t value)
 	addr[2] = (char_t)((ulong_t)(value) >>  8);
 	addr[3] = (char_t)((ulong_t)(value));
 }    
+
 } // namespace ArsLexis
 

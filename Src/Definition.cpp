@@ -629,14 +629,10 @@ void Definition::renderElementRange(Graphics& graphics, const RenderingPreferenc
 
 static bool hyperlinksEqual(const DefinitionElement* e1, const DefinitionElement* e2) 
 {
-    if (!(e1->isTextElement() && e2->isTextElement()))
+    if (!(e1->isHyperlink() && e2->isHyperlink()))
         return false;
-    const GenericTextElement* t1 = static_cast<const GenericTextElement*>(e1);
-    const GenericTextElement* t2 = static_cast<const GenericTextElement*>(e2);
-    if (!(t1->isHyperlink() && t2->isHyperlink()))
-        return false;
-    const GenericTextElement::HyperlinkProperties* p1 = t1->hyperlinkProperties();
-    const GenericTextElement::HyperlinkProperties* p2 = t2->hyperlinkProperties();
+    const DefinitionElement::HyperlinkProperties* p1 = e1->hyperlinkProperties();
+    const DefinitionElement::HyperlinkProperties* p2 = e2->hyperlinkProperties();
     if (p1->type != p2->type || p1->resource != p2->resource)
         return false;
     return true;
@@ -646,9 +642,7 @@ static bool insideHotSpot(const Point& p, Definition::ElementPosition_t begin, D
 {
     while (begin != end)
     {
-        assert((*begin)->isTextElement());
-        GenericTextElement* textElem = static_cast<GenericTextElement*>(*begin);
-        const GenericTextElement::HyperlinkProperties* props = textElem->hyperlinkProperties();
+        const DefinitionElement::HyperlinkProperties* props = (*begin)->hyperlinkProperties();
         assert(NULL != props);
         const Definition::HotSpot* hotSpot = props->hotSpot;
         if (NULL != hotSpot && hotSpot->hitTest(p))
@@ -993,14 +987,9 @@ bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPrefe
     return false;
 }
 
-static bool isHyperlink(Definition::const_iterator pos)
+static inline bool isHyperlink(Definition::const_iterator pos)
 {
-    if (!(*pos)->isTextElement())
-        return false;
-    GenericTextElement* textElem = static_cast<GenericTextElement*>(*pos);
-    if (!textElem->isHyperlink())
-        return false;
-    return true;
+    return (*pos)->isHyperlink();
 }
 
 bool Definition::navigateHyperlink(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, bool next)

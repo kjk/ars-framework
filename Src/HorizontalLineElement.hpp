@@ -29,9 +29,6 @@ public:
 
     ~HorizontalLineElement();
     
-    void setHyperlink(const ArsLexis::String& resource, HyperlinkType type)
-    {}
-
     void setStyle(ElementStyle style)
     {}
     

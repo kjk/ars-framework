@@ -3,6 +3,8 @@
 
 #include "Definition.hpp"
 
+typedef void action_callback(void *data);
+
 class DefinitionElement 
 {
     DefinitionElement* parent_;
@@ -12,21 +14,54 @@ protected:
     DefinitionElement* parent()
     {return parent_;}
     
-    DefinitionElement():
-        parent_(0),
-        justification_(justifyInherit)
-    {}
+    DefinitionElement();
     
     virtual uint_t childIndentation() const
     {return 0;}
     
     uint_t indentation() const;
     
-    virtual void invalidateHotSpot()
-    {}
-
+    void defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds);
+    
+    void invalidateHotSpot();
+    
 public:
     
+    struct HyperlinkProperties
+    {
+        ArsLexis::String resource;
+        Definition::HotSpot* hotSpot;
+        HyperlinkType type;
+        
+        HyperlinkProperties(const ArsLexis::String& res, HyperlinkType t);
+
+    };
+
+private:
+    
+    // actionCallback_ is being called when hotspot is hit. It takes precedence
+    // over hyperlink handler (because we need to mark the text as hyperlink 
+    // in order to have a hotspot; this is a bit hackish)
+    action_callback * actionCallback_;
+    void *            actionCallbackData_;
+    HyperlinkProperties* hyperlink_;
+    
+public:
+    
+    bool isHyperlink() const
+    {return NULL != hyperlink_;}
+    
+    void setHyperlink(const ArsLexis::String& resource, HyperlinkType type);
+    
+    const HyperlinkProperties* hyperlinkProperties() const 
+    {return hyperlink_;}
+
+    void setActionCallback(action_callback *actionCb, void *data)
+    {
+        actionCallback_ = actionCb;
+        actionCallbackData_ = data;
+    }
+
     const DefinitionElement* parent() const
     {return parent_;}
 
@@ -39,7 +74,7 @@ public:
     
     virtual ~DefinitionElement();
     
-    virtual void performAction(Definition&);
+    void performAction(Definition&);
     
     void setParent(DefinitionElement* parent)
     {
@@ -71,8 +106,6 @@ public:
     {justification_=j;}
     
     Justification justification() const;
-
-    virtual void setHyperlink(const ArsLexis::String& resource, HyperlinkType type) = 0;
 
     virtual void setStyle(ElementStyle style) = 0;
 

@@ -13,23 +13,16 @@ GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, 
 
 GenericTextElement::GenericTextElement(const String& text):
     text_(text),
-    hyperlink_(0),
-    style_(styleDefault),
-    actionCallback_(NULL),
-    actionCallbackData_(NULL)
+    style_(styleDefault)
 {}
 
 GenericTextElement::GenericTextElement(const char_t* text):
     text_(text),
-    hyperlink_(0),
-    style_(styleDefault),
-    actionCallback_(NULL),
-    actionCallbackData_(NULL)
+    style_(styleDefault)
 {}
 
 GenericTextElement::~GenericTextElement()
 {
-    delete hyperlink_;
 }
 
 namespace {
@@ -324,7 +317,7 @@ void GenericTextElement::applyHyperlinkDecorations(Graphics& graphics, const Ren
 {
     if (isHyperlink())
     {
-        const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlink_->type);
+        const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlinkProperties()->type);
         Font f=graphics.font();
         f.addEffects(decor.font.effects());
         graphics.setFont(f);
@@ -339,49 +332,6 @@ void GenericTextElement::applyFormatting(Graphics& graphics, const RenderingPref
     graphics.setFont(format.font);
     graphics.setTextColor(format.textColor);
     applyHyperlinkDecorations(graphics, preferences);
-}
-
-void GenericTextElement::invalidateHotSpot()
-{
-    assert(isHyperlink());
-    hyperlink_->hotSpot=0;
-}
-
-void GenericTextElement::defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds)
-{
-    assert(isHyperlink());
-    if (!hyperlink_->hotSpot)
-        definition.addHotSpot(hyperlink_->hotSpot=new Definition::HotSpot(bounds, *this));
-    else
-        hyperlink_->hotSpot->addRectangle(bounds);
-}       
-
-void GenericTextElement::setHyperlink(const String& resource, HyperlinkType type)
-{
-    if (!isHyperlink())
-        hyperlink_=new HyperlinkProperties(resource, type);
-    else
-    {
-        hyperlink_->resource=resource;
-        hyperlink_->type=type;
-    }
-}
-
-void GenericTextElement::performAction(Definition& definition)
-{
-    assert(isHyperlink());
-    // actionCallback_ takes precedence over hyperlink handler and we don't
-    // call hyperlink handler if actionCallback_ is present
-    if (actionCallback_)
-    {
-        (*actionCallback_)(actionCallbackData_);
-    }
-    else
-    {
-        Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
-        if (handler) 
-            handler->handleHyperlink(definition, *this);
-    }
 }
 
 void GenericTextElement::toText(String& appendTo, uint_t from, uint_t to) const
