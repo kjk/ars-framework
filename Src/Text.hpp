@@ -142,4 +142,10 @@ namespace ArsLexis
 
 }
 
+#ifdef _PALM_OS
+void memmove(char *dst, char *src, int len);
+#define memcpy memmove
+#endif
+
+
 #endif

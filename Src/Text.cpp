@@ -400,7 +400,7 @@ char_t *StringCopy(const String& str)
     if (NULL==newStr)
         return NULL;
 
-    memcpy(newStr,curStr,(len+1)*sizeof(char_t));
+    memcpy((char*)newStr, (char*)curStr, (len+1)*sizeof(char_t));
     return newStr;
 }
 
@@ -444,3 +444,20 @@ int AddLinesToList(const String& txt, CharPtrList_t& strList)
 
 } // namespace ArsLexis
 
+#ifdef _PALM_OS
+void memmove(char *dst, char *src, int len)
+{
+    int i;
+    if(dst > src)
+    {
+        for(i=len-1;i>=0;i--)
+            dst[i] = src[i];   
+    }
+    else
+    if(dst < src)
+    {
+        for(i=0;i<len;i++)
+            dst[i] = src[i];    
+    }
+}
+#endif //_PALM_OS
