@@ -25,6 +25,7 @@
 # -ts timestamp : limit the rows we update to those that have timestamp greater than the one give
 # -fromsql fileName : convert directly from sql file, no need for enwiki.cur database
 # -usepsyco : if used, will use psyco for speeding up, false by default
+# -validateonly : perform only validation of existing articles
 
 import MySQLdb, sys, datetime, time
 import wikipediasql,articleconvert, iPediaDatabase
@@ -225,7 +226,9 @@ def convertAll(articleLimit):
         curOffset += rowsPerQuery
         
 def validateAll(articleLimit):
+    global g_ipediaRowCount
     rowCount = 0
+    g_ipediaRowCount=None
     rowsLeft=getIpediaRowCount()
     rowsPerQuery=500
     curOffset=0
@@ -285,6 +288,22 @@ def convertOneTerm(term):
         termId = row[0]
         convertTerm(row[0],row[1],row[2])
 
+def validateOneTerm(term):
+    global g_connOne
+    query="""SELECT id, term, definition FROM ipedia.definitions WHERE term='%s'""" % dbEscape(term)
+    cursor=g_connOne.cursor()
+    cursor.execute(query)
+    row=cursor.fetchone()
+    cursor.close()
+    if row:
+        writeCur= g_connTwo.cursor()
+        defId, term, text=row[0], row[1], row[2]
+        modText=iPediaDatabase.validateInternalLinks(g_connTwo, writeCur, text)
+        if modText!=text:
+            updQuery="""UPDATE definitions SET definition='%s' WHERE id=%d""" % (dbEscape(modText), defId)
+            writeCur.execute(updQuery)
+        writeCur.close()
+
 def fDetectRemoveCmdFlag(flag):
     fFlagPresent = False
     try:
@@ -325,6 +344,8 @@ def dumpTimingInfo():
     str = "duration %f seconds\n" % dur
     sys.stderr.write(str)
     
+g_fValidateOnly=False
+    
 if __name__=="__main__":
 
     fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
@@ -340,7 +361,7 @@ if __name__=="__main__":
     g_fShowDups = fDetectRemoveCmdFlag( "-showdups" )
     g_timestamp = getRemoveCmdArg( "-ts" )
     g_fSlowVersion = fDetectRemoveCmdFlag( "-slow" )
-
+    g_fValidateOnly = fDetectRemoveCmdFlag( "-validateonly" )
     if g_timestamp and not g_fSlowVersion:
         print "-ts only supported if -slow is used"
         sys.exit(0)
@@ -353,15 +374,21 @@ if __name__=="__main__":
     fromSql = getRemoveCmdArg("-fromsql")
     termToConvert = getRemoveCmdArg("-one")
     startTiming()
-    if None!=termToConvert:
-        g_fVerbose = True
-        convertOneTerm(termToConvert)
-    elif None != fromSql:
-        convertAllFromSQL(fromSql,articleLimit)
-        validateAll(articleLimit)
+    if not g_fValidateOnly:
+        if None!=termToConvert:
+            g_fVerbose = True
+            convertOneTerm(termToConvert)
+        elif None != fromSql:
+            convertAllFromSQL(fromSql,articleLimit)
+            validateAll(articleLimit)
+        else:
+            convertAll(articleLimit)
+            validateAll(articleLimit)
     else:
-        convertAll(articleLimit)
-        validateAll(articleLimit)
+        if None!=termToConvert:
+            validateOneTerm(termToConvert)
+        else:
+            validateAll(articleLimit)
     endTiming()
     deinitDatabase()
     dumpTimingInfo()
