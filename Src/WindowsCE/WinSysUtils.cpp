@@ -125,12 +125,13 @@ bool GetSpecialFolderPath(String& pathOut, BOOL fCreate)
     if (fOk)
     {
         pathOut.assign(szPath);
+        return true;
     }
     else
     {
         pathOut.assign(_T(""));
+        return false;
     }
-	return fOk ? true : false;
 #else
     // if all else fails, just use root ("\") directory
     pathOut.assign(_T(""));
