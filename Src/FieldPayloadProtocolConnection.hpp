@@ -98,7 +98,11 @@ namespace ArsLexis
         bool inPayload_;
 
     };
+    
+    class Reader;
 
 }
+
+status_t FeedHandlerFromReader(ArsLexis::FieldPayloadProtocolConnection::PayloadHandler& handler, ArsLexis::Reader& reader);
 
 #endif

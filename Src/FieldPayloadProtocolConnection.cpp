@@ -1,5 +1,7 @@
 #include <FieldPayloadProtocolConnection.hpp>
 #include <Text.hpp>
+#include <Reader.hpp>
+#include <DynStr.hpp>
 
 #define lineSeparator _T("\n")
 static const uint_t lineSeparatorLength=1;
@@ -183,4 +185,30 @@ Exit:
         return error;    
     }
     
+}
+
+status_t FeedHandlerFromReader(ArsLexis::FieldPayloadProtocolConnection::PayloadHandler& handler, ArsLexis::Reader& reader)
+{
+    // This function uses String because such is interface of PayloadHandler that it requires so.
+    String str;
+    
+    status_t err;
+    const uint_t chunk = 256;
+    uint_t length = chunk;
+    while (chunk == length)
+    {
+        ulong_t before = str.length();
+        str.resize(before + length);
+            
+        if (errNone != (err = reader.read(&str[before], length)))
+            return err;
+            
+        str.resize(before += length);
+        
+        if (errNone != (err = handler.handleIncrement(str, before, chunk != length)))
+            return err;
+            
+        str.erase(0, before);
+    }
+    return errNone;
 }
