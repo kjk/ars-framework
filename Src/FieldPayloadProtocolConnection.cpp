@@ -8,6 +8,13 @@ namespace ArsLexis
 {
     FieldPayloadProtocolConnection::PayloadHandler::~PayloadHandler()
     {}
+    
+    FieldPayloadProtocolConnection::FieldPayloadProtocolConnection(SocketConnectionManager& manager):
+        SimpleSocketConnection(manager),
+        payloadLengthLeft_(0),
+        payloadLength_(0),
+        inPayload_(false)
+    {}
 
     FieldPayloadProtocolConnection::~FieldPayloadProtocolConnection()
     {}
