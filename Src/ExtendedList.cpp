@@ -116,9 +116,15 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
     if (errNone==error && 4<=version)
         hasHighDensityFeatures_=true;
-    setRgbColor(listBackground_, 255, 255, 255);
+
+    /*setRgbColor(listBackground_, 255, 255, 255);
     setRgbColor(itemBackground_, 70, 163, 255);
     setRgbColor(selectedItemBackground_, 0, 107, 215);
+    setRgbColor(foreground_, 255, 255, 255);*/
+
+    setRgbColor(listBackground_, 156, 207, 206);
+    setRgbColor(itemBackground_, 156, 207, 206);
+    setRgbColor(selectedItemBackground_, 99, 154, 206);
     setRgbColor(foreground_, 255, 255, 255);
     
 }
@@ -160,7 +166,8 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
 
 void ExtendedList::draw(Graphics& graphics)
 {
-    if (!windowSettingsChecked_)
+    if (false)  // temporary, to disable over-riding colors set in the constructor
+    //if (!windowSettingsChecked_)
     {
         windowSettingsChecked_=true;
         WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
