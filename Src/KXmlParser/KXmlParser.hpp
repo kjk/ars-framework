@@ -3,7 +3,7 @@
 
 #include "XmlPull.hpp"
 #include <vector>
-#include <Hashtable.hpp>
+#include <map>
 #include <memory>
 
 namespace KXml2{
@@ -27,8 +27,8 @@ namespace KXml2{
 
         bool            processNsp_;
         bool            relaxed_;
-        typedef std::auto_ptr<ArsLexis::Hashtable> HashtablePtr;
-        HashtablePtr entityMap_;
+        typedef std::map<String, String> EntityMap_t;
+        EntityMap_t entityMap_;
         int             depth_;
         std::vector<String>  elementStack_;
         std::vector<String>  nspStack_;

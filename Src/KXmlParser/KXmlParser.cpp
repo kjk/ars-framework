@@ -1032,7 +1032,7 @@ error_t KXmlParser::setInput(Reader& reader)
     peekCount_ = 0;
     depth_ = 0;
 
-    entityMap_.reset();
+    entityMap_.clear();
     return eNoError;
 }
 
@@ -1357,20 +1357,15 @@ String KXmlParser::resolveEntity(const String& entity)
     if (entity=="lt") return "<";
     if (entity=="quot") return "\"";
 
-    if (!entityMap_.get())
-    {
+    EntityMap_t::const_iterator it=entityMap_.find(entity);
+    if (it==entityMap_.end())
         return ""; // TODO: an exception? //RE TODO: Why? We dont need to throw exception
-    }
-
-    String value = entityMap_->get(entity);
-    return value;
+    return (*it).second;
 }
 
 void KXmlParser::defineEntityReplacementText(const String& entity, const String& value)
 {
     // TODO: should we check if a given replacement already exists?
     MUSTDO
-    if (!entityMap_.get())
-        entityMap_.reset(new ArsLexis::Hashtable());
-    entityMap_->put(entity, value);
+    entityMap_[entity]=value;
 }
