@@ -42,9 +42,11 @@ namespace ArsLexis
             if (requestBytesSent_==requestSize)
             {
                 sending_=false;
+/*                
                 error=socket().shutdown(netSocketDirOutput);
                 if (error)
                     log().debug()<<_T("notifyWritable(): Socket::shutdown() returned error: ")<<error;
+*/                    
             }
             else
                 registerEvent(SocketSelector::eventWrite);                
@@ -107,7 +109,12 @@ Exit:
     }
     
     status_t SimpleSocketConnection::notifyFinished()
-    {return errNone;}
+    {
+        status_t error=socket().shutdown(netSocketDirBoth);
+        if (error)
+            log().debug()<<_T("notifyFinished(): Socket::shutdown() returned error: ")<<error;
+        return error;
+    }
     
     status_t SimpleSocketConnection::notifyProgress()
     {return errNone;}

@@ -44,7 +44,7 @@ namespace {
         uint_t x0=bounds.x();
         uint_t y0=bounds.y();
         uint_t x1=x0+bounds.width()-1;
-        uint_t y1=y0+bounds.height()-1;
+        uint_t y1=y0+bounds.height();
         UInt16 origCoordinateSystem;
         if (doubleDensity) 
         {
@@ -53,7 +53,6 @@ namespace {
             x1*=2;
             x1+=1;
             y1*=2;
-            y1+=1;
             origCoordinateSystem=WinSetCoordinateSystem(kCoordinatesNative);
         }
         graphics.drawLine(x0+1, y0, x1-1, y0);
@@ -82,11 +81,11 @@ namespace {
             Rectangle fore(x0+2, y0+2, x1-x0-3, y1-y0-4);
             graphics.erase(fore);
             WinSetCoordinateSystem(origCoordinateSystem);
-            bounds.explode(1, 1, -2, -3);
+            bounds.explode(1, 1, -2, -2);
         }
         else
         {
-            bounds.explode(2, 2, -4, -5);
+            bounds.explode(2, 2, -4, -4);
             graphics.erase(bounds);
         }
         WinSetBackColorRGB(&oldColor, 0);
@@ -110,7 +109,9 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     screenIsDoubleDensity_(false),
     windowSettingsChecked_(false),
     trackingScrollbar_(false),
-    topItemBeforeTracking_(noListSelection)
+    topItemBeforeTracking_(noListSelection),
+    upBitmapId_(frmInvalidObjectId),
+    downBitmapId_(frmInvalidObjectId)
 {
     UInt32 version;
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
@@ -166,10 +167,11 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
 
 void ExtendedList::draw(Graphics& graphics)
 {
-    if (false)  // temporary, to disable over-riding colors set in the constructor
-    //if (!windowSettingsChecked_)
+//    if (false)  // temporary, to disable over-riding colors set in the constructor
+    if (!windowSettingsChecked_)
     {
         windowSettingsChecked_=true;
+/*        
         WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
         WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foreground_);
         WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackground_);
@@ -180,6 +182,7 @@ void ExtendedList::draw(Graphics& graphics)
             if (rgbEqual(itemBackground_, selectedItemBackground_))
                 saturate(selectedItemBackground_, -64);
         }
+*/        
         if (hasHighDensityFeatures_)
         {
             UInt32 attr;
@@ -341,6 +344,7 @@ void ExtendedList::adjustVisibleItems(RedrawOption ro)
 
 void ExtendedList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t, bool selected)
 {
+    bounds.explode(0, 0, 0, -1);
     drawBevel(graphics, bounds, selected?selectedItemBackground_:itemBackground_, screenIsDoubleDensity_);
 }
 
@@ -354,26 +358,36 @@ void ExtendedList::drawBackground(Graphics& graphics, const Rectangle& bounds)
 
 void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
 {
-    const int widthHeight=scrollBarWidth_-1;
-    Rectangle buttonBounds(bounds.x()+1, bounds.y(), widthHeight, widthHeight);
+    const int width = scrollBarWidth_-1;
+    const int height = scrollButtonHeight_-1;
+    RGBColorType oldBgColor;
+    WinSetBackColorRGB(&itemBackground_, &oldBgColor);
+    RGBColorType oldFgColor;
+    WinSetForeColorRGB(&foreground_, &oldFgColor);
+    Rectangle buttonBounds(bounds.x()+1, bounds.y(), width, height);
     Rectangle orig=buttonBounds;
     drawBevel(graphics, buttonBounds, itemBackground_, screenIsDoubleDensity_);
+    const int bmpWidth = 7;
+    const int bmpHeight = 4;
+    if (frmInvalidObjectId != upBitmapId_)
+        graphics.drawBitmap(upBitmapId_, Point(buttonBounds.x()+(buttonBounds.width()-bmpWidth)/2, buttonBounds.y()+(buttonBounds.height()-bmpHeight)/2));
     buttonBounds=orig;
-    buttonBounds.y()+=(bounds.height()-widthHeight);
+    buttonBounds.y()+=(bounds.height()-height);
     drawBevel(graphics, buttonBounds, itemBackground_, screenIsDoubleDensity_);
+    if (frmInvalidObjectId != downBitmapId_)
+        graphics.drawBitmap(downBitmapId_, Point(buttonBounds.x()+(buttonBounds.width()-bmpWidth)/2, buttonBounds.y()+(buttonBounds.height()-bmpHeight)/2));
     buttonBounds=orig;
     buttonBounds.y()=bounds.y()+scrollButtonHeight_;
     buttonBounds.height()=bounds.height()-2*scrollButtonHeight_;
     long totalHeight=buttonBounds.height();
-    long viewCapacity=height()/itemHeight_;
+    long viewCapacity=this->height()/itemHeight_;
     long itemsCount=this->itemsCount();
     assert(itemsCount>viewCapacity);
     long traktorHeight=(viewCapacity*totalHeight)/itemsCount+1;
     traktorHeight=std::max(traktorHeight, 5L);
-    RGBColorType oldColor;
-    WinSetBackColorRGB(&itemBackground_, &oldColor);
     graphics.erase(buttonBounds);
-    WinSetBackColorRGB(&oldColor, 0);
+    WinSetBackColorRGB(&oldBgColor, NULL);
+    WinSetForeColorRGB(&oldFgColor, NULL);
     buttonBounds.y()+=(long(topItem_)*totalHeight)/itemsCount;
     buttonBounds.height()=traktorHeight;
     drawBevel(graphics, buttonBounds, selectedItemBackground_, screenIsDoubleDensity_);

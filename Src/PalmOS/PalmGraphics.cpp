@@ -135,5 +135,20 @@ namespace ArsLexis
     {
         WinSetClip(&original_);        
     }
+
+    void Graphics::drawBitmap(uint_t bitmapId, const Point& topLeft)
+    {
+        MemHandle handle=DmGet1Resource(bitmapRsc, bitmapId);
+        if (handle) 
+        {
+            BitmapType* bmp=static_cast<BitmapType*>(MemHandleLock(handle));
+            if (bmp) 
+            {
+                WinDrawBitmap(bmp, topLeft.x, topLeft.y);
+                MemHandleUnlock(handle);
+            }
+            DmReleaseResource(handle);
+        }
+    }
  
 }

@@ -174,6 +174,8 @@ namespace ArsLexis {
         {WinResetClip();}
         
         void setClipping(const Rectangle& rect);
+        
+        void drawBitmap(uint_t bitmapId, const Point& topLeft);
 
     };
 

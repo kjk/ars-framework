@@ -95,7 +95,34 @@ namespace ArsLexis {
         
         uint_t height() const;
         
+        void setItemBackground(const RGBColorType& color)
+        {itemBackground_ = color;}
+        
+        void setSelectedItemBackground(const RGBColorType& color)
+        {selectedItemBackground_ = color;}
+        
+        void setListBackground(const RGBColorType& color)
+        {listBackground_ = color;}
+        
+        void setForeground(const RGBColorType& color)
+        {foreground_ = color;}
+        
+        const RGBColorType& itemBackground() const {return itemBackground_;}
+        
+        const RGBColorType& selectedItemBackground() const {return selectedItemBackground_;}
+        
+        const RGBColorType& listBackground() const {return listBackground_;}
+        
+        const RGBColorType& foreground() const {return foreground_;}
+        
+        void setUpBitmapId(uint_t id) {upBitmapId_ = id;}
 
+        void setDownBitmapId(uint_t id) {downBitmapId_ = id;}
+        
+        uint_t upBimapId() const {return upBitmapId_;}
+        
+        uint_t downBitmapId() const {return downBitmapId_;}
+        
     protected:
     
         const ItemRenderer* itemRenderer() const
@@ -109,13 +136,19 @@ namespace ArsLexis {
         
         virtual void drawBackground(Graphics& graphics, const Rectangle& bounds);
         
-        void setScrollBarWidth(uint_t width);
+        void setScrollBarWidth(uint_t width) {scrollBarWidth_ = width;}
+        
+        void setScrollButtonHeight(uint_t height) {scrollButtonHeight_ = height;}
         
         virtual void drawScrollBar(Graphics& graphics, const Rectangle& bounds);
         
         bool handleEvent(EventType& event);
         
         bool handleEnter(const EventType& event);
+        
+        bool screenIsDoubleDensity() const {return screenIsDoubleDensity_;}
+        
+        uint_t scrollButtonHeight() {return scrollButtonHeight_;}
         
     private:
     
@@ -140,6 +173,7 @@ namespace ArsLexis {
         uint_t itemHeight_;
         uint_t scrollBarWidth_;
         uint_t scrollButtonHeight_;
+ 
         RGBColorType itemBackground_;
         RGBColorType selectedItemBackground_;
         RGBColorType listBackground_;
@@ -150,6 +184,8 @@ namespace ArsLexis {
         bool windowSettingsChecked_;
         bool trackingScrollbar_;
         int topItemBeforeTracking_;
+        uint_t upBitmapId_;
+        uint_t downBitmapId_;
     };
     
     class BasicStringItemRenderer: public ExtendedList::ItemRenderer {
