@@ -11,55 +11,51 @@ using ArsLexis::status_t;
 
 UniversalDataHandler::UniversalDataHandler():lineNo(0) {}
 
-namespace {
-
-    static status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo)
-    {
-        volatile status_t error=errNone;
-        using namespace std;
-        using namespace ArsLexis;        
-        long resultLong;
-        const char_t* data = line.data();
-        const String::size_type len = line.length();
-        ErrTry {
-            if (lineNo == 0)
-            {
-                if(errNone != numericValue(data, data + len, resultLong))
-                    return SocketConnection::errResponseMalformed;
-                out.headerSize = resultLong;
-                out.fNormalized = false;
-            }
-            else if (lineNo <= out.headerSize)
-            {
-                UniversalDataFormat::Vector_t vec;
-                //read values from vector
-                char_t* dataOffset = (char_t*) data;
-                while (data + len > dataOffset)
-                {
-                    char_t* dataOffsetEnd = dataOffset;
-                    while (dataOffsetEnd < data + len && dataOffsetEnd[0] != _T(' '))
-                        dataOffsetEnd++;
-                    if(errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
-                        return SocketConnection::errResponseMalformed;
-                    vec.push_back(resultLong);
-                    dataOffset = dataOffsetEnd + 1;
-                }
-                out.header.push_back(vec);
-            }
-            else
-            {
-                if (lineNo == out.headerSize + 1)
-                    out.data.assign(line);
-                else
-                    out.data.append(line);
-            }
-            lineNo++;
+status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo)
+{
+    volatile status_t error=errNone;
+    using namespace std;
+    using namespace ArsLexis;        
+    long resultLong;
+    const char_t* data = line.data();
+    const String::size_type len = line.length();
+    ErrTry {
+        if (lineNo == 0)
+        {
+            if(errNone != numericValue(data, data + len, resultLong))
+                return SocketConnection::errResponseMalformed;
+            out.setHeaderSize(resultLong);
         }
-        ErrCatch (ex) {
-            error=ex;
-        } ErrEndCatch
-        return error;
+        else if (lineNo <= out.headerSize)
+        {
+            UniversalDataFormat::Vector_t vec;
+            //read values from vector
+            char_t* dataOffset = (char_t*) data;
+            while (data + len > dataOffset)
+            {
+                char_t* dataOffsetEnd = dataOffset;
+                while (dataOffsetEnd < data + len && dataOffsetEnd[0] != _T(' '))
+                    dataOffsetEnd++;
+                if(errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
+                    return SocketConnection::errResponseMalformed;
+                vec.push_back(resultLong);
+                dataOffset = dataOffsetEnd + 1;
+            }
+            out.header.push_back(vec);
+        }
+        else
+        {
+            if (lineNo == out.headerSize + 1)
+                out.data.assign(line);
+            else
+                out.data.append(line);
+        }
+         lineNo++;
     }
+    ErrCatch (ex) {
+        error=ex;
+    } ErrEndCatch
+    return error;
 }
 
 status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)

@@ -58,10 +58,10 @@ const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo)
         normalize();
     //get offset of data
     uint_t offset = header[itemNo][elemNo];
-    return (ArsLexis::char_t*) &(data[offset]);
+    return data.data() + offset;
 }
     
 ArsLexis::String UniversalDataFormat::getItemTextAsString(int itemNo, int elemNo)
 {
-    return (ArsLexis::String) getItemText(itemNo, elemNo);
+    return getItemText(itemNo, elemNo);
 }
