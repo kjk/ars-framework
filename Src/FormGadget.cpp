@@ -3,8 +3,6 @@
 #include <Application.hpp>
 #include <68k/Hs.h>
 
-using namespace ArsLexis;
-
 FormGadget::FormGadget(Form& form, UInt16 id):
     FormObjectWrapper(form, id),
     visible_(false),

@@ -3,8 +3,6 @@
 #include <Text.hpp>
 #include <memory>
 
-using namespace ArsLexis;
-
 GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
     resource(res),
     hotSpot(0),
@@ -25,26 +23,22 @@ GenericTextElement::~GenericTextElement()
 {
 }
 
-namespace {
-    
-    static uint_t findNextWhitespace(const String& text, uint_t fromPos)
-    {
-        uint_t length=text.length();
-        for (uint_t i=fromPos; i<length; ++i)
-            if (isSpace(text[i]))
-                return i;
-        return length;
-    }
-
-    static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
-    {
-        String::const_reverse_iterator it(text.rend()-start-length);
-        return (text.rend()-std::find_if(it, it+length, isSpace))-start;
-    }
-
+static uint_t findNextWhitespace(const String& text, uint_t fromPos)
+{
+    uint_t length=text.length();
+    for (uint_t i=fromPos; i<length; ++i)
+        if (isSpace(text[i]))
+            return i;
+    return length;
 }
 
-void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Rectangle& area, bool hyperlink)
+static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
+{
+    String::const_reverse_iterator it(text.rend()-start-length);
+    return (text.rend()-std::find_if(it, it+length, isSpace))-start;
+}
+
+void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rectangle& area, bool hyperlink)
 {
     uint_t intersectStart=std::max(start, selectionStart);
     uint_t intersectEnd=std::min(end, selectionEnd);
@@ -157,7 +151,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
     if (render)
     {
-        ArsLexis::Rectangle textArea(left, top, txtDx, lineHeight);
+        Rectangle textArea(left, top, txtDx, lineHeight);
         drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
             layoutContext.selectionStart, layoutContext.selectionEnd, textArea, layoutContext.selectionIsHyperlink);
         if (isHyperlink())

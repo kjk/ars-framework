@@ -12,9 +12,7 @@
 #include <Text.hpp>
 #include "LineBreakElement.hpp"
 
-using namespace ArsLexis;
-
-Definition::HotSpot::HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement& element):
+Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     element_(element)
 {
     rectangles_.push_back(rect);
@@ -30,13 +28,13 @@ Definition::HotSpot::~HotSpot()
     element_.invalidateHotSpot();
 }
 
-void Definition::HotSpot::move(const Point& delta, const ArsLexis::Rectangle& validArea)
+void Definition::HotSpot::move(const Point& delta, const Rectangle& validArea)
 {
     Rectangles_t::iterator end=rectangles_.end();
     Rectangles_t::iterator it=rectangles_.begin();
     while (it!=end)
     {
-        ArsLexis::Rectangle& rect=*it;
+        Rectangle& rect=*it;
         rect+=delta;
         Rectangles_t::iterator next=it;
         ++next;
@@ -49,7 +47,7 @@ void Definition::HotSpot::move(const Point& delta, const ArsLexis::Rectangle& va
 namespace {
 
     inline 
-        static bool operator<(const ArsLexis::Rectangle& rect1, const ArsLexis::Rectangle& rect2) {
+        static bool operator<(const Rectangle& rect1, const Rectangle& rect2) {
          if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
             return true;
         else
@@ -58,7 +56,7 @@ namespace {
     
 }
 
-void Definition::HotSpot::addRectangle(const ArsLexis::Rectangle& rect)
+void Definition::HotSpot::addRectangle(const Rectangle& rect)
 {
     rectangles_.insert(std::lower_bound(rectangles_.begin(), rectangles_.end(), rect), rect);
 }
@@ -255,7 +253,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             unionHeight += lines_[index].height;
         }
 
-        ArsLexis::Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
+        Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
         
         Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
@@ -264,7 +262,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         {
             pointDelta.y =- int(unionTop);
             graphics.copyArea(unionRect, bounds_.topLeft);
-            graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
+            graphics.erase(Rectangle(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight, elements_.end(), elements_.end());
         }
@@ -277,7 +275,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             }
                 
             graphics.copyArea(unionRect, bounds_.topLeft + pointDelta);
-            graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
+            graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
@@ -383,7 +381,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
         DefinitionElement::justifyLeft;
 
     if (elements_.end() == begin)
-        renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+        renderContext.graphics.erase(Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
 
     while (!lineFinished && current != last)
     {
@@ -543,7 +541,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::doRender(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
     if (bounds.width() != bounds_.width() || forceRecalculate || lines_.empty())
     {
@@ -571,7 +569,7 @@ void Definition::doRender(Graphics& graphics, const ArsLexis::Rectangle& bounds,
     renderLayout(graphics, prefs, elements_.end(), elements_.end());
 }
 
-status_t Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+status_t Definition::render(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
     volatile status_t error=errNone;
     ErrTry {
@@ -591,7 +589,7 @@ void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& pr
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;
     if (elements_.end() == begin)
-        graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
+        graphics.erase(Rectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
 }
 
 // if there is selection, copy selection to text. Otherwise, copy
@@ -799,7 +797,7 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
     return end;
 }
 
-void Definition::removeSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs)
+void Definition::removeSelection(Graphics& graphics, const RenderingPreferences& prefs)
 {
     ElementPosition_t start = selectionStartElement_;
     ElementPosition_t end = selectionEndElement_;
@@ -922,23 +920,23 @@ void Definition::replaceElements(Elements_t& elements)
     selectionIsHyperlink_ = false;
 }
 
-bool Definition::mouseDown(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point)
+bool Definition::mouseDown(Graphics& graphics, const RenderingPreferences& prefs, const Point& point)
 {
     return extendSelection(graphics, prefs, point, 0);
 }
 
-bool Definition::mouseUp(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, uint_t clickCount)
+bool Definition::mouseUp(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount)
 {
     return extendSelection(graphics, prefs, point, clickCount);
 }
 
-bool Definition::mouseDrag(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point)
+bool Definition::mouseDrag(Graphics& graphics, const RenderingPreferences& prefs, const Point& point)
 {
     return extendSelection(graphics, prefs, point, 0);
 }
 
 
-bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey)
+bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey)
 {
     if (usesHyperlinkNavigation())
     {
@@ -1026,7 +1024,7 @@ static inline bool isHyperlink(Definition::const_iterator pos)
     return (*pos)->isHyperlink();
 }
 
-bool Definition::navigateHyperlink(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, bool next)
+bool Definition::navigateHyperlink(Graphics& graphics, const RenderingPreferences& prefs, bool next)
 {
     if (empty())
         return false;
@@ -1130,7 +1128,7 @@ bool Definition::hasSelection() const
     return selectionStartElement_ != elements_.end();
 }
 
-void Definition::clearSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs) {
+void Definition::clearSelection(Graphics& graphics, const RenderingPreferences& prefs) {
     if (!hasSelection())
         return;
     ElementPosition_t start = selectionStartElement_;

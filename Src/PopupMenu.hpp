@@ -6,7 +6,7 @@
 #include <FormObject.hpp>
 #include <Definition.hpp>
 
-class PopupMenuModel: public ArsLexis::List::CustomDrawHandler
+class PopupMenuModel: public List::CustomDrawHandler
 {
 public:
 
@@ -33,7 +33,7 @@ public:
     
     uint_t maxTextWidth() const;
     
-    void drawItem(ArsLexis::Graphics& graphics, ArsLexis::List& list, uint_t item, const ArsLexis::Rectangle& itemBounds);
+    void drawItem(Graphics& graphics, List& list, uint_t item, const Rectangle& itemBounds);
     
     uint_t itemsCount() const;
     
@@ -52,16 +52,16 @@ class PopupMenu
 public:
 
     HyperlinkHandlerBase* hyperlinkHandler;
-    ArsLexis::List list;
+    List list;
     Int16 initialSelection;
 
-    PopupMenu(ArsLexis::Form& form);
+    PopupMenu(Form& form);
     
     ~PopupMenu();
     
     bool handleEventInForm(EventType& event);
 
-    Int16 popup(UInt16 id, const ArsLexis::Point& point);
+    Int16 popup(UInt16 id, const Point& point);
     
     // Passes model ownership to PopupMenu and deletes previous model
     void setModel(PopupMenuModel* model);

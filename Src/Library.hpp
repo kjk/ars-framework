@@ -4,30 +4,25 @@
 #include <Debug.hpp>
 #include <Utility.hpp>
 
-namespace ArsLexis 
+class Library: private NonCopyable
 {
-
-    class Library: private NonCopyable
-    {
-        UInt16 refNum_;
-        bool loaded_;
-        
-    public:
+    UInt16 refNum_;
+    bool loaded_;
     
-        Library();
+public:
 
-        virtual ~Library();
-        
-        Err initialize(const char* name, UInt32 creator, UInt32 type=sysFileTLibrary);
+    Library();
 
-        UInt16 refNum() const
-        {return refNum_;}
-        
-        operator UInt16 () const 
-        {return refNum();}
-        
-    };
+    virtual ~Library();
+    
+    Err initialize(const char* name, UInt32 creator, UInt32 type=sysFileTLibrary);
 
-}
+    UInt16 refNum() const
+    {return refNum_;}
+    
+    operator UInt16 () const 
+    {return refNum();}
+    
+};
 
 #endif

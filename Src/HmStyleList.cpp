@@ -2,8 +2,6 @@
 #include <Graphics.hpp>
 #include <68k/Hs.h>
 
-using namespace ArsLexis;
-
 HmStyleList::HmStyleList(Form& form, UInt16 id):
     ExtendedList(form, id)
 {

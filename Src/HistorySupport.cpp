@@ -36,7 +36,7 @@ OutOfMem:
     return memErrNotEnoughSpace;
 }
 
-HistorySupport::HistorySupport(ArsLexis::Form& form):
+HistorySupport::HistorySupport(Form& form):
     form_(form),
     popupMenu_(form),
     cacheName_(NULL),

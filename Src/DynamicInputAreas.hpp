@@ -19,52 +19,47 @@
 #define pinMaxConstraintSize 	SetBits( 0, ( sizeof( Coord) * 8 ) - 1 )
 #endif
 
-namespace ArsLexis 
+class Form;
+
+class DIA_Support: private NonCopyable
 {
-
-    class Form;
     
-    class DIA_Support: private NonCopyable
-    {
-        
-        UInt16 hasPenInputMgr_:1;
-        UInt16 hasSonySilkLib_:1;
-        UInt16 sonyLibIsVsk_:1;
+    UInt16 hasPenInputMgr_:1;
+    UInt16 hasSonySilkLib_:1;
+    UInt16 sonyLibIsVsk_:1;
 
-        Library sonySilkLib_;
-                        
-        DIA_Support(const DIA_Support&) throw();
-        DIA_Support& operator=(const DIA_Support&) throw();
-        
-        bool tryInitSonySilkLib() throw();
-        void sonySilkLibDispose() throw();
-        
-    public:
-        
-        DIA_Support() throw();
-        ~DIA_Support() throw();
-
-        bool hasPenInputManager() const  throw()
-        {return hasPenInputMgr_;}
-        
-        bool hasSonySilkLib() const  throw()
-        {return hasSonySilkLib_;}
-        
-        bool available() const  throw()
-        {return hasPenInputManager()||hasSonySilkLib();}
-        
-        operator bool() const
-        {return available();}
-
-        UInt32 notifyType() const  throw()
-        {return hasPenInputManager()?sysNotifyDisplayResizedEvent:sysNotifyDisplayChangeEvent;}        
-       
-        void handleNotify() const throw();
-        
-        Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger=false) const throw();
-        
-    };
+    Library sonySilkLib_;
+                    
+    DIA_Support(const DIA_Support&) throw();
+    DIA_Support& operator=(const DIA_Support&) throw();
     
-}    
+    bool tryInitSonySilkLib() throw();
+    void sonySilkLibDispose() throw();
+    
+public:
+    
+    DIA_Support() throw();
+    ~DIA_Support() throw();
+
+    bool hasPenInputManager() const  throw()
+    {return hasPenInputMgr_;}
+    
+    bool hasSonySilkLib() const  throw()
+    {return hasSonySilkLib_;}
+    
+    bool available() const  throw()
+    {return hasPenInputManager()||hasSonySilkLib();}
+    
+    operator bool() const
+    {return available();}
+
+    UInt32 notifyType() const  throw()
+    {return hasPenInputManager()?sysNotifyDisplayResizedEvent:sysNotifyDisplayChangeEvent;}        
+   
+    void handleNotify() const throw();
+    
+    Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger=false) const throw();
+    
+};
 
 #endif

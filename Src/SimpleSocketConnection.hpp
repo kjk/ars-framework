@@ -37,14 +37,6 @@ protected:
     
     virtual status_t notifyProgress();
 
-    // for perf, set request to a given data and take ownership of it
-    // i.e. the caller should not free this data since we will
-    void setRequestOwn(char *request, uint_t requestSize)
-    {
-        request_ = request;
-        requestLenLeft_ = requestSize;
-    }
-
     // set request to send to a copy of request
     void setRequestCopy(const char *request, uint_t requestSize)
     {
@@ -73,6 +65,14 @@ protected:
 public:
 
     SimpleSocketConnection(SocketConnectionManager& manager);
+
+    // for perf, set request to a given data and take ownership of it
+    // i.e. the caller should not free this data since we will
+    void setRequestOwn(char *request, uint_t requestSize)
+    {
+        request_ = request;
+        requestLenLeft_ = requestSize;
+    }
     
     void setMaxResponseSize(uint_t size)
     {maxResponseSize_=size;}

@@ -30,40 +30,32 @@
 //! @todo implement IsValidPrefRecord()
 #define IsValidPrefRecord(recData) true
 
+//! @todo do something with ErrFindDatabaseByNameTypeCreator()
+static Err ErrFindDatabaseByNameTypeCreator(const char* dbName, UInt32 type, UInt32 creator, LocalID *dbId)
+{
+    Err                 err;
+    DmSearchStateType   stateInfo;
+    UInt16              cardNo = 0;
+    char                dbNameBuf[dmDBNameLength];
 
-namespace {
+    Assert(dbName);
+    Assert(StrLen(dbName)<dmDBNameLength);
+    Assert(dbId);
 
-    //! @todo do something with ErrFindDatabaseByNameTypeCreator()
-    static Err ErrFindDatabaseByNameTypeCreator(const char* dbName, UInt32 type, UInt32 creator, LocalID *dbId)
+    err = DmGetNextDatabaseByTypeCreator(true, &stateInfo, type, creator, 0, &cardNo, dbId);
+    while (errNone == err)
     {
-        Err                 err;
-        DmSearchStateType   stateInfo;
-        UInt16              cardNo = 0;
-        char                dbNameBuf[dmDBNameLength];
+        MemSet(dbNameBuf, sizeof(dbName), 0);
+        DmDatabaseInfo(cardNo, *dbId, dbNameBuf, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL);
 
-        Assert(dbName);
-        Assert(StrLen(dbName)<dmDBNameLength);
-        Assert(dbId);
-
-        err = DmGetNextDatabaseByTypeCreator(true, &stateInfo, type, creator, 0, &cardNo, dbId);
-        while (errNone == err)
-        {
-            MemSet(dbNameBuf, sizeof(dbName), 0);
-            DmDatabaseInfo(cardNo, *dbId, dbNameBuf, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL);
-
-            if (0==StrCompare(dbName, dbNameBuf))
-                return errNone;
-            err = DmGetNextDatabaseByTypeCreator(false, &stateInfo, type, creator, 0, &cardNo, dbId);
-        }
-        return dmErrCantFind;
+        if (0==StrCompare(dbName, dbNameBuf))
+            return errNone;
+        err = DmGetNextDatabaseByTypeCreator(false, &stateInfo, type, creator, 0, &cardNo, dbId);
     }
-
+    return dmErrCantFind;
 }
 
-namespace ArsLexis 
-{
-
-#endif // ARSLEXIS_USE_NEW_FRAMEWORK
+#endif // !ARSLEXIS_USE_NEW_FRAMEWORK
 
 /*
 The idea is to provide an API for storing/reading preferences
@@ -827,8 +819,4 @@ CloseDbExit:
     new_free( prefsBlob );
     return err;
 }
-
-#ifdef ARSLEXIS_USE_NEW_FRAMEWORK
-} // namespace ArsLexis
-#endif // ARSLEXIS_USE_NEW_FRAMEWORK
 

@@ -334,7 +334,7 @@ void ArsLexis::removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& o
 // i.e. insert (locale-dependent) thousand separator in apropriate places
 // put the result in buffer buf of length bufSize. Buffer must be big enough
 // for the result.
-int ArsLexis::formatNumber(long num, char_t* buf, int bufSize)
+int formatNumber(long num, char_t* buf, int bufSize)
 {
     char thousand=',';
  
@@ -900,6 +900,39 @@ char_t* StringCopyN(const char_t* str, int strLen)
     memcpy(newStr, str, strLen*sizeof(char_t));
     newStr[strLen] = chrNull;
     return newStr;
+}
+
+// strip (i.e. remove whitespace from the beginning and the end of the string)
+// str in place.
+void StrStrip(char_t *str)
+{
+    assert( NULL != str);
+    ulong_t finalLen = tstrlen(str);
+    if (0 == finalLen)
+        return;
+
+    while (isSpace(str[finalLen-1]))
+    {
+        --finalLen;
+    }
+    str[finalLen] = _T('\0');
+
+    if (0 == finalLen)
+        return;
+
+    char_t *strStart = str;
+    while ( (finalLen > 0) && (isSpace(*strStart)))
+    {
+        strStart++;
+        finalLen -= 1;
+    }
+
+    assert( 0 != finalLen);
+    if (strStart == str)
+        return;
+
+    memmove(str, strStart, finalLen+1);
+    return;
 }
 
 // return true if this is an empty string (NULL or consits of white-space

@@ -1,7 +1,5 @@
 #include "HorizontalLineElement.hpp"
 
-using ArsLexis::Graphics;
-
 void HorizontalLineElement::calculateLayout(LayoutContext& layoutContext)
 {
     layoutContext.extendHeight(5, 3);

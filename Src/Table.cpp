@@ -1,7 +1,5 @@
 #include <Table.hpp>
 
-using namespace ArsLexis;
-
 Table::Table(Form& form, ScrollBar* scrollBar):
     FormObjectWrapper(form),
     scrollBar_(scrollBar),

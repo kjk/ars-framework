@@ -639,98 +639,95 @@ static bool OpenDataBase(DmOpenRef* dbIn, UInt32 typeIn, UInt32 creatorIn)
 }
  
 //our interfaces 
-namespace ArsLexis
+// person interface
+bool newAddressBookPerson(const char* inFirstName,
+                          const char* inLastName,
+                          const char* inAddress,
+                          const char* inCity,
+                          const char* inState,
+                          const char* inZipCode,
+                          const char* inPhone)
 {
-    // person interface
-    bool newAddressBookPerson(const char* inFirstName,
-                              const char* inLastName,
-                              const char* inAddress,
-                              const char* inCity,
-                              const char* inState,
-                              const char* inZipCode,
-                              const char* inPhone)
+    AddrDBRecordType rec;
+    AddrDBRecordPtr  r = &rec;
+    UInt16           newIndex;
+    bool             ret = false;
+   
+    for (int i = name; i< addressFieldsCount; i++)
+        r->fields[i] = NULL;
+    if (0 < StrLen(inLastName))
+        r->fields[name] = (char*) inLastName;
+    if (0 < StrLen(inFirstName))
+        r->fields[firstName] = (char*) inFirstName;
+    if (0 < StrLen(inAddress))
+        r->fields[address] = (char*) inAddress;
+    if (0 < StrLen(inCity))
+        r->fields[city] = (char*) inCity;
+    if (0 < StrLen(inState))
+        r->fields[state] = (char*) inState;
+    if (0 < StrLen(inZipCode))
+        r->fields[zipCode] = (char*) inZipCode;
+    if (0 < StrLen(inPhone))
+        r->fields[phone1] = (char*) inPhone;
+
+    //phone - home
+    r->options.phoneBits = 1;
+
+    DmOpenRef dbAddr = NULL;
+    bool      weNeedToClose = OpenDataBase(&dbAddr,'DATA','addr');
+    if (NULL != dbAddr)
     {
-        AddrDBRecordType rec;
-        AddrDBRecordPtr  r = &rec;
-        UInt16           newIndex;
-        bool             ret = false;
-       
-        for (int i = name; i< addressFieldsCount; i++)
-            r->fields[i] = NULL;
-        if (0 < StrLen(inLastName))
-            r->fields[name] = (char*) inLastName;
-        if (0 < StrLen(inFirstName))
-            r->fields[firstName] = (char*) inFirstName;
-        if (0 < StrLen(inAddress))
-            r->fields[address] = (char*) inAddress;
-        if (0 < StrLen(inCity))
-            r->fields[city] = (char*) inCity;
-        if (0 < StrLen(inState))
-            r->fields[state] = (char*) inState;
-        if (0 < StrLen(inZipCode))
-            r->fields[zipCode] = (char*) inZipCode;
-        if (0 < StrLen(inPhone))
-            r->fields[phone1] = (char*) inPhone;
-
-        //phone - home
-        r->options.phoneBits = 1;
-
-        DmOpenRef dbAddr = NULL;
-        bool      weNeedToClose = OpenDataBase(&dbAddr,'DATA','addr');
-        if (NULL != dbAddr)
-        {
-            Err error = AddrDBNewRecord(dbAddr, r, &newIndex);
-            if (!error)
-                ret = true;
-        }
-        if (weNeedToClose)
-            DmCloseDatabase(dbAddr);
-        return ret;
+        Err error = AddrDBNewRecord(dbAddr, r, &newIndex);
+        if (!error)
+            ret = true;
     }
+    if (weNeedToClose)
+        DmCloseDatabase(dbAddr);
+    return ret;
+}
 
 
-    // business interface
-    bool newAddressBookBusiness(const char* inName,
-                                const char* inAddress,
-                                const char* inCity,
-                                const char* inState,
-                                const char* inZipCode,
-                                const char* inPhone)
+// business interface
+bool newAddressBookBusiness(const char* inName,
+                            const char* inAddress,
+                            const char* inCity,
+                            const char* inState,
+                            const char* inZipCode,
+                            const char* inPhone)
+{
+    AddrDBRecordType rec;
+    AddrDBRecordPtr  r = &rec;
+    UInt16           newIndex;
+    bool             ret = false;
+   
+    for (int i = name; i< addressFieldsCount; i++)
+        r->fields[i] = NULL;
+    if (0 < StrLen(inName))
+        r->fields[company] = (char*) inName;
+    if (0 < StrLen(inAddress))
+        r->fields[address] = (char*) inAddress;
+    if (0 < StrLen(inCity))
+        r->fields[city] = (char*) inCity;
+    if (0 < StrLen(inState))
+        r->fields[state] = (char*) inState;
+    if (0 < StrLen(inZipCode))
+        r->fields[zipCode] = (char*) inZipCode;
+    if (0 < StrLen(inPhone))
+        r->fields[phone1] = (char*) inPhone;
+
+    //phone - work
+    r->options.phoneBits = 0;
+
+
+    DmOpenRef dbAddr = NULL;
+    bool      weNeedToClose = OpenDataBase(&dbAddr,'DATA','addr');
+    if (NULL != dbAddr)
     {
-        AddrDBRecordType rec;
-        AddrDBRecordPtr  r = &rec;
-        UInt16           newIndex;
-        bool             ret = false;
-       
-        for (int i = name; i< addressFieldsCount; i++)
-            r->fields[i] = NULL;
-        if (0 < StrLen(inName))
-            r->fields[company] = (char*) inName;
-        if (0 < StrLen(inAddress))
-            r->fields[address] = (char*) inAddress;
-        if (0 < StrLen(inCity))
-            r->fields[city] = (char*) inCity;
-        if (0 < StrLen(inState))
-            r->fields[state] = (char*) inState;
-        if (0 < StrLen(inZipCode))
-            r->fields[zipCode] = (char*) inZipCode;
-        if (0 < StrLen(inPhone))
-            r->fields[phone1] = (char*) inPhone;
-
-        //phone - work
-        r->options.phoneBits = 0;
-
-
-        DmOpenRef dbAddr = NULL;
-        bool      weNeedToClose = OpenDataBase(&dbAddr,'DATA','addr');
-        if (NULL != dbAddr)
-        {
-            Err error = AddrDBNewRecord(dbAddr, r, &newIndex);
-            if (!error)
-                ret = true;
-        }
-        if (weNeedToClose)
-            DmCloseDatabase(dbAddr);
-        return ret;
+        Err error = AddrDBNewRecord(dbAddr, r, &newIndex);
+        if (!error)
+            ret = true;
     }
+    if (weNeedToClose)
+        DmCloseDatabase(dbAddr);
+    return ret;
 }

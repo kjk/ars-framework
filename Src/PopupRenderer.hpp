@@ -4,9 +4,6 @@
 #include <TextRenderer.hpp>
 #include <RenderingPreferences.hpp>
 
-namespace ArsLexis
-{
-
 class Form;
 
 class PopupRenderer: public TextRenderer
@@ -33,7 +30,5 @@ protected:
     void handleDraw(Graphics& graphics);
     
 };
-
-}
 
 #endif // ARSLEXIS_POPUP_MENU_HPP__

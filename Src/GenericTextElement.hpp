@@ -9,16 +9,16 @@ class GenericTextElement: public DefinitionElement
     ArsLexis::String text_;
     ElementStyle     style_;
 
-    void drawTextWithSelection(ArsLexis::Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Rectangle& area, bool hyperlink);
+    void drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rectangle& area, bool hyperlink);
 
 
 protected:
 
     void calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition=0, bool render=false);
     
-    virtual void applyFormatting(ArsLexis::Graphics& graphics, const RenderingPreferences& preferences);
+    virtual void applyFormatting(Graphics& graphics, const RenderingPreferences& preferences);
     
-    void applyHyperlinkDecorations(ArsLexis::Graphics& graphics, const RenderingPreferences& preferences);
+    void applyHyperlinkDecorations(Graphics& graphics, const RenderingPreferences& preferences);
     
  
 public:

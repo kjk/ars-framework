@@ -3,8 +3,6 @@
 #include <StringListForm.hpp>
 #include <FormObject.hpp>
 
-using namespace ArsLexis;
-
 StringListForm::StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId, uint_t eventToSend):
     RichForm(app, formId, false),
     stringCount_(0),
@@ -28,7 +26,7 @@ void StringListForm::SetStringList(int stringCount, char_t *strList[])
     strList_ = strList;
 }
 
-void StringListForm::resize(const ArsLexis::Rectangle& screenBounds)
+void StringListForm::resize(const Rectangle& screenBounds)
 {
     Rectangle rect(bounds());
     if (screenBounds==rect)

@@ -1,8 +1,6 @@
 #include "LineBreakElement.hpp"
 #include "Graphics.hpp"
 
-using ArsLexis::Graphics;
-
 void LineBreakElement::setSize(int mult, int div)
 {
     mult_ = mult;

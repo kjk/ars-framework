@@ -1,6 +1,5 @@
 #include "BulletElement.hpp"
 
-using ArsLexis::Graphics;
 using ArsLexis::String;
 
 namespace {

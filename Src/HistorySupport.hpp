@@ -11,7 +11,7 @@ status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& 
 
 class HistorySupport
 {
-    ArsLexis::Form& form_;
+    Form& form_;
     PopupMenu popupMenu_;
     char_t* cacheName_;
     uint_t currentHistoryIndex_;
@@ -26,7 +26,7 @@ public:
     PopupMenuFillHandler_t popupMenuFillHandler;
     void* popupMenuFillHandlerData;
 
-    HistorySupport(ArsLexis::Form& form);
+    HistorySupport(Form& form);
     
     ~HistorySupport();
     

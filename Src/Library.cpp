@@ -1,37 +1,32 @@
 #include <Library.hpp>
 
-namespace ArsLexis
+Library::Library():
+    refNum_(0),
+    loaded_(false)
 {
+}
 
-    Library::Library():
-        refNum_(0),
-        loaded_(false)
+Err Library::initialize(const char* name, UInt32 creator, UInt32 type)
+{
+    assert(!refNum_);
+    assert(!loaded_);
+    Err error=SysLibFind(name, &refNum_);
+    if (sysErrLibNotFound==error)
     {
-    }
-    
-    Err Library::initialize(const char* name, UInt32 creator, UInt32 type)
-    {
-        assert(!refNum_);
-        assert(!loaded_);
-        Err error=SysLibFind(name, &refNum_);
-        if (sysErrLibNotFound==error)
-        {
-            error=SysLibLoad(type, creator, &refNum_);
-            if (!error)
-                loaded_=true;
-        }
+        error=SysLibLoad(type, creator, &refNum_);
         if (!error)
-            assert(refNum_!=0);
-        return error;
+            loaded_=true;
     }
-    
-    Library::~Library()
-    {
-        if (loaded_)
-        {
-            assert(refNum_!=0);
-            SysLibRemove(refNum_);
-        }
-    }
+    if (!error)
+        assert(refNum_!=0);
+    return error;
+}
 
+Library::~Library()
+{
+    if (loaded_)
+    {
+        assert(refNum_!=0);
+        SysLibRemove(refNum_);
+    }
 }

@@ -42,8 +42,6 @@
 #define sizeLength  sizeof(elementSizeType)
 #define headerLength 12
 
-using namespace ArsLexis;
-
 ByteFormatParser::ByteFormatParser():
     start_(0),
     inLength_(0),

@@ -21,7 +21,7 @@ protected:
     
     uint_t indentation() const;
     
-    void defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds);
+    void defineHotSpot(Definition& definition, const Rectangle& bounds);
     
     void invalidateHotSpot();
     
@@ -74,7 +74,7 @@ public:
     
     virtual ~DefinitionElement();
     
-    void performAction(Definition&, const ArsLexis::Point* point);
+    void performAction(Definition&, const Point* point);
     
     void setParent(DefinitionElement* parent)
     {

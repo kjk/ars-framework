@@ -3,32 +3,28 @@
 
 #include <Form.hpp>
 
-namespace ArsLexis {
+class RichApplication;
 
-    class RichApplication;
+class RichForm: public Form {
 
-    class RichForm: public Form {
-    
-        bool disableDiaTrigger_;
-    
-    public:    
-    
-        RichForm(RichApplication& app, uint_t formId, bool disableDiaTrigger=false);
-        
-        ~RichForm();
-        
-        Err initialize();
-        
-    protected:
-    
-        bool handleEvent(EventType& event);
-        
-        virtual void resize(const ArsLexis::Rectangle&);
+    bool disableDiaTrigger_;
 
-        WindowFormatType windowFormat() const;
-        
-    };
+public:    
 
-}
+    RichForm(RichApplication& app, uint_t formId, bool disableDiaTrigger=false);
+    
+    ~RichForm();
+    
+    Err initialize();
+    
+protected:
+
+    bool handleEvent(EventType& event);
+    
+    virtual void resize(const Rectangle&);
+
+    WindowFormatType windowFormat() const;
+    
+};
 
 #endif

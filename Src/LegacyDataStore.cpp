@@ -2,8 +2,6 @@
 #include <LegacyDataStore.h>
 #include <DataStore.hpp>
 
-using namespace ArsLexis;
-
 Err DataStoreInitialize(const char* fileName)
 {
     return DataStore::initialize(fileName);

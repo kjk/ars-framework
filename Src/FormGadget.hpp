@@ -3,82 +3,78 @@
 
 #include <FormObject.hpp>
 
-namespace ArsLexis {
+class Graphics;
 
-    class Graphics;
+class FormGadget: public FormObjectWrapper<FormGadgetType> {
     
-    class FormGadget: public FormObjectWrapper<FormGadgetType> {
-        
-        static Boolean gadgetHandler(FormGadgetTypeInCallback* gadget, UInt16 cmd, void* param);
-        
-        void setupGadget(FormType* form, UInt16 index);
-        
-        bool visible_;
-        bool usable_;
-        bool doubleBuffer_;
-
-    protected:        
-
-        virtual void drawProxy();
-        
-        virtual void drawFocusRing() {}
-        
-        virtual void removeFocusRing();
-        
-        virtual void handleDraw(Graphics& graphics);
-        
-        virtual bool handleEvent(EventType& event);
-        
-        virtual bool handleGadgetCommand(UInt16 command, void* param);
-        
-        virtual bool handleEnter(const EventType& event); 
-        
-        virtual bool handleMiscEvent(const EventType& event);
-        
-        virtual void notifyHide();
-        
-        virtual void notifyShow();
-
-        void setDoubleBuffer(bool val)
-        {doubleBuffer_=val;}
-        
-        enum FocusChange {
-            focusTaking,
-            focusLosing
-        };
-        
-        virtual void handleFocusChange(FocusChange change);
-        
-        void fireDrawCompleted() {
-            form()->afterGadgetDraw();
-        }
-
-        
-    public:
+    static Boolean gadgetHandler(FormGadgetTypeInCallback* gadget, UInt16 cmd, void* param);
     
-        bool visible() const
-        {return visible_;}
-        
-        bool usable() const
-        {return usable_;}
-        
-        explicit FormGadget(Form& form, UInt16 id=frmInvalidObjectId);
-        
-        ~FormGadget();
+    void setupGadget(FormType* form, UInt16 index);
+    
+    bool visible_;
+    bool usable_;
+    bool doubleBuffer_;
 
-        //! Warning! this function overwrites non-virtual FormObject::attach(). 
-        //! Take care not to call it through FormObject pointer or reference.
-        void attach(UInt16 id);
+protected:        
 
-        //! Warning! this function overwrites non-virtual FormObject::attachByIndex(). 
-        //! Take care not to call it through FormObject pointer or reference.
-        void attachByIndex(UInt16 index);
-          
-        friend class Form;
-        friend class Application;
-        friend class FormObject;
-    };   
+    virtual void drawProxy();
+    
+    virtual void drawFocusRing() {}
+    
+    virtual void removeFocusRing();
+    
+    virtual void handleDraw(Graphics& graphics);
+    
+    virtual bool handleEvent(EventType& event);
+    
+    virtual bool handleGadgetCommand(UInt16 command, void* param);
+    
+    virtual bool handleEnter(const EventType& event); 
+    
+    virtual bool handleMiscEvent(const EventType& event);
+    
+    virtual void notifyHide();
+    
+    virtual void notifyShow();
 
-}
+    void setDoubleBuffer(bool val)
+    {doubleBuffer_=val;}
+    
+    enum FocusChange {
+        focusTaking,
+        focusLosing
+    };
+    
+    virtual void handleFocusChange(FocusChange change);
+    
+    void fireDrawCompleted() {
+        form()->afterGadgetDraw();
+    }
+
+    
+public:
+
+    bool visible() const
+    {return visible_;}
+    
+    bool usable() const
+    {return usable_;}
+    
+    explicit FormGadget(Form& form, UInt16 id=frmInvalidObjectId);
+    
+    ~FormGadget();
+
+    //! Warning! this function overwrites non-virtual FormObject::attach(). 
+    //! Take care not to call it through FormObject pointer or reference.
+    void attach(UInt16 id);
+
+    //! Warning! this function overwrites non-virtual FormObject::attachByIndex(). 
+    //! Take care not to call it through FormObject pointer or reference.
+    void attachByIndex(UInt16 index);
+      
+    friend class Form;
+    friend class Application;
+    friend class FormObject;
+};   
 
 #endif

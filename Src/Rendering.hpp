@@ -14,7 +14,7 @@ struct LayoutContext
     enum {progressCompleted=((uint_t)-1)};
 
 
-    ArsLexis::Graphics& graphics;
+    Graphics& graphics;
     const RenderingPreferences& preferences;
     uint_t renderingProgress;
     const uint_t screenWidth;
@@ -26,7 +26,7 @@ struct LayoutContext
     uint_t selectionEnd;
     bool selectionIsHyperlink;
     
-    LayoutContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
+    LayoutContext(Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
         graphics(graph),
         preferences(prefs),
         renderingProgress(0),
@@ -74,7 +74,7 @@ struct RenderingContext: public LayoutContext
     uint_t left;
     uint_t top;
     
-    RenderingContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, Definition& def, uint_t x, uint_t y, uint_t width):
+    RenderingContext(Graphics& graph, const RenderingPreferences& prefs, Definition& def, uint_t x, uint_t y, uint_t width):
         LayoutContext(graph, prefs, width),
         definition(def),
         left(x),

@@ -1,7 +1,5 @@
 #include <BufferedReader.hpp>
 
-using namespace ArsLexis;
-
 BufferedReader::BufferedReader(Reader& reader, uint_t chunkSize):
     reader_(reader),
     isMarked_(false),

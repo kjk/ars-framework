@@ -24,7 +24,7 @@ DefinitionElement::~DefinitionElement()
     delete hyperlink_;
 }
 
-void DefinitionElement::performAction(Definition& definition, const ArsLexis::Point* point)
+void DefinitionElement::performAction(Definition& definition, const Point* point)
 {
     assert(isHyperlink());
     // actionCallback_ takes precedence over hyperlink handler and we don't
@@ -49,7 +49,7 @@ void DefinitionElement::invalidateHotSpot()
     hyperlink_->hotSpot=0;
 }
 
-void DefinitionElement::defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds)
+void DefinitionElement::defineHotSpot(Definition& definition, const Rectangle& bounds)
 {
     assert(isHyperlink());
     if (!hyperlink_->hotSpot)

@@ -2,8 +2,6 @@
 #include <SysUtils.hpp>
 #include <Text.hpp>
 
-using namespace ArsLexis;
-
 static void *buildDataForEvent(ulong_t eventId, ulong_t magicNumber, ulong_t type, char *eventData, ulong_t dataLen)
 {
     ulong_t l =  sizeof(eventId)+sizeof(magicNumber)+sizeof(type)+dataLen;
@@ -55,7 +53,7 @@ void sendTextNEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length
 
 void sendExtendedEvent(void* eventData, const Point* point)
 {
-    ArsLexis::sendEvent(extEvent, eventData, false, point);
+    sendEvent(extEvent, eventData, false, point);
 }
 
 ulong_t   getExtendedEventId(EventType *event)

@@ -9,10 +9,7 @@
 # error "Define Graphics system for your build target."
 #endif
 
-namespace ArsLexis
-{
-    typedef Graphics::Font_t Font;
-    typedef Graphics::Color_t Color;
-}
+typedef Graphics::Font_t Font;
+typedef Graphics::Color_t Color;
 
 #endif

@@ -2,9 +2,7 @@
 #include <Graphics.hpp>
 #include <Text.hpp>
 
-using namespace ArsLexis;
-
-PopupMenu::PopupMenu(ArsLexis::Form& form):
+PopupMenu::PopupMenu(Form& form):
     list(form),
     model_(new_nt PopupMenuModel),
     hyperlinkHandler(NULL),
@@ -27,7 +25,7 @@ bool PopupMenu::handleEventInForm(EventType& event)
     return false;
 }
 
-Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
+Int16 PopupMenu::popup(UInt16 id, const Point& point)
 {
     assert(!list.valid());
 
@@ -138,8 +136,7 @@ PopupMenuModel::~PopupMenuModel()
 
 PopupMenuModel::Item::Item()
 {
-    using namespace std;
-    memset(this, 0, sizeof(*this));
+    memzero(this, sizeof(*this));
 }
 
 PopupMenuModel::Item::~Item()

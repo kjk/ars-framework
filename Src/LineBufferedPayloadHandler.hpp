@@ -3,31 +3,25 @@
 
 #include <FieldPayloadProtocolConnection.hpp>
 
-namespace ArsLexis {
-
-    class LineBufferedPayloadHandler: public FieldPayloadProtocolConnection::PayloadHandler {
-        
-        String lineBuffer_;
-        char_t delimiter_;
-        
-    protected:
-        
-        virtual status_t handleLine(const String& line)=0;
-        
-        void setDelimiter(char_t delimiter)
-        {delimiter_=delimiter;}
-
-    public:
+class LineBufferedPayloadHandler: public FieldPayloadProtocolConnection::PayloadHandler {
     
-        LineBufferedPayloadHandler();
+    String lineBuffer_;
+    char_t delimiter_;
     
-        ~LineBufferedPayloadHandler();
-        
-        status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
-                
+protected:
     
-    };
+    virtual status_t handleLine(const String& line)=0;
+    
+    void setDelimiter(char_t delimiter)
+    {delimiter_=delimiter;}
 
-}
+public:
+
+    LineBufferedPayloadHandler();
+
+    ~LineBufferedPayloadHandler();
+    
+    status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
+};
 
 #endif

@@ -70,8 +70,7 @@ status_t HistoryCache::open(const char_t* dsName)
 
 HistoryCache::IndexEntry::IndexEntry()
 {
-    using namespace std;
-    memset(this, 0, sizeof(*this));
+    memzero(this, sizeof(*this));
 }
 
 status_t HistoryCache::readIndex()

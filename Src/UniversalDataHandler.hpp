@@ -4,19 +4,18 @@
 #include <UniversalDataFormat.hpp>
 #include <LineBufferedPayloadHandler.hpp>
 
-namespace ArsLexis {
-    class Reader;
-    class DataStoreReader;
-    class DataStoreWriter;
-}
+class Reader;
 
-typedef std::auto_ptr<ArsLexis::DataStoreReader> DataStoreReaderPtr;
-typedef std::auto_ptr<ArsLexis::DataStoreWriter> DataStoreWriterPtr;
+class DataStoreReader;
+class DataStoreWriter;
 
-extern ArsLexis::status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, UniversalDataFormat& out);
+typedef std::auto_ptr<DataStoreReader> DataStoreReaderPtr;
+typedef std::auto_ptr<DataStoreWriter> DataStoreWriterPtr;
+
+extern ArsLexis::status_t readUniversalDataFromReader(Reader& origReader, UniversalDataFormat& out);
 extern void readUniversalDataFromStream(const ArsLexis::char_t* streamName, UniversalDataFormat& out);
 
-class UniversalDataHandler: public ArsLexis::LineBufferedPayloadHandler {
+class UniversalDataHandler: public LineBufferedPayloadHandler {
 
     int                     lineNo_;
     long                    controlDataLength_;

@@ -4,30 +4,26 @@
 #include <LineBufferedPayloadHandler.hpp>
 #include <vector>
 
-namespace ArsLexis {
+class StringListPayloadHandler: public LineBufferedPayloadHandler 
+{
+public:
 
-    class StringListPayloadHandler: public LineBufferedPayloadHandler {
-    
-    public:
-    
-        StringListPayloadHandler();
-    
-        ~StringListPayloadHandler();
-        
-        typedef std::vector<String> Strings_t;
+    StringListPayloadHandler();
 
-        Strings_t strings;    
-        
-        virtual status_t notifyFinished();
-
-        status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
-        
-    protected:
-        
-        status_t handleLine(const String& line);
-        
-    };
+    ~StringListPayloadHandler();
     
-}    
+    typedef std::vector<String> Strings_t;
+
+    Strings_t strings;    
+    
+    virtual status_t notifyFinished();
+
+    status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
+    
+protected:
+    
+    status_t handleLine(const String& line);
+    
+};
 
 #endif

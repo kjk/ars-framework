@@ -66,6 +66,7 @@ namespace ArsLexis
 # define tstrncmp  _tcsncmp
 # define tprintf   _stprintf
 # define ticks     GetTickCount
+# define memzero(data,size)  memset((data), 0, (size))
 
     static inline tick_t ticksPerSecond() { return 1000; } // Win32 uses fixed 1-millisecond ticks.
 
@@ -101,7 +102,8 @@ namespace ArsLexis
 #  define tstrcmp StrCompare
 #  define tstrncmp StrNCompare
 #  define memmove  MemMove
-
+// yes, MemSet has different order than memset
+#  define memzero(data,size)  MemSet((data), (size), 0)
 # else
 
 #  define tprintf sprintf

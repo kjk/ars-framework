@@ -3,8 +3,6 @@
 
 #include <RichForm.hpp>
 
-using ArsLexis::RichApplication;
-using ArsLexis::RichForm;
 using ArsLexis::char_t;
 
 #define NOT_SELECTED -1
@@ -36,7 +34,7 @@ protected:
 
     bool handleEvent(EventType& event);
 
-    void resize(const ArsLexis::Rectangle& screenBounds);
+    void resize(const Rectangle& screenBounds);
 
 public:
     explicit StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId, uint_t eventToSend = dontSendEvent);

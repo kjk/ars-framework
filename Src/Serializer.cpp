@@ -2,9 +2,7 @@
 #include <Writer.hpp>
 #include <BufferedReader.hpp>
 
-using namespace ArsLexis;
 using namespace std;
-
 
 bool Serializable::serializeInFromVersion(Serializer& ser, uint_t version) {return false;}
 

@@ -9,96 +9,90 @@
 #pragma pcrelconstdata on
 #endif
 
-using namespace ArsLexis;
-
-
-namespace {
-
-    static void saturate(UInt8& val, int level)
+static void saturate(UInt8& val, int level)
+{
+    if (level>0)
     {
-        if (level>0)
-        {
-            if (255-level>val)
-                val+=level;
-            else
-                val=255;
-        }
+        if (255-level>val)
+            val+=level;
         else
-        {
-            if (0-level<val)
-                val+=level;
-            else
-                val=0;
-        }
+            val=255;
     }
-    
-    static void saturate(RGBColorType& rgb, int level)
+    else
     {
-        saturate(rgb.r, level);
-        saturate(rgb.g, level);
-        saturate(rgb.b, level);
-    }
-
-    static void drawBevel(Graphics& graphics, Rectangle& bounds, const RGBColorType& color, bool doubleDensity)
-    {
-        RGBColorType oldColor;
-        RGBColorType tmp=color;
-        saturate(tmp, 80);
-        WinSetForeColorRGB(&tmp, &oldColor);
-        uint_t x0=bounds.x();
-        uint_t y0=bounds.y();
-        uint_t x1=x0+bounds.width()-1;
-        uint_t y1=y0+bounds.height();
-        UInt16 origCoordinateSystem;
-        if (doubleDensity) 
-        {
-            x0 *= 2;
-            y0 *= 2;
-            x1 *= 2;
-            x1 += 1;
-            y1 *= 2;
-            origCoordinateSystem = WinSetCoordinateSystem(kCoordinatesNative);
-        }
-        graphics.drawLine(x0+1, y0, x1-1, y0);
-        graphics.drawLine(x0, y0+1, x0, y1-2);
-        graphics.drawLine(x0, y0+1, x0+1, y0+1);
-        tmp=color;
-        saturate(tmp, 20);
-        WinSetForeColorRGB(&tmp, 0);
-        graphics.drawLine(x0+2, y0+1, x1-2, y0+1);
-        graphics.drawLine(x0+1, y0+2, x0+1, y1-3);
-        tmp=color;
-        saturate(tmp, -80);
-        WinSetForeColorRGB(&tmp, 0);
-        graphics.drawLine(x0+1, y1-1, x1-1, y1-1);
-        graphics.drawLine(x1, y0+1, x1, y1-2);
-        graphics.drawLine(x1-1, y1-2, x1, y1-2);
-        tmp=color;
-        saturate(tmp, -20);
-        WinSetForeColorRGB(&tmp, 0);
-        graphics.drawLine(x0+1, y1-2, x1-2, y1-2);
-        graphics.drawLine(x1-1, y0+1, x1-1, y1-3);
-        WinSetForeColorRGB(&oldColor, 0);
-        WinSetBackColorRGB(&color, &oldColor);
-        if (doubleDensity)
-        {
-            Rectangle fore(x0+2, y0+2, x1-x0-3, y1-y0-4);
-            graphics.erase(fore);
-            WinSetCoordinateSystem(origCoordinateSystem);
-            bounds.explode(1, 1, -2, -2);
-        }
+        if (0-level<val)
+            val+=level;
         else
-        {
-            bounds.explode(2, 2, -4, -4);
-            graphics.erase(bounds);
-        }
-        WinSetBackColorRGB(&oldColor, 0);
+            val=0;
     }
-    
-    inline static bool rgbEqual(const RGBColorType& c1, const RGBColorType& c2)
-    {   
-        return c1.r==c2.r && c1.g==c2.g && c1.b==c2.b;
+}
+
+static void saturate(RGBColorType& rgb, int level)
+{
+    saturate(rgb.r, level);
+    saturate(rgb.g, level);
+    saturate(rgb.b, level);
+}
+
+static void drawBevel(Graphics& graphics, Rectangle& bounds, const RGBColorType& color, bool doubleDensity)
+{
+    RGBColorType oldColor;
+    RGBColorType tmp=color;
+    saturate(tmp, 80);
+    WinSetForeColorRGB(&tmp, &oldColor);
+    uint_t x0=bounds.x();
+    uint_t y0=bounds.y();
+    uint_t x1=x0+bounds.width()-1;
+    uint_t y1=y0+bounds.height();
+    UInt16 origCoordinateSystem;
+    if (doubleDensity) 
+    {
+        x0 *= 2;
+        y0 *= 2;
+        x1 *= 2;
+        x1 += 1;
+        y1 *= 2;
+        origCoordinateSystem = WinSetCoordinateSystem(kCoordinatesNative);
     }
+    graphics.drawLine(x0+1, y0, x1-1, y0);
+    graphics.drawLine(x0, y0+1, x0, y1-2);
+    graphics.drawLine(x0, y0+1, x0+1, y0+1);
+    tmp=color;
+    saturate(tmp, 20);
+    WinSetForeColorRGB(&tmp, 0);
+    graphics.drawLine(x0+2, y0+1, x1-2, y0+1);
+    graphics.drawLine(x0+1, y0+2, x0+1, y1-3);
+    tmp=color;
+    saturate(tmp, -80);
+    WinSetForeColorRGB(&tmp, 0);
+    graphics.drawLine(x0+1, y1-1, x1-1, y1-1);
+    graphics.drawLine(x1, y0+1, x1, y1-2);
+    graphics.drawLine(x1-1, y1-2, x1, y1-2);
+    tmp=color;
+    saturate(tmp, -20);
+    WinSetForeColorRGB(&tmp, 0);
+    graphics.drawLine(x0+1, y1-2, x1-2, y1-2);
+    graphics.drawLine(x1-1, y0+1, x1-1, y1-3);
+    WinSetForeColorRGB(&oldColor, 0);
+    WinSetBackColorRGB(&color, &oldColor);
+    if (doubleDensity)
+    {
+        Rectangle fore(x0+2, y0+2, x1-x0-3, y1-y0-4);
+        graphics.erase(fore);
+        WinSetCoordinateSystem(origCoordinateSystem);
+        bounds.explode(1, 1, -2, -2);
+    }
+    else
+    {
+        bounds.explode(2, 2, -4, -4);
+        graphics.erase(bounds);
+    }
+    WinSetBackColorRGB(&oldColor, 0);
+}
+
+inline static bool rgbEqual(const RGBColorType& c1, const RGBColorType& c2)
+{   
+    return c1.r==c2.r && c1.g==c2.g && c1.b==c2.b;
 }
 
 ExtendedList::ExtendedList(Form& form, UInt16 id):

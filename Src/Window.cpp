@@ -1,8 +1,6 @@
 #include <Window.hpp>
 #include <Geometry.hpp>
 
-using namespace ArsLexis;
-
 #ifndef NDEBUG
 WinHandle Window::handle() const
 {

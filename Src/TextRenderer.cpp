@@ -2,8 +2,6 @@
 #include <Application.hpp>
 #include <68k/Hs.h>
 
-using namespace ArsLexis;
-
 TextRenderer::RenderingErrorListener::~RenderingErrorListener() {}
 
 TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* scrollBar):

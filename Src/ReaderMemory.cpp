@@ -1,7 +1,8 @@
 
 #include <ReaderMemory.hpp>
 
-using namespace ArsLexis;
+using ArsLexis::String;
+using ArsLexis::char_t;
 
 ReaderMemory::ReaderMemory(const char_t* buf, long bufSize):
     buf_(buf),

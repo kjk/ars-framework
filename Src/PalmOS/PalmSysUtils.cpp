@@ -25,14 +25,14 @@ UInt16 romVersionMinor()
 }
 
 
-bool ArsLexis::notifyManagerPresent()
+bool notifyManagerPresent()
 {
     UInt32 value;
     Err error=FtrGet(sysFtrCreator,sysFtrNumNotifyMgrVersion, &value);
     return (errNone==error && value);
 }
 
-void ArsLexis::getScreenBounds(RectangleType& bounds)
+void getScreenBounds(RectangleType& bounds)
 {
     Coord x,y;
     WinGetDisplayExtent(&x, &y);
@@ -43,7 +43,7 @@ void ArsLexis::getScreenBounds(RectangleType& bounds)
     bounds.extent.y=y;
 }
 
-ulong_t ArsLexis::random(ulong_t range)
+ulong_t random(ulong_t range)
 {
     ulong_t rand1=SysRandom(0);
 //        if ( 2 == (rand1 % 3) )
@@ -62,7 +62,7 @@ ulong_t ArsLexis::random(ulong_t range)
 
 // detect a web browser app and return cardNo and dbID of its *.prc.
 // returns true if detected some viewer, false if none was found
-bool ArsLexis::fDetectViewer(UInt16 *cardNoOut, LocalID *dbIDOut)
+bool fDetectViewer(UInt16 *cardNoOut, LocalID *dbIDOut)
 {
     DmSearchStateType searchState;
 
@@ -149,7 +149,7 @@ Exit:
     return toReturn;
 }
 
-Err ArsLexis::getResource(UInt16 tableId, UInt16 index, String& out)
+Err getResource(UInt16 tableId, UInt16 index, String& out)
 {
     Err error=errNone;
     MemHandle handle=DmGet1Resource(strListRscType, tableId);
@@ -183,7 +183,7 @@ Err ArsLexis::getResource(UInt16 tableId, UInt16 index, String& out)
     return error;
 }
 
-Err ArsLexis::WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, const char *parameterP, UInt32 *resultP)
+Err WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, const char *parameterP, UInt32 *resultP)
 {
     UInt16  cardNo;
     LocalID dbID;
@@ -224,14 +224,14 @@ Err ArsLexis::WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 co
     return error;
 } 
 
-bool ArsLexis::highDensityFeaturesPresent()
+bool highDensityFeaturesPresent()
 {
     UInt32 version;
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
     return (errNone==error && version>=4);
 }
 
-void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool unique, const Point* point)
+void sendEvent(uint_t e, const void* data, uint_t dataSize, bool unique, const Point* point)
 {
     EventType event;
     MemSet(&event, sizeof(event), 0);
@@ -274,7 +274,7 @@ void ArsLexis::processReadyUiEvents()
 }
 */
 
-void ArsLexis::localizeNumber(char_t* begin, char_t* end)
+void localizeNumber(char_t* begin, char_t* end)
 {
     NumberFormatType numFormat = static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
     char th, dec;
@@ -289,7 +289,7 @@ void ArsLexis::localizeNumber(char_t* begin, char_t* end)
     }
 }
 
-void ArsLexis::delocalizeNumber(char_t* begin, char_t* end)
+void delocalizeNumber(char_t* begin, char_t* end)
 {
     NumberFormatType numFormat = static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
     char th, dec;
@@ -303,4 +303,3 @@ void ArsLexis::delocalizeNumber(char_t* begin, char_t* end)
         ++begin;            
     }
 }
-

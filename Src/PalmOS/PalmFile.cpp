@@ -1,8 +1,6 @@
 #include <File.hpp>
 #include <Application.hpp>
 
-using namespace ArsLexis;
-
 File::File():
     handle_(reinterpret_cast<FileHandle_t>(invalidFileHandle))
 {}

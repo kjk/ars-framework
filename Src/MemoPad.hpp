@@ -4,9 +4,6 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 
-namespace ArsLexis 
-{
-    void CreateNewMemo(const ArsLexis::String& memoHeader, const ArsLexis::String& memoBody);
-}
+void CreateNewMemo(const ArsLexis::String& memoHeader, const ArsLexis::String& memoBody);
 
 #endif

@@ -8,8 +8,6 @@
 # pragma far_code
 #endif
 
-using namespace ArsLexis;
-
 static status_t openDataStoreReader(const char_t* name, DataStoreReaderPtr& reader)
 {
     DataStore* ds=DataStore::instance();
@@ -63,7 +61,6 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
 {
     volatile status_t error=errNone;
     using namespace std;
-    using namespace ArsLexis;        
     long resultLong;
     const char_t* data = line.data();
     const String::size_type len = line.length();
@@ -141,7 +138,7 @@ status_t UniversalDataHandler::handleIncrement(const char_t * payload, ulong_t& 
 
 UniversalDataHandler::~UniversalDataHandler() {}
 
-status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, UniversalDataFormat& out)
+status_t readUniversalDataFromReader(Reader& origReader, UniversalDataFormat& out)
 {
     BufferedReader reader(origReader, 1024);
     int lineNo = 0;

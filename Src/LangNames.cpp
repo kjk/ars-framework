@@ -1,12 +1,13 @@
 #include <Debug.hpp>
 #include <LangNames.hpp>
 
-using namespace ArsLexis;
+using ArsLexis::String;
+using ArsLexis::char_t;
 
 // Note: it has more languages than we support on the server currently.
 // This is for backwards compatibility. We want to make sure that current
 // client will also handle future languages when we add them on the server.
-const char_t* ArsLexis::GetLangNameByLangCode(const String& langCode)
+const char_t* GetLangNameByLangCode(const String& langCode)
 {
     if (langCode.empty() || _T("en") == langCode)
     {

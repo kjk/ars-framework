@@ -5,9 +5,6 @@
 #include <BaseTypes.hpp>
 #include <Utility.hpp>
 
-namespace ArsLexis 
-{
-
 class Rectangle;
 
 class Window: private NonCopyable
@@ -43,7 +40,5 @@ public:
     void activate() {WinSetActiveWindow(handle());} 
     
 };
-    
-}
 
 #endif

@@ -5,9 +5,5 @@
 //# pragma inline_bottom_up on
 #endif
 
-namespace ArsLexis {
-
-    Writer::~Writer()
-    {}
-
-}
+Writer::~Writer()
+{}

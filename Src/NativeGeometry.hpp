@@ -5,18 +5,15 @@
 # include <windows.h>
 #endif
 
-namespace ArsLexis 
-{
-
 #if defined(_PALM_OS)
 
-    typedef RectangleType NativeRectangle_t;
-    typedef PointType NativePoint_t;
-    
+typedef RectangleType NativeRectangle_t;
+typedef PointType NativePoint_t;
+
 #elif defined(_WIN32_WCE)
 
-    typedef RECT NativeRectangle_t;
-    typedef POINT NativePoint_t;
+typedef RECT NativeRectangle_t;
+typedef POINT NativePoint_t;
 
 #else
 
@@ -24,14 +21,12 @@ namespace ArsLexis
 
 #endif
 
-    template<class Wrapper> 
-    static inline typename Wrapper::Native_t toNative(const Wrapper& wrapper)
-    {
-        typename Wrapper::Native_t result;
-        wrapper.toNative(result);
-        return result;
-    }
-
+template<class Wrapper> 
+static inline typename Wrapper::Native_t toNative(const Wrapper& wrapper)
+{
+    typename Wrapper::Native_t result;
+    wrapper.toNative(result);
+    return result;
 }
 
 #endif

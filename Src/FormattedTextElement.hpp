@@ -6,17 +6,17 @@
 
 class FormattedTextElement: public GenericTextElement
 {
-    ArsLexis::FontEffects fontEffects_;
+    FontEffects fontEffects_;
     
 protected:
 
-    void applyFormatting(ArsLexis::Graphics& graphics, const RenderingPreferences& preferences);
+    void applyFormatting(Graphics& graphics, const RenderingPreferences& preferences);
     
 public:
 
     FormattedTextElement(const ArsLexis::String& text=ArsLexis::String());
 
-    void setEffects(ArsLexis::FontEffects fx)
+    void setEffects(FontEffects fx)
     {fontEffects_=fx;}
     
     ~FormattedTextElement();

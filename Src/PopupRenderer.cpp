@@ -1,7 +1,5 @@
 #include <PopupRenderer.hpp>
 
-using namespace ArsLexis;
-
 PopupRenderer::PopupRenderer(Form& form, RenderingPreferences& prefs):
     TextRenderer(form, prefs),
     running_(false),

@@ -24,9 +24,6 @@
 
 #define NON_COPYABLE : private NonCopyable
 
-namespace ArsLexis 
-{
-
 #endif // ARSLEXIS_USE_NEW_FRAMEWORK
 
 // tried to set the item with an id of existing item
@@ -123,9 +120,5 @@ void            deserData  (unsigned char *valOut, int len, const unsigned char 
 void            serString  (const char *str, char *prefsBlob, long *pCurrBlobSize);
 char *          deserString(const unsigned char **data, long *pCurrBlobSize);
 void            deserStringToBuf(char *buf, int bufSize, const unsigned char **data, long *pCurrBlobSize);
-
-#ifdef ARSLEXIS_USE_NEW_FRAMEWORK
-} // namespace ArsLexis
-#endif // ARSLEXIS_USE_NEW_FRAMEWORK
 
 #endif

@@ -3,10 +3,6 @@
 
 #include <BaseTypes.hpp>
 
-namespace ArsLexis {
-
-    const char_t* GetLangNameByLangCode(const String& langCode);
-
-}
+const char_t* GetLangNameByLangCode(const String& langCode);
 
 #endif

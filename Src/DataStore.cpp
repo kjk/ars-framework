@@ -7,45 +7,39 @@
 #include <Application.hpp>
 #endif
 
-using namespace ArsLexis;
+struct StreamIndexEntry {
+    bool used;
+    char_t name[DataStore::maxStreamNameLength];
+    File::Position firstFragment;
+    
+    StreamIndexEntry();
+    
+};
 
-namespace {
+static const File::Position invalidFragmentStart=0;
 
-    struct StreamIndexEntry {
-        bool used;
-        char_t name[DataStore::maxStreamNameLength];
-        File::Position firstFragment;
-        
-        StreamIndexEntry();
-        
-    };
-    
-    static const File::Position invalidFragmentStart=0;
-    
-    StreamIndexEntry::StreamIndexEntry():
-        used(false),
-        firstFragment(invalidFragmentStart)
-    {
-        MemSet(name, sizeof(name), 0);
-    }
-    
-    
-    struct FragmentHeaderEntry {
-        uint_t ownerIndex;
-        uint_t length;
-        File::Position nextFragment;
-        
-        FragmentHeaderEntry();
-    };
-    
-    FragmentHeaderEntry::FragmentHeaderEntry():
-        ownerIndex(0),
-        length(0),
-        nextFragment(invalidFragmentStart)
-    {}
-    
+StreamIndexEntry::StreamIndexEntry():
+    used(false),
+    firstFragment(invalidFragmentStart)
+{
+    MemSet(name, sizeof(name), 0);
 }
 
+
+struct FragmentHeaderEntry {
+    uint_t ownerIndex;
+    uint_t length;
+    File::Position nextFragment;
+    
+    FragmentHeaderEntry();
+};
+
+FragmentHeaderEntry::FragmentHeaderEntry():
+    ownerIndex(0),
+    length(0),
+    nextFragment(invalidFragmentStart)
+{}
+    
 DataStore::StreamHeader::StreamHeader(const char_t* n, ulong_t nlen, uint_t i, File::Position f):
     name(n, nlen),
     index(i),
