@@ -414,7 +414,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+void Definition::doRender(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
     if (bounds.width()!=bounds_.width() || forceRecalculate)
     {
@@ -438,6 +438,18 @@ void Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, c
             calculateVisibleRange(firstLine_, lastLine_);
     }
     renderLayout(graphics, prefs);
+}
+
+ArsLexis::status_t Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+{
+    volatile ArsLexis::status_t error=errNone;
+    ErrTry {
+        doRender(graphics, bounds, prefs, forceRecalculate);
+    }
+    ErrCatch(ex) {
+        error=ex;
+    } ErrEndCatch
+    return error;
 }
  
 void Definition::click(const Point& point)

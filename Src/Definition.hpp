@@ -173,7 +173,7 @@ public:
     /**
      * Renders (paints) this @c Definition into bounds.
      */
-    void render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
+    ArsLexis::status_t render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
     
     void renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element);
     
@@ -247,6 +247,9 @@ public:
     {renderingProgressReporter_=reporter;}
     
 private:
+
+    void doRender(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
+
 
     HyperlinkHandler* hyperlinkHandler_;
 
