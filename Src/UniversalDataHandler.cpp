@@ -129,7 +129,7 @@ status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
 
 inline status_t UniversalDataHandler::handlePayloadFinish()
 {
-    assert(controlDataLength_ == universalData.dataLength())
+    assert(controlDataLength_ == universalData.dataLength());
     if (controlDataLength_ != universalData.dataLength())
         return SocketConnection::errResponseMalformed;
     return errNone;
