@@ -1,6 +1,6 @@
 # Connection: localhost
 # Host: localhost
-# Saved: 2004-03-16 19:49:06
+# Saved: 2004-03-22 16:42:49
 # 
 # Host: localhost
 # Database: ipedia
@@ -25,7 +25,8 @@ CREATE TABLE `definitions` (
   `definition` mediumtext NOT NULL,
   `last_modified` timestamp(14) NOT NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `term_index` (`term`)
+  UNIQUE KEY `term_index` (`term`),
+  FULLTEXT KEY `full_text_index` (`term`,`definition`)
 ) TYPE=MyISAM; 
 
 # Host: localhost
