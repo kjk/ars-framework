@@ -11,7 +11,7 @@
 
 #if defined(_MSC_VER)
 // disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
-// TODO: move it to a more centrilsed place (like BaseTypes.hpp) ?
+// TODO: move it to a more centralized place (like BaseTypes.hpp) ?
 # pragma warning( disable : 4800 )
 #endif
 
@@ -159,7 +159,11 @@ namespace ArsLexis
     void urlEncode(String& out, const String& in);
     
     void eraseStart(String& str, String::size_type length);
-   
+
+#if defined(_PALM_OS)
+    int formatNumber(long num, char *buf, int bufSize);
+#endif // _PALM_OS
+
 }
 
 #endif
