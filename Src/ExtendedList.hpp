@@ -196,6 +196,7 @@ namespace ArsLexis {
         int topItemBeforeTracking_;
         uint_t upBitmapId_;
         uint_t downBitmapId_;
+        uint_t lastItemsCount_;
         
         UInt32 scheduledNilEventTicks_;
         enum ScheduledScrollDirection {

@@ -117,7 +117,8 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     topItemBeforeTracking_(noListSelection),
     upBitmapId_(frmInvalidObjectId),
     downBitmapId_(frmInvalidObjectId),
-    scheduledScrollDirection_(scheduledScrollAbandoned)
+    scheduledScrollDirection_(scheduledScrollAbandoned),
+    lastItemsCount_(0)
 {
     UInt32 version;
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
@@ -176,6 +177,12 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
 
 void ExtendedList::handleDraw(Graphics& graphics)
 {
+    uint_t itemsCount = this->itemsCount();
+    if (lastItemsCount_ != itemsCount)
+    {
+        notifyItemsChanged();
+        lastItemsCount_ = itemsCount;
+    }
 //    if (false)  // temporary, to disable over-riding colors set in the constructor
     if (!windowSettingsChecked_)
     {
@@ -204,12 +211,11 @@ void ExtendedList::handleDraw(Graphics& graphics)
     Rectangle listBounds;
     bounds(listBounds);
     drawBackground(graphics, listBounds);
-    const uint_t itemsCount=this->itemsCount();
-    if (0==itemsCount)
+    if (0 == itemsCount)
         return;
-    if (noListSelection==topItem_)
+    if (noListSelection == topItem_)
         topItem_=0;
-    assert(itemsCount>topItem_);
+    assert(itemsCount > topItem_);
     uint_t viewCapacity=listBounds.height()/itemHeight_;
     uint_t itemsToDisplay=viewCapacity;
 //    if (0 != listBounds.height() % itemHeight_)
