@@ -20,13 +20,13 @@ Makes it easier to use this code.
 
 WNDPROC g_oldListWndProc;
 HWND    g_hRecentLookupDlg = NULL;
-bool    g_fRemoveDups = false;
+bool    fRemoveDups = false;
 
 #define SELECT_PRESSED  1
 #define CANCEL_PRESSED  2
 
 StrList_t g_strList;
-String    g_selectedWord;
+String    selectedWord;
 
 const int hotKeyCode = 0x32;
 
@@ -83,7 +83,7 @@ static BOOL InitStringList(HWND hDlg)
 
     do {
         str = *iter;
-        if (g_fRemoveDups)
+        if (fRemoveDups)
         {
             int idx = SendMessage(ctrl, LB_FINDSTRINGEXACT, 0, (LPARAM)str);
             if (LB_ERR == idx)
@@ -103,14 +103,29 @@ static BOOL InitStringList(HWND hDlg)
 static void OnSelect(HWND hDlg)
 {
     HWND ctrl = GetDlgItem(hDlg, IDC_STRING_LIST);    
-    GetListSelectedItemText(ctrl, g_selectedWord);
+    GetListSelectedItemText(ctrl, selectedWord);
 }
 
+// TODO: handle SIP
 static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 {
     if (WM_INITDIALOG==msg)
     {
         return InitStringList(hDlg);
+    }
+
+    if (WM_SIZE==msg)
+    {
+        HWND ctrlList = GetDlgItem(hDlg, IDC_STRING_LIST);
+        int dlgDx = LOWORD(lp);
+        int dlgDy = HIWORD(lp);
+        // the idea is that on Pocket PC we have 2 units border on all sides
+        // on smartphone we have 2px border only at top and bottom
+#ifdef WIN32_PLATFORM_PSPC
+        MoveWindow(ctrlList, 2, 2, dlgDx-4, dlgDy-2, TRUE);
+#else
+        MoveWindow(ctrlList, 0, 2, dlgDx, dlgDy-4, TRUE);
+#endif
     }
 
     if (WM_COMMAND==msg)
@@ -131,11 +146,11 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
 bool FGetStringFromList(HWND hwnd, StrList_t strList, ArsLexis::String& strOut)
 {
     g_strList = strList;
-    g_fRemoveDups = false;
+    fRemoveDups = false;
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
     if (SELECT_PRESSED==result)
     {
-        strOut.assign(g_selectedWord);
+        strOut.assign(selectedWord);
         return true;
     }
 
@@ -145,11 +160,11 @@ bool FGetStringFromList(HWND hwnd, StrList_t strList, ArsLexis::String& strOut)
 bool FGetStringFromListRemoveDups(HWND hwnd, StrList_t strList, String& strOut)
 {
     g_strList = strList;
-    g_fRemoveDups = true;
+    fRemoveDups = true;
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
     if (SELECT_PRESSED==result)
     {
-        strOut.assign(g_selectedWord);
+        strOut.assign(selectedWord);
         return true;
     }
 

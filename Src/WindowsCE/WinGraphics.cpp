@@ -255,11 +255,9 @@ DoItAgain:
             return lenThatFits;
         }
 
-        // the string is too big so try to find a line-breaking spot
-        // TODO: this is actually broken. after getting the text, we should
-        // re-check if it fits in width
+        // the string is too big so try to find a line-breaking place (a whitespace)
         int curPos = lenThatFits-1;
-        while (curPos>0) // we don't want to break at first character
+        while (curPos>=0)
         {
             if (isSpace(text[curPos]))
             {
@@ -269,8 +267,9 @@ DoItAgain:
             }
             --curPos;
         }
-        textDx = 0;
-        return 0;
+        
+        textDx = textWidth(text, lenThatFits);
+        return lenThatFits;
     }
 
     // given a string text, determines how many characters of this string can

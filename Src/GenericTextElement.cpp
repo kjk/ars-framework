@@ -88,11 +88,13 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     top += (layoutContext.baseLine-baseLine);
     
     if (layoutContext.isFirstInLine())
+    {
         while (ArsLexis::isSpace(*text))
         {
             ++text;
             ++layoutContext.renderingProgress;
-        }            
+        }
+    }
 
     uint_t nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
     uint_t txtDx;
