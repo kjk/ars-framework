@@ -28,7 +28,7 @@ termEndDelimiter = "]]"
 definitionFormatVersion = 1
 protocolVersion = 1
 
-listLengthLimit = 100
+listLengthLimit = 200
 
 class iPediaServerError:
     serverFailure=1
@@ -283,7 +283,7 @@ class iPediaProtocol(basic.LineReceiver):
         else:
             return None
         
-    internalLinkRe=re.compile(r'\[\[(.*?)(\|(.*?))?\]\]', re.S)
+    internalLinkRe=re.compile(r'\[\[(.*?)(\|.*?)?\]\]', re.S)
                 
     def validateInternalLinks(self, db, cursor, definition):
         matches=[]
@@ -301,7 +301,7 @@ class iPediaProtocol(basic.LineReceiver):
                     print "Validated..."
                     valid.append(term)
             if term not in valid:
-                name=match.group(match.lastindex).replace('_', ' ')
+                name=match.group(match.lastindex).lstrip('| ').rstrip().replace('_', ' ')
                 print "Replacing with: ", name
                 definition=definition[:match.start()]+name+definition[match.end():]
         return definition
@@ -321,13 +321,17 @@ class iPediaProtocol(basic.LineReceiver):
         
     def findFullTextMatches(self, db, cursor, reqTerm):
         print "Performing full text search..."
-        query="""select id, term, definition from definitions where match(term, definition) against('%s') limit %d""" % (db.escape_string(reqTerm), listLengthLimit)
+        words=reqTerm.split()
+        queryStr=''
+        for word in words:
+            queryStr+=(' +'+word)
+        query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s' in boolean mode) having relevance>0.1 order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
         cursor.execute(query)
         tupleList=[]
         row=cursor.fetchone()
         while row:
             tupleList.append((row[0], row[1], row[2]))
-            print row[1]
+            print row[1], row[3]
             row=cursor.fetchone()
             
         if not len(tupleList):
