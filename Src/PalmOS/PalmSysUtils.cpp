@@ -104,9 +104,28 @@ Err ArsLexis::getResource(UInt16 stringId, String& out)
         const char* str=static_cast<const char*>(MemHandleLock(handle));
         if (str)
         {
+            out.assign(str);
+            MemHandleUnlock(handle);
+        }
+        else
+            error=memErrChunkNotLocked;
+        DmReleaseResource(handle);
+    }
+    else 
+        error=sysErrParamErr;
+    return error;
+}
+
+Err ArsLexis::getDataResource(UInt16 dataId, String& out)
+{
+    Err error=errNone;
+    MemHandle handle=DmGet1Resource('data', dataId);
+    if (handle)
+    {
+        const char* str=static_cast<const char*>(MemHandleLock(handle));
+        if (str)
+        {
             UInt32 len = MemHandleSize(handle);
-            if (0 != len)
-                --len;
             out.assign(str, len);
             MemHandleUnlock(handle);
         }
