@@ -3,6 +3,7 @@
 
 #include <SocketAddress.hpp>
 #include <BaseTypes.hpp>
+#include <NativeSocks.hpp>
 #include <Utility.hpp>
 #include <map>
 
@@ -18,7 +19,7 @@ namespace ArsLexis
 
         NetLibrary& netLib_;
         
-        typedef std::map<String, NetIPAddr> AddressCache_t;
+        typedef std::map<String, NativeIPAddr_t> AddressCache_t;
         
     public:        
     
@@ -29,9 +30,9 @@ namespace ArsLexis
 //        typedef std::list<CacheEntry_t> AddressCache_t;
         
         AddressCache_t cache_;
-        static Err validateAddress(const String& origAddress, String& validAddress, UInt16& port);
+        static status_t validateAddress(const String& origAddress, String& validAddress, ushort_t& port);
         
-        Err blockingResolve(SocketAddress& out, const String& name, UInt16 port, UInt32 timeout);
+        status_t blockingResolve(SocketAddress& out, const String& name, ushort_t port, ulong_t timeout);
         
     public:
         
@@ -39,9 +40,9 @@ namespace ArsLexis
         
        ~Resolver();
        
-       void updateCacheEntry(const String& name, NetIPAddr address);
+       void updateCacheEntry(const String& name, NativeIPAddr_t address);
        
-       Err resolve(SocketAddress& out, const String& address, UInt16 port=0, UInt32 timeout=evtWaitForever);
+       status_t resolve(SocketAddress& out, const String& address, ushort_t port=0, ulong_t timeout=evtWaitForever);
        
        friend class ResolverConnection;
 

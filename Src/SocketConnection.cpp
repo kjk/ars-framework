@@ -26,11 +26,11 @@ namespace ArsLexis
         std::for_each(connections_.begin(), connections_.end(), ObjectDeleter<SocketConnection>());
     }
     
-    Err SocketConnectionManager::openNetLib()
+    status_t SocketConnectionManager::openNetLib()
     {
         assert(netLib_.closed());
-        UInt16 ifError;
-        Err error=netLib_.initialize(ifError);
+        ushort_t ifError;
+        status_t error=netLib_.initialize(ifError);
         if (error || ifError)
             error=SocketConnection::errNetLibUnavailable;
         return error;
@@ -70,7 +70,7 @@ namespace ArsLexis
             if (SocketConnection::stateUnresolved==(*it)->state())
             {
                 SocketConnection* conn=*it;
-                Err error=errNone;
+                status_t error=errNone;
                 if (netLib_.closed())
                     error=openNetLib();
                 if (!error)                
@@ -93,7 +93,7 @@ namespace ArsLexis
             if (SocketConnection::stateUnopened==(*it)->state())
             {
                 SocketConnection* conn=*it;
-                Err error=conn->open();
+                status_t error=conn->open();
                 if (error)
                 {
                     conn->handleError(error);
@@ -105,7 +105,7 @@ namespace ArsLexis
         return false;
     }
         
-    Err SocketConnectionManager::manageConnectionEvents(Int32 timeout)
+    status_t SocketConnectionManager::manageConnectionEvents(long timeout)
     {
         if (manageFinishedConnections())
             return errNone;
@@ -116,14 +116,14 @@ namespace ArsLexis
         if (manageUnopenedConnections())
             return errNone;
             
-        Err error=selector_.select(timeout);
+        status_t error=selector_.select(timeout);
         if (error)
             return error;
             
         Connections_t::iterator end=connections_.end();
         for (Connections_t::iterator it=connections_.begin(); it!=end; ++it)
         {
-            Err connErr=errNone;
+            status_t connErr=errNone;
             SocketConnection* conn=*it;
             assert(SocketConnection::stateOpened==conn->state());
             bool done=false;
@@ -176,10 +176,10 @@ namespace ArsLexis
         setState(stateFinished);
     }
 
-    Err SocketConnection::open()
+    status_t SocketConnection::open()
     {
         assert(stateUnopened==state());
-        Err error=socket_.open();
+        status_t error=socket_.open();
         if (error)
         {
             log().debug()<<"open(): unable to open socket, "<<error;
@@ -215,9 +215,9 @@ namespace ArsLexis
         return error;
     }
 
-    Err SocketConnection::notifyException()
+    status_t SocketConnection::notifyException()
     {
-        Err error=getSocketErrorStatus();
+        status_t error=getSocketErrorStatus();
         if (errNone==error)
         {
             log().debug()<<"notifyException(): getSocketErrorStatus() returned errNone.";
@@ -232,15 +232,15 @@ namespace ArsLexis
     // devnote: seems to return non-PalmOS error codes
     // e.g. 10061 is WSAECONNREFUSED (http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winsock/winsock/windows_sockets_error_codes_2.asp)
     // those seem to be defined in Core\System\Unix\sys_errno.h but without the 10000 (0x2710) prefix 
-    Err SocketConnection::getSocketErrorStatus() const
+    status_t SocketConnection::getSocketErrorStatus() const
     {
-        NetSocketRef socketRef=socket_;
+        NativeSocket_t socketRef=socket_;
         assert(socketRef!=0);
         int     status=0;
-        UInt16  size=sizeof(status);
+        ushort_t  size=sizeof(status);
         //! @bug PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
         //! Nevertheless status is also filled in these cases and seems right...
-        Err error=socket_.getOption(netSocketOptLevelSocket, netSocketOptSockErrorStatus, &status, size);
+        status_t error=socket_.getOption(SocketOptLevelSocket_c, SocketOptSockErrorStatus_c, &status, size);
         if (error)
         {
             log().error()<<"getSocketErrorStatus(): unable to query socket option, "<<error;
@@ -248,21 +248,21 @@ namespace ArsLexis
         }
         if (status)
         {
-            log().debug()<<"getSocketErrorStatus(): error status, "<<(Err)status;
+            log().debug()<<"getSocketErrorStatus(): error status, "<<(status_t)status;
         }            
-        return (Err)status;
+        return (status_t)status;
     }
     
-    Err SocketConnection::resolve(Resolver& resolver)
+    status_t SocketConnection::resolve(Resolver& resolver)
     {
         assert(stateUnresolved==state());
-        Err error=resolver.resolve(address_, addressString_, 0, transferTimeout());
+        status_t error=resolver.resolve(address_, addressString_, 0, transferTimeout());
         if (!error)
             setState(stateUnopened);
         return error;
     }
     
-    Err SocketConnection::enqueue()
+    status_t SocketConnection::enqueue()
     {
         assert(stateUnresolved==state());
         manager_.connections_.push_back(this);

@@ -1,6 +1,6 @@
 #include <Resolver.hpp>
 #include <NetLibrary.hpp>
-#include <cctype>
+//nclude <cctype>
 #include <Text.hpp>
 
 namespace ArsLexis
@@ -32,7 +32,7 @@ namespace ArsLexis
     }
 */
     
-    void Resolver::updateCacheEntry(const String& name, NetIPAddr address)
+    void Resolver::updateCacheEntry(const String& name, NativeIPAddr_t address)
     {
 /*    
         AddressCache_t::iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(name));
@@ -44,18 +44,18 @@ namespace ArsLexis
         cache_[name]=address;            
     }
 
-    Err Resolver::validateAddress(const String& origAddress, String& validAddress, UInt16& port)
+    status_t Resolver::validateAddress(const String& origAddress, String& validAddress, ushort_t& port)
     {
-        Err error=errNone;
+        status_t error=errNone;
         String::size_type pos=origAddress.find(':', 1);
         if (origAddress.npos!=pos)
         {
-            UInt16 portLength=origAddress.length()-pos-1;
+            ushort_t portLength=origAddress.length()-pos-1;
             if (portLength>0)
             {
-                Int32 value=0;
+                long value=0;
                 error=numericValue(origAddress.data()+pos+1, origAddress.data()+pos+1+portLength, value);
-                if (!error && value<(UInt16)-1)
+                if (!error && value<(ushort_t)-1)
                     port=value;
                 else
                     error=netErrParamErr;                    
@@ -70,16 +70,16 @@ namespace ArsLexis
         return error;
     }
    
-    Err Resolver::blockingResolve(SocketAddress& out, const String& name, UInt16 port, UInt32 timeout)
+    status_t Resolver::blockingResolve(SocketAddress& out, const String& name, ushort_t port, ulong_t timeout)
     {
-        std::auto_ptr<NetHostInfoBufType> buffer(new NetHostInfoBufType);
-        MemSet(buffer.get(), sizeof(NetHostInfoBufType), 0);
+        std::auto_ptr<HostInfoBufType> buffer(new  HostInfoBufType);
+        MemSet(buffer.get(), sizeof(HostInfoBufType), 0);
         assert(!netLib_.closed());
-        Err error=netLib_.getHostByName(name.c_str(), buffer.get(), timeout);
+        status_t error=netLib_.getHostByName(name.c_str(), buffer.get(), timeout);
         if (error)
             return error;
 
-        NetIPAddr resAddr=buffer->address[0];
+        NativeIPAddr_t  resAddr=buffer->getAddress();
         assert(resAddr!=0);
 //        cache_.push_front(std::make_pair(name, resAddr));
         cache_[name]=resAddr;
@@ -95,10 +95,10 @@ namespace ArsLexis
         return errNone;
     }
    
-    Err Resolver::resolve(SocketAddress& out, const String& address, UInt16 port, UInt32 timeout)
+    status_t Resolver::resolve(SocketAddress& out, const String& address, ushort_t port, ulong_t timeout)
     {
         String validAddress;                
-        Err error=validateAddress(address, validAddress, port);
+        status_t error=validateAddress(address, validAddress, port);
         if (error)
             return error;
         INetSocketAddress addr;

@@ -11,22 +11,22 @@ namespace ArsLexis
     {
         String request_;
         String response_;
-        UInt16 maxResponseSize_;
-        UInt16 chunkSize_;
+        ushort_t maxResponseSize_;
+        ushort_t chunkSize_;
         
         bool sending_;
-        UInt16 requestBytesSent_;
+        ushort_t requestBytesSent_;
         
     protected:
         
-        Err notifyWritable();
+        status_t notifyWritable();
         
-        Err notifyReadable();
+        status_t notifyReadable();
         
-        virtual Err notifyFinished()
+        virtual status_t notifyFinished()
         {return errNone;}
         
-        virtual Err notifyProgress()
+        virtual status_t notifyProgress()
         {return errNone;}
         
         void setRequest(const String& request)
@@ -39,10 +39,10 @@ namespace ArsLexis
 
         SimpleSocketConnection(SocketConnectionManager& manager);
         
-        void setMaxResponseSize(UInt16 size)
+        void setMaxResponseSize(ushort_t size)
         {maxResponseSize_=size;}
         
-        void setChunkSize(UInt16 size)
+        void setChunkSize(ushort_t size)
         {chunkSize_=size;}
         
         bool sending() const

@@ -3,6 +3,7 @@
 
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
+#include <NativeSocks.hpp>
 
 namespace ArsLexis
 {
@@ -10,13 +11,13 @@ namespace ArsLexis
     class SocketAddress 
     {
     protected:
-        NetSocketAddrType address_;        
+        NativeSocketAddr_t address_;
         
     public:
         
         SocketAddress();
 
-        operator const NetSocketAddrType* () const
+        operator const NativeSocketAddr_t* () const
         {return &address_;}
         
         uint_t size() const
@@ -27,36 +28,29 @@ namespace ArsLexis
     
     class INetSocketAddress: public SocketAddress
     {
-        NetSocketAddrINType& address() 
-        {return reinterpret_cast<NetSocketAddrINType&>(address_);}
+        NativeSockAddrIN_t& address() 
+        {return reinterpret_cast<NativeSockAddrIN_t&>(address_);}
         
-        const NetSocketAddrINType& address() const
-        {return reinterpret_cast<const NetSocketAddrINType&>(address_);}
+        const NativeSockAddrIN_t& address() const
+        {return reinterpret_cast<const NativeSockAddrIN_t&>(address_);}
         
     public:
         
         INetSocketAddress();
         
-        INetSocketAddress(const NetIPAddr& ipAddr, UInt16 port, Int16 addressFamily=netSocketAddrINET);
+        INetSocketAddress(const NativeIPAddr_t& ipAddr, ushort_t port, short addressFamily=SocketAddrINET_c);
 
-        void setIpAddress(const NetIPAddr& ipAddr)
-        {address().addr=ipAddr;}
-        
-        void setPort(UInt16 port)
-        {address().port=NetHToNS(port);}
+        void setIpAddress(const NativeIPAddr_t& ipAddr);        
 
-        void setAddressFamily(Int16 addressFamily)
-        {address().family=addressFamily;}
-        
-        const NetIPAddr& ipAddress() const
-        {return address().addr;}
-        
-        UInt16 port() const 
-        {return NetNToHS(address().port);}
-        
+        void setPort(ushort_t port);
+
+        void setAddressFamily(short addressFamily);        
+
+        const NativeIPAddr_t& ipAddress() const;
+
+        ushort_t port() const ;
     };
     
 }
-
 
 #endif

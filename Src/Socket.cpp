@@ -18,26 +18,26 @@ namespace ArsLexis
     {
         if (socket_!=0)
         {
-            Err error=NetLibSocketClose(netLib_, socket_, evtWaitForever, &error);
+            status_t error=netLib_.socketClose(socket_, evtWaitForever, &error);
             if (error)
                 log().error()<<"~SocketBase(): NetLibSocketClose() returned error, "<<error;
         }
     }
     
-    Err SocketBase::open(NetSocketAddrEnum domain, NetSocketTypeEnum type, Int16 protocol, Int32 timeout)
+    status_t SocketBase::open(NativeSockAddrFamily_t domain, NativeSocketType_t type, short protocol, long timeout)
     {
         assert(!socket_);
-        Err error=errNone;
-        socket_=NetLibSocketOpen(netLib_, domain, type, protocol, timeout, &error);
+        status_t error=errNone;
+        socket_= netLib_.socketOpen(domain, type, protocol, timeout, &error);
         assert(error || (socket_!=0));
         return error;
     }
     
-    Err SocketBase::shutdown(Int16 direction, Int32 timeout)
+    status_t SocketBase::shutdown(short direction, long timeout)
     {
         assert(socket_!=0);
-        Err error=errNone;
-        Int16 result=NetLibSocketShutdown(netLib_, socket_, direction, timeout, &error);
+        status_t error=errNone;
+        short result=netLib_.socketShutdown(socket_, direction, timeout, &error);
         if (-1==result)
             assert(error);
         else
@@ -47,19 +47,19 @@ namespace ArsLexis
         return error;
     }
     
-    Err SocketBase::send(UInt16& sent, const void* buffer, UInt16 bufferLength, Int32 timeout, UInt16 flags, const SocketAddress* address)
+    status_t SocketBase::send(ushort_t& sent, const void* buffer, ushort_t bufferLength, long timeout, ushort_t flags, const SocketAddress* address)
     {
         assert(socket_!=0);
-        Err error=errNone;
-        const NetSocketAddrType* addr=0;
-        UInt16 addrLen=0;
+        status_t error=errNone;
+        const  NativeSocketAddr_t* addr=0;
+        ushort_t addrLen=0;
         if (address)
         {
             addr=*address;
             addrLen=address->size();
         }
-        Int16 result=NetLibSend(netLib_, socket_, const_cast<void*>(buffer), bufferLength, flags, 
-            const_cast<NetSocketAddrType*>(addr), addrLen, timeout, &error);
+        short result=netLib_.socketSend(socket_, const_cast<void*>(buffer), bufferLength, flags, 
+            const_cast<NativeSocketAddr_t*>(addr), addrLen, timeout, &error);
         if (result>0)
         {
             assert(!error);
@@ -72,12 +72,12 @@ namespace ArsLexis
         return error;
     }
     
-    Err SocketBase::receive(UInt16& received, void* buffer, UInt16 bufferLength, Int32 timeout, UInt16 flags)
+    status_t SocketBase::receive(ushort_t& received, void* buffer, ushort_t bufferLength, long timeout, ushort_t flags)
     {
         assert(socket_!=0);
-        Err error=errNone;
+        status_t error=errNone;
         
-        Int16 result=NetLibReceive(netLib_, socket_, buffer, bufferLength, flags, 0, 0, timeout, &error);
+        short result=netLib_.socketReceive(socket_, buffer, bufferLength, flags, 0, 0, timeout, &error);
         if (result>=0)
         {
             assert(!error);
@@ -88,18 +88,18 @@ namespace ArsLexis
         return error;
     }
 
-    Err SocketBase::setNonBlocking(bool value)
+    status_t SocketBase::setNonBlocking(bool value)
     {
         Boolean flag=value;
-        Err error=setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
+        status_t error=setOption(SocketOptLevelSocket_c, SocketOptSockNonBlocking_c, &flag, sizeof(flag));
         return error;
     } 
 
-    Err SocketBase::setOption(UInt16 level, UInt16 option, void* optionValue, UInt16 valueLength, Int32 timeout)
+    status_t SocketBase::setOption(ushort_t level, ushort_t option, void* optionValue, ushort_t valueLength, long timeout)
     {
         assert(socket_!=0);
-        Err error=errNone;
-        Int16 result=NetLibSocketOptionSet(netLib_, socket_, level, option, optionValue, valueLength, timeout, &error);
+        status_t error=errNone;
+        short result=netLib_.socketOptionSet( socket_, level, option, optionValue, valueLength, timeout, &error);
         if (-1==result)
             assert(error);
         else
@@ -109,11 +109,11 @@ namespace ArsLexis
         return error;
     }
     
-    Err SocketBase::getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout) const
+    status_t SocketBase::getOption(ushort_t level, ushort_t option, void* optionValue, ushort_t& valueLength, long timeout) const
     {
         assert(socket_!=0);
-        Err error=errNone;
-        Int16 result=NetLibSocketOptionGet(netLib_, socket_, level, option, optionValue, &valueLength, timeout, &error);
+        status_t error=errNone;
+        short result=netLib_.socketOptionGet(socket_, level, option, optionValue, &valueLength, timeout, &error);
         if (-1==result)
             assert(error);
         else
@@ -123,13 +123,13 @@ namespace ArsLexis
         return error;
     }
         
-    Err Socket::connect(const SocketAddress& address, Int32 timeout)
+    status_t Socket::connect(const SocketAddress& address, long timeout)
     {
         assert(socket_!=0);
-        Err error=errNone;
-        const NetSocketAddrType* addr=address;
-        UInt16 addrLen=address.size();
-        Int16 result=NetLibSocketConnect(netLib_, socket_, const_cast<NetSocketAddrType*>(addr), addrLen, timeout, &error);
+        status_t error=errNone;
+        const NativeSocketAddr_t* addr=address;
+        ushort_t addrLen=address.size();
+        short result=NetLibSocketConnect(netLib_, socket_, const_cast<NativeSocketAddr_t*>(addr), addrLen, timeout, &error);
         if (-1==result)
             assert(error);
         else
@@ -137,18 +137,18 @@ namespace ArsLexis
         return error;
     }
 
-    Err SocketBase::setLinger(const NetSocketLingerType& linger)
+    status_t SocketBase::setLinger(const CommonSocketLinger_t& linger)
     {
         assert(socket_!=0);
-        Err error=setOption(netSocketOptLevelSocket, netSocketOptSockLinger, const_cast<NetSocketLingerType*>(&linger), sizeof(linger));
+        status_t error=setOption(SocketOptLevelSocket_c, SocketOptSockLinger_c,&( (const_cast<CommonSocketLinger_t*>(&linger))->native), sizeof(linger));
         return error;
     }
     
 /*    
-    Err SocketBase::getLinger(NetSocketLingerType& linger) const
+    status_t SocketBase::getLinger(CommonSocketLinger_t& linger) const
     {
         assert(socket_!=0);
-        Err error=getOption(netSocketOptLevelSocket, netSocketOptSockLinger, &linger, sizeof(linger);
+        status_t error=getOption(netSocketOptLevelSocket, netSocketOptSockLinger, &linger, sizeof(linger);
         return error;
     }
 */    
@@ -161,7 +161,7 @@ namespace ArsLexis
         width_(0),
         eventsCount_(0)
     {
-        for (UInt16 i=0; i<eventTypesCount_; ++i)
+        for (ushort_t i=0; i<eventTypesCount_; ++i)
         {
             netFDZero(&inputFDs_[i]);
             netFDZero(&outputFDs_[i]);
@@ -171,14 +171,14 @@ namespace ArsLexis
         recalculateWidth();
     }
     
-    Err SocketSelector::select(Int32 timeout)
+    status_t SocketSelector::select(long timeout)
     {
-        for (UInt16 i=0; i<eventTypesCount_; ++i)
+        for (ushort_t i=0; i<eventTypesCount_; ++i)
             outputFDs_[i]=inputFDs_[i];
 
-        Err error=errNone;
+        status_t error=errNone;
         // Seems NetLibSelect() is really badly screwed in PalmOS - see strange error behaviour in the following if-else...
-        Int16 eventsCount=NetLibSelect(netLib_, width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, &error);
+        short eventsCount=netLib_.select( width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, &error);
         if (-1==eventsCount)
         {
             if (!error)
@@ -198,7 +198,7 @@ namespace ArsLexis
     void SocketSelector::recalculateWidth()
     {
         width_=1;
-        for (UInt16 i=sizeof(NetFDSetType)*8-1; i>0; --i)
+        for (ushort_t i=sizeof(NativeFDSet_t)*8-1; i>0; --i)
             if (netFDIsSet(i, &inputFDs_[eventRead]) ||
                 netFDIsSet(i, &inputFDs_[eventWrite]) ||
                 netFDIsSet(i, &inputFDs_[eventException]))
@@ -208,4 +208,5 @@ namespace ArsLexis
             }                
     }
     
+                
 }

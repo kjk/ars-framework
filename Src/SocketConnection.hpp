@@ -30,7 +30,7 @@ namespace ArsLexis
         NetLibrary& netLibrary()
         {return netLib_;}
         
-        Err openNetLib();
+        status_t openNetLib();
         
         bool manageFinishedConnections();
         bool manageUnresolvedConnections();
@@ -45,7 +45,7 @@ namespace ArsLexis
         bool active() const
         {return !connections_.empty();}
         
-        Err manageConnectionEvents(Int32 timeout=evtWaitForever);
+        status_t manageConnectionEvents(long timeout=evtWaitForever);
         
         friend class SocketConnection;
     };
@@ -64,7 +64,7 @@ namespace ArsLexis
     private:
         SocketConnectionManager& manager_;
         State state_;
-        Int32 transferTimeout_;
+        long transferTimeout_;
         ArsLexis::String addressString_;
         SocketAddress address_;
         mutable ChildLogger log_;
@@ -78,26 +78,26 @@ namespace ArsLexis
         const Socket& socket() const
         {return socket_;}
 
-        Err getSocketErrorStatus() const;
+        status_t getSocketErrorStatus() const;
         
-        virtual Err resolve(Resolver& resolver);
+        virtual status_t resolve(Resolver& resolver);
     
-        virtual Err notifyWritable()
+        virtual status_t notifyWritable()
         {return errNone;}
         
-        virtual Err notifyReadable()
+        virtual status_t notifyReadable()
         {return errNone;}
         
-        virtual Err notifyException();
+        virtual status_t notifyException();
         
         virtual void abortConnection();
         
-        virtual Err open();
+        virtual status_t open();
         
         void setState(State state)
         {state_=state;}
         
-        virtual void handleError(Err)
+        virtual void handleError(status_t)
         {abortConnection();}
         
         void registerEvent(SocketSelector::EventType event)
@@ -121,17 +121,17 @@ namespace ArsLexis
             errFirstAvailable
         };
         
-        virtual Err enqueue();
+        virtual status_t enqueue();
         
         void setAddress(const String& address)
         {addressString_=address;}
     
-        void setTransferTimeout(Int32 timeout)
+        void setTransferTimeout(long timeout)
         {
             transferTimeout_=timeout;
         }
         
-        Int32 transferTimeout() const
+        long transferTimeout() const
         {return transferTimeout_;}
         
         virtual ~SocketConnection();

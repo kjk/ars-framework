@@ -9,6 +9,7 @@
 
 #include <Debug.hpp>
 #include <Logging.hpp>
+#include <NativeSocks.hpp>
 
 namespace ArsLexis
 {
@@ -40,7 +41,7 @@ namespace ArsLexis
         /**
          * Handle to underlying PalmOS socket.
          */
-        NetSocketRef socket_;
+         NativeSocket_t socket_;
 
         /**
          * Constructor for use by subclasses. 
@@ -62,28 +63,28 @@ namespace ArsLexis
          * Opens (creates) the socket.
          * @see NetLibSocketOpen()
          */
-        Err open(NetSocketAddrEnum domain=netSocketAddrINET,
-            NetSocketTypeEnum type=netSocketTypeStream,
-            Int16 protocol=0, Int32 timeout=evtWaitForever);
+        status_t open(NativeSockAddrFamily_t domain = SocketAddrINET_c,
+            NativeSocketType_t type= SocketTypeStream_c,
+            short protocol=0, long timeout=evtWaitForever);
 
-        Err shutdown(Int16 direction, Int32 timeout=evtWaitForever);
+        status_t shutdown(short direction, long timeout=evtWaitForever);
         
-        Err send(UInt16& sent, const void* buffer, UInt16 bufferLength, Int32 timeout=evtWaitForever, UInt16 flags=0, const SocketAddress* address=0);
+        status_t send(ushort_t& sent, const void* buffer, ushort_t bufferLength, long timeout=evtWaitForever, ushort_t flags=0, const SocketAddress* address=0);
         
-        Err receive(UInt16& received, void* buffer, UInt16 bufferLength, Int32 timeout=evtWaitForever, UInt16 flags=0);
+        status_t receive(ushort_t& received, void* buffer, ushort_t bufferLength, long timeout=evtWaitForever, ushort_t flags=0);
         
-        operator NetSocketRef() const
+        operator  NativeSocket_t() const
         {return socket_;}
 
-        Err setNonBlocking(bool value=true);
+        status_t setNonBlocking(bool value=true);
         
-        Err setOption(UInt16 level, UInt16 option, void* optionValue, UInt16 valueLength, Int32 timeout=evtWaitForever);
+        status_t setOption(ushort_t level, ushort_t option, void* optionValue, ushort_t valueLength, long timeout=evtWaitForever);
         
-        Err getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout=evtWaitForever) const;
+        status_t getOption(ushort_t level, ushort_t option, void* optionValue, ushort_t& valueLength, long timeout=evtWaitForever) const;
         
-        Err setLinger(const NetSocketLingerType& linger);
+        status_t setLinger(const CommonSocketLinger_t& linger);
         
-        Err getLinger(NetSocketLingerType& linger) const;
+        //status_t getLinger(CommonSocketLinger_t& linger) const;
                 
     };
 
@@ -117,7 +118,7 @@ namespace ArsLexis
          * (stream) socket.
          * @see NetLibSocketConnect()
          */
-        Err connect(const SocketAddress& address, Int32 timeout=evtWaitForever);
+        status_t connect(const SocketAddress& address, long timeout=evtWaitForever);
         
     };
     
@@ -126,10 +127,10 @@ namespace ArsLexis
         enum {eventTypesCount_=3};
         
         NetLibrary& netLib_;
-        NetFDSetType inputFDs_[eventTypesCount_];
-        NetFDSetType outputFDs_[eventTypesCount_];
-        UInt16 width_;
-        UInt16 eventsCount_;
+        NativeFDSet_t inputFDs_[eventTypesCount_];
+        NativeFDSet_t outputFDs_[eventTypesCount_];
+        ushort_t width_;
+        ushort_t eventsCount_;
         
         void recalculateWidth();
         
@@ -149,38 +150,38 @@ namespace ArsLexis
         
         void registerSocket(const SocketBase& socket, EventType event)
         {
-            NetSocketRef ref=socket;
+             NativeSocket_t ref=socket;
             netFDSet(ref, &inputFDs_[event]);
             recalculateWidth();
         }
         
         void unregisterSocket(const SocketBase& socket, EventType event)
         {
-            NetSocketRef ref=socket;
+             NativeSocket_t ref=socket;
             netFDClr(ref, &inputFDs_[event]);
             recalculateWidth();
         }
         
-        Err select(Int32 timeout=evtWaitForever);
+        status_t select(long timeout=evtWaitForever);
         
         bool checkSocketEvent(const SocketBase& socket, EventType event) const
         {
-            NetSocketRef ref=socket;
+             NativeSocket_t ref=socket;
             return netFDIsSet(ref, &outputFDs_[event]);
         }
         
         bool isRegistered(const SocketBase& socket, EventType event) const
         {
-            NetSocketRef ref=socket;
+             NativeSocket_t ref=socket;
             return netFDIsSet(ref, &inputFDs_[event]);
         }
         
-        bool checkStandardEvent() const
+        /*bool checkStandardEvent() const
         {
             return netFDIsSet(sysFileDescStdIn, &outputFDs_[eventRead]);
-        }
+        }*/
 
-        UInt16 eventsCount() const
+        ushort_t eventsCount() const
         {return eventsCount_;}
         
         bool active() const
