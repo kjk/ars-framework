@@ -84,12 +84,12 @@ namespace ArsLexis
                 goto Exit;
             totalReceived_+=dataSize;
             if (dataSize!=chunkSize_)
-                log().debug()<<_T("notifyReadable(): dataSize!=chunkSize_; totalReceived: ")<<totalReceived_<<_T("; dataSize: ")<<dataSize;
+                log().info()<<_T("notifyReadable(): dataSize!=chunkSize_; totalReceived: ")<<totalReceived_<<_T("; dataSize: ")<<dataSize;
             assert(dataSize<=chunkSize_);
             resizeResponse(responseSize+dataSize);
             if (0==dataSize)
             {   
-                log().debug()<<_T("notifyReadable(): dataSize==0 (server shut socket down?)");
+                log().info()<<_T("notifyReadable(): dataSize==0 (server shut socket down?)");
                 error=notifyFinished();
                 abortConnection();
             }
@@ -127,12 +127,12 @@ Exit:
             {
                 if (size<=2048)
                 {
-                    log().debug()<<_T("SimpleSocketConnection::open(): setting chunkSize to ")<<size;
+                    log().info()<<_T("SimpleSocketConnection::open(): setting chunkSize to ")<<size;
                     setChunkSize(size);
                 }
             }
             else
-                log().debug()<<_T("SimpleSocketConnection::open(): error (ignored) while querying maxTcpSegmentSize: ")<<ignore;
+                log().info()<<_T("SimpleSocketConnection::open(): error (ignored) while querying maxTcpSegmentSize: ")<<ignore;
         }
         return error;
     }
