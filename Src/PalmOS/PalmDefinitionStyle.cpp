@@ -50,22 +50,21 @@ StaticAssert<COLOR_NOT_DEF_INDEX != COLOR_DEF_INDEX>;
 // keep this array sorted!
 static const StaticStyleEntry staticStyleTable[] =
 {
-    //default style must be first entry
-    {".default", {BLACK, WHITE, stdFont, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, noUnderline}},
+    //do not touch .xxx styles (keep them 
+    {styleNameDefault, {BLACK, WHITE, stdFont, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, noUnderline}},
+    {styleNameHyperlink, {BLUE, COLOR_NOT_DEF, FONT_NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, grayUnderline}},
 
-    COLOR("black",BLACK),
-    COLOR("blue",BLUE),
-    COLOR_BOLD("bold",COLOR_NOT_DEF),
-    COLOR("gray",GRAY),
-    COLOR("green",GREEN),
-    {"hyperlink", {BLUE, COLOR_NOT_DEF, FONT_NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, TRUE, NOT_DEF, NOT_DEF, grayUnderline}},
-    COLOR_AND_FONT("large", COLOR_NOT_DEF, largeFont),
-    COLOR("red",RED)
+    COLOR(styleNameBlack,BLACK),
+    COLOR(styleNameBlue,BLUE),
+    COLOR_BOLD(styleNameBold,COLOR_NOT_DEF),
+    COLOR(styleNameGray,GRAY),
+    COLOR(styleNameGreen,GREEN),
+    COLOR_AND_FONT(styleNameLarge, COLOR_NOT_DEF, largeFont),
+    COLOR(styleNameRed,RED),
+    COLOR(styleNameYellow,YELLOW)
     //TODO: add more and more:)
     
 };
-
-
 
 uint_t getStaticStyleCount()
 {

@@ -34,6 +34,4 @@ public:
 void test_StaticStyleTable();
 #endif
 
-enum { styleDefaultIndex = 0 };
-
 #endif
