@@ -2,9 +2,19 @@
 #define __ARSLEXIS_TEXT_HPP__
 
 #include <BaseTypes.hpp>
+#include <cctype>
 
 namespace ArsLexis
 {
+
+    inline char_t toLower(char_t chr)
+    {
+#if defined(_WIN32_WCE) || defined(_WIN32)
+        return _totlower(chr);
+#else
+        return std::tolower(chr);
+#endif        
+    }
 
     template<class Ch>
     struct C_StringLess
@@ -26,19 +36,15 @@ namespace ArsLexis
     inline bool equalsIgnoreCase(const String& s1, const String& s2)
     {return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2.data(), s2.data()+s2.length());}
 
-    status_t numericValue(const char* begin, const char* end, long& result, uint_t base=10);
+    status_t numericValue(const char_t* begin, const char_t* end, long& result, uint_t base=10);
     
     inline status_t numericValue(const String& text, long& result, uint_t base=10)
-    {
-        return numericValue(text.data(), text.data()+text.length(), result, base);
-    }
+    {return numericValue(text.data(), text.data()+text.length(), result, base);}
     
     String hexBinEncode(const String& in);
 
     inline void hexBinEncodeInPlace(String& inOut)
-    {
-        inOut=hexBinEncode(inOut);
-    }
+    {inOut=hexBinEncode(inOut);}
     
 }
 

@@ -1,5 +1,4 @@
 #include <Text.hpp>
-#include <cctype>
 
 namespace ArsLexis 
 {
@@ -39,7 +38,7 @@ namespace ArsLexis
     {
         while (startOffset<text.length() && *start)
         {
-            if (std::tolower(*start)==std::tolower(text[startOffset]))
+            if (toLower(*start)==toLower(text[startOffset]))
             {
                 ++start;
                 ++startOffset;
@@ -54,7 +53,7 @@ namespace ArsLexis
     {
         while (s1start!=s1end && s2start!=s2end)
         {
-            if (std::tolower(*s1start)==std::tolower(*s2start))
+            if (toLower(*s1start)==toLower(*s2start))
             {
                 ++s1start;
                 ++s2start;
@@ -65,15 +64,14 @@ namespace ArsLexis
         return (s1start==s1end && s2start==s2end);
     }
     
-    
 }
 
-ArsLexis::status_t ArsLexis::numericValue(const char* begin, const char* end, long& result, uint_t base)
+ArsLexis::status_t ArsLexis::numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
 {
     ArsLexis::status_t error=errNone;
     bool     negative=false;
     long     res=0;
-    String   numbers("0123456789abcdefghijklmnopqrstuvwxyz");
+    String   numbers(_T("0123456789abcdefghijklmnopqrstuvwxyz"));
     char_t   buffer[2];
 
     if (begin>=end || base>numbers.length())
@@ -81,7 +79,7 @@ ArsLexis::status_t ArsLexis::numericValue(const char* begin, const char* end, lo
         error=sysErrParamErr;
         goto OnError;           
     }
-    if (*begin=='-')
+    if (*begin==_T('-'))
     {
         negative=true;
         if (++begin==end)
@@ -94,7 +92,7 @@ ArsLexis::status_t ArsLexis::numericValue(const char* begin, const char* end, lo
     while (begin!=end) 
     {
         // TODO: will it work with unicode on WINCE?
-        buffer[0]=(char_t)_totlower(*(begin++));
+        buffer[0]=toLower(*(begin++));
         String::size_type num=numbers.find(buffer);
         if (num>=base)
         {   
@@ -113,7 +111,7 @@ OnError:
     return error;    
 }
 
-#define HEX_DIGITS "0123456789ABCDEF"
+#define HEX_DIGITS _T("0123456789ABCDEF")
 
 ArsLexis::String ArsLexis::hexBinEncode(const String& in)
 {

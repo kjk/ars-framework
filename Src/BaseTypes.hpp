@@ -2,6 +2,7 @@
 #define __ARSLEXIS_BASE_TYPES_HPP__
 
 #include <string>
+#include "ErrBase.h"
 
 typedef unsigned int uint_t;
 typedef unsigned short ushort_t;
@@ -25,15 +26,7 @@ namespace ArsLexis
 # define tprintf _stprintf
 # define ticks   GetTickCount
 
-// ugly hack to make Text.cpp compile under VC++ 7
-// define various Palm-isms unavialble under WIN
-#define errNone 0
-#define sysErrParamErr 1
-#define chrNull 0x0000
-
 #else
-
-# define _totlower tolower
 
 namespace ArsLexis
 {
@@ -71,5 +64,9 @@ namespace ArsLexis
     typedef std::basic_string<char_t> String;
 
 }  
+
+#if !defined(chrNull)
+# define chrNull _T('\0')
+#endif
 
 #endif
