@@ -18,7 +18,6 @@
 #define typeHorizontalLineElement           'hrzl'
 #define typeGenericTextElement              'gtxt'
 #define typeBulletElement                   'bull'
-#define typeFormattedTextElement            'ftxt'
 #define typeListNumberElement               'linu'
 #define typeParagraphElement                'parg'
 #define typeIndentedParagraphElement        'ipar'
@@ -36,7 +35,6 @@
 #define paramListTotalCount                 'ltcn'
 #define paramLineBreakSize                  'muld'
 #define paramStyleName                      'stnm'
-#define paramFontEffects                    'fnte'
 //param of StylesTable - one style entry
 #define paramStyleEntry                     'sten'
 
@@ -141,8 +139,7 @@ bool ByteFormatParser::parseParam()
         case paramTextValue:
             {
                 String str(inText_,start_,currentParamLength_);
-                if (typeGenericTextElement == currentElementType_ ||
-                    typeFormattedTextElement == currentElementType_)
+                if (typeGenericTextElement == currentElementType_)
                     ((GenericTextElement*)currentElement_)->setText(str);
             }
             break;
@@ -213,18 +210,6 @@ bool ByteFormatParser::parseParam()
             }
             break;
             
-        case paramFontEffects:
-            if (typeFormattedTextElement == currentElementType_)
-            {
-                ulong_t mask = readUnaligned32(&inText_[start_]);
-                ulong_t fx = readUnaligned32(&inText_[start_+4]);
-                // FontEffects fontEffects;                
-                //TODO: mask,fx -> fontEffects
-                
-                //((FormattedTextElement*)currentElement_)->setEffects(fontEffects);
-            }
-            break;
-
         case paramStyleEntry:
             if (typeStylesTableElement == currentElementType_)
             {
@@ -276,12 +261,6 @@ void ByteFormatParser::parseElementParams()
             elems.push_back(currentElement_ = new BulletElement());
             break;
 
-/*
-        case typeFormattedTextElement:
-            elems.push_back(currentElement_ = new FormattedTextElement());
-            break;
- */
- 
         case typeListNumberElement:
             elems.push_back(currentElement_ = new ListNumberElement());
             break;
