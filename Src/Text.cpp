@@ -627,6 +627,26 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
     return strList;
 }
 
+char_t** StringVectorToCStrArray(const std::vector<String>& vec)
+{
+    ulong_t len = vec.size();
+    typedef char_t* cstr;
+    cstr* arr = new_nt cstr[len];
+    if (NULL == arr)
+        return NULL;
+    
+    memzero(arr, sizeof(char_t*) * len);
+    for (ulong_t i = 0; i < len; ++i)
+        if (NULL == (arr[i] = StringCopyN(vec[i].data(), vec[i].length())))
+            goto NoMemory;
+            
+    return arr;
+NoMemory:
+    FreeStringList(arr, len);
+    return NULL;        
+}
+
+
 void FreeStringList(char_t* strList[], int strListLen)
 {
     for (int i = 0; i < strListLen; ++i)

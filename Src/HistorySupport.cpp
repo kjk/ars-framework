@@ -214,7 +214,8 @@ bool HistorySupport::followUrl(HistoryCache& cache, const char_t* url)
     assert(NULL != cacheReadHandler);
     if (cacheReadHandler(cache, url))
         return true;
-    if (NULL == hyperlinkHandler)        return false;
+    if (NULL == hyperlinkHandler)
+        return false;
     cache.close();
     hyperlinkHandler->handleHyperlink(url, NULL);
     return true;

@@ -159,6 +159,8 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
 
 char_t **StringListFromStringList(const StringList_t& strList, int& stringCount);
 
+char_t** StringVectorToCStrArray(const std::vector<String>& vec);
+
 void strip(String& str);
 
 std::vector<ArsLexis::String> split(const String& str, const char_t* splitter = _T(" "));
