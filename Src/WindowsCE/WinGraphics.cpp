@@ -55,7 +55,7 @@ namespace ArsLexis
             PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
         */
         uint_t len=length;
-        uint_t width=0;
+        uint_t width=0x7fffffff;
         charsInWidth(text, len, width);
         
         uint_t height=fontHeight();
@@ -86,7 +86,7 @@ namespace ArsLexis
                 break;
         }
         //Still underlining doesn't work
-        /*if (fx.underline()!=ArsLexis::FontEffects::underlineNone)
+        if (fx.underline()!=ArsLexis::FontEffects::underlineNone)
         {
             LOGPEN pen;
             //TODO: again not effective
@@ -100,7 +100,7 @@ namespace ArsLexis
             drawLine(topLeft.x, top, topLeft.x+width, top);            
             SelectObject(handle_,hgdiobj);
             DeleteObject(newPen);
-        }*/
+        }
 
         //(handle_, topLeft.x , topLeft.y, text, length);
     }
@@ -205,7 +205,7 @@ namespace ArsLexis
                ) 
                  return i+1;
         }
-        return textLen;
+        return len;
     }
 
     uint_t Graphics::textWidth(const char_t* text, uint_t length)

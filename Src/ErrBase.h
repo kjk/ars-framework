@@ -7,6 +7,8 @@
 #ifndef _ERR_BASE_H_
 #define _ERR_BASE_H_
 
+#include <BaseTypes.hpp>
+
 #if !defined(appErrorClass)
 
 # if defined(_WIN32) || defined(_WIN32_WCE)
@@ -53,6 +55,7 @@
 #  define appErrorClass 0xe0000000
 #  define errNone NO_ERROR
 #  define sysErrParamErr ERROR_INVALID_DATA
+
 // The next lines probably will have to be uncommented for portable SocketConnection to work
 // #  define netErrTimeout WSAETIMEDOUT
 // #  define netErrWouldBlock WSAEWOULDBLOCK

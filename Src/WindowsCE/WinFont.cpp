@@ -28,6 +28,7 @@ WinFont::WinFont(HFONT fnt)
 WinFont::WinFont(const WinFont& r)
 {
     this->fntWrapper = r.fntWrapper;
+    this->effects_=r.effects_;
     fntWrapper->attach();
 }
 
@@ -35,6 +36,7 @@ WinFont& WinFont::operator=(const WinFont& r)
 {
     if (this==&r) 
         return *this;
+    this->effects_=r.effects_;
     fntWrapper->detach();
     if (!fntWrapper->getRefsCount())
         delete fntWrapper;

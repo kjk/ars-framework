@@ -24,7 +24,6 @@ class WinFont
         FontWrapper();
         unsigned refsCount;
         HFONT font;
-        ArsLexis::FontEffects effects_;
     };
     public:
         WinFont();
@@ -33,18 +32,19 @@ class WinFont
         WinFont(const WinFont& copy);
 
         void setEffects(ArsLexis::FontEffects effects)
-        {fntWrapper->effects_=effects;}
+        {effects_=effects;}
         
         ArsLexis::FontEffects effects() const
-        {return fntWrapper->effects_;}       
+        {return effects_;}       
         
         void addEffects(ArsLexis::FontEffects& fx)
-        {fntWrapper->effects_+=fx;}
+        {effects_+=fx;}
 
         HFONT getHandle() const;
         virtual ~WinFont();
         static WinFont getSymbolFont();
     private:
+        ArsLexis::FontEffects effects_;
         FontWrapper* fntWrapper;
 };
 
