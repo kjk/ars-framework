@@ -20,10 +20,10 @@ namespace ArsLexis
 
 #endif
 
-    template<class NativeType, class Wrapper> 
-    static inline NativeType toNative(const Wrapper& wrapper)
+    template<class Wrapper> 
+    static inline typename Wrapper::Native_t toNative(const Wrapper& wrapper)
     {
-        NativeType result;
+        typename Wrapper::Native_t result;
         wrapper.toNative(result);
         return result;
     }

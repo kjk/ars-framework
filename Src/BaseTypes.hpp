@@ -24,10 +24,14 @@ namespace ArsLexis
     #if defined(__PALMOS_H__)    
     
         #define tprintf StrPrintF
+        #define tstrlen StrLen
+        #define tstrcmp StrCompare
         
     #else
         
         #define tprintf sprintf
+        #define tstrlen strlen
+        #define tstrcmp strcmp
         
     #endif
     

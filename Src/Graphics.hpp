@@ -128,9 +128,12 @@ namespace ArsLexis
         };      
         
         uint_t fontHeight() const;
+        
         uint_t fontBaseline() const;      
         
         void drawText(const char_t* text, uint_t length, const Point& topLeft);
+        
+        void drawCenteredText(const char_t* str, const Point& topLeft, uint_t width);
         
         uint_t wordWrap(const char_t* text, uint_t width);
         

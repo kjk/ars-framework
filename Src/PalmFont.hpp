@@ -109,7 +109,8 @@ namespace ArsLexis
             return impl_->effects();
         }
         
-        friend class Graphics;
+        static PalmFont getSymbolFont();
+
     };
 
 }

@@ -10,7 +10,6 @@ namespace ArsLexis
     class FontEffects
     {
         uint_t weight_:2;
-//        uint_t typewriter_:1;
         uint_t italic_: 1;
         uint_t small_:1;
         uint_t strike_:1;
@@ -42,12 +41,6 @@ namespace ArsLexis
         Weight weight() const
         {return static_cast<Weight>(weight_);}
         
-//        bool typewriterFont() const
-//        {return typewriter_;}
-
-//        void setTypewriterFont(bool val) 
-//        {typewriter_=val;}
-
         bool small() const
         {return small_;}
         

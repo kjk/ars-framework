@@ -23,8 +23,6 @@ namespace ArsLexis
     
     bool isWhitespace(char chr);
     
-    void drawCenteredChars(const char* str, Coord left, Coord top, Coord width);
-    
 }
 
 #endif

@@ -5,6 +5,7 @@
 #include "ParagraphElement.hpp"
 #include "HorizontalLineElement.hpp"
 #include <cctype>
+#include <memory>
 #include "Utility.hpp"
 
 using ArsLexis::String;

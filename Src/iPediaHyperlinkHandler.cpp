@@ -28,6 +28,9 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
 void iPediaHyperlinkHandler::handleTermHyperlink(const ArsLexis::String& term)
 {
     iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
+    MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
+    if (form)
+        form->lookupTerm(term);
 }
 
 

@@ -2,6 +2,7 @@
 #define __ARSLEXIS_HTML_CHARACTER_ENTITY_REFERENCE_DECODER_HPP__
 
 #include "Debug.hpp"
+#include "BaseTypes.hpp"
 #include "Utility.hpp"
 #include <map>
 
@@ -23,6 +24,10 @@ namespace ArsLexis
          * @return decoded character on success, @c chrNull on failure.
          */
         char decode(const char* entityReference) const;
+        
+        char decode(const String& str) const
+        {return decode(str.c_str());}
+        
     };
 
 }

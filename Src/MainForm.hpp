@@ -55,6 +55,8 @@ public:
     void setDisplayMode(DisplayMode displayMode)
     {displayMode_=displayMode;}
     
+    void lookupTerm(const ArsLexis::String& term);
+    
 private:
     
     DisplayMode displayMode_;

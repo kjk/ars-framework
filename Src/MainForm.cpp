@@ -56,27 +56,37 @@ void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
     Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, app.renderingPreferences().backgroundColor());
     bounds.explode(0, 15, 0, -33);
     graphics.erase(bounds);
-    UInt16 currentY=bounds.y()+20;
-    Graphics::FontSetter font(graphics, largeFont);
-    drawCenteredChars("ArsLexis iPedia", bounds.x(), currentY, bounds.width());
-    currentY+=16;
+    
+    Point point(bounds.x(), bounds.y()+20);
+    
+    PalmFont font(largeFont);
+    
+    Graphics::FontSetter setFont(graphics, font);
+    graphics.drawCenteredText("ArsLexis iPedia", point, bounds.width());
+    point.y+=16;
 #ifdef DEMO
-    drawCenteredChars("Ver 0.5 (demo)", bounds.x(), currentY, bounds.width());
+    graphics.drawCenteredText("Ver 0.5 (demo)", point, bounds.width());
 #else
   #ifdef DEBUG
-    drawCenteredChars("Ver 0.5 (beta)", bounds.x(), currentY, bounds.width());
+    graphics.drawCenteredText("Ver 0.5 (beta)", point, bounds.width());
   #else
-    drawCenteredChars("Ver 0.5", bounds.x(), currentY, bounds.width());
+    graphics.drawCenteredText("Ver 0.5", point, bounds.width());
   #endif
 #endif
-    currentY+=20;
+    point.y+=20;
     
-    font.changeTo(boldFont);
-    drawCenteredChars("Copyright (c) ArsLexis", bounds.x(), currentY, bounds.width());
-    currentY+=24;
+    font.setFontId(stdFont);
+    font.effects().setWeight(FontEffects::weightBold);
 
-    font.changeTo(largeFont);
-    drawCenteredChars("http://www.arslexis.com", bounds.x(), currentY, bounds.width());
+    setFont.changeTo(font);
+    
+    graphics.drawCenteredText("Copyright (c) ArsLexis", point, bounds.width());
+    point.y+=24;
+    
+    font.effects().setWeight(FontEffects::weightPlain);
+    setFont.changeTo(font);
+    
+    graphics.drawCenteredText("http://www.arslexis.com", point, bounds.width());
 }
 
 void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
@@ -152,6 +162,17 @@ void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
         //! @todo Show alert that connection failed.
 }
 
+void MainForm::lookupTerm(const ArsLexis::String& newTerm)
+{
+    if (newTerm!=term())
+        startLookupConnection(newTerm);
+    else if (showDefinition!=displayMode())
+    {
+        setDisplayMode(showDefinition);
+        update();
+    }
+}
+
 void MainForm::handleControlSelect(const ctlSelect& data)
 {
     assert(data.controlID==goButton);
@@ -159,16 +180,7 @@ void MainForm::handleControlSelect(const ctlSelect& data)
     const FieldType* field=static_cast<const FieldType*>(getObject(index));
     const char* textPtr=FldGetTextPtr(field);
     if (textPtr!=0)
-    {
-        String newTerm(textPtr);
-        if (newTerm!=term())
-            startLookupConnection(newTerm);
-        else if (showDefinition!=displayMode())
-        {
-            setDisplayMode(showDefinition);
-            update();
-        }
-    }
+        lookupTerm(textPtr);
 }
 
 

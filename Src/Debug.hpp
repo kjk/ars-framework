@@ -7,7 +7,9 @@
 #ifndef __ARSLEXIS_DEBUG_HPP__
 #define __ARSLEXIS_DEBUG_HPP__
 
-#if __ide_target("Release")
+#if defined(__MWERKS__)
+
+#if __ide_target("Release") && !defined(NDEBUG)
 #define NDEBUG
 #endif
 
@@ -19,6 +21,8 @@
 //! Prevents using MSL-provided error function (called when normally exception would be thrown).
 #define _MSL_ERROR_FUNC -1
 
+#endif // __MWERKS__
+
 #include <new>
 #include <cassert>
 
@@ -29,6 +33,9 @@ namespace ArsLexis
      * It should be defined somewher in application modules.
      */
     void handleBadAlloc();
+    
+    void logAllocation(void* ptr, bool free);
+    
 }
 
 /**
@@ -45,13 +52,22 @@ inline void * operator new(unsigned long size)
         ptr=MemPtrNew(1);
     if (!ptr)
         ArsLexis::handleBadAlloc();
+#ifndef NDEBUG
+    else
+        ArsLexis::logAllocation(ptr, false);
+#endif                
     return ptr;
 }
 
 inline void operator delete(void *ptr)
 {
     if (ptr) 
+    {
         MemPtrFree(ptr);
+#ifndef NDEBUG
+        ArsLexis::logAllocation(ptr, true);
+#endif            
+    }        
 }
 
 inline void * operator new[](unsigned long size)
@@ -63,78 +79,5 @@ inline void operator delete[](void *ptr)
 {
     ::operator delete(ptr);
 }
-
-/*
-namespace ArsLexis 
-{
-*/
-
-    /**
-     * Replacement for @c std::allocator. The former one uses (not explicitly) some 
-     * globals.
-     */
-/*
-    template <class T> 
-    class Allocator
-    {
-    public:
-        typedef std::size_t size_type;
-        typedef std::ptrdiff_t difference_type;
-        typedef T*        pointer;
-        typedef const T*  const_pointer;
-        typedef T&        reference;
-        typedef const T&  const_reference;
-        typedef T         value_type;
-
-        template <class U> 
-        struct rebind { typedef Allocator<U> other; };
-
-        Allocator()
-        {}
-
-        template <class U> inline
-        Allocator(const Allocator<U>&) 
-        {}
-
-        pointer address(reference x) const
-        {return &x;}
-
-        const_pointer address(const_reference x) const
-        {return &x;}
-
-        pointer allocate(size_type n, const_pointer hint = 0)
-        {
-            return static_cast<pointer>(::operator new(n*sizeof(T)));
-        }
-
-        void deallocate(pointer p, size_type n)
-        {
-            ::operator delete(p);
-        }
-
-        size_type max_size() const
-        {
-            return ((size_type)-1)/sizeof(T);
-        }
-
-        void construct(pointer p, const T& val)
-        {
-            new (p) T(val);
-        }
-
-        void destroy(pointer p)
-        {
-            p->~T();
-        }
-        
-    };
-
-    typedef std::basic_string<char, std::char_traits<char>, Allocator<char> > String;
-*/
-
-/*    
-    typedef std::string String;
-}
-*/
 
 #endif

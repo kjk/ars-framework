@@ -10,7 +10,7 @@ BulletElement::BulletElement():
 void BulletElement::applyFormatting(Graphics& graphics, const RenderingPreferences& prefs)
 {
     GenericTextElement::applyFormatting(graphics, prefs);
-    graphics.setFont(symbolFont);
+    graphics.setFont(Graphics::Font_t::getSymbolFont());
 }
 
 void BulletElement::calculateLayout(LayoutContext& mc)

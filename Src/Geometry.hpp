@@ -11,6 +11,8 @@ namespace ArsLexis
 
     struct Point
     {
+        typedef NativePoint_t Native_t;
+    
         Coord_t x,y;
         
         Point(): x(0), y(0) {}
@@ -39,8 +41,10 @@ namespace ArsLexis
         
     };
 
-    struct Rectangle // Unfortunately we can't inherit from RectangleType because typedef struct RectangleType masks its name.
+    struct Rectangle
     {
+        typedef NativeRectangle_t Native_t;
+        
         Point topLeft;
         Point extent;
         
@@ -100,7 +104,7 @@ namespace ArsLexis
         };
         
         bool empty() const
-        {return (width()>0 && height()>0);}
+        {return (width()==0 || height()==0);}
         
         operator bool () const
         {return !empty();}
@@ -116,12 +120,12 @@ namespace ArsLexis
             result &=rect;
             return result;
         }
+
             
         bool operator && (const Rectangle& rect) const
         {
             Rectangle tmp(*this);
-            tmp &= rect;
-            return tmp.operator bool();
+            return (tmp &= rect);
         }
         
         bool operator && (const Point& point) const

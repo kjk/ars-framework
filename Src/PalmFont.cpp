@@ -62,6 +62,11 @@ namespace ArsLexis
             impl_->attach();
         }
     }
+
+    PalmFont PalmFont::getSymbolFont()
+    {
+        return PalmFont(symbolFont);
+    }
    
     
 }    

@@ -38,15 +38,16 @@ namespace ArsLexis
     
 }    
 // What we need to do here is to include header implementing HFONT wrapper for Windows CE. 
-// I assume that this wrapper class will be called Font and reside in file Font.hpp
+// I assume that this wrapper class will be called WinFont and reside in file WinFont.hpp
 // Font *must* be copyable, so it should be reference-counted internally (we discussed these matters 
-// with Marek and it seems it's the easiest way to ensure proper HDC behavior.
-#include "Font.hpp"
+// with Marek and it seems it's the easiest way to ensure proper HDC behavior. Of course you don't
+// have to use the proposed names as long as typedefs are set correctly.
+#include "WinFont.hpp"
 
 namespace ArsLexis 
 { 
 
-    typedef Font NativeFont_t;
+    typedef WinFont NativeFont_t;
     
     struct NativeGraphicsSupport
     {
