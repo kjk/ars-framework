@@ -82,9 +82,9 @@ end
 @s14 this is a larch: <img src="larch.png">*this is a larch: 
 @s15 start [[de:mordfabrik]] [[image:axis_of_evil-front.jpg]] [[media:suicide_commando-axis_of_evil-05-mordfabrik.mp3]] end*start    end
 @16
-&lt;&amp;&gt; &quot; &Alpha; &#509;nima
+&lt;&amp;&gt; &quot; &Alpha; &#509;nima &#8220;research&#8221;
 @
-<&> " /Alpha/ ænima
+<&> " /Alpha/ ænima "research"
 @17
 start
 
