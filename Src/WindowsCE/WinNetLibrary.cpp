@@ -93,7 +93,7 @@ namespace ArsLexis
     int NetLibrary::socketClose(NativeSocket_t socket, long  timeout, status_t& error)
     {
         error = errNone;
-        if(closesocket(socket))
+        if (closesocket(socket))
         {
             error=WSAGetLastError();
             return -1;
@@ -103,8 +103,8 @@ namespace ArsLexis
     
     int NetLibrary::socketShutdown(NativeSocket_t socket, int direction, long timeout, status_t& error)
     {
-        /*error = shutdown (socket, direction); 
-        if(error)
+        error = shutdown(socket, direction); 
+        /* if(error)
         {
             error=WSAGetLastError();
             return -1;
@@ -133,9 +133,9 @@ namespace ArsLexis
     int NetLibrary::socketConnect(NativeSocket_t socket, const SocketAddr& sockAddrP, uint_t addrLen, long timeout, status_t& error)
     {
         error = errNone;
-        if(connect (socket, &sockAddrP.native, addrLen) == SOCKET_ERROR)
+        if (connect (socket, &sockAddrP.native, addrLen) == SOCKET_ERROR)
         {
-            error=WSAGetLastError();
+            error = WSAGetLastError();
             return -1;
         }
         return 0;
@@ -144,14 +144,14 @@ namespace ArsLexis
     int NetLibrary::socketOptionGet(NativeSocket_t socket, uint_t level, uint_t  option, void* optValueP, uint_t& optValueLen, long timeout, status_t& error)
     {
         error = errNone;
-        if(option == socketOptSockErrorStatus)
+        if (option == socketOptSockErrorStatus)
         {
             //if (error=WSAGetLastError()) return -1;
             return 0;
         }
-        if(getsockopt(socket, level, option, (char*)optValueP, (int*)&optValueLen)== SOCKET_ERROR)
+        if (getsockopt(socket, level, option, (char*)optValueP, (int*)&optValueLen)== SOCKET_ERROR)
         {
-            error=WSAGetLastError();
+            error = WSAGetLastError();
             return -1;
         }
         return 0;
@@ -160,9 +160,9 @@ namespace ArsLexis
     int NetLibrary::socketOptionSet(NativeSocket_t socket, uint_t level, uint_t  option, void* optValueP, uint_t optValueLen, long timeout, status_t& error)
     {
         error = errNone;
-        if(setsockopt(socket, level, option, (const char*) optValueP, optValueLen) == SOCKET_ERROR)
+        if (setsockopt(socket, level, option, (const char*) optValueP, optValueLen) == SOCKET_ERROR)
         {
-            error=WSAGetLastError();
+            error = WSAGetLastError();
             return -1;
         }
         return 0;
@@ -175,10 +175,10 @@ namespace ArsLexis
         strtimeout.tv_usec = timeout;
         strtimeout.tv_sec = 0;
         const struct timeval* pstrtimeout=&strtimeout;
-        if (timeout==-1)
+        if (-1==timeout)
             pstrtimeout=NULL;
-        int res = ::select (width, readFDs, writeFDs, exceptFDs, pstrtimeout); 
-        if(res == SOCKET_ERROR)
+        int res = ::select(width, readFDs, writeFDs, exceptFDs, pstrtimeout); 
+        if (res == SOCKET_ERROR)
         {
             error=WSAGetLastError();
             return -1;            
