@@ -12,32 +12,32 @@ BEGIN
     PULLDOWN "Main"
     BEGIN
          MENUITEM "Search" ID searchMenuItem "S"
-         MENUITEM "Full-text Search" ID fullTextSearchMenuItem "F"
-         MENUITEM "Last Search Results" ID searchResultsMenuItem  "L"
+         MENUITEM "Full-text search" ID fullTextSearchMenuItem "F"
+         MENUITEM "Last search results" ID searchResultsMenuItem  "L"
          MENUITEM SEPARATOR ID AUTOID
          MENUITEM "Random article" ID randomMenuItem  "R"
 #ifdef  INTERNAL_BUILD
          MENUITEM SEPARATOR ID AUTOID
          MENUITEM "localhost" ID useLocalhostMenuItem  
          MENUITEM "dict-pc.arslexis.com" ID useDictPcMenuItem    
-         MENUITEM "Stress Mode" ID toggleStressModeMenuItem   
+         MENUITEM "Stress mode" ID toggleStressModeMenuItem   
 #endif
     END
-		 
+
     PULLDOWN "Edit"
     BEGIN
         MENUITEM "Copy"ID copyMenuItem "C"
-        MENUITEM "Select All" ID selectAllMenuItem "S"
+        MENUITEM "Select all" ID selectAllMenuItem "S"
     END
 
     PULLDOWN "Options"
     BEGIN
         MENUITEM "Register" ID registerMenuItem  "G"
         MENUITEM SEPARATOR
-		MENUITEM "ArsLexis website"        ID arslexisWebsiteMenuItem   "W"
+        MENUITEM "ArsLexis website"        ID arslexisWebsiteMenuItem   "W"
         MENUITEM "About" ID aboutMenuItem  "A"
     END
-END	
+END
 
 ALERT ID romIncompatibleAlert
     DEFAULTBUTTON 0
