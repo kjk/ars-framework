@@ -3,9 +3,8 @@
 #include <BaseTypes.hpp>
 
 namespace ArsLexis {
-    const uint_t LookupProgressReportingSupport::percentProgressDisabled=(uint_t)-1;
     
-        void LookupProgressReportingSupport::showProgress(Graphics& graphics, const Rectangle& bounds) const
+    void LookupProgressReportingSupport::showProgress(Graphics& graphics, const Rectangle& bounds) const
     {
         graphics.erase(bounds);
         Rectangle rect(bounds);

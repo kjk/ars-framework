@@ -6,8 +6,8 @@
 #include <Utility.hpp>
 #include <list>
 
-#ifdef _WIN32_WCE
-#pragma warning ( disable : 4068)
+#ifdef _MSC_VER
+# pragma warning ( disable : 4068)
 #endif
 
 namespace ArsLexis
@@ -84,7 +84,7 @@ namespace ArsLexis
 #elif defined(_WIN32_WCE)
             OutputDebugString(str.c_str());
 #else
-#error "Define version of DebuggerLogSink appropriate for your system."
+# error "Define version of DebuggerLogSink appropriate for your system."
 #endif            
         }
         

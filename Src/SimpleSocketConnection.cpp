@@ -19,8 +19,8 @@ namespace ArsLexis
         if (requestLeft>chunkSize_)
             requestLeft=chunkSize_;
         uint_t dataSize=0;
-//        status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
-        status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, 0);
+        status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
+//        status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, 0);
         if (errNone==error || netErrWouldBlock==error)
         {
             registerEvent(SocketSelector::eventException);
@@ -52,8 +52,8 @@ namespace ArsLexis
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             response_.resize(responseSize+chunkSize_);
-//            error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
-            error=socket().receive(dataSize, &response_[responseSize], chunkSize_, 0);
+            error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
+//            error=socket().receive(dataSize, &response_[responseSize], chunkSize_, 0);
             if (!error)
             {
                 assert(dataSize<=chunkSize_);

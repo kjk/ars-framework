@@ -42,7 +42,7 @@ namespace ArsLexis
         if (log_)
         {
             char_t buffer[26];
-            int len=tprintf(buffer, _T("%d (0x%04dx)"), l, l);
+            int len=tprintf(buffer, _T("%ld (0x%04lx)"), l, l);
             if (len>0)
                 line_.append(buffer, len);
         }                
@@ -65,7 +65,11 @@ namespace ArsLexis
 
     Logger::LineAppender& Logger::LineAppender::operator<<(int i)
     {
+#if defined(_PALM_OS)    
         return *this<<static_cast<short>(i);
+#else
+        return *this<<static_cast<long>(i);
+#endif        
     }
 
     Logger::LineAppender Logger::operator()(uint_t level)
@@ -128,8 +132,8 @@ namespace ArsLexis
         if (err)
             error()<<_T("Unable to set RootLogger instance pointer, error: ")<<err;
 #else
-		assert(rootLoggerInstance==0);
-		rootLoggerInstance=this;
+        assert(rootLoggerInstance==0);
+        rootLoggerInstance=this;
 #endif // _PALM_OS
     }
 
@@ -138,7 +142,7 @@ namespace ArsLexis
 #ifdef _PALM_OS
         FtrUnregister(Application::creator(), Application::featureRootLoggerPointer);
 #else
-		rootLoggerInstance=0;
+        rootLoggerInstance=0;
 #endif // _PALM_OS
         std::for_each(sinks_.begin(), sinks_.end(), deleteSink);        
     }
@@ -152,7 +156,7 @@ namespace ArsLexis
             assert(false);
         return logger;
 #else
-		return rootLoggerInstance;
+        return rootLoggerInstance;
 #endif // _PALM_OS
     }
     

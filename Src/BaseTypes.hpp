@@ -2,14 +2,17 @@
 #define __ARSLEXIS_BASE_TYPES_HPP__
 
 #include <string>
-#include "ErrBase.h"
+#include <ErrBase.h>
 
 typedef unsigned int uint_t;
 typedef unsigned short ushort_t;
 typedef unsigned long ulong_t;
 
+#ifdef _MSC_VER
+# pragma warning (disable : 4786)
+#endif
+
 #if defined(_WIN32_WCE) || defined(_WIN32)
-#pragma warning (disable : 4786)
 
 #include <windows.h>
 #include <tchar.h>

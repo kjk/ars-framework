@@ -16,7 +16,7 @@ namespace ArsLexis {
         
     public:
         
-        static const uint_t percentProgressDisabled;
+        enum {percentProgressDisabled=(uint_t)-1};
     
         LookupProgressReportingSupport():
             percentProgress_(percentProgressDisabled),

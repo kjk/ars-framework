@@ -62,7 +62,7 @@ namespace ArsLexis
                     if (!goOn)
                         end=resp.length();
                     error=processLine(end);
-                    response().erase(0, end+1);
+                    resp.erase(0, end+1);
                 }
             }
             else
