@@ -6,6 +6,8 @@
 #include <FormObject.hpp>
 #include <Definition.hpp>
 
+struct DynStrTag;
+
 class PopupMenuModel: public List::CustomDrawHandler
 {
 public:
@@ -82,6 +84,18 @@ private:
    
 };
 
+enum PopupMenuItemFlag 
+{
+    popupMenuItemInactive = 1,
+    popupMenuItemBold = 2,
+    popupMenuItemSeparator = 4,
+    popupMenuItemUnderlined = 8
+};
 
+struct DynStrTag;
+
+status_t PopupMenuHyperlinkCreate(DynStrTag* hyperlink, const char_t* prefix, ulong_t itemsCount);
+
+status_t PopupMenuHyperlinkAppendItem(DynStrTag* hyperlink, const char_t* text, const char_t* link, ulong_t itemFlags);
 
 #endif

@@ -235,6 +235,26 @@ long bufferToHexCode(const char* in, long inLength, char* out, long outLength);
  */
 void strip(const char_t*& start, ulong_t& length);
 
+
+char_t** StrArrCreate(ulong_t size);
+
+void StrArrFree(char_t**& array, ulong_t size);
+
+char_t** StrArrResize(char_t**& array, ulong_t currSize, ulong_t newSize);
+
+char_t** StrArrAppendStr(char_t**& array, ulong_t& length, char_t* str);
+
+char_t** StrArrAppendStrCopy(char_t**& array, ulong_t& length, const char_t* str);
+
+void StrArrEraseStr(char_t** array, ulong_t& length, ulong_t index);
+
+char_t** StrArrInsertStr(char_t**& array, ulong_t& length, ulong_t index, char_t* str);
+
+char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, const char_t* str);
+
+long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len = -1);
+
+
 #ifdef DEBUG
 void test_TextUnitTestAll();
 #endif

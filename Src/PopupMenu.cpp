@@ -1,6 +1,7 @@
  #include <PopupMenu.hpp>
 #include <Graphics.hpp>
 #include <Text.hpp>
+#include <DynStr.hpp>
 
 PopupMenu::PopupMenu(Form& form):
     list(form),
@@ -256,13 +257,6 @@ static bool extractString(const char_t*& data, long& length, const char_t*& str,
     return true;
 }
 
-enum PopupMenuItemFlag 
-{
-    flagItemInactive = 1,
-    flagItemBold = 2,
-    flagItemSeparator = 4
-};
-
 void PopupMenuModel::setItems(Item* items, uint_t itemsCount)
 {
     delete [] this->items;
@@ -309,9 +303,10 @@ bool PopupMenuModel::itemsFromString(const char_t* data, long length)
         if (!extractLong(data, length, val))
             goto Fail;
         
-        item.active = (0 == (flagItemInactive & val));
-        item.bold = (0 != (flagItemBold & val));
-        item.separator = (0 != (flagItemSeparator & val));
+        item.active = (0 == (popupMenuItemInactive & val));
+        item.bold = (0 != (popupMenuItemBold & val));
+        item.separator = (0 != (popupMenuItemSeparator & val));
+        item.underlined = (0 != (popupMenuItemUnderlined & val));
     }
     setItems(newItems, itemsCount);
     return true;
@@ -320,3 +315,61 @@ Fail:
     delete [] newItems;
     return false;        
 }
+
+static DynStr* DynStrAppendLongBE(DynStr* str, long ll)
+{
+    union {
+        char b[4];
+        long l;
+    };
+    char_t arr[4];
+    l = ll;
+    for (int i = 0; i < 4; ++i)
+    {
+#ifdef _PALM_OS
+        arr[i] = b[i];        
+#else
+        arr[3 - i] = b[i]
+#endif
+    }  
+    return DynStrAppendCharPBuf(str, arr, 4);
+}
+
+static DynStr* DynStrAppendLenStrBE(DynStr* out, const char_t* str)
+{
+    long len = tstrlen(str);
+    if (NULL == DynStrAppendLongBE(out, len))
+        return NULL;
+        
+    if (NULL == DynStrAppendCharPBuf(out, str, len))
+        return NULL;
+    
+    return out;
+}
+
+status_t PopupMenuHyperlinkCreate(DynStrTag* hyperlink, const char_t* prefix, ulong_t itemsCount)
+{
+    if (NULL == DynStrAppendCharP(hyperlink, prefix))
+        return memErrNotEnoughSpace;
+    
+    if (NULL == DynStrAppendLongBE(hyperlink, itemsCount))
+        return memErrNotEnoughSpace;
+    
+    return errNone;
+}
+
+status_t PopupMenuHyperlinkAppendItem(DynStrTag* hyperlink, const char_t* text, const char_t* link, ulong_t itemFlags)
+{
+    if (NULL == DynStrAppendLenStrBE(hyperlink, text))
+        return memErrNotEnoughSpace;
+        
+    if (NULL == DynStrAppendLenStrBE(hyperlink, link))
+        return memErrNotEnoughSpace;
+        
+    if (NULL == DynStrAppendLongBE(hyperlink, itemFlags))
+        return memErrNotEnoughSpace;
+    
+    return errNone;
+}
+
+

@@ -47,4 +47,6 @@ void getTime(Int16* hour, Int16* minutes);
 // assert that outBuffer length is more than needed
 void localizeTime(char* outBuffer, Int16 hour, Int16 minutes);
 
+bool VFS_FeaturesPresent();
+
 #endif

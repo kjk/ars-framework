@@ -1131,6 +1131,123 @@ bool equals(const char_t* s1, ulong_t s1len, const char_t* s2, ulong_t s2len)
     return 0 == tstrncmp(s1, s2, s1len);
 }
 
+char_t** StrArrCreate(ulong_t size)
+{
+    if (0 == size)
+        return NULL;
+    size *= sizeof(char_t*);
+    char_t** arr = (char_t**)malloc(size);
+    if (NULL == arr)
+        return NULL;
+    memzero(arr, size);
+    return arr;
+}
+
+void StrArrFree(char_t**& array, ulong_t size)
+{
+    if (NULL == array)
+    {
+        assert(0 == size);
+        return;
+    }
+    for (ulong_t i = 0; i < size; ++i)
+    {
+        char_t* p = array[i];
+        if (NULL != p)
+            free(p);
+    }
+    free(array);
+    array = NULL;
+}
+
+char_t** StrArrResize(char_t**& array, ulong_t currSize, ulong_t newSize)
+{
+    using namespace std;
+    
+    newSize *= sizeof(char_t*);
+    char_t** arr = (char_t**)realloc(array, newSize);
+    if (NULL == arr)
+        return NULL;
+    
+    array = arr;
+    if (newSize <= currSize)
+        return arr;
+    
+    memzero(&arr[currSize], newSize - (sizeof(char_t*) * currSize));
+    return arr;
+}
+
+
+char_t** StrArrAppendStr(char_t**& array, ulong_t& length, char_t* str)
+{
+    if (NULL == StrArrResize(array, length, length + 1))
+        return NULL;
+        
+    array[length++] = str;
+    return array;
+}
+
+char_t** StrArrAppendStrCopy(char_t**& array, ulong_t& length, const char_t* str)
+{
+    char_t* copy = StringCopy2(str);
+    if (NULL == copy)
+        return NULL;
+    
+    if (NULL == StrArrAppendStr(array, length, copy))
+    {
+        free(copy);
+        return NULL;
+    }
+    return array;
+}
+
+void StrArrEraseStr(char_t** array, ulong_t& length, ulong_t index)
+{
+    assert(index < length);
+    char_t* p = array[index];
+    if (NULL != p)
+        free(p);
+    memmove(&array[index], &array[index + 1], sizeof(char_t*) * (length - index - 1));
+    array[length - 1] = NULL;
+    StrArrResize(array, length, length - 1);    
+}
+
+char_t** StrArrInsertStr(char_t**& array, ulong_t& length, ulong_t index, char_t* str)
+{
+    assert(index <= length);
+    if (NULL == StrArrResize(array, length, length + 1))
+        return NULL;
+    
+    memmove(&array[index + 1], &array[index], sizeof(char_t*) * (length - index));
+    ++length;
+    array[index] = str;
+    return array;
+}
+
+char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, const char_t* str)
+{
+    char_t* copy = StringCopy2(str);
+    if (NULL == copy)
+        return NULL;
+
+    if (NULL == StrArrInsertStr(array, length, index, copy))
+    {
+        free(copy);
+        return NULL;
+    }
+    return array;
+}
+
+long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len)
+{
+    if (-1 == len)
+        len = tstrlen(str);
+        
+    for (ulong_t i = 0; i < length; ++i)
+        if (StrEquals(array[i], str, len))
+            return i;
+    return -1;
+}
 
 #ifdef DEBUG
 

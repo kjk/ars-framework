@@ -3,6 +3,7 @@
 #include <SysUtils.hpp>
 #include <Text.hpp>
 #include <Geometry.hpp>
+#include <VfsMgr.h>
 
 using ArsLexis::char_t;
 
@@ -342,4 +343,12 @@ void localizeTime(char* outBuffer, Int16 hour, Int16 minutes)
 {
     TimeFormatType timeFormat = static_cast<TimeFormatType>(PrefGetPreference(prefTimeFormat));
     TimeToAscii (hour, minutes, timeFormat, outBuffer);
+}
+
+
+bool VFS_FeaturesPresent()
+{
+    UInt32 vfsMgrVersion;
+    Err err = FtrGet(sysFileCVFSMgr, vfsFtrIDVersion, &vfsMgrVersion);
+    return (errNone == err);
 }
