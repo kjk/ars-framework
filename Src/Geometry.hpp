@@ -75,6 +75,13 @@ namespace ArsLexis
             RctCopyRectangle(&rect, &data);
             return *this;
         }
+        
+        Boolean intersectsWith(const Rectangle& rect) const
+        {
+            Rectangle tmp;
+            RctGetIntersection(&data, &rect.data, &tmp.data);
+            return (tmp.width() && tmp.height());
+        }
                 
     };
     

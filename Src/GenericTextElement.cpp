@@ -2,6 +2,7 @@
 #include "Utility.hpp"
 
 using ArsLexis::String;
+using ArsLexis::Rectangle;
 
 GenericTextElement::~GenericTextElement()
 {}
@@ -19,13 +20,15 @@ static UInt16 findNextWhitespace(const String& text, UInt16 fromPos)
     return nextWhitespace;
 }
 
-void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord left, Coord top, Boolean render)
+void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord left, Coord top, Definition* definition, Boolean render)
 {
     assert(!layoutContext.isElementCompleted());
 
+    Coord baseLine=FntBaseLine();
+    Coord lineHeight=FntLineHeight();
     const char* text=text_.c_str()+layoutContext.renderingProgress;
     left+=layoutContext.usedWidth;
-    top+=(layoutContext.baseLine-FntBaseLine());
+    top+=(layoutContext.baseLine-baseLine);
 
     UInt16 nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
     Int16 length=FntWordWrap(text, layoutContext.availableWidth());
@@ -40,12 +43,15 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
     }
 
     if (!render)
-        layoutContext.extendHeight(FntLineHeight(), FntBaseLine());
+        layoutContext.extendHeight(lineHeight, baseLine);
 
     Coord width=FntCharsWidth(text, length);
 
     if (render)
+    {
         WinDrawChars(text, length, left, top);
+        defineHotSpot(*definition, Rectangle(left, top, lineHeight, width));
+    }
 
     left+=width;    
     text+=length;
@@ -65,9 +71,13 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
                 width=layoutContext.availableWidth();
                 Boolean notTruncated=false;
                 FntCharsInWidth(text, &width, &length, &notTruncated);
-                if (render)
-                    WinDrawChars(text, length, left, top);
 
+                if (render)
+                {
+                    WinDrawChars(text, length, left, top);
+                    defineHotSpot(*definition, Rectangle(left, top, lineHeight, width));
+                }
+                
                 layoutContext.renderingProgress+=length;
                 layoutContext.usedWidth+=layoutContext.availableWidth();
             }
@@ -77,20 +87,18 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
         layoutContext.markElementCompleted(width);    
 }
 
-void GenericTextElement::calculateLayout(DefinitionElement::LayoutContext& layoutContext)
+void GenericTextElement::calculateLayout(LayoutContext& layoutContext)
 {
     WinPushDrawState();
-    FntSetFont(fontId_);
-    WinSetUnderlineMode(underlineMode_);
+    prepareDrawState();
     calculateOrRender(layoutContext, 0, 0);
     WinPopDrawState();
 }
 
-void GenericTextElement::render(DefinitionElement::RenderContext& renderContext)
+void GenericTextElement::render(RenderingContext& renderContext)
 {
     WinPushDrawState();
-    FntSetFont(fontId_);
-    WinSetUnderlineMode(underlineMode_);
-    calculateOrRender(renderContext, renderContext.left, renderContext.top, true);
+    prepareDrawState();
+    calculateOrRender(renderContext, renderContext.left, renderContext.top, &renderContext.definition, true);
     WinPopDrawState();
 }

@@ -12,6 +12,7 @@
 #include <list>
 #include <vector>
 #include "Geometry.hpp"
+#include "Rendering.hpp"
 
 class DefinitionElement;
 
@@ -77,6 +78,7 @@ class Definition
     };
     
     typedef std::vector<LineHeader, ArsLexis::Allocator<LineHeader> > Lines_t;
+    typedef Lines_t::iterator LinePosition_t;
     
     /**
      * @internal
@@ -100,7 +102,7 @@ class Definition
      * @internal
      * Bounds that definition is displayed within.
      */
-    ArsLexis::Rectangle lastBounds_;
+    ArsLexis::Rectangle bounds_;
     
     Coord topOffset_;
     
@@ -125,37 +127,29 @@ public:
          * @internal
          * @c DefinitionElement associated with this @c HotSpot.
          */
-        const DefinitionElement& element_;
+        DefinitionElement& element_;
      
      public:
      
-        HotSpot(const ArsLexis::Rectangle& rect, const DefinitionElement& element);
+        HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement& element);
         
         void addRectangle(const ArsLexis::Rectangle& rect)
         {rectangles_.push_back(rect);}
         
-        const DefinitionElement* hitTest(const PointType& point) const;
+        Boolean hitTest(const PointType& point) const;
+        
+        DefinitionElement& element()
+        {return element_;}
+        
+        /**
+         * @return @c true if any part of @c HotSpot is still in @c validArea, @c false otherwise.
+         */
+        Boolean move(const PointType& delta, const ArsLexis::Rectangle& validArea);
         
         ~HotSpot();
         
     };
     
-    class RenderingPreferences
-    {
-    public:
-        
-        RenderingPreferences()
-        {}
-
-        /**
-         * @return @c true if layout changed and we need to recalculate it.
-         * @todo implement synchronize()
-         */
-        Boolean synchronize(const RenderingPreferences& preferences)
-        {return false;}
-        
-    };
-
     /**
      * Renders (paints) this @c Definition into bounds.
      */
@@ -183,9 +177,16 @@ public:
     
     void appendElement(DefinitionElement* element);
     
+    void addHotSpot(HotSpot* hotSpot);
+    
+    const ArsLexis::Rectangle& bounds() const
+    {return bounds_;}
+    
+    void hitTest(const PointType& point);
+    
 private:
 
-    RenderingPreferences lastPreferences_;
+    RenderingPreferences preferences_;
 
     typedef std::list<HotSpot*, ArsLexis::Allocator<HotSpot*> > HotSpots_t;
     HotSpots_t hotSpots_;
@@ -204,9 +205,20 @@ private:
     
     void calculateLayout(const ElementPosition_t& firstElement, UInt16 renderingProgress);
     
-    void calculateLastLine();
+    void calculateVisibleRange(UInt16& firstLine, UInt16& lastLine, Int16 delta=0);
     
-    void renderLayout();
+    void renderLine(RenderingContext& renderContext, const LinePosition_t& line);
+    
+    void renderLineRange(const LinePosition_t& begin, const LinePosition_t& end, Coord topOffset);
+
+    //! @todo Apply background according to RenderingPreferences.
+    void renderLayout()
+    {
+        WinEraseRectangle(bounds_, 0);
+        renderLineRange(lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0);
+    }
+    
+    void moveHotSpots(const PointType& delta);
     
 };
 

@@ -7,26 +7,28 @@ class GenericTextElement: public DefinitionElement
 {
 
     ArsLexis::String text_;
-    FontID fontId_;
-    UnderlineModeType underlineMode_;
 
 protected:
 
-    void calculateOrRender(LayoutContext& layoutContext, Coord left, Coord top, Boolean render=false);
+    void calculateOrRender(LayoutContext& layoutContext, Coord left, Coord top, Definition* definition=0, Boolean render=false);
+    
+    virtual void defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds)
+    {}
+    
+    virtual void prepareDrawState()
+    {}
 
 public:
 
-    GenericTextElement(const ArsLexis::String& text, FontID fontId=stdFont, UnderlineModeType underlineMode=noUnderline):
-        text_(text),
-        fontId_(fontId),
-        underlineMode_(underlineMode)
+    GenericTextElement(const ArsLexis::String& text):
+        text_(text)
     {}
 
     ~GenericTextElement();
     
     void calculateLayout(LayoutContext& mc);
     
-    void render(RenderContext& rc);
+    void render(RenderingContext& rc);
     
 };
 
