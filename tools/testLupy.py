@@ -141,8 +141,9 @@ def indexOneArticle(indexer, title, txt):
     # d.add(f)    
     #fp.close()
     # add doc to index
-    if g_fVerbose:
-        sys.stdout.write('indexing %s' % title)
+
+    #if g_fVerbose:
+    #    sys.stdout.write('indexing %s' % title)
     indexer.addDocument(d)
 
 def index(fileName,limit):
@@ -156,6 +157,9 @@ def index(fileName,limit):
         if ns != 0:
             continue
         try:
+            # TODO: check Wikipedia if latin-1 is the right encoding
+            txt = txt.decode("latin-1")
+            title = title.decode("latin-1")
             indexOneArticle(indexer,title,txt)
             count += 1
             if count >= limit:
@@ -266,6 +270,8 @@ def search(term):
 
 if __name__ == "__main__":
     g_fVerbose = fDetectRemoveCmdFlag("-verbose")
+    if g_fVerbose:
+        print "verbose output"
     indexFile = getRemoveCmdArg("-index")
     searchTerm = getRemoveCmdArg("-search")
     if indexFile and searchTerm:
