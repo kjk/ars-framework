@@ -4,7 +4,7 @@
 // TODO: implement. Used by iPediaConnection
 ulong_t ArsLexis::random(ulong_t range)
 {
-    ulong_t result = 1;
+    ulong_t result = Random();
     return result;
 }
 
