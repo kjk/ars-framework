@@ -260,6 +260,8 @@ public:
     
     bool extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount = 0);
     
+    status_t setElements(const Elements_t& elems, bool owner = false);
+    
     /**
      * Resets this definition to its default state (without any elements, hot spots etc.).
      */
@@ -377,23 +379,27 @@ public:
     
     void extendSelectionToFullHyperlink();
     
+    RenderingProgressReporter* renderingProgressReporter_; 
+
     ElementPosition_t selectionStartElement_;
     ElementPosition_t selectionEndElement_;
     ElementPosition_t mouseDownElement_;
-    uint_t mouseDownProgress_;
     Lines_t::iterator lastLineUnderMouse_;
-    bool selectionIsHyperlink_;
     
     ElementPosition_t inactiveSelectionStartElement_;
     ElementPosition_t inactiveSelectionEndElement_;
+
+    uint_t mouseDownProgress_;
     uint_t selectionStartProgress_;
     uint_t selectionEndProgress_;
-    bool trackingSelection_;
-    RenderingProgressReporter* renderingProgressReporter_; 
     uint_t interactionBehavior_;
     uint_t navOrderOptions_;
+
     bool navigatingUp_;
     bool navigatingDown_;
+    bool elementsOwner_;
+    bool trackingSelection_;
+    bool selectionIsHyperlink_;
     
     bool navigateHyperlink(Graphics& graphics, const RenderingPreferences& prefs, bool next);
 };

@@ -118,7 +118,8 @@ Definition::Definition():
     selectionIsHyperlink_(false),
     navOrderOptions_(0),
     navigatingUp_(false),
-    navigatingDown_(false)
+    navigatingDown_(false),
+    elementsOwner_(true)
 {}
 
 namespace {
@@ -158,7 +159,8 @@ void Definition::clear()
 {
     clearHotSpots();
     clearLines();
-    std::for_each(elements_.begin(), elements_.end(), ObjectDeleter<DefinitionElement>());
+    if (elementsOwner_)
+        std::for_each(elements_.begin(), elements_.end(), ObjectDeleter<DefinitionElement>());
     elements_.clear();
     selectionStartElement_=elements_.end();
     selectionEndElement_=elements_.end();
@@ -918,6 +920,7 @@ void Definition::replaceElements(Elements_t& elements)
     selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
     trackingSelection_ = false;
     selectionIsHyperlink_ = false;
+    elementsOwner_ = true;
 }
 
 bool Definition::mouseDown(Graphics& graphics, const RenderingPreferences& prefs, const Point& point)
@@ -1250,6 +1253,24 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
 }
 #endif
 
+status_t Definition::setElements(const Elements_t& elems, bool owner)
+{
+    clear();
+    volatile status_t err = errNone;
+    ErrTry {
+        elements_ = elems;
+        selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
+            inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+        selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
+        trackingSelection_ = false;
+        selectionIsHyperlink_ = false;
+        elementsOwner_ = owner;
+    }
+    ErrCatch(ex) {
+        err = ex;
+    } ErrEndCatch
+    return err;
+}
 
 #if defined(_PALM_OS)
 #pragma segment Segment1
@@ -1270,3 +1291,4 @@ void HyperlinkHandlerBase::handleHyperlink(Definition& definition, DefinitionEle
 void Definition::HyperlinkHandler::handleHyperlink(const String&, const Point*)
 {
 }
+
