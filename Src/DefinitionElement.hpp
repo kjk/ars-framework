@@ -5,6 +5,17 @@
 
 class DefinitionElement 
 {
+protected:
+
+    DefinitionElement* parent_;
+    
+    DefinitionElement():
+        parent_(0)
+    {}
+    
+    virtual Coord childIndentation() const
+    {return 0;}
+    
 public:
     
     virtual Boolean requiresNewLine(const RenderingPreferences& preferences) const
@@ -22,6 +33,12 @@ public:
     
     virtual void elementClicked(Definition& definition)
     {}
+    
+    void setParent(DefinitionElement& parent)
+    {parent_=&parent;}
+    
+    Coord indentation() const;
+    
 };
 
 #endif

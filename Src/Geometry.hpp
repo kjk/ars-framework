@@ -46,13 +46,25 @@ namespace ArsLexis
         Coord x() const
         {return topLeft().x;}
         
+        Coord& x()
+        {return topLeft().x;}
+        
         Coord y() const
+        {return topLeft().y;}
+        
+        Coord& y()
         {return topLeft().y;}
         
         Coord width() const
         {return extent().x;}
         
+        Coord& width()
+        {return extent().x;}
+
         Coord height() const
+        {return extent().y;}
+
+        Coord& height()
         {return extent().y;}
 
         struct HitTest
@@ -70,9 +82,9 @@ namespace ArsLexis
             
         };
         
-        Rectangle& operator=(const RectangleType& rect)
+        Rectangle& operator=(const RectangleType* rect)
         {
-            RctCopyRectangle(&rect, &data);
+            RctCopyRectangle(rect, &data);
             return *this;
         }
         
@@ -82,7 +94,39 @@ namespace ArsLexis
             RctGetIntersection(&data, &rect.data, &tmp.data);
             return (tmp.width() && tmp.height());
         }
+        
+        Boolean operator && (const Rectangle& rect) const
+        {return intersectsWith(rect);}
+        
+        Boolean operator && (const PointType& point) const
+        {return hitTest(point);}
+        
+        void explode(Coord deltaLeft, Coord deltaTop, Coord deltaWidth, Coord deltaHeight)
+        {
+            x()+=deltaLeft;
+            y()+=deltaTop;
+            width()+=deltaWidth;
+            height()+=deltaHeight;
+        }
                 
+    };
+    
+    struct Point
+    {
+        PointType data;
+        
+        Point()
+        {data.x=data.y=0;}
+        
+        Point(Coord x, Coord y)
+        {data.x=x; data.y=y;}
+        
+        operator const PointType* () const
+        {return &data;}
+        
+        operator PointType* ()
+        {return &data;}
+        
     };
     
 }

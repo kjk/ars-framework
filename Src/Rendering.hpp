@@ -2,21 +2,7 @@
 
 #define elementCompletedProgress ((UInt16)-1)
 
-class RenderingPreferences
-{
-public:
-    
-    RenderingPreferences()
-    {}
-
-    /**
-     * @return @c true if layout changed and we need to recalculate it.
-     * @todo implement synchronize()
-     */
-    Boolean synchronize(const RenderingPreferences& preferences)
-    {return false;}
-    
-};
+class RenderingPreferences;
 
 /**
  * Used to exchange data during layout calculation stage.

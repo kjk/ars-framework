@@ -173,7 +173,8 @@ void Definition::scroll(Int16 delta)
         }
         else
         {
-            pointDelta.y=0;            for (UInt16 index=newFirstLine; index<firstLine_; ++index)
+            pointDelta.y=0;
+            for (UInt16 index=newFirstLine; index<firstLine_; ++index)
                 pointDelta.y+=lines_[index].height;
             WinCopyRectangle(NULL, NULL, unionRect, bounds_.x(), bounds_.y()+pointDelta.y, winPaint);
             renderLineRange(lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);

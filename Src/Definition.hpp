@@ -13,6 +13,7 @@
 #include <vector>
 #include "Geometry.hpp"
 #include "Rendering.hpp"
+#include "RenderingPreferences.hpp"
 
 class DefinitionElement;
 
