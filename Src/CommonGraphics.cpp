@@ -1,4 +1,5 @@
 #include <Graphics.hpp>
+#include <Text.hpp>
 
 namespace ArsLexis
 {
@@ -70,5 +71,69 @@ namespace ArsLexis
             return;    
         }
     }
+
+    static const int drawTextInBoundsUseLinesValue = -1;
+
+    void Graphics::drawTextInBounds(const String& text, const Rectangle& itemBounds, int totalLines, bool allowCenter)
+    {
+        drawTextInBoundsInternal(text, itemBounds,totalLines,allowCenter,drawTextInBoundsUseLinesValue);
+    }
    
+    void Graphics::drawTextInBoundsInternal(const String& text, const Rectangle& itemBounds, int totalLines, bool allowCenter, int lines)
+    {
+        if (drawTextInBoundsUseLinesValue == lines)
+            lines = totalLines;
+        assert (0 < lines);
+        if (1 == lines)
+        {
+            uint_t width=itemBounds.width();
+            uint_t length=text.length();
+            charsInWidth(text.c_str(), length, width);
+            drawText(text.c_str(), length, itemBounds.topLeft);
+        }
+        else
+        {
+            //draw what we can
+            uint_t length = -1;
+            uint_t tempLength = 0;
+            bool widthFull = false;
+            while (!widthFull && length!=tempLength)
+            {
+                length = tempLength;
+                while (tempLength < text.length() && isSpace(text[tempLength]))
+                    tempLength++;
+                while (tempLength < text.length() && !isSpace(text[tempLength]))
+                    tempLength++;
+                
+                uint_t width = itemBounds.width();
+                uint_t len = tempLength;
+                charsInWidth(text.c_str(), len, width);
+                if (len < tempLength || width > itemBounds.width())
+                    widthFull = true;
+            }
+            
+            Rectangle newBounds = itemBounds;
+            if (length == text.length() && totalLines == lines)
+            {
+                //all text in first line - center ?
+                if (allowCenter)
+                    newBounds.topLeft.y += itemBounds.height()/2 - FntLineHeight()/2 -1;
+                drawText(text.c_str(), length, newBounds.topLeft);
+                return;
+            }
+            else
+                drawText(text.c_str(), length, itemBounds.topLeft);
+            
+            //draw rest
+            if (length < text.length())
+            {
+                String restOfText(text, length);
+                strip(restOfText);
+                Coord_t         heightChange = itemBounds.height()/lines;
+                newBounds.topLeft.y += heightChange;
+                newBounds.extent.y -= heightChange;
+                drawTextInBoundsInternal(restOfText, newBounds, totalLines, false, lines-1);
+            }    
+        }
+    }
 }

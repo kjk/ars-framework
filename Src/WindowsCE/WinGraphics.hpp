@@ -161,6 +161,12 @@ namespace ArsLexis
 
         void stripToWidthWithEllipsis(ArsLexis::String& textInOut, uint_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
 
+    private:
+        void drawTextInBoundsInternal(const ArsLexis::String& text, const Rectangle& itemBounds, int totalLines, bool allowCenter, int lines);
+
+    public:
+        void invertRectangle(const Rectangle& rect);
+
         Handle_t handle() 
         {return handle_;}
 
