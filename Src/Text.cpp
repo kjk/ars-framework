@@ -189,7 +189,7 @@ static uint_t charToNumber(const char_t chr)
         return (uint_t) (chr - _T('0'));
 
     if ( (chr >= _T('A')) && (chr <= _T('Z')) )
-        return (uint_t) (chr - _T('A'));
+        return (uint_t) 10 + (chr - _T('A'));
 
     if ( (chr >= _T('a')) && (chr <= _T('z')) )
         return (uint_t) 10 + (chr - _T('a'));
