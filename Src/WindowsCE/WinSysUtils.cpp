@@ -64,7 +64,7 @@ void GetEditWinText(HWND hwnd, ArsLexis::String &txtOut)
         txtOut.clear();
 }
 
-void SetEditWinText(HWND hwnd, ArsLexis::String& txt)
+void SetEditWinText(HWND hwnd, const ArsLexis::String& txt)
 {
     SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)txt.c_str());
 }
