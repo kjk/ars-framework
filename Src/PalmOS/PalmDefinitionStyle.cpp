@@ -1,7 +1,7 @@
 #include <DefinitionStyle.hpp>
 #include <Graphics.hpp>
-#include <Debug.hpp>
 #include <Text.hpp>
+#include <Logging.hpp>
 
 struct StaticStyleEntry
 {
@@ -130,27 +130,17 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
     return &res->style; 
 }
 
-
-static void parseAttribute(const char* attr, ulong_t attrLen, const char* val, ulong_t valLen, DefinitionStyle& style)
+static bool parseAttribute(const char* attr, ulong_t attrLen, const char* val, ulong_t valLen, DefinitionStyle& style)
 {
-    //TODO: implement this
+//    if (
 
-
-    RGBColorType rgb;
-    rgb.r = 128;
-    rgb.b = 255;
-    rgb.g = 0;
-    rgb.index = 0;
-    //TODO: this is only test...
-    style.foregroundColor = rgb;
-
-
+    return false;
 }
 
 // Andrzej: that comment is wrong: // always return style!
 // you can't return style if new_nt failed.
 // you can't return style if you can't parse it (structural error, not that some attribute name is unknown)
-DefinitionStyle* parseStyle(const char* style, ulong_t length)
+DefinitionStyle* StyleParse(const char* style, ulong_t length)
 {
     DefinitionStyle* s = new_nt DefinitionStyle();
     if (NULL == s)
@@ -174,7 +164,13 @@ DefinitionStyle* parseStyle(const char* style, ulong_t length)
             ulong_t valueLen = nextParam - nameEnd-1;
             strip(value, valueLen);
             strip(name, nameLen);
-            parseAttribute(name, nameLen, value, valueLen, *s);
+            if (!parseAttribute(name, nameLen, value, valueLen, *s))
+            {
+                Log(eLogInfo, "StyleParse(): failed to parse attribute: ", false);
+                Log(eLogInfo, name, nameLen, false);
+                Log(eLogInfo, "; value: ", false);
+                Log(eLogInfo, value, valueLen, true);
+            }
         }
         curLen -= nextParam+1;
         start += nextParam+1;

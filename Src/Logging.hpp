@@ -25,6 +25,7 @@ void LogAddDebuggerLog(LogLevel threshold);
 void LogAddFileLog(const char_t *fileName, LogLevel threshold);
 
 void Log(LogLevel level, const char_t *txt, bool fFinishLine);
+void Log(LogLevel level, const char_t *txt, ulong_t len, bool fFinishLine);
 void LogUlong(LogLevel level, unsigned long num, bool fFinishLine);
 void LogStrUlong(LogLevel level, const char_t *txt, unsigned long num);
 

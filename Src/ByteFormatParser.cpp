@@ -224,14 +224,14 @@ bool ByteFormatParser::parseParam()
                     // <nameLength><name><value>
                     ulong_t nameLength = readUnaligned32(&inText_[start_]);
                     styleNames_[styleCount_] = CharCopyN(&inText_[start_+sizeLength], nameLength);
-                    DefinitionStyle* style = parseStyle(&inText_[start_+sizeLength+nameLength],currentParamLength_-(sizeLength+nameLength));
+                    DefinitionStyle* style = StyleParse(&inText_[start_+sizeLength+nameLength],currentParamLength_-(sizeLength+nameLength));
                     model_->styles_[styleCount_] = style;
                     styleCount_++;
                 }            
             }
             else
             {
-                currentElement_->setStyle(parseStyle(&inText_[start_],currentParamLength_),DefinitionElement::ownStyle);
+                currentElement_->setStyle(StyleParse(&inText_[start_],currentParamLength_), DefinitionElement::ownStyle);
             }    
             break;
 

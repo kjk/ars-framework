@@ -182,7 +182,7 @@ static bool FNeedsLogging(LoggingGlobals *lg, LogLevel level)
     return false;
 }
 
-static void AddToLog(DynStr *log, const char_t *txt, bool fFirst)
+static void AddToLog(DynStr *log, const char_t *txt, bool fFirst, ulong_t length = ulong_t(-1))
 {
     if (fFirst)
     {
@@ -193,7 +193,10 @@ static void AddToLog(DynStr *log, const char_t *txt, bool fFirst)
     }
 
     // don't care if fails to append
-    DynStrAppendCharP(log, txt);
+    if (ulong_t(-1) == length)
+        DynStrAppendCharP(log, txt);
+    else
+        DynStrAppendCharPBuf(log, txt, length);
 }
 
 static void LogRaw(LoggingGlobals *lg, LogLevel level, char_t *txt)
@@ -250,7 +253,7 @@ static void LogRaw(LoggingGlobals *lg, LogLevel level, char_t *txt)
     }
 }
 
-void Log(LogLevel level, const char_t *txt, bool fFinishLine)
+void Log(LogLevel level, const char_t *txt, ulong_t len, bool fFinishLine)
 {
     LoggingGlobals *lg = GetLoggingGlobals(true);
     if (NULL == lg)
@@ -265,7 +268,8 @@ void Log(LogLevel level, const char_t *txt, bool fFinishLine)
     bool fFirst = false;
     if (0 == DynStrLen(logStr))
         fFirst = true;
-    AddToLog(logStr, txt, fFirst);
+        
+    AddToLog(logStr, txt, fFirst, len);
 
     if (fFinishLine)
     {
@@ -273,6 +277,11 @@ void Log(LogLevel level, const char_t *txt, bool fFinishLine)
         LogRaw(lg, level, DynStrGetCStr(logStr));
         DynStrTruncate(logStr, 0);
     }
+}
+
+void Log(LogLevel level, const char_t *txt, bool fFinishLine)
+{
+    Log(level, txt, tstrlen(txt), fFinishLine);
 }
 
 void LogUlong(LogLevel level, unsigned long num, bool fFinishLine)
