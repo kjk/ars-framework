@@ -103,7 +103,9 @@ namespace ArsLexis
     
     int NetLibrary::socketShutdown(NativeSocket_t socket, int direction, long timeout, status_t& error)
     {
-        error = shutdown(socket, direction); 
+        // for whatever reason doing shutdown(direction=1) causes ipedia server
+        // to break (i.e. nothing is returned).
+        /*error = shutdown(socket, direction); */
         /* if(error)
         {
             error=WSAGetLastError();
