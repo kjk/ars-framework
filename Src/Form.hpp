@@ -22,6 +22,7 @@ namespace ArsLexis
         FormType* form_;
         bool deleteOnClose_:1;
         bool deleteAfterEvent_:1;
+        bool controlsAttached_:1;
         mutable String title_;
         
         FormGadget* trackingGadget_;
@@ -29,6 +30,8 @@ namespace ArsLexis
         static Boolean routeEventToForm(EventType* event);
         
     protected:
+    
+        virtual void attachControls();
     
         /**
          * Handles @c frmCloseEvent.
@@ -56,8 +59,7 @@ namespace ArsLexis
         virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
         {FrmDrawForm(form_);}
         
-        virtual bool handleWindowEnter(const struct _WinEnterEventType&)
-        {return false;}
+        virtual bool handleWindowEnter(const struct _WinEnterEventType&);
         
         virtual bool handleWindowExit(const struct _WinExitEventType& data);
         

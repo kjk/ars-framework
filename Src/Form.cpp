@@ -33,18 +33,22 @@ namespace ArsLexis
         Boolean result=false;
         if (form)
         {   
-            if (0!=form->trackingGadget_)
+            if (NULL != form->trackingGadget_)
             {
-                if (penMoveEvent==event->eType)
-                    result=form->trackingGadget_->handleEvent(*event);
-                else if (penUpEvent==event->eType)
+                if (penMoveEvent == event->eType)
+                    result = form->trackingGadget_->handleEvent(*event);
+                else if (penUpEvent == event->eType)
                 {
-                    result=form->trackingGadget_->handleEvent(*event);
+                    result = form->trackingGadget_->handleEvent(*event);
                     form->trackingGadget_=0;
                 }
             }
             if (!result)
-                result=form->handleEvent(*event);
+            {
+                if (!form->controlsAttached_)
+                    form->attachControls();
+                result = form->handleEvent(*event);
+            }
             if (form->deleteAfterEvent_)
             {
 //                result=true; // If we don't return true after Frm
@@ -60,8 +64,15 @@ namespace ArsLexis
         form_(0), 
         deleteOnClose_(true),
         deleteAfterEvent_(false),
+        controlsAttached_(false),
         trackingGadget_(0)
     {
+    }
+    
+    void Form::attachControls()
+    {
+        assert(!controlsAttached_);
+        controlsAttached_ = true;
     }
     
     Err Form::initialize()
@@ -137,9 +148,16 @@ namespace ArsLexis
     
     bool Form::handleOpen()
     {
-        deleteOnClose_=false;
+        assert(controlsAttached_);
+        deleteOnClose_ = false;
         update();
         return true;
+    }
+    
+    bool Form::handleWindowEnter(const struct _WinEnterEventType&)
+    {
+        assert(controlsAttached_);
+        return false;
     }
     
     bool Form::handleUpdate(UInt16 updateCode)

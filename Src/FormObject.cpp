@@ -71,6 +71,9 @@ namespace ArsLexis
     
     void FormObject::focus()
     {
+        assert(valid());
+        if (!valid())
+            return;
         FormObjectKind kind = type();
         if (frmFieldObj == kind || frmTableObj == kind || isTreo600())
             FrmSetFocus(*form_, index_);
