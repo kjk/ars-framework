@@ -341,7 +341,7 @@ static DynStr* DynStrAppendLenStrBE(DynStr* out, const char_t* str)
     if (NULL == DynStrAppendLongBE(out, len))
         return NULL;
         
-    if (NULL == DynStrAppendCharPBuf(out, str, len))
+    if (NULL == DynStrAppendCharPBuf(out, str, len + 1))
         return NULL;
     
     return out;
