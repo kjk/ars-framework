@@ -13,9 +13,9 @@ namespace KXml2{
     {
     public:
     
-        virtual int read() = 0;
+        virtual error_t read(int& ret) = 0;
         
-        virtual int read(String *dst, int offset, int range)=0;
+        virtual error_t read(int& ret, String& dst, int offset, int range)=0;
         
         virtual ~XmlReader() {}
         

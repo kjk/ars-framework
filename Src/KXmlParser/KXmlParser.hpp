@@ -1,6 +1,7 @@
 #ifndef __KXML2_KXML_PARSER_HPP__
 #define __KXML2_KXML_PARSER_HPP__
 
+#include <vector>
 #include "XmlPull.hpp"
 #include "..\Hashtable.hpp"
 
@@ -29,10 +30,10 @@ namespace KXml2{
         bool            relaxed_;
         ArsLexis::Hashtable *entityMap_;
         int             depth_;
-        String          elementStack_[16];
-        String          nspStack_[8];
-        int             nspCounts_[4];
-
+        std::vector<String>  elementStack_;
+        std::vector<String>  nspStack_;
+        std::vector<int>     nspCounts_;
+          
         // source
     
         String encoding_;
@@ -60,7 +61,7 @@ namespace KXml2{
 
         bool degenerated_;
         int attributeCount_;
-        String attributes_[16];
+        std::vector<String> attributes_;
 
         /** 
         * A separate peek buffer seems simpler than managing
@@ -72,27 +73,36 @@ namespace KXml2{
         bool token_;
 
     private:
+        void    ensureCapacity(std::vector<String>& vect, int size);
+        void    ensureCapacityInt(std::vector<int>& vect, int size);
         String  resolveEntity(String entity);
-        int     peek(int pos);
-        int     peekType();
-        void    nextImpl();
-        void    pushEntity();
+        error_t peek(int& ret, int pos);
+        error_t peekType(int& ret);
+        error_t nextImpl();
+        error_t pushEntity();
+        error_t pushText(int delimiter, bool resolveEntities);
         String  get(int pos);
         void    push(int c);
-        int     read();
-        String  readName();
-        void    skip();
-        void    parseStartTag(bool xmldecl);
-
+        error_t read(const char c);
+        error_t read(int& ret);
+        error_t readName(String& ret);
+        error_t skip();
+        error_t parseStartTag(bool xmldecl);
+        error_t adjustNsp(bool& ret);
     public:
         KXmlParser();
         void    setInput(XmlReader *reader);
         void    setFeature(String feature, bool flag);
         void    nextToken();
-        int     next();
+        error_t next(int& ret);
         String  getPositionDescription();
         int     getEventType();
         void    defineEntityReplacementText(String entity, String value);
+
+    private: //public in java!
+        error_t getAttributeName(String& ret, int index);
+        String  getNamespace(String prefix);
+        error_t getNamespaceCount(int& ret, int depth);
     };
 }
 

@@ -21,9 +21,9 @@ namespace KXml2{
 
         ~XmlReaderFile();
 
-        int read();
+        error_t read(int& ret);
 
-        int read(String *dst, int offset, int range);
+        error_t read(int& ret, String& dst, int offset, int range);
         
     };
     

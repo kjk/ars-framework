@@ -24,13 +24,13 @@ XmlReaderFile::XmlReaderFile(const String& fileName)
 XmlReaderFile::~XmlReaderFile()
 {}
 
-int XmlReaderFile::read()
+error_t XmlReaderFile::read(int& ret)
 {
-    return xmlReaderMemory_->read(); 
+    return xmlReaderMemory_->read(ret); 
 }
 
-int XmlReaderFile::read(String *dst, int offset, int range)
+error_t XmlReaderFile::read(int& ret, String& dst, int offset, int range)
 {
-    return xmlReaderMemory_->read(dst, offset, range);
+    return xmlReaderMemory_->read(ret, dst, offset, range);
 }
 

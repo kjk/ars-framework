@@ -10,13 +10,15 @@ XmlReaderMemory::XmlReaderMemory(const char_t* buf, long bufSize)
 }
 
 
-int XmlReaderMemory::read()
+error_t XmlReaderMemory::read(int& ret)
 {
-    return std::char_traits<char_t>::eof();
+    ret = -1;
+    return eNoError;
 }
 
-int XmlReaderMemory::read(String *dst, int offset, int range)
+error_t XmlReaderMemory::read(int& ret, String& dst, int offset, int range)
 {
-     return 0;
+     ret = -1;
+     return eNoError;
 }
 

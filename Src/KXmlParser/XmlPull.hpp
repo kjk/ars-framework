@@ -22,7 +22,7 @@ namespace KXml2{
             virtual void    setInput(XmlReader *reader) = 0;
             virtual void    setFeature(String feature, bool flag) = 0;
             virtual void    nextToken() = 0;
-            virtual int     next() = 0;
+            virtual error_t next(int& ret) = 0;
             virtual String  getPositionDescription() = 0;
             virtual int     getEventType() = 0;
             virtual void    defineEntityReplacementText(String entity, String value) = 0;

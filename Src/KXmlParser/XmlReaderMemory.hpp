@@ -20,9 +20,9 @@ namespace KXml2 {
     
         XmlReaderMemory(const char_t* buf, long bufSize);
         
-        int read();
+        error_t read(int &ret);
         
-        int read(String *dst, int offset, int range);
+        error_t read(int &ret, String& dst, int offset, int range);
         
     };
     

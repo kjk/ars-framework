@@ -5,36 +5,56 @@
 
 #include "KxmlParser.hpp"
 
+using namespace std;
 using namespace KXml2;
 
+// private static const...
 #define UNEXPECTED_EOF _T("Unexpected EOF")
 #define ILLEGAL_TYPE _T("Wrong event type")
 
+//from XmlPullParser
+#define NO_NAMESPACE ""
 
 /* KXmlParser() */
 KXmlParser::KXmlParser()
 {
     fRelaxed_ = false;    
-    //srcBufLenght_ = 128;
-    //srcBuf_ = new (char_t[srcBufLenght_]);
-    //txtBufSize_ = 128;
-    //txtBuf_ = new (char_t[txtBufSize_]);
     
     srcBuf_ = String(128,' ');
-    txtBuf_ = "";
+    txtBuf_ = String(128,' ');
+
+    ensureCapacity(attributes_, 16);
+    ensureCapacity(elementStack_, 16);
+    ensureCapacity(nspStack_, 8);
+    ensureCapacityInt(nspCounts_, 4);
 }
 
 /* PRIVATE */
-int KXmlParser::peek(int pos) {
+void KXmlParser::ensureCapacity(vector<String>& vect, int size)
+{
+    vect.resize(size);
+}
+
+void KXmlParser::ensureCapacityInt(vector<int>& vect, int size)
+{
+    vect.resize(size);
+}
+
+error_t KXmlParser::peek(int& ret, int pos) {
+    error_t Error;
         while (pos >= peekCount_) {
             int nw;
 
             if (srcBuf_.length() <= 1)
-                nw = reader_->read();
+            {
+                if((Error=reader_->read(nw)) != eNoError)
+                    return Error;
+            }       
             else if (srcPos_ < srcCount_)
                 nw = srcBuf_[srcPos_++];
             else {
-                srcCount_ = reader_->read(&srcBuf_, 0, srcBuf_.length());
+                if((Error=reader_->read(srcCount_, srcBuf_, 0, srcBuf_.length())) != eNoError)
+                    return Error;
                 if (srcCount_ <= 0)
                     nw = -1;
                 else
@@ -58,35 +78,62 @@ int KXmlParser::peek(int pos) {
                 wasCR_ = false;
             }
         }
-        return peek_[pos];
+        ret = peek_[pos];
+        return eNoError;
 }
 
-int KXmlParser::peekType(){
-        switch (peek(0)) {
+error_t KXmlParser::peekType(int& ret){
+    error_t Error;
+    int retChild;
+    if((Error=peek(retChild,0))!=eNoError)
+        return Error;
+        switch (retChild) {
             case -1 :
-                return END_DOCUMENT;
+                ret = END_DOCUMENT;
+                return eNoError;
             case '&' :
-                return ENTITY_REF;
+                ret = ENTITY_REF;
+                return eNoError;
             case '<' :
-                switch (peek(1)) {
+                if((Error=peek(retChild,1))!=eNoError)
+                    return Error;
+                switch (retChild) {
                     case '/' :
-                        return END_TAG;
+                        ret = END_TAG;
+                        return eNoError;
                     case '?' :
                     case '!' :
-                        return LEGACY;
+                        ret = LEGACY;
+                        return eNoError;
                     default :
-                        return START_TAG;
+                        ret = START_TAG;
+                        return eNoError;
                 }
             default :
-                return TEXT;
+                ret = TEXT;
+                return eNoError;
         }
 }
 
-int KXmlParser::read(){
-        int result;
+error_t KXmlParser::read(const char c) {
+    error_t Error;    
+        int a;
+        if((Error=read(a))!=eNoError)
+            return Error;
+        if (a != c)
+            return eExpectedCharNotEqual;
+    return eNoError;
+}
+
+error_t KXmlParser::read(int& ret){
+    error_t Error;        
+    int result;
 
         if (peekCount_ == 0)
-            result = peek(0);
+        {
+            if((Error=peek(result,0))!=eNoError)
+                return Error;
+        }
         else {
             result = peek_[0];
             peek_[0] = peek_[1];
@@ -99,7 +146,9 @@ int KXmlParser::read(){
             line_++;
             column_ = 1;
         }
-        return result;
+        
+    ret = result;
+    return eNoError;
 }
 
 
@@ -112,35 +161,41 @@ void KXmlParser::push(int c) {
         isWhitespace_ &= c <= ' ';
 
         if (txtPos_ == txtBuf_.length()) {
-            //char_t *bigger = new char_t[(txtBufSize_ * 1.5)];
-            //memmove(bigger,txtBuf_,txtBufSize_);
-            //delete txtBuf_;
-            //txtBuf_ = bigger;
-            //txtBufSize_ *= 1.5;
+            //TODO: stringLen = 4/3 * stringLen + 4;
             txtBuf_ += "                              ";
         }
         txtBuf_[txtPos_++] = (char) c;
 }
 
-void KXmlParser::skip() {
+error_t KXmlParser::skip() {
+    error_t Error;    
+    int c;
         while (true) {
-            int c = peek(0);
+            if((Error=peek(c,0))!=eNoError)
+                return Error;
             if (c > ' ' || c == -1)
                 break;
-            read();
+            if((Error=read(c))!=eNoError)
+                return Error;
         }
+    return eNoError;
 }
 
 
 
-void KXmlParser::pushEntity() {
+error_t KXmlParser::pushEntity() {
+    error_t Error;
+        int   c;
 
-        read(); // &
+        if((Error=read(c))!=eNoError) // &
+            return Error;
 
         int pos = txtPos_;
 
         while (true) {
-            int c = read();
+            if((Error=read(c))!=eNoError) 
+                return Error;
+
             if (c == ';')
                 break;
             if (c < 128 
@@ -149,10 +204,10 @@ void KXmlParser::pushEntity() {
                 && (c < 'A' || c > 'Z')
                 && c != '_' && c != '-' && c != '#') {
                     if(!relaxed_){
-                        exception("unterminated entity ref"); //; ends with:"+(char)c);            
+                        return eUnterminatedEntityRef;
                     }
                     if (c != -1) push(c);                
-                    return;
+                    return eNoError;
                 }
 
             push(c);
@@ -171,7 +226,7 @@ void KXmlParser::pushEntity() {
                     ? (int) strtol(&code[2],&endPtr, 16)
                     : atoi(&code[1]));
             push(c);
-            return;
+            return eNoError;
         }
 
         String result = (String) entityMap_->get(code);
@@ -182,29 +237,34 @@ void KXmlParser::pushEntity() {
             //kjk changes
             //if (!token)
             if (!token_ && !relaxed_)
-            {
-                exception((char_t *)&(((String)("unresolved: &" + code + ";"))[0]));
-            }
+                return eUnresolvedCode;
         }
         else {
             for (int i = 0; i < result.length(); i++)
                 push(result[i]);
         }
+    return eNoError;
 }
 
-String KXmlParser::readName() {
-
+error_t KXmlParser::readName(String& ret) {
+    error_t Error;
         int pos = txtPos_;
-        int c = peek(0);
+        int c;
+        if((Error=peek(c,0))!=eNoError)
+            return Error;
+
         if ((c < 'a' || c > 'z')
             && (c < 'A' || c > 'Z')
             && c != '_'
             && c != ':'
             && c < 0x0c0)
-            exception("name expected");
+            return eNameExpected;
         do {
-            push(read());
-            c = peek(0);
+            if((Error=read(c))!=eNoError)
+                return Error;
+            push(c);
+            if((Error=peek(c,0))!=eNoError)
+                return Error;
         }
         while ((c >= 'a' && c <= 'z')
             || (c >= 'A' && c <= 'Z')
@@ -217,147 +277,337 @@ String KXmlParser::readName() {
 
         String result = get(pos);
         txtPos_ = pos;
-        return result;
+        ret = result;
+        return eNoError;
 }
 
-void KXmlParser::parseStartTag(bool xmldecl) {
-/*
+error_t KXmlParser::pushText(int delimiter, bool resolveEntities) {
+    error_t Error;
+        int next;
+        if((Error=peek(next,0))!=eNoError)
+            return Error;
+
+        while (next != -1 && next != delimiter) { // covers eof, '<', '"'
+
+            if (delimiter == ' ')
+                if (next <= ' ' || next == '>')
+                    break;
+
+            if (next == '&') {
+                if (!resolveEntities)
+                    break;
+                
+                if((Error=pushEntity())!=eNoError)
+                    return Error;
+            }
+            else if (next == '\n' && type_==START_TAG) {
+                if((Error=read(next))!=eNoError)
+                    return Error;
+                push(' ');
+            }
+            else
+            {
+                if((Error=read(next))!=eNoError)
+                    return Error;
+                push(next);
+            }
+            
+            if((Error=peek(next,0))!=eNoError)
+                return Error;
+        }
+    return eNoError;
+}
+
+error_t KXmlParser::getNamespaceCount(int& ret, int depth) {
+    error_t Error;
+    if (depth > depth_)
+            return eIndexOutOfBoundsException;
+    ret = nspCounts_[depth];
+    return eNoError; 
+}
+
+
+String KXmlParser::getNamespace(String prefix) {
+
+        if ("xml" == prefix)
+            return "http://www.w3.org/XML/1998/namespace";
+        if ("xmlns" == prefix)
+            return "http://www.w3.org/2000/xmlns/";
+
+        int j;
+        getNamespaceCount(j, depth_);  //It's 100% safe: depth_ <= depth_
+        for (int i = (j << 1) - 2; i >= 0; i -= 2) {
+            if (prefix == "") {
+                if (nspStack_[i] == "")
+                    return nspStack_[i + 1];
+            }
+            else if (prefix == nspStack_[i])
+                return nspStack_[i + 1];
+        }
+        return "";
+}
+
+error_t KXmlParser::adjustNsp(bool& ret) {
+        bool any = false;
+
+        for (int i = 0; i < attributeCount_ << 2; i += 4) {
+
+            String attrName = attributes_[i + 2];
+            int cut = attrName.find(':');
+            String prefix;
+
+            if (cut != -1) {
+                prefix = attrName.substr(0, cut);
+                attrName = attrName.substr(cut + 1);
+            }
+            else if (attrName == "xmlns") {
+                prefix_ = attrName;
+                attrName = "";
+            }
+            else
+                continue;
+
+            if (prefix_ != "xmlns" ) {
+                any = true;
+            }
+            else {
+                int j = (nspCounts_[depth_]++) << 1;
+
+                ensureCapacity(nspStack_, j + 2);
+                nspStack_[j] = attrName;
+                nspStack_[j + 1] = attributes_[i + 3];
+
+                if (attrName != "" && attributes_[i + 3] == "")
+                    return eIllegalEmptyNamespace;
+
+                attributes_.erase(attributes_.begin()+i,attributes_.begin()+i+3);
+                --attributeCount_;
+                attributes_.resize((attributes_.end() - attributes_.begin()) + 4);
+                i -= 4;
+            }
+        }
+
+        if (any) {
+            for (int i = (attributeCount_ << 2) - 4; i >= 0; i -= 4) {
+
+                String attrName = attributes_[i + 2];
+                int cut = attrName.find(':');
+
+                if (cut == 0 && !relaxed_)
+                    return eIllegalAttributeName;
+                else if (cut != -1) {
+                    String attrPrefix = attrName.substr(0, cut);
+
+                    attrName = attrName.substr(cut + 1);
+
+                    String attrNs = getNamespace(attrPrefix);
+
+                    if (attrNs == "" && !relaxed_)
+                        return eUndefinedPrefix;
+
+                    attributes_[i] = attrNs;
+                    attributes_[i + 1] = attrPrefix;
+                    attributes_[i + 2] = attrName;
+
+                    if (!relaxed_) {
+                        for (int j = (attributeCount_ << 2) - 4; j > i; j -= 4)
+                            if (attrName == attributes_[j + 2]
+                                && attrNs == attributes_[j])
+                            {
+                                return eDuplicateAttribute;
+                            }
+                    }
+                }
+            }
+        }
+
+        int cut = name_.find(':');
+
+        if (cut == 0 && !relaxed_)
+            return eIllegalTagName;
+        else if (cut != -1) {
+            prefix_ = name_.substr(0, cut);
+            name_ = name_.substr(cut + 1);
+        }
+
+        nameSpace_ = getNamespace(prefix_);
+
+        if (nameSpace_ == "") {
+            if (prefix_ != "" && !relaxed_)
+                return eUndefinedPrefix;
+            nameSpace_ = NO_NAMESPACE;
+        }
+
+        ret = any;
+    return eNoError;
+}
+
+error_t KXmlParser::parseStartTag(bool xmldecl) {
+    error_t Error;
+        int c,tmp;
         if (!xmldecl)
-            read();
-        name_ = readName();
+            if((Error=read(c))!=eNoError)
+                return Error;
+
+        if((Error=readName(name_))!=eNoError)
+            return Error;
+
         attributeCount_ = 0;
 
         while (true) {
-            skip();
+            if((Error=skip())!=eNoError)
+                return Error;
 
-            int c = peek(0);
+            if((Error=peek(c,0))!=eNoError)
+                return Error;
 
             if (xmldecl) {
                 if (c == '?') {
-                    read();
-                    read('>');
-                    return;
+                    if((Error=read(c))!=eNoError)
+                        return Error;
+                    if((Error=read('>'))!=eNoError)
+                        return Error;
+
+                    return eNoError;
                 }
             }
             else {
                 if (c == '/') {
                     degenerated_ = true;
-                    read();
-                    skip();
-                    read('>');
+                    if((Error=read(tmp))!=eNoError)
+                        return Error;
+                    if((Error=skip())!=eNoError)
+                        return Error;
+                    if((Error=read('>'))!=eNoError)
+                        return Error;
                     break;
                 }
 
                 if (c == '>' && !xmldecl) {
-                    read();
+                    if((Error=read(tmp))!=eNoError)
+                        return Error;
                     break;
                 }
             }
 
             if (c == -1)
-                exception(UNEXPECTED_EOF);
+                return eUnexpectedEof;
 
-            String attrName = readName();
+            String attrName;
+            if((Error=readName(attrName))!=eNoError)
+                return Error;
 
             if (attrName.length() == 0)
-                exception("attr name expected");
+                return eAttrNameExpected;
 
             // kjk modifications
-            int tmpC = peek(0);
-            boolean fCanBeAttrWithNoValue=false;
+            int tmpC;
+            if((Error=peek(tmpC,0))!=eNoError)
+                return Error;
+            bool fCanBeAttrWithNoValue=false;
             if (tmpC==' ' || tmpC=='>')
                 fCanBeAttrWithNoValue=true;
-            skip();
-            tmpC = peek(0);
-            if (tmpC!='=' && relaxed && fCanBeAttrWithNoValue)
+            if((Error=skip())!=eNoError)
+                return Error;
+            if((Error=peek(tmpC,0))!=eNoError)
+                return Error;
+            if (tmpC!='=' && relaxed_ && fCanBeAttrWithNoValue)
             {
-                int i = (attributeCount++) << 2;
+                int i = (attributeCount_++) << 2;
     
-                attributes = ensureCapacity(attributes, i + 4);
-    
-                attributes[i++] = "";
-                attributes[i++] = null;
-                attributes[i++] = attrName;
-                attributes[i] = "";
+                ensureCapacity(attributes_, i + 4);
+
+                attributes_[i++] = "";
+                attributes_[i++] = ""; //NULL;
+                attributes_[i++] = attrName;
+                attributes_[i] = "";
             }
             else
             {
-                read('=');
-                skip();
-                int delimiter = read();
+                if((Error=read('='))!=eNoError)
+                    return Error;
+                if((Error=skip())!=eNoError)
+                    return Error;
+                int delimiter;
+                if((Error=read(delimiter))!=eNoError)
+                    return Error;
     
                 if (delimiter != '\'' && delimiter != '"') {
-                    if (!relaxed)
-                        exception(
-                            "<"
-                                + name
-                                + ">: invalid delimiter: "
-                                + (char) delimiter);
-    
+                    if (!relaxed_)
+                    {
+                        return eInvalidDelimiter;
+                    }
                     delimiter = ' ';
                 }
     
-                int i = (attributeCount++) << 2;
+                int i = (attributeCount_++) << 2;
+   
+                ensureCapacity(attributes_, i + 4);
+
+                attributes_[i++] = "";
+                attributes_[i++] = ""; //NULL;
+                attributes_[i++] = attrName;
     
-                attributes = ensureCapacity(attributes, i + 4);
-    
-                attributes[i++] = "";
-                attributes[i++] = null;
-                attributes[i++] = attrName;
-    
-                int p = txtPos;
-                pushText(delimiter, true);
-    
-                attributes[i] = get(p);
-                txtPos = p;
+                int p = txtPos_;
+                if((Error=pushText(delimiter, true))!=eNoError)
+                    return Error;
+
+                attributes_[i] = get(p);
+                txtPos_ = p;
     
                 if (delimiter != ' ')
-                    read(); // skip endquote
+                    if((Error=read(tmp))!=eNoError)// skip endquote
+                        return Error;
             }
         }
 
-        int sp = depth++ << 2;
+        int sp = depth_++ << 2;
 
-        elementStack = ensureCapacity(elementStack, sp + 4);
-        elementStack[sp + 3] = name;
+        ensureCapacity(elementStack_, sp + 4);
+        elementStack_[sp + 3] = name_;
 
-        if (depth >= nspCounts.length) {
-            int[] bigger = new int[depth + 4];
-            System.arraycopy(nspCounts, 0, bigger, 0, nspCounts.length);
-            nspCounts = bigger;
-        }
+        ensureCapacityInt(nspCounts_ , depth_ + 4);
+        nspCounts_[depth_] = nspCounts_[depth_ - 1];
 
-        nspCounts[depth] = nspCounts[depth - 1];
-
-        if (!relaxed)
+        if (!relaxed_)
         {
-            for (int i = attributeCount - 1; i > 0; i--) {
+            String attrTemp1, attrTemp2;
+            for (int i = attributeCount_ - 1; i > 0; i--) {
                 for (int j = 0; j < i; j++) {
-                    if (getAttributeName(i).equals(getAttributeName(j)))
-                        exception("Duplicate Attribute: " + getAttributeName(i));
+                    if((Error=getAttributeName(attrTemp1,i))!=eNoError)
+                        return Error;
+                    if((Error=getAttributeName(attrTemp2,j))!=eNoError)
+                        return Error;
+                    if (attrTemp1 == attrTemp2)
+                        return eDuplicateAttribute;
                 }
             }
         }
 
-        if (processNsp)
-            adjustNsp();
+        if (processNsp_)
+        {
+            bool tempB;
+            if((Error=adjustNsp(tempB))!=eNoError)// skip endquote
+                return Error;
+        }
         else
-            namespace = "";
+            nameSpace_ = "";
 
-        elementStack[sp] = namespace;
-        elementStack[sp + 1] = prefix;
-        elementStack[sp + 2] = name;
+        elementStack_[sp] = nameSpace_;
+        elementStack_[sp + 1] = prefix_;
+        elementStack_[sp + 2] = name_;
 
-*/
+    return eNoError;
 }
 
 /** 
 * common base for next and nextToken. Clears the state, except from 
 * txtPos and whitespace. Does not set the type variable */
-void KXmlParser::nextImpl(){
+error_t KXmlParser::nextImpl(){
+    error_t Error;
 
         if (reader_ == NULL)
-            exception("No Input specified");
+            return eNoInputSpecified;
 
         if (type_ == END_TAG)
             depth_--;
@@ -368,7 +618,7 @@ void KXmlParser::nextImpl(){
             if (degenerated_) {
                 degenerated_ = false;
                 type_ = END_TAG;
-                return;
+                return eNoError;
             }
 
             prefix_ = "";
@@ -376,24 +626,27 @@ void KXmlParser::nextImpl(){
             nameSpace_ = "";
             text_ = "";
 
-            type_ = peekType();
+            if((Error=peekType(type_))!=eNoError);
+                return Error;
 
             switch (type_) {
 
                 case ENTITY_REF :
-                    pushEntity();
-                    return;
+                    if((Error=pushEntity())!=eNoError)
+                        return Error;
+                    return eNoError;
 
                 case START_TAG :
-                    parseStartTag(false);
-                    return;
+                    if((Error=parseStartTag(false))!=eNoError)
+                        return Error;
+                    return eNoError;
 /*
                 case END_TAG :
                     parseEndTag();
-                    return;
+                    return eNoError;
 
                 case END_DOCUMENT :
-                    return;
+                    return eNoError;
 
                 case TEXT :
                     pushText('<', !token_);
@@ -404,15 +657,17 @@ void KXmlParser::nextImpl(){
                         //	else 
                         //    exception ("text '"+getText ()+"' not allowed outside root element");
                     }
-                    return;
+                    return eNoError;
 
                 default :
                     type_ = parseLegacy(token_);
                     if (type_ != XML_DECL)
-                        return;
+                        return eNoError;
                         */
             }
         }
+    //TODO: delete this when function complete
+    return eNoError;
 }
 
 
@@ -445,6 +700,7 @@ void KXmlParser::setInput(XmlReader *reader)
 
     if (entityMap_)
     {
+        entityMap_->Dispose();
         delete entityMap_;
         entityMap_ = NULL;
     }
@@ -467,8 +723,10 @@ void KXmlParser::nextToken()
 {
 }
 
-int  KXmlParser::next()
+error_t KXmlParser::next(int& ret)
 {
+    error_t Error;
+    int tempT;
         txtPos_ = 0;
         isWhitespace_ = true;
         token_ = false;
@@ -479,15 +737,18 @@ int  KXmlParser::next()
             if (type_ < minType)
                 minType = type_;
             //	    if (curr <= TEXT) type = curr;  //was commented in java
+            if((Error=peekType(tempT))!=eNoError)
+                return Error;
         }
         while (minType > ENTITY_REF // ignorable
-            || (minType >= TEXT && peekType() >= TEXT));
+            || (minType >= TEXT && tempT >= TEXT));
 
         type_ = minType;
         if (type_ > TEXT)
             type_ = TEXT;
 
-        return type_;
+        ret = type_;
+        return eNoError;
 }
 
 String KXmlParser::getPositionDescription()
@@ -528,4 +789,11 @@ void KXmlParser::defineEntityReplacementText(String entity, String value)
 
     entityMap_->put(entity, value);
 }
-
+                               
+error_t KXmlParser::getAttributeName(String& ret, int index) {
+        if (index >= attributeCount_)
+            //throw new IndexOutOfBoundsException();
+            return eIndexOutOfBoundsException;
+        ret = attributes_[(index << 2) + 2];
+        return eNoError;
+}
