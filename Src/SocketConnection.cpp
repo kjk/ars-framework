@@ -296,8 +296,8 @@ namespace ArsLexis
     status_t SocketConnection::resolve()
     {
         assert(stateUnresolved==state());
-        status_t error=ArsLexis::resolveFunc(address_, manager_.netLib_, addressString_, 0, transferTimeout());
-        if (!error)
+        status_t error = ArsLexis::resolve(address_, manager_.netLib_, addressString_, 0, transferTimeout());
+        if (errNone==error)
             setState(stateUnopened);
         return error;
     }

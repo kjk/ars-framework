@@ -33,27 +33,13 @@ namespace ArsLexis
         return errNone;
     }
 
-    status_t resolveFunc(SocketAddress& out, NetLibrary& netLib, const String& address, ushort_t port, ulong_t timeout)
-    {
-        Resolver resolver(netLib);
-        return resolver.resolve(out, address, port, timeout);
-    }
-
-    Resolver::Resolver(NetLibrary& netLib):
-        netLib_(netLib)
-    {
-    }
-
-    Resolver::~Resolver()
-    {}
-
-    status_t Resolver::blockingResolve(SocketAddress& out, const String& name, ushort_t port, ulong_t timeout)
+    static status_t blockingResolve(SocketAddress& out, NetLibrary& netLib, const String& name, ushort_t port, ulong_t timeout)
     {
         using namespace std;
         auto_ptr<HostInfoBuffer> buffer(new  HostInfoBuffer);
         memset(buffer.get(), sizeof(HostInfoBuffer), 0);
-        assert(!netLib_.closed());
-        status_t error=netLib_.getHostByName(name.c_str(), *buffer, timeout);
+        assert(!netLib.closed());
+        status_t error=netLib.getHostByName(name.c_str(), *buffer, timeout);
         if (error)
             return error;
 
@@ -64,7 +50,7 @@ namespace ArsLexis
         return errNone;
     }
    
-    status_t Resolver::resolve(SocketAddress& out, const String& address, ushort_t port, ulong_t timeout)
+    status_t resolve(SocketAddress& out, NetLibrary& netLib, const String& address, ushort_t port, ulong_t timeout)
     {
         String validAddress;                
         status_t error=validateAddress(address, validAddress, port);
@@ -73,14 +59,14 @@ namespace ArsLexis
         INetSocketAddress addr;
         if (!validAddress.empty() && isDigit(validAddress[0]))
         {
-            error=netLib_.addrAToIN(validAddress.c_str(), addr);
+            error=netLib.addrAToIN(validAddress.c_str(), addr);
             if (error)
                 return error;
             addr.setPort(port);
             out=addr;
             return errNone;
         }
-        return blockingResolve(out, validAddress, port, timeout);
+        return blockingResolve(out, netLib, validAddress, port, timeout);
     }
    
 }
