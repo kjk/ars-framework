@@ -136,7 +136,16 @@ void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
             if (chr==entityReferenceEnd)
             {
                 String entity(text, entityStart+1, index-entityStart-1);
-                chr=decoder_.decode(entity);
+                if (!entity.empty() && entity[0]=='#')
+                {
+                    Int32 numVal=StrAToI(entity.c_str()+1);
+                    if (numVal<0 || numVal>255)
+                        chr=chrNull;
+                    else
+                        chr=(unsigned char)numVal;
+                }
+                else
+                    chr=decoder_.decode(entity);
                 if (chr)
                 {
                     text.replace(entityStart, index-entityStart+1, &chr, 1);
@@ -145,7 +154,7 @@ void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
                 }
                 inEntity=false;
             }
-            else if (!std::isalnum(chr))
+            else if (!(chr=='#' || std::isalnum(chr)))
                 inEntity=false;
         }
         ++index;
