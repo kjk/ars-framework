@@ -21,3 +21,4 @@ void LookupHistory::replaceAllNext(const ArsLexis::String& term)
     while (termHistory_.size()>historyLength_)
         termHistory_.pop_front();
 }
+

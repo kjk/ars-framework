@@ -8,7 +8,7 @@ Err LookupManager::initialize()
     Err error=netLibrary_.initialize(ifError);
     if (errNone==error && errNone!=ifError)
         error=ifError;
-    iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
+    iPediaApplication& app=iPediaApplication::instance();
     lastDefinition_.setHyperlinkHandler(&app.hyperlinkHandler());        
     return error;
 }
@@ -122,7 +122,17 @@ void LookupManager::lookupTerm(const ArsLexis::String& term)
     historyChange_=historyReplaceForward;
     iPediaConnection* conn=new iPediaConnection(*this);
     conn->setTerm(term);
-    resolver_.resolveAndConnect(conn, "localhost:9000");
+    resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
 }
 
+void LookupManager::moveHistory(bool forward)
+{
+    if ((forward && history_.hasNext()) || (!forward && history_.hasPrevious()))
+    {
+        historyChange_=(forward?historyMoveForward:historyMoveBack);
+        iPediaConnection* conn=new iPediaConnection(*this);
+        conn->setTerm(forward?history_.nextTerm():history_.previousTerm());
+        resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
+    }
+}
 

@@ -47,7 +47,7 @@ iPediaConnection::~iPediaConnection()
 
 void iPediaConnection::prepareRequest()
 {
-    iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
+    iPediaApplication& app=iPediaApplication::instance();
     String request;
     appendField(request, protocolVersionField, protocolVersion);
     appendField(request, clientVersionField, appVersion);
@@ -125,8 +125,8 @@ Err iPediaConnection::handleField(const String& name, const String& value)
     }
     else if (0==name.find(cookieField))
     {
-        iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
-        if (value.length()!=iPediaApplication::Preferences::cookieLength)
+        iPediaApplication& app=iPediaApplication::instance();
+        if (value.length()>iPediaApplication::Preferences::cookieLength)
             error=errResponseMalformed;
         else
             app.preferences().cookie=value;
@@ -157,7 +157,7 @@ Err iPediaConnection::notifyFinished()
         LookupManager::LookupFinishedEventData data;
         if (!serverError_)
         {
-            iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
+            iPediaApplication& app=iPediaApplication::instance();
             if (definitionParser_!=0)
             {
                 definitionParser_->updateDefinition(lookupManager_.lastDefinition());

@@ -29,7 +29,7 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
 
 void iPediaHyperlinkHandler::handleTermHyperlink(const ArsLexis::String& term)
 {
-    iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
+    iPediaApplication& app=iPediaApplication::instance();
     LookupManager* lookupManager=app.getLookupManager();  
     if (lookupManager)
         lookupManager->lookupIfDifferent(term);

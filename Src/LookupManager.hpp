@@ -116,8 +116,11 @@ public:
 private:
     
     void handleServerError(ServerError serverError);
+    
     void handleConnectionError(Err error);
+    
     void handleDefinition();
+    
     void handleList();
     
     void setStatusText(const ArsLexis::String& text)

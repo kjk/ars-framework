@@ -9,8 +9,6 @@ class RenderingPreferences;
 
 class MainForm: public iPediaForm
 {
-    ArsLexis::String server_;
-    
     Definition* getDefinition();
     const LookupHistory* getLookupHistory() const;
     const RenderingPreferences& renderingPreferences() const
@@ -30,6 +28,9 @@ class MainForm: public iPediaForm
     void copySelectionToClipboard();
 
     void synchronizeWithHistory();
+    
+    void moveHistory(bool forward);
+    void switchServer(const char* server);
     
 protected:
 

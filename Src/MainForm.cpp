@@ -5,13 +5,9 @@
 
 using namespace ArsLexis;
 
-#define serverLocalhost             "localhost:9000"
-#define serverDictPcArslexis    "dict-pc.arslexis.com:9000"
-
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
-    displayMode_(showSplashScreen),
-    server_(serverLocalhost)
+    displayMode_(showSplashScreen)
 {
 }
 
@@ -189,18 +185,14 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
     }
 }
 
-/*
-void MainForm::lookupTerm(const ArsLexis::String& newTerm)
+void MainForm::moveHistory(bool forward)
 {
-    if (history().empty() || newTerm!=history().currentTerm()) ;
-//        startLookupConnection(newTerm);
-    else if (showDefinition!=displayMode())
-    {
-        setDisplayMode(showDefinition);
-        update();
-    }
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager(true);
+    if (lookupManager)
+        lookupManager->moveHistory(forward);
 }
-*/
+
 
 void MainForm::handleControlSelect(const EventType& event)
 {
@@ -221,11 +213,11 @@ void MainForm::handleControlSelect(const EventType& event)
             break;
             
         case backButton:
-//            startHistoryLookup(false);
+            moveHistory(false);
             break;
         
         case forwardButton:
-//            startHistoryLookup(true);
+            moveHistory(true);
             break;
         
         default:
@@ -354,18 +346,25 @@ bool MainForm::handleKeyPress(const EventType& event)
     return handled;
 }
 
+void MainForm::switchServer(const char* server)
+{
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    app.setServer(server);    
+}
+
+
 bool MainForm::handleMenuCommand(UInt16 itemId)
 {
     bool handled=false;
     switch (itemId)
     {
         case useDictPcMenuItem:
-            server_=serverDictPcArslexis;
+            switchServer(serverDictPcArslexis);
             handled=true;
             break;
             
         case useLocalhostMenuItem:
-            server_=serverLocalhost;
+            switchServer(serverLocalhost);
             handled=true;
             break;
             

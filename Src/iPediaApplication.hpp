@@ -10,6 +10,9 @@
 
 class LookupManager;
 
+#define serverLocalhost             "localhost:9000"
+#define serverDictPcArslexis    "dict-pc.arslexis.com:9000"
+
 class iPediaApplication: public ArsLexis::Application 
 {
     mutable ArsLexis::RootLogger log_;
@@ -18,6 +21,7 @@ class iPediaApplication: public ArsLexis::Application
     UInt16 ticksPerSecond_;
     iPediaHyperlinkHandler hyperlinkHandler_;
     LookupManager* lookupManager_;
+    ArsLexis::String server_;
     
     void detectViewer();
     
@@ -112,6 +116,15 @@ public:
     ArsLexis::Logger& log() const
     {return log_;}
     
+    void setServer(const ArsLexis::String& server)
+    {server_=server;}
+    
+    const ArsLexis::String& server() const
+    {return server_;}
+    
+    static iPediaApplication& instance()
+    {return static_cast<iPediaApplication&>(Application::instance());}
+
 private:
     
     Preferences preferences_;
