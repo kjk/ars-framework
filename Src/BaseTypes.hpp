@@ -14,11 +14,13 @@ typedef unsigned long ulong_t;
 
 #if defined(_WIN32_WCE) || defined(_WIN32)
 
-#include <windows.h>
-#include <tchar.h>
-#define ErrTryT __try
-#define ErrCatchT(theErr) __except (1) { DWORD theErr=GetExceptionCode();
-#define ErrEndCatchT
+# include <windows.h>
+# include <tchar.h>
+
+// I don't see a point in naming these macros different than PalmOS one (and why T? They don't use TCHARs in any way). 
+# define ErrTry __try
+# define ErrCatch(theErr) __except (EXCEPTION_EXECUTE_HANDLER) { DWORD theErr=GetExceptionCode();
+# define ErrEndCatch }
 
 namespace ArsLexis
 {
@@ -38,9 +40,9 @@ namespace ArsLexis
 # define tstrlen _tcslen
 # define tprintf _stprintf
 # define ticks   GetTickCount
-# define tatoi _wtoi
-# define tmalloc malloc
-# define tfree free
+// Using xtoi functions is dangerous as they don't have any way to inform on invalid format. Use ArsLexis::numericValue() instead.
+//# define tatoi _wtoi
+// Please explain me what malloc() has to do with TCHAR type that you prefixed it with 't'?
 #else
 
 namespace ArsLexis
@@ -49,9 +51,6 @@ namespace ArsLexis
     typedef char char_t;
 
 # define _T(a) a
-# define ErrTryT ErrTry
-# define ErrCatchT(theErr) ErrCatch(theErr) {
-# define ErrEndCatchT ErrEndCatch
 
 # if defined(_PALM_OS)    
 
@@ -65,15 +64,13 @@ namespace ArsLexis
 #  define tprintf StrPrintF
 #  define tstrlen StrLen
 #  define tstrcmp StrCompare
-#  define tatoi StrAToI
-#  define tmalloc MemPtrNew        
-#  define tfree MemPtrFree
+#  define malloc MemPtrNew        
+#  define free MemPtrFree
 # else
         
 #  define tprintf sprintf
 #  define tstrlen strlen
 #  define tstrcmp strcmp
-#  define tatoi atoi
 
     typedef long tick_t;
     

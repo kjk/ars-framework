@@ -19,7 +19,6 @@
 #include <new>          // I include <new> & <memory> here so that definitions from there are included before I redefine new
 #include <memory>
 #include <cassert>
-#include <string>
 #include <BaseTypes.hpp>
 
 namespace ArsLexis 
@@ -43,9 +42,9 @@ inline void* operator new(unsigned long size)
 {
     void* ptr=0;
     if (size) 
-        ptr=tmalloc(size);
+        ptr=malloc(size);
     else
-        ptr=tmalloc(1);
+        ptr=malloc(1);
     if (!ptr)
         ArsLexis::handleBadAlloc();
     return ptr;
@@ -62,7 +61,7 @@ inline void operator delete(void *ptr)
 {
     if (ptr) 
     {
-        tfree(ptr);
+        free(ptr);
 #ifndef NDEBUG
         ArsLexis::logAllocation(ptr, true, 0, 0);
 #endif            
@@ -120,9 +119,9 @@ inline void* operator new(unsigned int size)
 {
     void* ptr=0;
     if (size) 
-        ptr=tmalloc(size);
+        ptr=malloc(size);
     else
-        ptr=tmalloc(1);
+        ptr=malloc(1);
     if (!ptr)
         ArsLexis::handleBadAlloc();
     return ptr;
@@ -139,7 +138,7 @@ inline void operator delete(void *ptr)
 {
     if (ptr) 
     {
-        tfree(ptr);
+        free(ptr);
 #ifndef NDEBUG
         ArsLexis::logAllocation(ptr, true, 0, 0);
 #endif            

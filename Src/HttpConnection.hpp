@@ -178,16 +178,19 @@ namespace ArsLexis {
         
         status_t notifyProgress();
         
-        bool bodyContentsAvailable() const
-        {return bodyContentsAvailable_;}
-        
         virtual status_t processBodyContents(Reader& reader);
+        
+    public:
         
         ulong_t contentLength() const
         {return contentLength_;}
         
         ulong_t readContentLength() const
         {return readContentLength_;}
+
+        bool bodyContentsAvailable() const
+        {return bodyContentsAvailable_;}
+        
         
     };
 

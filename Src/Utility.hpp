@@ -10,9 +10,10 @@ namespace ArsLexis
     template<class T> 
     struct ObjectDeleter
     {
-        void operator() (T* object) const 
+        T* operator() (T* object) const 
         {
             delete object;
+            return 0;
         }
     };
     
