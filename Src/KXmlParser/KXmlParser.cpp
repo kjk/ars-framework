@@ -233,6 +233,15 @@ error_t KXmlParser::pushEntity() {
     if((error=read(c))!=eNoError) // &
         return error;
 
+    // find entity that is not correct. find: "& " and push &
+    if((error=peek(c,0))!=eNoError)
+        return error;
+    if(c == ' ')
+    {
+        push('&');
+        return eNoError;
+    }
+
     int pos = txtPos_;
 
     while (true) 
@@ -253,6 +262,20 @@ error_t KXmlParser::pushEntity() {
                     return eUnterminatedEntityRef;
                 if (c != -1) 
                     push(c);
+                /*
+                TODO: Think about sth like this:
+                text: "Starsky &Hatch blah blah"
+                we push "Starsky Hatch bla bla"
+                we dont push & if its not before space "& " -> push('&')
+                if after & is text "&blah blah" we dont put "&blah" -> "blah"
+                if we want to put "&blah" -> "&blah" we should do this:
+                
+                String code = get(pos); //get all what we have pushed so far
+                txtPos_ = pos;
+                push('&');              //push & before it
+                for(size_t i=0; i<code.length(); i++)
+                    push(code[i]);      //push it one more time
+                */
                 return eNoError;
         }
 
