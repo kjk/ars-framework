@@ -21,11 +21,15 @@ namespace ArsLexis
 
     Boolean Form::routeEventToForm(EventType* event)
     {
-        Form* form=0;
-        Application& app=Application::instance();
-        eventsEnum eventType=event->eType;
-        if ((frmLoadEvent<=eventType && frmTitleSelectEvent>=eventType) && frmSaveEvent!=eventType)
-            form=app.getOpenForm(event->data.frmLoad.formID);  // All of these events take formID as their first data member.
+        Form* form = NULL;
+        Application& app = Application::instance();
+        eventsEnum eventType = event->eType;
+        if ((frmLoadEvent <= eventType && frmTitleSelectEvent >= eventType) && frmSaveEvent != eventType)
+        {
+            form = app.getOpenForm(event->data.frmLoad.formID);  // All of these events take formID as their first data member.
+            if (NULL == form && frmUpdateEvent == eventType && 0 == event->data.frmUpdate.formID)
+                form = app.getLastForm();
+        }
         else
         {
             switch (eventType)

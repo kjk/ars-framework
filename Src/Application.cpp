@@ -192,6 +192,14 @@ namespace ArsLexis
         return result;
     }
     
+    Form* Application::getLastForm() const
+    {
+        Form* f = NULL;
+        if (!forms_.empty())
+            f = forms_.front();
+        return f;
+    }
+
     
     Form* Application::createForm(UInt16 formId)
     {

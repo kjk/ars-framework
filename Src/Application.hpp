@@ -252,6 +252,8 @@ namespace ArsLexis
 
         Form* getOpenForm(UInt16 id) const;
         Form* getOpenForm(WinHandle winHandle) const;
+        
+        Form* getLastForm() const;
 
         Form* getOpenForm(FormType* form) const
         {return getOpenForm(FrmGetWindowHandle(form));}
