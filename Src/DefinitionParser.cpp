@@ -151,7 +151,7 @@ static const char linkCloseChar=']';
 #define sectionString "=="
 #define subSectionString "==="
 #define subSubSectionString "===="
-#define listCharacters "*#"
+#define listCharacters "*#:"
 
 #define emphasizeText "''"
 #define strongText "'''"
@@ -416,8 +416,10 @@ void DefinitionParser::manageListNesting(const String& newNesting)
                         element=listElement;
                     }                    
                 }
-                else
+                else if (bulletChar==elementType)
                     element=new BulletElement();
+                else 
+                    element=new IndentedParagraphElement();
                 appendElement(element);
                 pushParent(element);
                 continueList=false;
@@ -449,10 +451,11 @@ bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
             else {
                 switch (text_[parsePosition_])
                 {
-                    case indentLineChar:
-                        lineType_=indentedLine;
-                        break;
+//                    case indentLineChar:
+//                        lineType_=indentedLine;
+//                        break;
                         
+                    case indentLineChar:
                     case bulletChar:
                     case numberedListChar:
                         lineType_=listElementLine;
@@ -526,9 +529,9 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
                     parseListElementLine();
                     break;
                     
-                case indentedLine:
-                    parseIndentedLine();
-                    break;
+//                case indentedLine:
+//                    parseIndentedLine();
+//                    break;
                     
                 case definitionListLine:
                     parseDefinitionListLine();
@@ -548,7 +551,8 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
         if (listElementLine==previousLineType_)
             manageListNesting(String());
         
-        assert(numListsStack_.empty());        assert(currentNumberedList_.empty());            
+        assert(numListsStack_.empty());
+        assert(currentNumberedList_.empty());            
     }
 }
 
@@ -589,6 +593,7 @@ void DefinitionParser::parseListElementLine()
     parseText(lineEnd_, styleDefault);
 }
 
+/*
 void DefinitionParser::parseIndentedLine()
 {
     assert(indentLineChar==text_[parsePosition_]);
@@ -607,6 +612,7 @@ void DefinitionParser::parseIndentedLine()
     if (!lineAllowsContinuation(indentedLine))
         popParent();
 }
+*/
 
 //! @todo Implement DefinitionParser::parseDefinitionListLine()
 void DefinitionParser::parseDefinitionListLine()

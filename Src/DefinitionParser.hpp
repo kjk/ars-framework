@@ -134,7 +134,7 @@ class DefinitionParser
         listElementLine,
         textLine,
         horizontalBreakLine,
-        indentedLine,
+//        indentedLine,
         definitionListLine
     };
     
@@ -145,13 +145,13 @@ class DefinitionParser
     
     static bool lineAllowsContinuation(LineType lineType)
     {
-        return textLine==lineType || indentedLine==lineType;
+        return textLine==lineType; // || indentedLine==lineType;
     }
 
 
     void parseHeaderLine();
     
-    void parseIndentedLine();
+//    void parseIndentedLine();
     
     void parseDefinitionListLine();
     

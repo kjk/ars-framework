@@ -3,7 +3,7 @@
 namespace ArsLexis 
 {
 
-    void HTMLCharacterEntityReferenceDecoder::insert(const char* key, unsigned char value)
+    inline void HTMLCharacterEntityReferenceDecoder::insert(const char* key, unsigned char value)
     {
         map_[key]=value;
     }

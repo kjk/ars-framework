@@ -26,6 +26,8 @@ class RenderingPreferences
         hyperlinkTypesCount_=3,
     };        
     
+    uint_t standardIndentation_;
+    
 public:
 
     enum BulletType 
@@ -77,7 +79,7 @@ public:
     }
     
     uint_t standardIndentation() const
-    {return 20;}
+    {return standardIndentation_;}
     
     ArsLexis::Graphics::Color_t backgroundColor() const
     {return 0;}

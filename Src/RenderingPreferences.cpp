@@ -1,8 +1,10 @@
 #include "RenderingPreferences.hpp"
 
 using ArsLexis::FontEffects;
+using ArsLexis::Graphics;
 
-RenderingPreferences::RenderingPreferences()
+RenderingPreferences::RenderingPreferences():
+    standardIndentation_(16)
 {
     styles_[styleHeader].font=largeFont;
     UInt32 screenDepths=0;
@@ -22,4 +24,12 @@ RenderingPreferences::RenderingPreferences()
     fx.setUnderline(FontEffects::underlineDotted);
     for (uint_t i=0; i<hyperlinkTypesCount_; ++i) 
         hyperlinkDecorations_[i].font.setEffects(fx);
-}
+    
+    Graphics::Font_t font(symbolFont);
+    char bullet[3];
+    bullet[0]=(bulletType()==bulletCircle)?symbolShiftPunc:symbolDiamondChr;
+    bullet[1]=symbolShiftNone;
+    bullet[2]=chrNull;
+    Graphics graphics;
+    Graphics::FontSetter setFont(graphics, font);
+    standardIndentation_=graphics.textWidth(bullet, 2);}
