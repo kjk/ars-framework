@@ -24,6 +24,8 @@ public:
     TriState            small;
     TriState            strike;
     UnderlineModeType   underline; // -1 if not defined
+    
+    void reset();
 };
 
 #ifdef DEBUG
