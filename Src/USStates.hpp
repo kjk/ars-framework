@@ -12,6 +12,8 @@ namespace ArsLexis {
     
     void getStateSymbol(int pos, ArsLexis::String& symbolOut);
     
+    int getIndexByFirstChar(ArsLexis::char_t inChar);
+    
 }
 
 #endif
