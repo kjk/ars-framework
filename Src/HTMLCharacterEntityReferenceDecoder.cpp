@@ -1,4 +1,4 @@
-#include "HTMLCharacterEntityReferenceDecoder.hpp"
+#include <HTMLCharacterEntityReferenceDecoder.hpp>
 
 namespace ArsLexis 
 {

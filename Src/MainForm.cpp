@@ -390,8 +390,8 @@ void MainForm::updateAfterLookup()
         }
         {
             Field field(*this, termInputField);        
-            field.replaceText(lookupManager->lastInputTerm().c_str());
-            field.selectWholeText();                    
+            field.replace(lookupManager->lastInputTerm());
+            field.select();                    
         }    
         update();
     }

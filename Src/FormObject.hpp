@@ -1,12 +1,12 @@
 #ifndef __ARSLEXIS_FORM_OBJECT_HPP__
 #define __ARSLEXIS_FORM_OBJECT_HPP__
 
-#include "Form.hpp"
+#include <Form.hpp>
 
 namespace ArsLexis
 {
 
-    class FormObject
+    class FormObject: private NonCopyable
     {
         Form* form_;
         UInt16 id_;
@@ -27,15 +27,7 @@ namespace ArsLexis
 
         void attachByIndex(UInt16 index);
 
-        explicit FormObject(Form& form, UInt16 id=frmInvalidObjectId):
-            form_(&form),
-            id_(frmInvalidObjectId),
-            index_(frmInvalidObjectId),
-            object_(0)
-        {
-            if (id!=frmInvalidObjectId)
-                attach(id);
-        }
+        explicit FormObject(Form& form, UInt16 id=frmInvalidObjectId);
 
         virtual ~FormObject();
 
@@ -108,7 +100,7 @@ namespace ArsLexis
             FormObjectWrapper(form, id)
         {}
 
-        void setPosition(Int16 value, Int16 min, Int16 max, Int16 pageSize)
+        void setPosition(int value, int min, int max, int pageSize)
         {SclSetScrollBar(object(), value, min, max, pageSize);}
 
     };
@@ -133,9 +125,31 @@ namespace ArsLexis
         void setText(MemHandle handle)
         {FldSetTextHandle(object(), handle);}
 
-        void selectWholeText();
+        enum {npos=(uint_t)-1};
 
-        void replaceText(const char* text);
+        void select(uint_t start=0, uint_t end=npos)
+        {FldSetSelection(object(), start, npos==end?textLength():end);}
+
+        uint_t textLength() const
+        {return FldGetTextLength(object());}
+        
+        void erase(uint_t start=0, uint_t end=npos)
+        {FldDelete(object(), start, npos==end?textLength():end);}
+        
+        bool insert(const char* text, uint_t length)
+        {return FldInsert(object(), text, length);}
+        
+        uint_t maxLength() const
+        {return FldGetMaxChars(object());}
+
+        void replace(const char* text, uint_t length);
+        
+        void replace(const char* text)
+        {replace(text, StrLen(text));}
+        
+        void replace(const String& text)
+        {replace(text.data(), text.length());}
+        
     };
 
     class Control: public FormObjectWrapper<ControlType>
@@ -168,9 +182,20 @@ namespace ArsLexis
             FormObjectWrapper(form, id)
         {}
         
-        void setChoices(const char** choices, Int16 choicesCount)
+        void setChoices(const char** choices, uint_t choicesCount)
         {LstSetListChoices(object(), const_cast<char**>(choices), choicesCount);}
         
+        uint_t visibleItems() const
+        {return LstGetVisibleItems(object());}
+        
+        void draw()
+        {LstDrawList(object());}
+        
+        void setSelection(uint_t item)
+        {LstSetSelection(object(), item);}
+        
+        bool scroll(WinDirectionType direction, uint_t items)
+        {return LstScrollList(object(), direction, items);}
     };
     
 }

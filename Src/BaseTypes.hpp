@@ -1,7 +1,7 @@
 #ifndef __ARSLEXIS_BASE_TYPES_HPP__
 #define __ARSLEXIS_BASE_TYPES_HPP__
 
-#if defined(__MWERKS__) // Changed from __PALM_OS_H__ because cstdint is not part of PalmOS SDK but MSL
+#if defined(__MWERKS__)
 #include <cstdint>
 #endif
 

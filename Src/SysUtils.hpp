@@ -1,8 +1,8 @@
 #ifndef __ARSLEXIS_SYSUTILS_HPP__
 #define __ARSLEXIS_SYSUTILS_HPP__
 
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
 
 namespace ArsLexis
 {
@@ -10,7 +10,6 @@ namespace ArsLexis
     bool isNotifyManager();
     
     void getScreenBounds(RectangleType& bounds);
-    
 
     /** 
      * Generates a random long in the range 0..range-1. SysRandom() returns value

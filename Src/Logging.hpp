@@ -1,8 +1,9 @@
 #ifndef __ARSLEXIS_LOGGING_HPP__
 #define __ARSLEXIS_LOGGING_HPP__
 
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
+#include <Utility.hpp>
 
 namespace ArsLexis
 {
@@ -21,7 +22,7 @@ namespace ArsLexis
 #pragma mark -
 #pragma mark HostFileLogSink
     
-    class HostFileLogSink: public LogSink
+    class HostFileLogSink: public LogSink, private NonCopyable
     {
         HostFILEType* file_;
         
@@ -38,7 +39,7 @@ namespace ArsLexis
 #pragma mark -
 #pragma mark MemoLogSink
     
-    class MemoLogSink: public LogSink
+    class MemoLogSink: public LogSink, private NonCopyable
     {
         DmOpenRef db_;
         
@@ -181,7 +182,7 @@ namespace ArsLexis
 #pragma mark -
 #pragma mark RootLogger
 
-    class RootLogger: public Logger
+    class RootLogger: public Logger, private NonCopyable
     {
         LogSink* sink_;
         

@@ -1,6 +1,6 @@
-#include "Form.hpp"
-#include "Application.hpp"
-#include "Graphics.hpp"
+#include <Form.hpp>
+#include <Application.hpp>
+#include <Graphics.hpp>
 
 namespace ArsLexis 
 {
@@ -49,7 +49,11 @@ namespace ArsLexis
         form_=FrmInitForm(id());
         if (form_)
         {
+#ifdef __MWERKS__        
             FrmSetEventHandler(form_, application_.formEventHandlerThunk_);
+#else
+            FrmSetEventHandler(form_, routeEventToForm);
+#endif // __MWERKS__                        
             application_.registerForm(*this);
         }
         else 
@@ -141,7 +145,6 @@ namespace ArsLexis
     void Form::setTitle(const String& title)
     {
         assert(form_!=0);
-//        FrmSetTitle(form_, "");
         title_=title;
         //! @bug On Sony Clie (OS 4.1) I experience bug described in Reference as corrected in post-OS 3.0... (Previous title is not erased)
         if (visible())

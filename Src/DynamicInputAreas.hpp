@@ -6,8 +6,8 @@
 #ifndef __ARSLEXIS_DYNAMIC_INPUT_AREAS_HPP__
 #define __ARSLEXIS_DYNAMIC_INPUT_AREAS_HPP__
 
-#include "Debug.hpp"
-#include "Library.hpp"
+#include <Debug.hpp>
+#include <Library.hpp>
 
 #include <PalmOS.h>
 
@@ -24,20 +24,19 @@ namespace ArsLexis
 
     class Form;
     
-    class DIA_Support
+    class DIA_Support: private NonCopyable
     {
         
         UInt16 hasPenInputMgr_:1;
         UInt16 hasSonySilkLib_:1;
         UInt16 sonyLibIsVsk_:1;
-        UInt16 notUsed_:13;
 
         Library sonySilkLib_;
                         
         DIA_Support(const DIA_Support&) throw();
         DIA_Support& operator=(const DIA_Support&) throw();
         
-        Boolean tryInitSonySilkLib() throw();
+        bool tryInitSonySilkLib() throw();
         void sonySilkLibDispose() throw();
         
     public:
@@ -45,14 +44,17 @@ namespace ArsLexis
         DIA_Support() throw();
         ~DIA_Support() throw();
 
-        Boolean hasPenInputManager() const  throw()
+        bool hasPenInputManager() const  throw()
         {return hasPenInputMgr_;}
         
-        Boolean hasSonySilkLib() const  throw()
+        bool hasSonySilkLib() const  throw()
         {return hasSonySilkLib_;}
         
-        Boolean available() const  throw()
+        bool available() const  throw()
         {return hasPenInputManager()||hasSonySilkLib();}
+        
+        operator bool() const
+        {return available();}
 
         UInt32 notifyType() const  throw()
         {return hasPenInputManager()?sysNotifyDisplayResizedEvent:sysNotifyDisplayChangeEvent;}        

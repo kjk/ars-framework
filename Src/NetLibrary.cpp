@@ -1,6 +1,6 @@
-#include "NetLibrary.hpp"
-#include "SocketAddress.hpp"
-#include "Application.hpp"
+#include <NetLibrary.hpp>
+#include <SocketAddress.hpp>
+#include <Application.hpp>
 
 #define netLibName "Net.lib"
 

@@ -1,16 +1,17 @@
 #ifndef __ARSLEXIS_FORM_HPP__
 #define __ARSLEXIS_FORM_HPP__
 
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
-#include "Geometry.hpp"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
+#include <Geometry.hpp>
+#include <Utility.hpp>
 
 namespace ArsLexis 
 {
 
     class Application;
         
-    class Form
+    class Form: private NonCopyable
     {
         Application& application_;
         UInt16 id_;
@@ -19,9 +20,6 @@ namespace ArsLexis
         mutable String title_;
         
         static Boolean routeEventToForm(EventType* event);
-        
-        Form(const Form&);
-        Form& operator=(const Form&);
         
     protected:
     
@@ -136,6 +134,7 @@ namespace ArsLexis
         {FrmSetFocus(form_, noFocus);}
         
         void setTitle(const String& title);
+        
         const String& title() const;
 
         friend class Application;

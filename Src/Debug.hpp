@@ -100,6 +100,6 @@ inline void operator delete[](void *ptr)
 #define new new (__FILE__, __LINE__)
 #endif
 
-#endif
+#endif // _PALM_OS
 
 #endif

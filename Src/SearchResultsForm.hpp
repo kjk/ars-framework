@@ -21,6 +21,8 @@ class SearchResultsForm: public iPediaForm
     void handleListSelect(const EventType& event);
     
     void refineSearch();
+
+    bool handleKeyPress(const EventType& event);
     
 protected:
     

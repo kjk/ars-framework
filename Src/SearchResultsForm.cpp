@@ -1,6 +1,7 @@
 #include "SearchResultsForm.hpp"
 #include "FormObject.hpp"
 #include "LookupManager.hpp"
+#include "MainForm.hpp"
 
 using ArsLexis::String;
 using ArsLexis::FormObject;
@@ -33,9 +34,15 @@ void SearchResultsForm::updateSearchResults()
         if (!lookupManager->lastSearchExpression().empty())
             setTitle(lookupManager->lastSearchExpression());
     }
-    List list(*this, searchResultsList);
-    list.setChoices(&listPositions_[0], listPositions_.size());
-    
+    {
+        List list(*this, searchResultsList);
+        list.setChoices(&listPositions_[0], listPositions_.size());
+    }
+    {
+        Field field(*this, refineSearchInputField);
+        field.erase();
+    }                
+    update();
 }
 
 SearchResultsForm::SearchResultsForm(iPediaApplication& app):
@@ -180,6 +187,46 @@ void SearchResultsForm::handleListSelect(const EventType& event)
     }        
 }
 
+bool SearchResultsForm::handleKeyPress(const EventType& event)
+{
+    bool handled=false;
+    List list(*this, searchResultsList);
+    switch (event.data.keyDown.chr)
+    {
+        case chrPageDown:
+            list.scroll(winDown, list.visibleItems());
+            handled=true;
+            break;
+            
+        case chrPageUp:
+            list.scroll(winUp, list.visibleItems());
+            handled=true;
+            break;
+        
+        case chrDownArrow:
+            list.scroll(winDown, 1);
+            handled=true;
+            break;
+
+        case chrUpArrow:
+            list.scroll(winUp, 1);
+            handled=true;
+            break;
+            
+        case vchrRockerCenter:
+        case chrLineFeed:
+        case chrCarriageReturn:
+            {
+                Control control(*this, refineSearchButton);
+                control.hit();
+            }                
+            handled=true;
+            break;
+    }
+    return handled;
+}
+
+
 bool SearchResultsForm::handleEvent(EventType& event)
 {
     bool handled=false;
@@ -201,6 +248,10 @@ bool SearchResultsForm::handleEvent(EventType& event)
                 const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
                 if (data.outcomeDefinition==data.outcome)
                 {
+                    MainForm* form=static_cast<MainForm*>(application().getOpenForm(mainForm));
+                    assert(form);
+                    if (form)
+                        form->setDisplayMode(form->showDefinition);
                     handled=true;
                     closePopup();
                 }
@@ -217,7 +268,10 @@ bool SearchResultsForm::handleEvent(EventType& event)
         case iPediaApplication::appLookupProgressEvent:
             update(redrawProgressIndicator);
             break;
-            
+    
+        case keyDownEvent:
+            handled=handleKeyPress(event);
+            break;        
     
         default:
             handled=iPediaForm::handleEvent(event);

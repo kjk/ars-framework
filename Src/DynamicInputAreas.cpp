@@ -1,11 +1,12 @@
-#include "DynamicInputAreas.hpp"
-#include "Form.hpp"
+#include <DynamicInputAreas.hpp>
+#include <Form.hpp>
+
 #include <SonyCLIE.h>
 
 namespace ArsLexis 
 {
 
-    Boolean DIA_Support::tryInitSonySilkLib()  throw()
+    bool DIA_Support::tryInitSonySilkLib()  throw()
     {
         Err error=sonySilkLib_.initialize(sonySysLibNameSilk, sonySysFileCSilkLib);
         if (!error) {

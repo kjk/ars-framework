@@ -1,14 +1,15 @@
 #ifndef __ARSLEXIS_GRAPHICS_HPP__
 #define __ARSLEXIS_GRAPHICS_HPP__
 
-#include "BaseTypes.hpp"
-#include "Geometry.hpp"
-#include "NativeGraphics.hpp"
+#include <BaseTypes.hpp>
+#include <Geometry.hpp>
+#include <NativeGraphics.hpp>
+#include <Utility.hpp>
 
 namespace ArsLexis
 {
 
-    class Graphics
+    class Graphics: private NonCopyable
     {
         NativeGraphicsHandle_t handle_;        
         NativeGraphicsSupport support_;
@@ -25,8 +26,6 @@ namespace ArsLexis
             =Handle_t(0)
 #endif
         );
-
-//        Graphics();
         
         ~Graphics();
 
@@ -68,7 +67,7 @@ namespace ArsLexis
         
         Color_t setColor(ColorChoice choice, Color_t color);
         
-        class ColorSetter
+        class ColorSetter: private NonCopyable
         {
             Graphics& graphics_;
             ColorChoice choice_;
@@ -96,10 +95,11 @@ namespace ArsLexis
         const Font_t& font() const;
 
         
-        class FontSetter
+        class FontSetter: private NonCopyable
         {
             Graphics& graphics_;
             Font_t originalFont_;
+
         public:
         
             FontSetter(Graphics& graphics, const Font_t& font):
@@ -119,7 +119,7 @@ namespace ArsLexis
 
         void popState(const State_t& state);
         
-        class StateSaver
+        class StateSaver: private NonCopyable
         {
             Graphics& graphics_;
             State_t state_;
@@ -154,7 +154,7 @@ namespace ArsLexis
 
 }
 
-#if defined(__PALMOS_H__)
+#if defined(_PALM_OS)
 #include "PalmGraphicsInline.hpp"
 #endif
 

@@ -1,6 +1,5 @@
-#include "Application.hpp"
-#include "Form.hpp"
-#include "Utility.hpp"
+#include <Application.hpp>
+#include <Form.hpp>
 #include <memory>
 
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
@@ -50,7 +49,9 @@ namespace ArsLexis
     
     Application::Application(UInt32 creatorId):
         eventTimeout_(evtWaitForever),
+#ifdef __MWERKS__        
         formEventHandlerThunk_(Form::routeEventToForm),
+#endif // __MWERKS__        
         cardNo_(0),
         databaseId_(0),
         creatorId_(creatorId),
@@ -96,19 +97,37 @@ namespace ArsLexis
         return error;
     }
     
-    struct FormIdComparator
-    {
-        UInt16 id;
-        FormIdComparator(UInt16 anId):
-            id(anId)
-        {}
-        
-        bool operator ()(const Form* form) const
+    namespace {
+    
+        struct FormIdComparator
         {
-            return id==form->id();
-        }
-        
-    };
+            UInt16 id;
+            FormIdComparator(UInt16 anId):
+                id(anId)
+            {}
+            
+            bool operator ()(const Form* form) const
+            {
+                return id==form->id();
+            }
+            
+        };
+
+        struct WinHandleComparator
+        {
+            WinHandle winHandle;
+            WinHandleComparator(WinHandle wh):
+                winHandle(wh)
+            {}
+            
+            bool operator()(const Form* form) const
+            {
+                return form->windowHandle()==winHandle;
+            }
+            
+        };
+
+    }
     
     Form* Application::getOpenForm(UInt16 id) const
     {
@@ -118,20 +137,6 @@ namespace ArsLexis
             result=*it;
         return result;
     }
-    
-    struct WinHandleComparator
-    {
-        WinHandle winHandle;
-        WinHandleComparator(WinHandle wh):
-            winHandle(wh)
-        {}
-        
-        bool operator()(const Form* form) const
-        {
-            return form->windowHandle()==winHandle;
-        }
-        
-    };
    
     Form* Application::getOpenForm(WinHandle winHandle) const
     {

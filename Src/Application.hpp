@@ -17,10 +17,13 @@
 #ifndef __ARSLEXIS_APPLICATION_HPP__
 #define __ARSLEXIS_APPLICATION_HPP__
 
-#include "Debug.hpp"
-
-#include <CWCallbackThunks.h>
+#include <Debug.hpp>
+#include <Utility.hpp>
 #include <list>
+
+#ifdef __MWERKS__
+#include <CWCallbackThunks.h>
+#endif // __MWERKS__
 
  
 namespace ArsLexis 
@@ -40,20 +43,9 @@ namespace ArsLexis
      *  * static const UInt16 notEnoughMemoryAlertId;
      * They are required for proper working of @c Appliation::main().
      */
-    class Application
+    class Application: private NonCopyable
     {
-        /**
-         * @internal
-         * Undefined. Prevents copying.
-         */
-        Application(const Application&);
 
-        /**
-         * @internal
-         * Undefined. Prevents copying.
-         */
-        Application& operator=(const Application&);
-        
         /**
          * @internal 
          * Type used to store @c Form objects through application's lifetime.
@@ -95,12 +87,14 @@ namespace ArsLexis
          * Actual @c EvtGetEvent() timeout used by @c runEventLoop().
          */
         Int32 eventTimeout_;
-        
+
+#ifdef __MWERKS__        
         /**
          * @internal
          * Wraps @c Form::routeEventToForm() for use in expanded mode.
          */
         _CW_EventHandlerThunk formEventHandlerThunk_;
+#endif
         
         /**
          * @internal 
@@ -338,7 +332,11 @@ namespace ArsLexis
             else
             {
                 if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
+#ifdef __MWERKS__                
                     error=_CW_SetupExpandedMode();
+#else
+                    error=memErrNoStore;
+#endif // __MWERKS__                                        
                 if (!error)
                 {
                     ErrTry {

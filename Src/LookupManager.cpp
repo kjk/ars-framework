@@ -1,8 +1,8 @@
 #include "LookupManager.hpp"
 #include "iPediaApplication.hpp"
 #include "iPediaConnection.hpp"
-#include "Graphics.hpp"
-#include "Utility.hpp"
+#include <Graphics.hpp>
+#include <Text.hpp>
 
 Err LookupManager::initialize()
 {

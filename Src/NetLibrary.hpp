@@ -1,7 +1,7 @@
 #ifndef __ARSLEXIS_NETLIBRARY_HPP__
 #define __ARSLEXIS_NETLIBRARY_HPP__
 
-#include "Library.hpp"
+#include <Library.hpp>
 
 namespace ArsLexis 
 {

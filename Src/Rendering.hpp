@@ -12,7 +12,7 @@ class GenericTextElement;
  */
 struct LayoutContext
 {
-    ArsLexis::Graphics graphics;
+    ArsLexis::Graphics& graphics;
     const RenderingPreferences& preferences;
     uint_t renderingProgress;
     const uint_t screenWidth;

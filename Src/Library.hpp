@@ -1,18 +1,16 @@
 #ifndef __ARSLEXIS_LIBRARY_HPP__
 #define __ARSLEXIS_LIBRARY_HPP__
 
-#include "Debug.hpp"
+#include <Debug.hpp>
+#include <Utility.hpp>
 
 namespace ArsLexis 
 {
 
-    class Library
+    class Library: private NonCopyable
     {
         UInt16 refNum_;
         bool loaded_;
-        
-        Library(const Library&);
-        Library& operator=(const Library&);
         
     public:
     

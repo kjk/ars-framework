@@ -1,11 +1,20 @@
-#include "FormObject.hpp"
+#include <FormObject.hpp>
 
 namespace ArsLexis
 {
+
+    FormObject::FormObject(Form& form, UInt16 id):
+        form_(&form),
+        id_(frmInvalidObjectId),
+        index_(frmInvalidObjectId),
+        object_(0)
+    {
+        if (id!=frmInvalidObjectId)
+            attach(id);
+    }
     
     FormObject::~FormObject()
-    {
-    }
+    {}
     
     void FormObject::attach(UInt16 id)
     {
@@ -39,24 +48,9 @@ namespace ArsLexis
         assert(0!=object_);
     }
     
-    void Field::selectWholeText()
+    void Field::replace(const char* text, uint_t length)
     {
-        UInt16 endPos=FldGetTextLength(object());
-        FldSetSelection(object(), 0, endPos);
-    }
-
-    void Field::replaceText(const char* text)
-    {
-        FieldType *  fld = object();
-        int          len = FldGetTextLength(fld);
-
-        FldDelete(fld, 0, len);
-
-        len = FldGetMaxChars(fld);
-
-        if ( len > StrLen(text) )
-            len = StrLen(text);
-
-        FldInsert(fld, text, len);
+        erase();
+        insert(text, std::min(maxLength(), length));
     }
 }

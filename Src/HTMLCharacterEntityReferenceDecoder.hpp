@@ -1,9 +1,8 @@
 #ifndef __ARSLEXIS_HTML_CHARACTER_ENTITY_REFERENCE_DECODER_HPP__
 #define __ARSLEXIS_HTML_CHARACTER_ENTITY_REFERENCE_DECODER_HPP__
 
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
-#include "Utility.hpp"
+#include <Debug.hpp>
+#include <Text.hpp>
 #include <map>
 
 namespace ArsLexis 
