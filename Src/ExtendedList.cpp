@@ -507,7 +507,6 @@ bool ExtendedList::handleEnter(const EventType& event)
     assert(!trackingScrollbar_);
     focus();
     Point penPos(event.screenX, event.screenY);
-//    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
     assert(bounds && penPos);

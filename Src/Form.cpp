@@ -181,7 +181,7 @@ namespace ArsLexis
 
     bool Form::handleClose() 
     {
-        deleteAfterEvent_=true;  
+        deleteAfterEvent_ = true;  
         return false;
     }
     

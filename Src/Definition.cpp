@@ -480,7 +480,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
 
 void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
-    if (bounds.width() != bounds_.width() || forceRecalculate)
+    if (bounds.width() != bounds_.width() || forceRecalculate || lines_.empty())
     {
         ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
         uint_t renderingProgress=0;

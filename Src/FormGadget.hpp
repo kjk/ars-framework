@@ -19,7 +19,7 @@ namespace ArsLexis {
 
     protected:        
 
-        void drawProxy();
+        virtual void drawProxy();
         
         virtual void drawFocusRing() {}
         
