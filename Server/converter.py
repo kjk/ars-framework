@@ -20,7 +20,7 @@
 #             some of the original definitions. With this flag we dump dups to stdout.
 #             Don't use if ipedia.definitions isn't empty
 
-import MySQLdb, sys, datetime, re, unicodedata
+import MySQLdb, sys, datetime, re, unicodedata, time
 
 # if True, we'll print a lot of debug text to stdout
 g_fVerbose       = False
@@ -65,8 +65,8 @@ def initDatabase():
     g_connTwo = MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
     enwikiRows = getEnwikiRowCount()
     ipediaRows = getIpediaRowCount()
-    print "rows in enwiki: %d" % enwikiRows
-    print "rows in ipedia: %d" % ipediaRows
+    sys.stderr.write("rows in enwiki: %d\n" % enwikiRows)
+    sys.stderr.write("rows in ipedia: %d\n" % ipediaRows)
 
 def deinitDatabase():
     global g_connOne, g_connTwo
@@ -273,9 +273,9 @@ def convertAll(articleLimit,fForceConvert):
         curOffset += rowsPerQuery
 
 def convertOneTerm(term):
-    global g_connTwo
-    query="""SELECT cur_title,cur_text,cur_timestamp FROM cur WHERE cur_namespace=0"""
-    cursor=g_connTwo.cursor()
+    global g_connOne
+    query="""SELECT cur_title,cur_text,cur_timestamp FROM cur WHERE cur_title='%s' AND cur_namespace=0""" % dbEscape(term)
+    cursor=g_connOne.cursor()
     cursor.execute(query)
     row=cursor.fetchone()
     cursor.close()
@@ -308,6 +308,23 @@ def getRemoveCmdArg(argName):
         pass
     return argVal
 
+g_startTime = None
+g_endTime = None
+
+def startTiming():
+    global g_startTime
+    g_startTime = time.clock()
+
+def endTiming():
+    global g_endTime
+    g_endTime = time.clock()
+
+def dumpTimingInfo():
+    global g_startTime, g_endTime
+    dur = g_endTime - g_startTime
+    str = "duration %f seconds\n" % dur
+    sys.stderr.write(str)
+
 if __name__=="__main__":
 
     initDatabase()
@@ -316,16 +333,19 @@ if __name__=="__main__":
     g_fVerbose = fDetectRemoveCmdFlag( "-verbose" )
     g_fShowDups = fDetectRemoveCmdFlag( "-showdups" )
 
-    print "g_fShowDups=%d" % g_fShowDups
+    #print "g_fShowDups=%d" % g_fShowDups
     articleLimit = getRemoveCmdArg("-limit")
     if articleLimit:
         articleLimit = int(articleLimit)
 
+    startTiming()
     termToConvert = getRemoveCmdArg("-one")
     if None!=termToConvert:
         g_fVerbose = True
         convertOneTerm(termToConvert)
     else:
         convertAll(articleLimit, fForceConvert)
+    endTiming()
     deinitDatabase()
+    dumpTimingInfo()
 
