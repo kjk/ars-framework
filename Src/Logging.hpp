@@ -8,6 +8,7 @@
 
 #ifdef _MSC_VER
 # pragma warning(disable: 4068)
+# pragma warning(disable: 4290)  // warning C++ Exception Specification ignored
 #endif
 
 namespace ArsLexis

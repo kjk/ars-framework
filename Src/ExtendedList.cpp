@@ -152,7 +152,9 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
         assert(clipRectangle.height()>0);
     }
     Graphics::ClipRectangleSetter setClip(graphics, clipRectangle);
-    bool selected=(selection_==item);
+    bool selected = false;
+    if (selection_==item)
+        selected = true;
     drawItem(graphics, itemBounds, item, selected);    
 }
 
