@@ -208,6 +208,13 @@ void MainForm::startHistoryLookup(bool forward)
 void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
 {
     ::startLookupConnection(application(), history(), newTerm, iPediaConnection::historyReplaceForward, server_);
+    Field fld(*this,termInputField);
+
+    if (newTerm != fld.text() )
+    {
+        fld.replaceText(newTerm.c_str());
+    }
+    fld.selectAllText();
 }
 
 void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)

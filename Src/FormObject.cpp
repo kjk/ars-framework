@@ -39,11 +39,25 @@ namespace ArsLexis
         assert(0!=object_);
     }
     
-	void Field::selectAllText()
-	{
-	    UInt16 endPos;
-	    endPos = FldGetTextLength(object());
-	    FldSetSelection(object(),(UInt16)0,endPos);
-	}
+    void Field::selectAllText()
+    {
+        UInt16 endPos;
+        endPos = FldGetTextLength(object());
+        FldSetSelection(object(),(UInt16)0,endPos);
+    }
 
-}    
+    void Field::replaceText(const char* text)
+    {
+        FieldType *  fld = object();
+        int          len = FldGetTextLength(fld);
+
+        FldDelete(fld, 0, len);
+
+        len = FldGetMaxChars(fld);
+
+        if ( len > StrLen(text) )
+            len = StrLen(text);
+
+        FldInsert(fld, text, len);
+    }
+}

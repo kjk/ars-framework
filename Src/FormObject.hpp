@@ -133,7 +133,9 @@ namespace ArsLexis
         void setText(MemHandle handle)
         {FldSetTextHandle(object(), handle);}
 
-		void selectAllText();
+        void selectAllText();
+
+        void replaceText(const char* text);
     };
 
     class Control: public FormObjectWrapper<ControlType>

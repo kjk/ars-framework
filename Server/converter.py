@@ -55,10 +55,10 @@ scriptRe=re.compile("<script.*?</script>", re.I+re.S)
 badLinkRe=re.compile(r"\[\[((\w\w\w?(-\w\w)?)|(simple)|(image)|(media)):.*?\]\]", re.I+re.S)
 numEntityRe=re.compile(r'&#(\d+);')
 
-multipleLinesRe=re.compile("\n{2,100}")
-# replace multiple (1+) newlines with just one newline.
+multipleLinesRe=re.compile("\n{3,100}")
+# replace multiple (1+) empty lines with just one empty line.
 def stripMultipleNewLines(txt):
-    txt=replaceRegExp(txt,multipleLinesRe,"\n")
+    txt=replaceRegExp(txt,multipleLinesRe,"\n\n")
     return txt
 
 def convertEntities(text):
@@ -140,7 +140,7 @@ def main():
         row=srcCursor.fetchone()
         rowCount += 1
         if 0 == rowCount % 100:
-            print "processed %d rows" % rowCount
+            print "processed %d rows, last term=%s" % (rowCount,term)
 
     srcCursor.close()
     targetCursor.close()
