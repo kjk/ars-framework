@@ -53,12 +53,14 @@ OnError:
 
 
 
-UniversalDataHandler::UniversalDataHandler():lineNo(0), writerStreamName_(NULL), fIsWriterAvailable_(false), writer_(NULL) {}
+UniversalDataHandler::UniversalDataHandler():
+    lineNo(0), 
+    writerStreamName_(NULL)
+{}
 
 UniversalDataHandler::UniversalDataHandler(const ArsLexis::char_t* streamName):
     lineNo(0),
-    writerStreamName_(streamName),
-    fIsWriterAvailable_(true)
+    writerStreamName_(streamName)
 {
     openDataStoreWriter(writerStreamName_, writer_);
 }
@@ -74,7 +76,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
     ErrTry {
         if (lineNo == 0)
         {
-            if(errNone != numericValue(data, data + len, resultLong))
+            if (errNone != numericValue(data, data + len, resultLong))
                 return SocketConnection::errResponseMalformed;
             out.setHeaderSize(resultLong);
         }
@@ -88,7 +90,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
                 const char_t* dataOffsetEnd = dataOffset;
                 while (dataOffsetEnd < data + len && dataOffsetEnd[0] != _T(' '))
                     dataOffsetEnd++;
-                if(errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
+                if (errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
                     return SocketConnection::errResponseMalformed;
                 vec.push_back(resultLong);
                 dataOffset = dataOffsetEnd + 1;
@@ -112,8 +114,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
 
 status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
 {
-    if (fIsWriterAvailable_)
-        writeLineToDataStore(writer_, line);
+    writeLineToDataStore(writer_, line);
     return parseUniversalDataFormatTextLine(line, universalData_,lineNo);
 }
 

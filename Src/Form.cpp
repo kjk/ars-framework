@@ -208,5 +208,14 @@ namespace ArsLexis
         EvtAddUniqueEventToQueue(&event, 0, false);
     }
 
+    UInt16 Form::getGraffitiStateIndex() const
+    {
+        UInt16 count = FrmGetNumberOfObjects(form_);
+        for (UInt16 index = 0; index<count; ++index)
+            if (frmGraffitiStateObj == FrmGetObjectType(form_, index))
+                return index;
+        return frmInvalidObjectId;
+    }
+    
 }
 

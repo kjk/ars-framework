@@ -40,6 +40,11 @@ public:
     
     ArsLexis::String getItemTextAsString(int intemNo, int elemNo) const;
   
+    /**
+     * @return -1 if element doesn't represent valid positive number.
+     * @warning It's broken. It may return also -1 because the number is really -1 but nobody cares about it. 
+     * It may return a whole range of negative numbers, although the name states result is positive.
+     */
     long getItemTextAsPositiveLong(int itemNo, int elemNo) const;
     
     friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo);

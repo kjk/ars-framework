@@ -19,8 +19,6 @@ class UniversalDataHandler: public ArsLexis::LineBufferedPayloadHandler {
 
     DataStoreWriterPtr      writer_;
     const ArsLexis::char_t* writerStreamName_;
-    bool                    fIsWriterAvailable_;
-    
     int                     lineNo;
     
 protected:    

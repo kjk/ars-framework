@@ -44,7 +44,8 @@ namespace ArsLexis
     {
         assert(frmInvalidObjectId!=index);
         id_=FrmGetObjectId(*form_, index_=index);
-        assert(frmInvalidObjectId!=id_);
+        if (frmGraffitiStateObj != type())
+            assert(frmInvalidObjectId!=id_);
         object_=FrmGetObjectPtr(*form_, index_);
         assert(0!=object_);
     }

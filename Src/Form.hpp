@@ -158,7 +158,9 @@ namespace ArsLexis
         
         bool fiveWayCenterPressed(const EventType* event) const
         {return fiveWay_.CenterPressed(event);}
-
+        
+        UInt16 getGraffitiStateIndex() const;
+        
         friend class Application;
         friend class FormGadget;
     };
