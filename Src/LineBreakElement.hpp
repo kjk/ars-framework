@@ -23,7 +23,7 @@ public:
 
     void setSize(int mult, int div);
 
-    bool breakBefore(const RenderingPreferences& preferences) const
+    bool breakBefore() const
     {return true;}
 
     void calculateLayout(LayoutContext& mc)

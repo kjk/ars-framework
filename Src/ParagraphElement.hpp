@@ -28,7 +28,7 @@ public:
     void calculateLayout(LayoutContext& layoutContext)
     {
         if (fIndented)
-            setChildIndentation(layoutContext.preferences.standardIndentation());
+            setChildIndentation(16 /*layoutContext.preferences.standardIndentation() */);
         LineBreakElement::calculateLayout(layoutContext);
 
     }

@@ -15,7 +15,7 @@ void BulletElement::calculateLayout(LayoutContext& mc)
 {
     uint_t widthBefore=indentation()+mc.usedWidth;
     GenericTextElement::calculateLayout(mc);
-    childIndentation_=(mc.usedWidth-widthBefore)+mc.preferences.bulletIndentation();
+    childIndentation_=(mc.usedWidth - widthBefore) + 2;
 }
 
 BulletElement::~BulletElement()

@@ -2,7 +2,6 @@
 #include <BaseTypes.hpp>
 #include <Graphics.hpp>
 
-class RenderingPreferences;
 class GenericTextElement;
 
 /**
@@ -15,7 +14,6 @@ struct LayoutContext
 
 
     Graphics& graphics;
-    const RenderingPreferences& preferences;
     uint_t renderingProgress;
     const uint_t screenWidth;
     uint_t usedWidth;
@@ -26,9 +24,8 @@ struct LayoutContext
     uint_t selectionEnd;
     bool selectionIsHyperlink;
     
-    LayoutContext(Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
+    LayoutContext(Graphics& graph, uint_t theScreenWidth):
         graphics(graph),
-        preferences(prefs),
         renderingProgress(0),
         screenWidth(theScreenWidth),
         usedWidth(0),
@@ -74,8 +71,8 @@ struct RenderingContext: public LayoutContext
     uint_t left;
     uint_t top;
     
-    RenderingContext(Graphics& graph, const RenderingPreferences& prefs, Definition& def, uint_t x, uint_t y, uint_t width):
-        LayoutContext(graph, prefs, width),
+    RenderingContext(Graphics& graph, Definition& def, uint_t x, uint_t y, uint_t width):
+        LayoutContext(graph, width),
         definition(def),
         left(x),
         top(y)

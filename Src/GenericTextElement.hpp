@@ -15,7 +15,7 @@ protected:
 
     void calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition=0, bool render=false);
     
-    void applyFormatting(Graphics& graphics, const RenderingPreferences& preferences);
+    void applyFormatting(Graphics& graphics);
     
 public:
 

@@ -82,7 +82,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 {
     assert(!layoutContext.isElementCompleted());
     Graphics& graphics=layoutContext.graphics;
-    applyFormatting(graphics, layoutContext.preferences);
+    applyFormatting(graphics);
 
     uint_t indent=indentation();
     layoutContext.usedWidth=std::max(layoutContext.usedWidth, indent);
@@ -116,12 +116,12 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     if (text_.length()==layoutContext.renderingProgress+length &&
         !isSpace(text_[text_.length()-1]) &&
         layoutContext.nextTextElement && 
-        !layoutContext.nextTextElement->breakBefore(layoutContext.preferences) &&
+        !layoutContext.nextTextElement->breakBefore() &&
         !layoutContext.nextTextElement->text().empty() &&
         !isSpace(layoutContext.nextTextElement->text()[0]) &&
         justifyRightLastElementInLine != justification())
     {
-        LayoutContext copy(layoutContext.graphics, layoutContext.preferences, layoutContext.screenWidth);
+        LayoutContext copy(layoutContext.graphics, layoutContext.screenWidth);
         copy.baseLine=layoutContext.baseLine;
         copy.usedHeight=layoutContext.usedHeight;
         copy.usedWidth=layoutContext.usedWidth+txtDx;
@@ -220,7 +220,7 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
 {
     Graphics& graphics=lc.graphics;
     Graphics::StateSaver saveState(graphics);
-    applyFormatting(graphics, lc.preferences);
+    applyFormatting(graphics);
     uint_t indent=indentation();
     lc.usedWidth=std::max(lc.usedWidth, indent);
     if (offset < lc.usedWidth)
@@ -247,12 +247,12 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
     if (text_.length() == lc.renderingProgress + length &&
         !isSpace(text_[text_.length()-1]) &&
         NULL != lc.nextTextElement && 
-        !lc.nextTextElement->breakBefore(lc.preferences) &&
+        !lc.nextTextElement->breakBefore() &&
         !lc.nextTextElement->text().empty() &&
         !isSpace(lc.nextTextElement->text()[0]) &&
         justifyRightLastElementInLine != justification())
     {
-        LayoutContext copy(lc.graphics, lc.preferences, lc.screenWidth);
+        LayoutContext copy(lc.graphics, lc.screenWidth);
         copy.usedWidth = lc.usedWidth + txtDx;
         lc.nextTextElement->calculateLayout(copy);
         if (0 == copy.renderingProgress && !lc.isFirstInLine()) 
@@ -307,7 +307,7 @@ void GenericTextElement::render(RenderingContext& renderContext)
     calculateOrRender(renderContext, renderContext.left, renderContext.top, &renderContext.definition, true);
 }
 
-void GenericTextElement::applyFormatting(Graphics& graphics, const RenderingPreferences& preferences)
+void GenericTextElement::applyFormatting(Graphics& graphics)
 {
     graphics.applyStyle(getStyle(), isHyperlink());
 }

@@ -12,13 +12,19 @@
 #include <list>
 #include <vector>
 #include <Graphics.hpp>
-#include "Rendering.hpp"
-#include <RenderingPreferences.hpp>
+#include <Rendering.hpp>
+
 #include <DefinitionStyle.hpp>
 
 class DefinitionElement;
 class Definition;
 class PopupMenu;
+
+enum HyperlinkType
+{
+    hyperlinkUrl,
+    hyperlinkCallback
+};   
 
 class HyperlinkHandlerBase
 {
@@ -167,9 +173,9 @@ private:
     
     LinePosition_t lineAtHeight(Coord_t height);
     
-    void elementAtWidth(Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word = false);
+    void elementAtWidth(Graphics& graphics, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word = false);
     
-    void removeSelectionOrShowPopup(const Point& point, Graphics& graphics, const RenderingPreferences& prefs);
+    void removeSelectionOrShowPopup(const Point& point, Graphics& graphics);
     
 public:
 
@@ -228,7 +234,7 @@ public:
     /**
      * Renders (paints) this @c Definition into bounds.
      */
-    ArsLexis::status_t render(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate = false);
+    ArsLexis::status_t render(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate = false);
     
     uint_t totalLinesCount() const
     {return lines_.size();}
@@ -242,7 +248,7 @@ public:
     /**
      * Scrolls this @c Definition by @c delta lines, bounding it as neccessary.
      */
-    void scroll(Graphics& graphics, const RenderingPreferences& prefs, int delta);
+    void scroll(Graphics& graphics, int delta);
 
     Definition();
     
@@ -258,11 +264,11 @@ public:
     
     void bounds(Rectangle& out) const {out = bounds_;}
     
-    bool mouseDown(Graphics& graphics, const RenderingPreferences& prefs, const Point& point);
+    bool mouseDown(Graphics& graphics, const Point& point);
     
-    bool mouseUp(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount);
+    bool mouseUp(Graphics& graphics, const Point& point, uint_t clickCount);
     
-    bool mouseDrag(Graphics& graphics, const RenderingPreferences& prefs, const Point& point);
+    bool mouseDrag(Graphics& graphics, const Point& point);
     
     enum NavigatorKey {
         navKeyLeft,
@@ -272,7 +278,7 @@ public:
         navKeyCenter
     };
     
-    bool navigatorKey(Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey);
+    bool navigatorKey(Graphics& graphics, NavigatorKey navKey);
     
     enum InteractionBehaviorOption {
         behavDoubleClickSelection = 1,
@@ -297,7 +303,7 @@ public:
     
     bool usesHyperlinkNavigation() const { return usesInteractionBehavior(behavHyperlinkNavigation);}
     
-    bool extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount = 0);
+    bool extendSelection(Graphics& graphics, const Point& point, uint_t clickCount = 0);
     
     /**
      * Resets this definition to its default state (without any elements, hot spots etc.).
@@ -339,7 +345,7 @@ public:
     
     bool hasSelection() const;
     
-    void clearSelection(Graphics& graphics, const RenderingPreferences& prefs);
+    void clearSelection(Graphics& graphics);
     
     bool isFirstLinkSelected() const;
 
@@ -383,15 +389,15 @@ public:
 
 private:
 
-    void renderSingleElement(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t element);
+    void renderSingleElement(Graphics& graphics, ElementPosition_t element);
 
-    void renderElementRange(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end);
+    void renderElementRange(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end);
     
-    bool trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount);
+    bool trackHyperlinkHighlight(Graphics& graphics, const Point& point, uint_t clickCount);
     
-    bool trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount);
+    bool trackTextSelection(Graphics& graphics, const Point& point, uint_t clickCount);
 
-    void doRender(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
+    void doRender(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate);
 
 
     HyperlinkHandlerBase* hyperlinkHandler_;
@@ -409,15 +415,15 @@ private:
      */
     void clearLines();
 
-    void calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t firstElement, uint_t renderingProgress);
+    void calculateLayout(Graphics& graphics, ElementPosition_t firstElement, uint_t renderingProgress);
     
     void calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int delta=0);
     
     void renderLine(RenderingContext& renderContext, LinePosition_t line, ElementPosition_t begin, ElementPosition_t end);
     
-    void renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, LinePosition_t begin, LinePosition_t end, uint_t topOffset, ElementPosition_t startElem, ElementPosition_t endElem);
+    void renderLineRange(Graphics& graphics, LinePosition_t begin, LinePosition_t end, uint_t topOffset, ElementPosition_t startElem, ElementPosition_t endElem);
 
-    void renderLayout(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end);
+    void renderLayout(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end);
     
     void moveHotSpots(const Point& delta);
     
@@ -444,7 +450,7 @@ private:
     bool trackingSelection_;
     bool selectionIsHyperlink_;
 
-    bool navigateHyperlink(Graphics& graphics, const RenderingPreferences& prefs, bool next);
+    bool navigateHyperlink(Graphics& graphics, bool next);
 };
 
 void DestroyElements(Definition::Elements_t& elems);

@@ -30,7 +30,7 @@ public:
     uint_t totalCount() const
     {return totalCount_;}
 
-    bool breakBefore(const RenderingPreferences& preferences) const
+    bool breakBefore() const
     {return true;}
 
     void calculateLayout(LayoutContext& mc);

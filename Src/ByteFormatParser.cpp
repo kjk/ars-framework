@@ -7,7 +7,6 @@
 #include <HorizontalLineElement.hpp>
 #include <ParagraphElement.hpp>
 #include <ListNumberElement.hpp>
-#include <FormattedTextElement.hpp>
 #include <BulletElement.hpp>
 
 //elements

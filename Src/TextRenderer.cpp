@@ -20,9 +20,8 @@ static void ShowSelectionPopupMenu(const Point& point, const String& text, void*
 
 TextRenderer::RenderingErrorListener::~RenderingErrorListener() {}
 
-TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* scrollBar):
+TextRenderer::TextRenderer(Form& form, ScrollBar* scrollBar):
     FormGadget(form),
-    renderingPreferences_(prefs),
     scrollBar_(scrollBar),
     drawingWindow_(NULL),
     drawingWindowIsOffscreen_(false),
@@ -113,7 +112,7 @@ void TextRenderer::drawProxy()
 
 void TextRenderer::drawRendererInBounds(Graphics& graphics, const Rectangle& bounds)
 {
-    lastRenderingError_ = definition_.render(graphics, bounds, renderingPreferences_, false);
+    lastRenderingError_ = definition_.render(graphics, bounds, false);
 }
 
 void TextRenderer::handleDraw(Graphics& graphics)
@@ -136,7 +135,7 @@ void TextRenderer::scroll(WinDirectionType direction, uint_t items, ScrollbarUpd
         Graphics graphics(drawingWindow_);
         {
         ActivateGraphics activate(graphics);
-        definition_.scroll(graphics, renderingPreferences_, i);
+        definition_.scroll(graphics, i);
         }
         if (errNone == lastRenderingError_)
             updateForm(graphics);
@@ -227,7 +226,7 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
         Graphics graphics(drawingWindow_);
         {
         ActivateGraphics activate(graphics);
-        update = definition_.extendSelection(graphics, renderingPreferences_, p, tapCount);
+        update = definition_.extendSelection(graphics, p, tapCount);
         }
         if (update)
             updateForm(graphics);
@@ -291,14 +290,14 @@ void TextRenderer::handleNilEvent()
         bool update;
         {
         ActivateGraphics activate(graphics);
-        definition_.scroll(graphics, renderingPreferences_, i);
+        definition_.scroll(graphics, i);
         Rectangle bounds;
         this->bounds(bounds);
         bounds.explode(1, 1, -2, -2);
         Point p(bounds.topLeft);
         if (winDown == dir)
             p += bounds.extent;
-        update = definition_.extendSelection(graphics, renderingPreferences_, p, 0);
+        update = definition_.extendSelection(graphics, p, 0);
         }
         if (update)
             updateForm(graphics);
@@ -316,7 +315,7 @@ bool TextRenderer::handleNavigatorKey(Definition::NavigatorKey navKey)
         Graphics graphics(drawingWindow_);
         {
         ActivateGraphics activate(graphics);
-        handled = definition_.navigatorKey(graphics, renderingPreferences_, navKey);
+        handled = definition_.navigatorKey(graphics, navKey);
         }
         updateForm(graphics);
     }

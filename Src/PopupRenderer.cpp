@@ -1,7 +1,7 @@
 #include <PopupRenderer.hpp>
 
-PopupRenderer::PopupRenderer(Form& form, RenderingPreferences& prefs):
-    TextRenderer(form, prefs),
+PopupRenderer::PopupRenderer(Form& form):
+    TextRenderer(form),
     running_(false),
     prevFocusIndex_(frmInvalidObjectId)
 {

@@ -2,7 +2,6 @@
 #define ARSLEXIS_POPUP_RENDERER_HPP__
 
 #include <TextRenderer.hpp>
-#include <RenderingPreferences.hpp>
 
 class Form;
 
@@ -14,7 +13,7 @@ class PopupRenderer: public TextRenderer
     
 public:
 
-    PopupRenderer(Form& form, RenderingPreferences& prefs);
+    PopupRenderer(Form& form);
     
     ~PopupRenderer();
 

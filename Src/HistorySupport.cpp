@@ -135,7 +135,8 @@ bool HistorySupport::handleEventInForm(EventType& event)
         lastAction_ = actionNewSearch;
     
     const char_t* url = static_cast<const char_t*>(popupMenuFillHandlerData);
-    currentHistoryIndex_ = sel;
+    if (NULL == url || sel > 0)
+        currentHistoryIndex_ = sel;
     if (NULL != url)
     {
         if (0 == sel)

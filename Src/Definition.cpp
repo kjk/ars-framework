@@ -273,7 +273,7 @@ void Definition::moveHotSpots(const Point& delta)
     }
 }
 
-void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, int delta)
+void Definition::scroll(Graphics& graphics, int delta)
 {
     uint_t newFirstLine = 0;
     uint_t newLastLine = 0;
@@ -310,7 +310,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             graphics.copyArea(unionRect, bounds_.topLeft);
             graphics.erase(Rectangle(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
             moveHotSpots(pointDelta);
-            renderLineRange(graphics, prefs, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight, elements_.end(), elements_.end());
+            renderLineRange(graphics, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight, elements_.end(), elements_.end());
         }
         else
         {
@@ -324,7 +324,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
-            renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
+            renderLineRange(graphics, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
         }
         
         graphics.popState(state);
@@ -337,11 +337,11 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         clearHotSpots();
         firstLine_ = newFirstLine;
         lastLine_ = newLastLine;
-        renderLayout(graphics, prefs, elements_.end(), elements_.end());
+        renderLayout(graphics, elements_.end(), elements_.end());
     }
 }
 
-void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word) 
+void Definition::elementAtWidth(Graphics& graphics, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word) 
 {
     ElementPosition_t end = elements_.end();
     if (lines_.end() == line)
@@ -353,7 +353,7 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
     }
     LinePosition_t nextLine = line;
     ++nextLine;
-    LayoutContext layoutContext(graphics, prefs, bounds_.width());
+    LayoutContext layoutContext(graphics, bounds_.width());
     layoutContext.usedWidth=line->leftMargin;
     layoutContext.usedHeight=line->height;
     layoutContext.renderingProgress = line->renderingProgress;
@@ -471,7 +471,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
             ++current;
             renderContext.renderingProgress = 0;
             if (renderContext.availableWidth() == 0 || current == last || 
-                (*current)->breakBefore(renderContext.preferences) || 
+                (*current)->breakBefore() || 
                 (justify != (*current)->justification() && DefinitionElement::justifyRightLastElementInLine != (*current)->justification()))
                 lineFinished = true;
         }
@@ -481,9 +481,9 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
     renderContext.top += renderContext.usedHeight;
 }
 
-void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, LinePosition_t begin, LinePosition_t end, uint_t topOffset, ElementPosition_t startElem, ElementPosition_t endElem)
+void Definition::renderLineRange(Graphics& graphics, LinePosition_t begin, LinePosition_t end, uint_t topOffset, ElementPosition_t startElem, ElementPosition_t endElem)
 {
-    RenderingContext renderContext(graphics, prefs, *this, bounds_.x(), bounds_.y() + topOffset, bounds_.width());
+    RenderingContext renderContext(graphics, *this, bounds_.x(), bounds_.y() + topOffset, bounds_.width());
     renderContext.selectionIsHyperlink = selectionIsHyperlink_;
     Lines_t::iterator line = begin;
     while (line != end)
@@ -512,11 +512,11 @@ void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences&
     }
 }
 
-void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t firstElement, uint_t renderingProgress)
+void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElement, uint_t renderingProgress)
 {
     ElementPosition_t end(elements_.end());
     ElementPosition_t element(elements_.begin());
-    LayoutContext layoutContext(graphics, prefs, bounds_.width());
+    LayoutContext layoutContext(graphics, bounds_.width());
     LineHeader lastLine;
     lastLine.firstElement = element;
     DefinitionElement::Justification justify = DefinitionElement::justifyLeft;
@@ -551,7 +551,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
                 else
                     layoutContext.nextTextElement=0;
             }
-            if (element==end || (*element)->breakBefore(prefs) || ((*element)->justification()!=justify && DefinitionElement::justifyRightLastElementInLine != (*element)->justification()))
+            if (element==end || (*element)->breakBefore() || ((*element)->justification()!=justify && DefinitionElement::justifyRightLastElementInLine != (*element)->justification()))
                 startNewLine=true;
         }
         else
@@ -590,7 +590,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+void Definition::doRender(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate)
 {
     if (bounds.width() != bounds_.width() || forceRecalculate || lines_.empty())
     {
@@ -604,7 +604,7 @@ void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const Ren
         clearHotSpots();
         clearLines();
         bounds_=bounds;
-        calculateLayout(graphics, prefs, firstElement, renderingProgress);
+        calculateLayout(graphics, firstElement, renderingProgress);
     }
     else {
         clearHotSpots();
@@ -615,14 +615,14 @@ void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const Ren
         if (heightChanged)
             calculateVisibleRange(firstLine_, lastLine_);
     }
-    renderLayout(graphics, prefs, elements_.end(), elements_.end());
+    renderLayout(graphics, elements_.end(), elements_.end());
 }
 
-status_t Definition::render(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+status_t Definition::render(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate)
 {
     volatile status_t error=errNone;
     ErrTry {
-        doRender(graphics, bounds, prefs, forceRecalculate);
+        doRender(graphics, bounds, forceRecalculate);
     }
     ErrCatch(ex) {
         error=ex;
@@ -630,14 +630,14 @@ status_t Definition::render(Graphics& graphics, const Rectangle& bounds, const R
     return error;
 }
  
-void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end)
+void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end)
 {
     Graphics::State_t state = graphics.pushState();
     graphics.applyStyle(getStaticStyle(styleIndexDefault), false);
     
 //    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
 
-    renderLineRange(graphics, prefs, lines_.begin() + firstLine_, lines_.begin() + lastLine_, 0, begin, end);
+    renderLineRange(graphics, lines_.begin() + firstLine_, lines_.begin() + lastLine_, 0, begin, end);
     uint_t rangeHeight = 0;
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;
@@ -698,16 +698,16 @@ void Definition::allToText(String& out) const
     }
 }
 
-void Definition::renderSingleElement(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t element)
+void Definition::renderSingleElement(Graphics& graphics, ElementPosition_t element)
 {
     assert(elements_.end() != element);
     ElementPosition_t next = element;
-    renderLayout(graphics, prefs, element, ++next);
+    renderLayout(graphics, element, ++next);
 }
 
-void Definition::renderElementRange(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end)
+void Definition::renderElementRange(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end)
 {
-    renderLayout(graphics, prefs, begin, end);
+    renderLayout(graphics, begin, end);
 }
 
 
@@ -765,7 +765,7 @@ void Definition::extendSelectionToFullHyperlink()
 }
 
 
-bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount) 
+bool Definition::trackHyperlinkHighlight(Graphics& graphics, const Point& point, uint_t clickCount) 
 {
     if (trackingSelection_ && !selectionIsHyperlink_)
         return false;
@@ -780,13 +780,13 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
             {
                 selectionStartProgress_ = LayoutContext::progressCompleted;
                 selectionStartElement_ = selectionEndElement_;
-                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+                renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             }
             else if (insideHyperlink && selectionStartProgress_ == selectionEndProgress_)
             {
                 selectionStartProgress_ =  0;
                 selectionStartElement_ = inactiveSelectionStartElement_;
-                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+                renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             }
         }
         else 
@@ -798,7 +798,7 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
             {
                 selectionStartProgress_ = LayoutContext::progressCompleted;
                 selectionStartElement_  = selectionEndElement_ = elements_.end();
-                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+                renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
                 inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
                 trackingSelection_ = false;
                 selectionIsHyperlink_ = false;
@@ -812,7 +812,7 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
         {
             assert(elements_.end() != inactiveSelectionStartElement_);
             selectionStartElement_  = selectionEndElement_ = elements_.end();
-            renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+            renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
             selectionIsHyperlink_ = false;
         }
@@ -834,7 +834,7 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
             selectionEndProgress_ = LayoutContext::progressCompleted;
             selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &hotSpot->element());
             extendSelectionToFullHyperlink();
-            renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+            renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             return true;
         }
         return false;
@@ -855,7 +855,7 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
     return end;
 }
 
-void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphics, const RenderingPreferences& prefs)
+void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphics)
 {
     ElementPosition_t start = selectionStartElement_;
     ElementPosition_t end = selectionEndElement_;
@@ -874,7 +874,7 @@ void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphi
         uint_t progress;
         LinePosition_t line = lineAtHeight(p.y);
         uint_t wordEnd;
-        elementAtWidth(graphics, prefs, line, p.x, elem, progress, wordEnd, false);
+        elementAtWidth(graphics, line, p.x, elem, progress, wordEnd, false);
         
         if (elem < start || (elem == start && progress < selectionStartProgress_))
             inside = false;
@@ -894,12 +894,12 @@ void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphi
     {
         selectionStartElement_ = selectionEndElement_ = elements_.end();
         selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
-        renderElementRange(graphics, prefs, start, end);
+        renderElementRange(graphics, start, end);
     }
 }
 
 
-bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount) 
+bool Definition::trackTextSelection(Graphics& graphics, const Point& point, uint_t clickCount) 
 {
     Point p(point.x - bounds_.x(), point.y - bounds_.y());
     if (p.y < 0)
@@ -910,7 +910,7 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
     uint_t wordEnd;
     if (2 == clickCount && usesDoubleClickSelection())
     {
-        elementAtWidth(graphics, prefs, line, p.x, elem, progress, wordEnd, true);
+        elementAtWidth(graphics, line, p.x, elem, progress, wordEnd, true);
         trackingSelection_ = false;
         if (elements_.end() == elem || DefinitionElement::offsetOutsideElement == progress)
             return false;
@@ -918,10 +918,10 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
         selectionStartProgress_ = progress;
         selectionEndProgress_ = wordEnd;
         ++elem;
-        renderElementRange(graphics, prefs, selectionStartElement_, selectionEndElement_);
+        renderElementRange(graphics, selectionStartElement_, selectionEndElement_);
         return true;
     }
-    elementAtWidth(graphics, prefs, line, p.x, elem, progress, wordEnd, false);
+    elementAtWidth(graphics, line, p.x, elem, progress, wordEnd, false);
     if (!trackingSelection_) 
     {
         mouseDownElement_ = selectionStartElement_ = selectionEndElement_ = elem;
@@ -960,14 +960,14 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
             start = std::min(selectionStartElement_, prevStart);
             end = std::max(selectionStartElement_, prevStart);
             ++end;
-            renderElementRange(graphics, prefs, start, end);
+            renderElementRange(graphics, start, end);
         }
         if (prevEnd != selectionEndElement_ || prevEndProg != selectionEndProgress_)
         {
             start = std::min(selectionEndElement_, prevEnd);
             end = std::max(selectionEndElement_, prevEnd);
             ++end;
-            renderElementRange(graphics, prefs, start, end);
+            renderElementRange(graphics, start, end);
         }
     }
     if (0 != clickCount) 
@@ -976,7 +976,7 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
     return true;
 }
 
-bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount)
+bool Definition::extendSelection(Graphics& graphics, const Point& point, uint_t clickCount)
 {
     navigatingDown_ = navigatingUp_ = false;
     if (elements_.empty())
@@ -984,11 +984,11 @@ bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences&
     if (!trackingSelection_ && !(bounds_ && point))
         return false;
     if (!trackingSelection_ && elements_.end() != selectionStartElement_)
-        removeSelectionOrShowPopup(point, graphics, prefs);
-    if (trackHyperlinkHighlight(graphics, prefs, point, clickCount))
+        removeSelectionOrShowPopup(point, graphics);
+    if (trackHyperlinkHighlight(graphics, point, clickCount))
         return true;
     if (usesMouseSelection())
-        return trackTextSelection(graphics, prefs, point, clickCount);
+        return trackTextSelection(graphics, point, clickCount);
     return false;
 }
 
@@ -1013,23 +1013,23 @@ void Definition::replaceElements(Elements_t& elements)
 }
 */
 
-bool Definition::mouseDown(Graphics& graphics, const RenderingPreferences& prefs, const Point& point)
+bool Definition::mouseDown(Graphics& graphics, const Point& point)
 {
-    return extendSelection(graphics, prefs, point, 0);
+    return extendSelection(graphics, point, 0);
 }
 
-bool Definition::mouseUp(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount)
+bool Definition::mouseUp(Graphics& graphics, const Point& point, uint_t clickCount)
 {
-    return extendSelection(graphics, prefs, point, clickCount);
+    return extendSelection(graphics, point, clickCount);
 }
 
-bool Definition::mouseDrag(Graphics& graphics, const RenderingPreferences& prefs, const Point& point)
+bool Definition::mouseDrag(Graphics& graphics, const Point& point)
 {
-    return extendSelection(graphics, prefs, point, 0);
+    return extendSelection(graphics, point, 0);
 }
 
 
-bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey)
+bool Definition::navigatorKey(Graphics& graphics, NavigatorKey navKey)
 {
     if (usesHyperlinkNavigation())
     {
@@ -1037,7 +1037,7 @@ bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& pr
         {
             case navKeyRight:
                 navigatingUp_ = false;
-                if (!navigatingDown_ && navigateHyperlink(graphics, prefs, true))
+                if (!navigatingDown_ && navigateHyperlink(graphics, true))
                     return true;
                 navigatingDown_ = true;
                 navKey = navKeyDown;
@@ -1045,7 +1045,7 @@ bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& pr
             
             case navKeyLeft:
                 navigatingDown_ = false;
-                if (!navigatingUp_ && navigateHyperlink(graphics, prefs, false))
+                if (!navigatingUp_ && navigateHyperlink(graphics, false))
                     return true;
                 navigatingUp_ = true;
                 navKey = navKeyUp;
@@ -1060,7 +1060,7 @@ bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& pr
                 trackingSelection_ = false;
                 selectionStartElement_ = selectionEndElement_ = elements_.end();
                 selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
-                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+                renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
    */             
                 {
                     Point center;
@@ -1095,7 +1095,7 @@ bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& pr
         if (0 != items)
         {
             uint_t top = firstShownLine();
-            scroll(graphics, prefs, items);
+            scroll(graphics, items);
             if (firstShownLine() != top)
                 return true;
             bool unselect = true;
@@ -1105,7 +1105,7 @@ bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& pr
                 unselect = false;
             if (unselect) 
             {
-                clearSelection(graphics, prefs);
+                clearSelection(graphics);
                 navigatingUp_ = navigatingDown_ = false;
             }
         }
@@ -1118,7 +1118,7 @@ static inline bool isHyperlink(Definition::const_iterator pos)
     return (*pos)->isHyperlink();
 }
 
-bool Definition::navigateHyperlink(Graphics& graphics, const RenderingPreferences& prefs, bool next)
+bool Definition::navigateHyperlink(Graphics& graphics, bool next)
 {
     if (empty())
         return false;
@@ -1177,7 +1177,7 @@ bool Definition::navigateHyperlink(Graphics& graphics, const RenderingPreference
     }
     selectionStartElement_ = selectionEndElement_ = elements_.end();
     selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
-    renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+    renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
 
     selectionIsHyperlink_ = true;
     selectionStartElement_ = selectionEndElement_ = pos;
@@ -1210,10 +1210,10 @@ bool Definition::navigateHyperlink(Graphics& graphics, const RenderingPreference
                 --line;
             }
         }
-        scroll(graphics, prefs, linesToScroll);
+        scroll(graphics, linesToScroll);
     }
     extendSelectionToFullHyperlink();
-    renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+    renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
     return true;
 }
 
@@ -1222,7 +1222,7 @@ bool Definition::hasSelection() const
     return selectionStartElement_ != elements_.end();
 }
 
-void Definition::clearSelection(Graphics& graphics, const RenderingPreferences& prefs) {
+void Definition::clearSelection(Graphics& graphics) {
     if (!hasSelection())
         return;
     ElementPosition_t start = selectionStartElement_;
@@ -1231,7 +1231,7 @@ void Definition::clearSelection(Graphics& graphics, const RenderingPreferences& 
     selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
     inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
     selectionIsHyperlink_ = false;
-    renderElementRange(graphics, prefs, start, end);
+    renderElementRange(graphics, start, end);
 }
 
 bool Definition::isFirstLinkSelected() const 

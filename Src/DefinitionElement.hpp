@@ -65,7 +65,7 @@ public:
     const DefinitionElement* parent() const
     {return parent_;}
 
-    virtual bool breakBefore(const RenderingPreferences&) const
+    virtual bool breakBefore() const
     {return false;}
     
     virtual void calculateLayout(LayoutContext& mc)=0;

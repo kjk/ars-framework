@@ -8,7 +8,6 @@
 class TextRenderer: public FormGadget 
 {
     Definition definition_;
-    RenderingPreferences& renderingPreferences_;
     ScrollBar* scrollBar_;
     WinHandle drawingWindow_;
     bool drawingWindowIsOffscreen_;
@@ -38,7 +37,7 @@ public:
         selectionMenuId = id;
     }
 
-    TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* scrollBar = NULL);
+    TextRenderer(Form& form, ScrollBar* scrollBar = NULL);
 
     ~TextRenderer();
     
