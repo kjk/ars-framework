@@ -106,12 +106,10 @@ def findExactDefinition(db, cursor, term):
         return None
 
 def findRandomDefinition(db, cursor):
-    cursor.execute("""select min(id), max(id) from articles""")
+    cursor.execute("""SELECT min(id), max(id) FROM articles""")
     row=cursor.fetchone()
     minId, maxId=row[0], row[1]
     term_id = random.randint(minId, maxId)
-    #query="""SELECT id, term, definition FROM definitions  ORDER BY RAND() LIMIT 0,1;"""
-    #query="""SELECT id, term, definition FROM definitions WHERE id=%d;""" % term_id
     query="""SELECT id, title, body FROM articles WHERE id=%d;""" % term_id
     cursor.execute(query)
     row=cursor.fetchone()
@@ -157,12 +155,12 @@ def findFullTextMatches(db, cursor, reqTerm):
     queryStr=''
     for word in words:
         queryStr+=(' +'+word)
-    query="""select id, title, body, match(title, body) against('%s') as relevance from articles where match(title, body) against('%s' in boolean mode) order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
+    query="""SELECT id, title, body, match(title, body) AGAINST('%s') AS relevance FROM articles WHERE match(title, body) against('%s' in boolean mode) ORDER BY relevance DESC limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
     cursor.execute(query)
     row=cursor.fetchone()
     if not row:
         print "Performing non-boolean mode search..."
-        query="""select id, title, body, match(title, body) against('%s') as relevance from articles where match(title, body) against('%s') order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(reqTerm), listLengthLimit)
+        query="""SELECT id, title, body, match(title, body) AGAINST('%s') AS relevance FROM articles WHERE match(title, body) against('%s') ORDER BY relevance DESC limit %d""" % (db.escape_string(reqTerm), db.escape_string(reqTerm), listLengthLimit)
         cursor.execute(query)
 
     tupleList=[]
@@ -195,4 +193,4 @@ def findFullTextMatches(db, cursor, reqTerm):
         return None
     else:
         return termList
-        
+

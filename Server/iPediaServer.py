@@ -708,7 +708,7 @@ def main():
             print dbName
         sys.exit(0)
 
-    dbName=arsutils.fDetectRemoveCmdFlag("-db")
+    dbName=arsutils.getRemoveCmdArg("-db")
 
     if dbName:
         if dbName in dbs:
