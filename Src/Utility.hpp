@@ -36,4 +36,20 @@ public:
     NonCopyable() {}        
 };
 
+template<class T>
+inline void PassOwnershipP(T** source, T** target)
+{
+    delete *target;
+    *target = *source;
+    *source = NULL;
+}
+
+template<class T>
+inline void PassOwnership(T*& source, T*& target)
+{
+    delete target;
+    target = source;
+    source = NULL;
+}
+
 #endif
