@@ -182,27 +182,28 @@ void ArsLexis::removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& o
     }
 }
 
-#if defined(_PALM_OS)
 // format number num so that they easier to read e.g. turn '10343' into '10.343'
 // i.e. insert (locale-dependent) thousand separator in apropriate places
 // put the result in buffer buf of length bufSize. Buffer must be big enough
 // for the result.
-int ArsLexis::formatNumber(long num, char* buf, int bufSize)
+int ArsLexis::formatNumber(long num, char_t* buf, int bufSize)
 {
-    char dontMind;
     char thousand=',';
-
+   
+    #if defined(_PALM_OS)
+    char dontMind;
     NumberFormatType nf=static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
     LocGetNumberSeparators(nf, &thousand, &dontMind);
-    
-    char buffer[32];
-    int len = StrPrintF(buffer, "%ld", num);
+    #endif 
+   
+    char_t buffer[32];
+    int len = tprintf(buffer, _T("%ld"), num);
     int lenOut = len + ((len-1)/3);  // a thousand separator every 3 chars
     assert(bufSize>=lenOut+1);
     // copy str in buffer to output buf from the end, adding thousand separator every 3 chars
-    char *tmp = buffer+len;
+    char_t *tmp = buffer+len;
     assert( '\0' == *tmp );
-    char *out = buf+lenOut;
+    char_t *out = buf+lenOut;
     int toDot = 4; // 3 + 1 for trailing '\0'
     while (true)
     {
@@ -221,4 +222,4 @@ int ArsLexis::formatNumber(long num, char* buf, int bufSize)
     assert(out==buf);
     return lenOut;
 }
-#endif //_PALM_OS
+

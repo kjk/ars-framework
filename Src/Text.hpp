@@ -166,9 +166,7 @@ namespace ArsLexis
     inline void removeNonDigits(const char_t* in, String& out)
     {removeNonDigits(in, tstrlen(in), out);}
 
-#if defined(_PALM_OS)
-    int formatNumber(long num, char *buf, int bufSize);
-#endif // _PALM_OS
+    int formatNumber(long num, char_t *buf, int bufSize);
 
 }
 
