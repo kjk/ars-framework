@@ -1,4 +1,4 @@
-#include "SimpleSocketConnection.hpp"
+#include <SimpleSocketConnection.hpp>
 
 namespace ArsLexis
 {

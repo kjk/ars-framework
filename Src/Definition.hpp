@@ -8,10 +8,10 @@
 #ifndef __DEFINITION_HPP__
 #define __DEFINITION_HPP__
 
-#include "Debug.hpp"
+#include <Debug.hpp>
 #include <list>
 #include <vector>
-#include "Graphics.hpp"
+#include <Graphics.hpp>
 #include "Rendering.hpp"
 #include <RenderingPreferences.hpp>
 
@@ -20,7 +20,7 @@ class DefinitionElement;
 /**
  * Handles rendering and user interactions (clicking parts of, selecting etc.) with definition text .
  */
-class Definition
+class Definition: private ArsLexis::NonCopyable
 {
     /**
      * @internal
@@ -123,7 +123,7 @@ public:
      * It's made of one or more rectangular areas, that represent the space in which 
      * some @c DefinitionElement is rendered.
      */
-    class HotSpot 
+    class HotSpot: private ArsLexis::NonCopyable
     {
         typedef std::list<ArsLexis::Rectangle> Rectangles_t;
         
@@ -261,8 +261,13 @@ private:
     
 };
 
-//template<> 
-//inline void std::swap(Definition& def1, Definition& def2)
-//{def1.swap(def2);}
+#ifdef __MWERKS__
+
+template<> 
+inline void std::swap(Definition& def1, Definition& def2)
+{def1.swap(def2);}
+
+#endif // __MWERKS__
+
 
 #endif

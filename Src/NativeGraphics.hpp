@@ -1,14 +1,18 @@
 #ifndef __ARSLEXIS_NATIVE_GRAPHICS_HPP__
 #define __ARSLEXIS_NATIVE_GRAPHICS_HPP__
 
+#ifndef INCLUDE_NATIVE_GRAPHICS
+#error "File NativeGrphics.hpp should not be included directly. Use Graphics.hpp instead."
+#endif
+
 namespace ArsLexis 
 {
 
-#if defined(__PALMOS_H__)
+#if defined(_PALM_OS)
 
 }
 
-#include "PalmFont.hpp"
+#include <PalmFont.hpp>
 
 namespace ArsLexis
 {
@@ -63,6 +67,5 @@ namespace ArsLexis
 #endif
 
 }
-
 
 #endif

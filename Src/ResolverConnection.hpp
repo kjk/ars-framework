@@ -1,8 +1,8 @@
 #ifndef __ARSLEXIS_RESOLVER_CONNECTION_HPP__
 #define __ARSLEXIS_RESOLVER_CONNECTION_HPP__
 
-#include "Resolver.hpp"
-#include "SimpleSocketConnection.hpp"
+#include <Resolver.hpp>
+#include <SimpleSocketConnection.hpp>
 #include <list>
 
 namespace ArsLexis

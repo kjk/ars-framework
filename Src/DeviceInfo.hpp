@@ -1,9 +1,9 @@
 #ifndef __ARSLEXIS_DEVICE_INFO_HPP__
 #define __ARSLEXIS_DEVICE_INFO_HPP__
 
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
 #include <PalmOS.h>
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
 
 namespace ArsLexis
 {

@@ -23,13 +23,17 @@ LookupManager::~LookupManager()
 {
 }
 
-static const UInt16 serverErrorAlerts[]=
-{   
-    serverFailureAlert,
-    unsupportedDeviceAlert,
-    invalidAuthorizationAlert,
-    malformedRequestAlert
-};
+namespace {
+
+    static const UInt16 serverErrorAlerts[]=
+    {   
+        serverFailureAlert,
+        unsupportedDeviceAlert,
+        invalidAuthorizationAlert,
+        malformedRequestAlert
+    };
+
+}
 
 void LookupManager::handleServerError(LookupManager::ServerError serverError)
 {

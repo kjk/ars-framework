@@ -42,7 +42,7 @@ public:
     virtual bool isTextElement() const
     {return false;}
     
-    virtual void toText(ArsLexis::String& appendTo, uint_t from=0, uint_t to=elementCompletedProgress) const=0;
+    virtual void toText(ArsLexis::String& appendTo, uint_t from=0, uint_t to=LayoutContext::progressCompleted) const=0;
     
 };
 

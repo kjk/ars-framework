@@ -2,8 +2,6 @@
 #include "iPediaApplication.hpp"
 #include "LookupManager.hpp"
 
-using namespace ArsLexis;
-
 void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url)
 {
     if (viewerDatabaseId_)
@@ -23,7 +21,7 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
             }
         }
         else
-            handleBadAlloc();
+            ArsLexis::handleBadAlloc();
     }
 }
 

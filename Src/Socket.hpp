@@ -7,8 +7,8 @@
 #ifndef __ARSLEXIS_SOCKET_HPP__
 #define __ARSLEXIS_SOCKET_HPP__
 
-#include "Debug.hpp"
-#include "Logging.hpp"
+#include <Debug.hpp>
+#include <Logging.hpp>
 
 namespace ArsLexis
 {
@@ -22,19 +22,8 @@ namespace ArsLexis
      * Implements functionality common to both socket types. Can't be instantiated stand-alone,
      * as it wouldn't make much sense anyway.
      */
-    class SocketBase
+    class SocketBase: private NonCopyable
     {
-        /**
-         * @internal
-         * Undefined. Prevents copying.
-         */
-        SocketBase(const SocketBase&);
-
-        /**
-         * @internal
-         * Undefined. Prevents copying.
-         */
-        SocketBase& operator=(const SocketBase&);
 
         mutable ChildLogger log_;
 
@@ -132,7 +121,7 @@ namespace ArsLexis
         
     };
     
-    class SocketSelector
+    class SocketSelector: private NonCopyable
     {
         enum {eventTypesCount_=3};
         

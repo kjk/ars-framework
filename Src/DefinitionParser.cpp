@@ -6,7 +6,7 @@
 #include "HorizontalLineElement.hpp"
 #include <cctype>
 #include <memory>
-#include "Utility.hpp"
+#include <Utility.hpp>
 
 using ArsLexis::String;
 using ArsLexis::FontEffects;
@@ -79,7 +79,6 @@ void DefinitionParser::popAvailableParent()
     if (!parentsStack_.empty())
         parentsStack_.pop_back();
 }
-
 
 inline bool DefinitionParser::isPlainText() const
 {

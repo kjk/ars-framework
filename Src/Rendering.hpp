@@ -1,8 +1,6 @@
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
-#include "Graphics.hpp"
-
-#define elementCompletedProgress ((uint_t)-1)
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
+#include <Graphics.hpp>
 
 class RenderingPreferences;
 class GenericTextElement;
@@ -12,6 +10,10 @@ class GenericTextElement;
  */
 struct LayoutContext
 {
+
+    enum {progressCompleted=((uint_t)-1)};
+
+
     ArsLexis::Graphics& graphics;
     const RenderingPreferences& preferences;
     uint_t renderingProgress;
@@ -36,12 +38,12 @@ struct LayoutContext
     
     void markElementCompleted(uint_t width)
     {
-        renderingProgress=elementCompletedProgress;
+        renderingProgress=progressCompleted;
         usedWidth+=width;
     }
     
     bool isElementCompleted() const
-    {return (renderingProgress==elementCompletedProgress);}
+    {return (renderingProgress==progressCompleted);}
     
     bool isFirstInLine() const
     {return (usedWidth==0);}

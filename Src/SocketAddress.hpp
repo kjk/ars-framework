@@ -1,7 +1,8 @@
 #ifndef __ARSLEXIS_SOCKETADDRESS_HPP__
 #define __ARSLEXIS_SOCKETADDRESS_HPP__
 
-#include "Debug.hpp"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
 
 namespace ArsLexis
 {
@@ -18,7 +19,7 @@ namespace ArsLexis
         operator const NetSocketAddrType* () const
         {return &address_;}
         
-        UInt16 size() const
+        uint_t size() const
         {return sizeof(address_);}
         
         virtual ~SocketAddress();

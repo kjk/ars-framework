@@ -1,6 +1,6 @@
 
 #include "iPediaApplication.hpp"
-#include "SysUtils.hpp"
+#include <SysUtils.hpp>
 #include "MainForm.hpp"
 #include "RegistrationForm.hpp"
 #include "SearchResultsForm.hpp"

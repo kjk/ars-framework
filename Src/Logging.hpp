@@ -82,13 +82,33 @@ namespace ArsLexis
     {
         const char* context_;
         uint_t contextLength_;
+        uint_t threshold_;
         
     public:
     
+        enum Level 
+        {
+            logAlways,
+            logCritical=10,
+            logError=20,
+            logDebug=30,
+            logWarning=40,
+            logInfo=50,
+            logEverything=(uint_t)-1,
+            logLevelDefault=logDebug
+        };
+    
         explicit Logger(const char* context) throw():
             context_(context),
-            contextLength_(StrLen(context_))
+            contextLength_(StrLen(context_)),
+            threshold_(logLevelDefault)
         {}
+        
+        uint_t threshold() const
+        {return threshold_;}
+        
+        void setThreshold(uint_t threshold)
+        {threshold_=threshold;}
         
         virtual ~Logger() throw()
         {}
@@ -109,47 +129,56 @@ namespace ArsLexis
         {
             Logger& logger_;
             String line_;
-            bool last_;
+            uint_t last_:1;
+            uint_t log_:1;
             
             LineAppender& operator=(const LineAppender&);
             
-        public:
-        
-            LineAppender(Logger& logger):
+            LineAppender(Logger& logger, bool doLog):
                 logger_(logger),
-                last_(true)
+                last_(true),
+                log_(doLog)
             {}
             
+            friend class Logger;
+            
+        public:
+        
             ~LineAppender()
             {
-                if (last_)
+                if (last_ && log_)
                     logger_.log(line_);
             }
             
             LineAppender(LineAppender& prev):
                 logger_(prev.logger_),
-                last_(true)
+                last_(true),
+                log_(prev.log_)
             {
                 prev.last_=false;
-                line_.swap(prev.line_);
+                if (log_)
+                    line_.swap(prev.line_);
             }
 
             
             LineAppender& operator<<(const char* text)
             {
-                line_.append(text);
+                if (log_)
+                    line_.append(text);
                 return *this;
             }
 
             LineAppender& operator<<(const String& text)
             {
-                line_.append(text);
+                if (log_)
+                    line_.append(text);
                 return *this;
             }
             
             LineAppender& operator<<(char chr)
             {
-                line_.append(1, chr);
+                if (log_)
+                    line_.append(1, chr);
                 return *this;
             }
             
@@ -164,6 +193,24 @@ namespace ArsLexis
 
         template<typename T>
         LineAppender operator<<(T val);
+        
+        LineAppender operator()(uint_t level)
+        {return LineAppender(*this, level<=threshold_);}
+        
+        LineAppender critical()
+        {return LineAppender(*this, logCritical<=threshold_);}
+
+        LineAppender error()
+        {return LineAppender(*this, logError<=threshold_);}
+        
+        LineAppender debug()
+        {return LineAppender(*this, logDebug<=threshold_);}
+
+        LineAppender warning()
+        {return LineAppender(*this, logWarning<=threshold_);}
+
+        LineAppender info()
+        {return LineAppender(*this, logInfo<=threshold_);}
 
     protected:
         
@@ -176,7 +223,7 @@ namespace ArsLexis
     template<typename T>
     Logger::LineAppender Logger::operator<<(T val)        
     {
-        return LineAppender(*this)<<val;
+        return LineAppender(*this, threshold_>=logLevelDefault)<<val;
     }
     
 #pragma mark -

@@ -1,8 +1,9 @@
 #ifndef __ARSLEXIS_RESOLVER_HPP__
 #define __ARSLEXIS_RESOLVER_HPP__
 
-#include "SocketAddress.hpp"
-#include "BaseTypes.hpp"
+#include <SocketAddress.hpp>
+#include <BaseTypes.hpp>
+#include <Utility.hpp>
 #include <map>
 
 namespace ArsLexis
@@ -12,7 +13,7 @@ namespace ArsLexis
     
     class SocketConnection;
     
-    class Resolver
+    class Resolver: private NonCopyable
     {
 
         NetLibrary& netLib_;

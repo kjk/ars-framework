@@ -1,8 +1,8 @@
 #ifndef __ARSLEXIS_FONT_EFFECTS_HPP__
 #define __ARSLEXIS_FONT_EFFECTS_HPP__
 
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
 
 namespace ArsLexis
 {

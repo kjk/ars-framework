@@ -1,8 +1,8 @@
 #ifndef __LOOKUP_HISTORY_HPP__
 #define __LOOKUP_HISTORY_HPP__
 
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
 #include <list>
 
 class LookupHistory

@@ -1,19 +1,11 @@
-#include "Resolver.hpp"
-#include "ResolverConnection.hpp"
-#include "SysUtils.hpp"
-#include "NetLibrary.hpp"
-#include "iPediaApplication.hpp"
+#include <Resolver.hpp>
+#include <ResolverConnection.hpp>
+#include <SysUtils.hpp>
+#include <NetLibrary.hpp>
 #include <cctype>
 
 namespace ArsLexis
 {
-
-    void Resolver::updateCacheEntry(const String& name, NetIPAddr address)
-    {
-        for (int i=0; i<dnsAddressesCount_; ++i)
-            dnsAddresses_[i]=0;
-        cache_[name]=address;         
-    }
 
     Resolver::Resolver(NetLibrary& netLib):
         netLib_(netLib)
@@ -25,6 +17,18 @@ namespace ArsLexis
     {
     }
     
+    void Resolver::initialize()
+    {
+        queryServerAddresses();
+    }
+    
+    void Resolver::updateCacheEntry(const String& name, NetIPAddr address)
+    {
+        for (int i=0; i<dnsAddressesCount_; ++i)
+            dnsAddresses_[i]=0;
+        cache_[name]=address;         
+    }
+
     UInt32 Resolver::dnsAddress(DNS_Choice choice)
     {
         assert(choice<dnsAddressesCount_);
@@ -96,9 +100,8 @@ namespace ArsLexis
 #ifdef NEVER
         char addrStr[32];
         NetLibAddrINToA(netLib_.refNum(), resAddr, addrStr);
-        Application &app = Application::instance();
-        iPediaApplication& iApp=static_cast<iPediaApplication&>(app);
-        iApp.log()<< "Resolver::blockingResolveAndConnect to ip="<<addrStr;
+        ChildLogger log("Resolver");
+        log<< "Resolver::blockingResolveAndConnect to ip="<<addrStr;
 #endif
         INetSocketAddress addr(resAddr, port);
         connection->setAddress(addr);
@@ -149,10 +152,4 @@ namespace ArsLexis
         }        
     }
     
-    void Resolver::initialize()
-    {
-        queryServerAddresses();
-    }
-    
-
 }

@@ -1,7 +1,7 @@
 #ifndef __DEFINITION_REQUEST_CONNECTION_HPP__
 #define __DEFINITION_REQUEST_CONNECTION_HPP__
 
-#include "FieldPayloadProtocolConnection.hpp"
+#include <FieldPayloadProtocolConnection.hpp>
 #include "LookupManager.hpp"
 
 class DefinitionParser;
@@ -24,7 +24,7 @@ class iPediaConnection: public ArsLexis::FieldPayloadProtocolConnection
         statusStringRetrievingResponse
     };        
     
-    class SearchResultsHandler: public PayloadHandler
+    class SearchResultsHandler: public PayloadHandler, private ArsLexis::NonCopyable
     {
         ArsLexis::String searchResults_;
 

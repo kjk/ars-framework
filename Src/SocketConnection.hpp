@@ -1,18 +1,18 @@
 #ifndef __ARSLEXIS_SOCKET_CONNECTION_HPP__
 #define __ARSLEXIS_SOCKET_CONNECTION_HPP__
 
-#include "Socket.hpp"
-#include "ErrBase.h"
-#include "Logging.hpp"
+#include <Socket.hpp>
+#include <ErrBase.h>
+#include <Logging.hpp>
+#include <SocketAddress.hpp>
 #include <vector>
-#include "SocketAddress.hpp"
 
 namespace ArsLexis
 {
 
     class SocketConnection;
 
-    class SocketConnectionManager
+    class SocketConnectionManager: private NonCopyable
     {
         NetLibrary& netLib_;
         SocketSelector selector_;
@@ -44,7 +44,7 @@ namespace ArsLexis
         friend class SocketConnection;
     };
 
-    class SocketConnection
+    class SocketConnection: private NonCopyable
     {
         SocketConnectionManager& manager_;
         Int32 transferTimeout_;

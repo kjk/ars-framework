@@ -1,4 +1,4 @@
-#include "SocketConnection.hpp"
+#include <SocketConnection.hpp>
 
 namespace ArsLexis 
 {
@@ -114,7 +114,7 @@ namespace ArsLexis
         Err error=socket_.open();
         if (error)
         {
-            log()<<"open(): unable to open socket, "<<error;
+            log().debug()<<"open(): unable to open socket, "<<error;
             handleError(error);
             return;
         }
@@ -124,7 +124,7 @@ namespace ArsLexis
         //error=socket_.setNonBlocking();
         if (error)
         {
-            log()<<"open(), can't setNonBlocking(), "<<error;
+            log().info()<<"open(), can't setNonBlocking(), "<<error;
             handleError(error);
             return;
         }
@@ -138,13 +138,13 @@ namespace ArsLexis
 
         if (netErrSocketBusy==error)
         {
-            log()<<"open(), got netErrSocketBusy from connect(), changed to errNone";
+            log().info()<<"open(), got netErrSocketBusy from connect(), changed to errNone";
             error=errNone;
         }
 
         if (error)
         {
-            log()<<"open(): can't connect(), "<<error;
+            log().error()<<"open(): can't connect(), "<<error;
             handleError(error);
             return;
         }
@@ -160,12 +160,12 @@ namespace ArsLexis
         Err error=getSocketErrorStatus();
         if (errNone==error)
         {
-            log()<<"notifyException(): getSocketErrorStatus() returned errNone.";
+            log().debug()<<"notifyException(): getSocketErrorStatus() returned errNone.";
             assert(false);
             error=netErrTimeout;
         }
         else
-            log()<<"notifyException(): getSocketErrorStatus() returned error, "<<error;
+            log().debug()<<"notifyException(): getSocketErrorStatus() returned error, "<<error;
         handleError(error);
     }
 
@@ -183,12 +183,12 @@ namespace ArsLexis
         Err error=socket_.getOption(netSocketOptLevelSocket, netSocketOptSockErrorStatus, &status, size);
         if (error)
         {
-            log()<<"getSocketErrorStatus(): unable to query socket option, "<<error;
+            log().error()<<"getSocketErrorStatus(): unable to query socket option, "<<error;
             return error;
         }
         if (status)
         {
-            log()<<"getSocketErrorStatus(): error status, "<<(Err)status;
+            log().debug()<<"getSocketErrorStatus(): error status, "<<(Err)status;
         }            
         return (Err)status;
     }

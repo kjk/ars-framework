@@ -1,5 +1,5 @@
 #include "GenericTextElement.hpp"
-#include "BaseTypes.hpp"
+#include <BaseTypes.hpp>
 #include <cctype>
 #include <memory>
 
@@ -213,6 +213,6 @@ void GenericTextElement::performAction(Definition& definition)
 
 void GenericTextElement::toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
 {
-    appendTo.append(text(), from, (to==elementCompletedProgress?text().npos:to));
+    appendTo.append(text(), from, (to==LayoutContext::progressCompleted?text().npos:to));
 }
 

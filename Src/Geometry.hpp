@@ -2,7 +2,7 @@
 #define __ARSLEXIS_GEOMETRY_HPP__
 
 #include <algorithm>
-#include "NativeGeometry.hpp"
+#include <NativeGeometry.hpp>
 
 namespace ArsLexis
 {
@@ -103,9 +103,7 @@ namespace ArsLexis
             {}
             
             bool operator() (const Rectangle& rect) const
-            {
-                return rect.hitTest(point);
-            }
+            {return rect.hitTest(point);}
             
         };
         
@@ -159,7 +157,20 @@ namespace ArsLexis
         {return (topLeft!=rect.topLeft) || (extent!=rect.extent);}
               
     };
+    
+    inline bool operator && (const Point& p, const Rectangle& r)
+    {return (r && p);}
+    
+    inline Rectangle operator+(const Rectangle& r, const Point& p)
+    {
+        Rectangle tmp(r);
+        tmp+=p;
+        return tmp;
+    }        
 
+    inline Rectangle operator+(const Point& p, const Rectangle& r)
+    {return r+p;}
+    
 }
 
 

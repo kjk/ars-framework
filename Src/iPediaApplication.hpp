@@ -2,11 +2,11 @@
 #define __IPEDIA_APPLICATION_HPP__
 
 #include "ipedia.h"
-#include "Application.hpp"
-#include "DynamicInputAreas.hpp"
+#include <Application.hpp>
+#include <DynamicInputAreas.hpp>
+#include <Logging.hpp>
 #include "RenderingPreferences.hpp"
 #include "iPediaHyperlinkHandler.hpp"
-#include "Logging.hpp"
 
 class LookupManager;
 

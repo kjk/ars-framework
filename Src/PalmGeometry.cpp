@@ -1,8 +1,9 @@
 #include <PalmOS.h>
-#include "Geometry.hpp"
+#include <Geometry.hpp>
 
 namespace ArsLexis
 {
+
     Point::Point(const NativePoint_t& nativePoint):
         x(nativePoint.x),
         y(nativePoint.y)

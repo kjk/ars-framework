@@ -1,6 +1,10 @@
 #ifndef __ARSLEXIS_PALM_GRAPHICS_INLINE_HPP__
 #define __ARSLEXIS_PALM_GRAPHICS_INLINE_HPP__
 
+#ifndef INCLUDE_PALM_GRAPHICS_INLINE
+#error "File PalmGraphicsInline.hpp should not be included directly. Use Graphics.hpp instead."
+#endif
+
 namespace ArsLexis
 {
 

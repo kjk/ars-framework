@@ -1,12 +1,13 @@
 #ifndef __DEFINITION_PARSER_HPP__
 #define __DEFINITION_PARSER_HPP__
 
-#include "Debug.hpp"
-#include "FieldPayloadProtocolCOnnection.hpp"
-#include "Definition.hpp"
-#include "HTMLCharacterEntityReferenceDecoder.hpp"
+#include <Debug.hpp>
+#include <FieldPayloadProtocolConnection.hpp>
+#include <HTMLCharacterEntityReferenceDecoder.hpp>
 #include <list>
 #include <vector>
+
+#include "Definition.hpp"
 
 class Definition;
 

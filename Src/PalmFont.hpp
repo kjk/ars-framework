@@ -2,8 +2,9 @@
 #define __ARSLEXIS_PALM_FONT_HPP__
 
 #include <PalmOS.h>
-#include "BaseTypes.hpp"
-#include "FontEffects.hpp"
+#include <BaseTypes.hpp>
+#include <FontEffects.hpp>
+#include <Utility.hpp>
 
 namespace ArsLexis
 {
@@ -11,7 +12,7 @@ namespace ArsLexis
     class PalmFont
     {
     
-        class PalmFontImpl
+        class PalmFontImpl: private NonCopyable
         {
             mutable uint_t refCount_;
             FontID fontId_;

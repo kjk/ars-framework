@@ -1,8 +1,13 @@
 #include <PalmOS.h>
-#include "Graphics.hpp"
+#include <Graphics.hpp>
 
 namespace ArsLexis
 {
+
+    Graphics::~Graphics()
+    {
+    }
+    
     Graphics::Graphics(const NativeGraphicsHandle_t& handle):
         handle_(handle)
     {
@@ -29,36 +34,39 @@ namespace ArsLexis
         WinPopDrawState();
     }
     
-    class PalmUnderlineSetter
-    {
-        UnderlineModeType originalUnderline_;
-    public:
-        
-        explicit PalmUnderlineSetter(UnderlineModeType newMode):
-            originalUnderline_(WinSetUnderlineMode(newMode))
-        {}
-        
-        ~PalmUnderlineSetter()
-        {WinSetUnderlineMode(originalUnderline_);}
-        
-    };
+    namespace {
     
-    inline static UnderlineModeType convertUnderlineMode(FontEffects::Underline underline)
-    {
-        UnderlineModeType result=noUnderline;
-        switch (underline)
+        class PalmUnderlineSetter
         {
-            case FontEffects::underlineDotted:
-                result=grayUnderline;
-                break;
-            case FontEffects::underlineSolid:
-                result=solidUnderline;
-                break;
-        }
-        return result;                
-    }
+            UnderlineModeType originalUnderline_;
+        public:
             
-    
+            explicit PalmUnderlineSetter(UnderlineModeType newMode):
+                originalUnderline_(WinSetUnderlineMode(newMode))
+            {}
+            
+            ~PalmUnderlineSetter()
+            {WinSetUnderlineMode(originalUnderline_);}
+            
+        };
+        
+        inline static UnderlineModeType convertUnderlineMode(FontEffects::Underline underline)
+        {
+            UnderlineModeType result=noUnderline;
+            switch (underline)
+            {
+                case FontEffects::underlineDotted:
+                    result=grayUnderline;
+                    break;
+                case FontEffects::underlineSolid:
+                    result=solidUnderline;
+                    break;
+            }
+            return result;                
+        }
+                
+    }
+        
     void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft)
     {
         FontEffects fx=support_.font.effects();    

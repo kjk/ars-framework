@@ -1,10 +1,14 @@
 #ifndef __ARSLEXIS_GRAPHICS_HPP__
 #define __ARSLEXIS_GRAPHICS_HPP__
 
+#include <Debug.hpp>
 #include <BaseTypes.hpp>
 #include <Geometry.hpp>
-#include <NativeGraphics.hpp>
 #include <Utility.hpp>
+
+#define INCLUDE_NATIVE_GRAPHICS
+#include <NativeGraphics.hpp>
+#undef INCLUDE_NATIVE_GRAPHICS
 
 namespace ArsLexis
 {
@@ -155,7 +159,9 @@ namespace ArsLexis
 }
 
 #if defined(_PALM_OS)
-#include "PalmGraphicsInline.hpp"
+#define INCLUDE_PALM_GRAPHICS_INLINE
+#include <PalmGraphicsInline.hpp>
+#undef INCLUDE_PALM_GRAPHICS_INLINE
 #endif
 
 #endif

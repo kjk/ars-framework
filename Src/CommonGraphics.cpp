@@ -1,20 +1,14 @@
-#include "Graphics.hpp"
-
-#if defined(__PALMOS_H__) 
-#include <cassert>
-#endif
+#include <Graphics.hpp>
 
 namespace ArsLexis
 {
     
-    #if defined(__PALMOS_H__) 
-    Graphics::~Graphics()
-    {
-    }
-    #endif
+    namespace {
+    
+        typedef NativeColor_t (Graphics::* ColorSetterMethod_t)(NativeColor_t);
+        static ColorSetterMethod_t colorSetters[]={&Graphics::setTextColor, &Graphics::setForegroundColor, &Graphics::setBackgroundColor};
 
-    typedef NativeColor_t (Graphics::* ColorSetterMethod_t)(NativeColor_t);
-    static ColorSetterMethod_t colorSetters[]={&Graphics::setTextColor, &Graphics::setForegroundColor, &Graphics::setBackgroundColor};
+    }
     
     NativeColor_t Graphics::setColor(Graphics::ColorChoice choice, NativeColor_t color)
     {

@@ -1,7 +1,7 @@
 #ifndef __ARSLEXIS_FIELD_PAYLOAD_PROTOCOL_CONNECTION_HPP__
 #define __ARSLEXIS_FIELD_PAYLOAD_PROTOCOL_CONNECTION_HPP__
 
-#include "SimpleSocketConnection.hpp"
+#include <SimpleSocketConnection.hpp>
 
 namespace ArsLexis
 {

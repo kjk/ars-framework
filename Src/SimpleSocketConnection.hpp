@@ -1,8 +1,8 @@
 #ifndef __ARSLEXIS_SIMPLE_SOCKET_CONNECTION_HPP__
 #define __ARSLEXIS_SIMPLE_SOCKET_CONNECTION_HPP__
 
-#include "SocketConnection.hpp"
-#include "BaseTypes.hpp"
+#include <SocketConnection.hpp>
+#include <BaseTypes.hpp>
 
 namespace ArsLexis 
 {

@@ -1,12 +1,23 @@
-#include "FieldPayloadProtocolConnection.hpp"
+#include <FieldPayloadProtocolConnection.hpp>
 
 namespace ArsLexis
 {
 
+
+    namespace {
+
 #define fieldSeparator ": "
 #define lineSeparator "\n"
-    static const uint_t fieldSeparatorLength=2;
-    static const uint_t lineSeparatorLength=1;
+
+        static const uint_t fieldSeparatorLength=2;
+        static const uint_t lineSeparatorLength=1;
+        
+    }
+
+    FieldPayloadProtocolConnection::~FieldPayloadProtocolConnection()
+    {
+        delete payloadHandler_;
+    }
 
     void FieldPayloadProtocolConnection::appendField(String& out, const char* name, uint_t nameLength, const char* value, uint_t valueLength)
     {
@@ -18,11 +29,6 @@ namespace ArsLexis
         if (valueLength)
             out.append(fieldSeparator, fieldSeparatorLength).append(value, valueLength);
         out.append(lineSeparator, lineSeparatorLength);
-    }
-
-    FieldPayloadProtocolConnection::~FieldPayloadProtocolConnection()
-    {
-        delete payloadHandler_;
     }
 
     void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler, ulong_t length)
@@ -113,6 +119,5 @@ namespace ArsLexis
             error=processResponseIncrement(true);
         return error;    
     }
-    
     
 }

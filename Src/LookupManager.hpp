@@ -2,9 +2,9 @@
 #define __LOOKUP_MANAGER_HPP__
 
 #include "LookupHistory.hpp"
-#include "SocketConnection.hpp"
-#include "NetLibrary.hpp"
-#include "Resolver.hpp"
+#include <SocketConnection.hpp>
+#include <NetLibrary.hpp>
+#include <Resolver.hpp>
 #include "Definition.hpp"
 
 namespace ArsLexis

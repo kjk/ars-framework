@@ -1,13 +1,13 @@
 /**
- * @file device_info.cpp
+ * @file DeviceInfo.cpp
  *
  *
  * Copyright (C) 2000-2003 Krzysztof Kowalczyk
  *
  * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
  */
-#include "DeviceInfo.hpp"
-#include "SysUtils.hpp"
+#include <DeviceInfo.hpp>
+#include <SysUtils.hpp>
 #include <DLServer.h>
 #include <68K/Hs.h>
 
@@ -115,19 +115,23 @@ namespace ArsLexis
         return error;
     }
 
-    typedef Err (TokenGetter)(String&);
+    namespace {
 
-    static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGetter* getter)
-    {
-        String token;
-        Err error=(*getter)(token);
-        if (!error)
+        typedef Err (TokenGetter)(String&);
+
+        static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGetter* getter)
         {
-            if (!out.empty())
-                out+=':';
-            out.append(prefix);
-            out.append(hexBinEncode(token));
+            String token;
+            Err error=(*getter)(token);
+            if (!error)
+            {
+                if (!out.empty())
+                    out+=':';
+                out.append(prefix);
+                out.append(hexBinEncode(token));
+            }
         }
+
     }
 
     String deviceInfoToken()
