@@ -73,8 +73,6 @@ def dumpMostViewed():
     for (key,val) in l:
         print "%9d %s" % (val,key)
 
-g_fJustStats = False
-
 # given argument name in argName, tries to return argument value
 # in command line args and removes those entries from sys.argv
 # return None if not found
@@ -207,8 +205,8 @@ class WikipediaStats:
                 avgArticleSize = float(totalArticlesSize)/float(articlesCount)
             print "  Average article size: %.2f" % avgArticleSize
 
-def convertFile(inName,limit):
-    if not g_fJustStats:
+def convertFile(inName,limit,fJustStats):
+    if not fJustStats:
         outName = getTxtFileName(inName)
         redirectsFileName = getRedirectsFileName(inName)
         hashFileName = getHashFileName(inName)
@@ -224,12 +222,12 @@ def convertFile(inName,limit):
         title = article.getTitle().strip()
         viewCount = article.getViewCount()
         registerMostViewed(title,viewCount)
-        if not g_fJustStats:
+        if not fJustStats:
             ns = article.getNs()
             txt = article.getText().strip()
             foOut.write("%s\n" % title)
             foOut.write("%d\n" % ns)
-            foOut.write("%d\n" % len(txt)+1) # +1 for ending newline
+            foOut.write("%d\n" % (len(txt)+1))
             foOut.write("%s\n" % txt)
 
             if article.fRedirect():
@@ -244,7 +242,7 @@ def convertFile(inName,limit):
             print "processed %d items" % count
         if count>=limit:
             break
-    if not g_fJustStats:
+    if not fJustStats:
         foOut.close()
         foRedirects.close()
         foHash.close()
@@ -260,10 +258,10 @@ if __name__=="__main__":
     else:
         limit = int(limit)
     print "limit=%d" % limit
-    g_fJustStats = fDetectRemoveCmdFlag("-juststats")
+    fJustStats = fDetectRemoveCmdFlag("-juststats")
 
     # TODO: for now always do "just stats"
-    g_fJustStats = True
+    #fJustStats = True
 
     fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
     if g_fPsycoAvailable and fUsePsyco:
@@ -275,4 +273,4 @@ if __name__=="__main__":
         usageAndExit()
 
     fileName = sys.argv[1]
-    convertFile(fileName,limit)
+    convertFile(fileName,limit,fJustStats)
