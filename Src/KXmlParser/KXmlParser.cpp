@@ -319,6 +319,7 @@ error_t KXmlParser::readName(String& ret)
     error_t error;
     int pos = txtPos_;
     int c;
+    bool weAreInsiddeQuote = false;
     if ((error=peek(c,0))!=eNoError)
         return error;
 
@@ -326,11 +327,14 @@ error_t KXmlParser::readName(String& ret)
         && (c < _T('A') || c > _T('Z'))
         && c != _T('_')
         && c != _T(':')
+        && !(completlyLoose_ && c == _T('\"'))
         && c < 0x0c0)
         return eNameExpected;
 
     do
     {
+        if(c == _T('\"'))
+            weAreInsiddeQuote = !weAreInsiddeQuote;
         if ((error=read(c))!=eNoError)
             return error;
         push(c);
@@ -340,6 +344,7 @@ error_t KXmlParser::readName(String& ret)
         || (c >= _T('A') && c <= _T('Z'))
         || (c >= _T('0') && c <= _T('9'))
         || (completlyLoose_ && c == _T('\"'))
+        || (weAreInsiddeQuote && completlyLoose_ && c == _T('/'))
         || c == _T('_')
         || c == _T('-')
         || c == _T(':')
