@@ -14,7 +14,7 @@ namespace ArsLexis
 {
 
     void sendEvent(uint_t event, const void* data=0, uint_t dataSize=0, bool unique=false);
-
+    
     template<class EventData>
     void sendEvent(uint_t event, const EventData& data, bool unique=false)
     {sendEvent(event, &data, sizeof(data), unique);}

@@ -1,4 +1,3 @@
-#include "sm_ipedia.h"
 #include <SysUtils.hpp>
 
 
@@ -189,9 +188,15 @@ bool ArsLexis::highDensityFeaturesPresent()
 
 void ArsLexis::sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
 {
-    void *realData=new char[dataSize];
-    memcpy(realData, data, dataSize);
-    PostMessage(HWND_BROADCAST, event, (WPARAM)realData, dataSize);
+    //void *realData=new char[dataSize];
+    //memcpy(realData, data, dataSize);
+    assert(data==0);
+    PostMessage(HWND_BROADCAST, event, 0, 0);
+}
+
+void ArsLexis::sendEvent(uint_t event, short wph, short wpl, int lp)
+{
+    PostMessage(HWND_BROADCAST, event, (wph<<16)|wpl, lp);
 }
 
 void ArsLexis::localizeNumber(char_t* begin, char_t* end)

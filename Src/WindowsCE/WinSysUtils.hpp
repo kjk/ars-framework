@@ -1,5 +1,5 @@
-#ifndef __ARSLEXIS_PALM_SYSUTILS_HPP__
-#define __ARSLEXIS_PALM_SYSUTILS_HPP__
+#ifndef __ARSLEXIS_PALM_WINSYSUTILS_HPP__
+#define __ARSLEXIS_PALM_WINSYSUTILS_HPP__
 
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
@@ -9,7 +9,7 @@ namespace ArsLexis
 
     
     /*void getScreenBounds(RectangleType& bounds);*/
-
+       
     ulong_t random(ulong_t range);
     
     // detect a web browser app and return cardNo and dbID of its *.prc.
@@ -25,7 +25,7 @@ namespace ArsLexis
     // bool highDensityFeaturesPresent();
     
     // bool notifyManagerPresent();
-    
+    void sendEvent(uint_t event, short wph, short wpl, int lp);
 }
 
 #endif
