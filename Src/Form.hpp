@@ -18,7 +18,8 @@ namespace ArsLexis
         FiveWay fiveWay_;
         UInt16 id_;
         FormType* form_;
-        bool deleteOnClose_;
+        bool deleteOnClose_:1;
+        bool deleteAfterEvent_:1;
         mutable String title_;
         
         static Boolean routeEventToForm(EventType* event);

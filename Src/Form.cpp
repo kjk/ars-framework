@@ -29,17 +29,25 @@ namespace ArsLexis
             }
             
         }
+        Boolean result=false;
         if (form)
-            return form->handleEvent(*event);
-        else
-            return false;
+        {
+            result=form->handleEvent(*event);
+            if (form->deleteAfterEvent_)
+            {
+//                result=true; // If we don't return true after Frm
+                delete form;
+            }                
+        }
+        return result;
     }
     
     Form::Form(Application& app, UInt16 id):
         application_(app),
         id_(id),
         form_(0), 
-        deleteOnClose_(true)
+        deleteOnClose_(true),
+        deleteAfterEvent_(false)
     {
     }
     
@@ -110,7 +118,7 @@ namespace ArsLexis
 
     bool Form::handleClose() 
     {
-        delete this;        
+        deleteAfterEvent_=true;  
         return false;
     }
     
@@ -132,6 +140,8 @@ namespace ArsLexis
         deleteOnClose_=false;
         handleClose();        
         FrmReturnToForm(formId);
+        form_=0;
+        id_=frmInvalidObjectId;
     }
     
     void Form::setBounds(const Rectangle& bounds)
