@@ -27,7 +27,7 @@
 # -usepsyco : if used, will use psyco for speeding up, false by default
 
 import MySQLdb, sys, datetime, re, unicodedata, time, entities
-import convertFromSQL
+import wikipedia-sql
 try:
     import psyco
     g_fPsycoAvailable = True
@@ -244,7 +244,7 @@ def convertTerm(cur_title,definition,ts):
         if g_fVerbose:
             log_txt += "*New record"
     except:
-        # assuming that the exception happend because of 
+        # assuming that the exception happend because of
         if g_fShowDups:
             print "dup: " + cur_title
         if g_fVerbose:
@@ -327,11 +327,11 @@ def convertAll(articleLimit):
 
 def convertAllFromSQL(fileName,articleLimit):
     count = 0
-    for sqlArgs in convertFromSQL.iterINSERTArgs(fileName):
-        title = sqlArgs[convertFromSQL.CUR_TITLE]
-        txt = sqlArgs[convertFromSQL.CUR_TEXT]
-        timestamp = sqlArgs[convertFromSQL.CUR_TIMESTAMP]
-        convertTerm(title,txt,timestamp)
+    for article in convertFromSQL.iterWikipediaArticles(fileName):
+        title = article.getTitle()
+        txt = article.getText()
+        timestamp = article.getNs()
+         convertTerm(title,txt,timestamp)
         count += 1
         if 0 == count % 500:
             sys.stderr.write("processed %d rows, last term=%s\n" % (count,title))
@@ -415,7 +415,7 @@ if __name__=="__main__":
     if articleLimit:
         articleLimit = int(articleLimit)
 
-    fromSql = getRemoveCmdArg("-fromsql")    
+    fromSql = getRemoveCmdArg("-fromsql")
     termToConvert = getRemoveCmdArg("-one")
     startTiming()
     if None!=termToConvert:
