@@ -74,7 +74,7 @@ public:
     
     virtual ~DefinitionElement();
     
-    void performAction(Definition&);
+    void performAction(Definition&, const ArsLexis::Point* point);
     
     void setParent(DefinitionElement* parent)
     {

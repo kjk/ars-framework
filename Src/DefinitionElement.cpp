@@ -24,7 +24,7 @@ DefinitionElement::~DefinitionElement()
     delete hyperlink_;
 }
 
-void DefinitionElement::performAction(Definition& definition)
+void DefinitionElement::performAction(Definition& definition, const ArsLexis::Point* point)
 {
     assert(isHyperlink());
     // actionCallback_ takes precedence over hyperlink handler and we don't
@@ -37,7 +37,7 @@ void DefinitionElement::performAction(Definition& definition)
     {
         Definition::HyperlinkHandler* handler = definition.hyperlinkHandler();
         if (handler) 
-            handler->handleHyperlink(definition, *this);
+            handler->handleHyperlink(definition, *this, point);
     }
 
 }

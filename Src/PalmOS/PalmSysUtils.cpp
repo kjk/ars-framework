@@ -1,6 +1,7 @@
 #include <Debug.hpp>
 #include <SysUtils.hpp>
 #include <Text.hpp>
+#include <Geometry.hpp>
 
 using ArsLexis::char_t;
 
@@ -229,11 +230,16 @@ bool ArsLexis::highDensityFeaturesPresent()
     return (errNone==error && version>=4);
 }
 
-void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool unique)
+void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool unique, const Point* point)
 {
     EventType event;
     MemSet(&event, sizeof(event), 0);
     event.eType=static_cast<eventsEnum>(e);
+    if (NULL != point)
+    {
+        event.screenX = point->x;
+        event.screenY = point->y;
+    }
     if (data && dataSize)
     {
         assert(dataSize<=sizeof(event.data));

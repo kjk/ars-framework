@@ -39,5 +39,12 @@ namespace ArsLexis
         return *this;
     }
     
+    
+     void Rectangle::center(Point& p) const
+     {
+        p.x = topLeft.x + extent.x / 2; 
+        p.y = topLeft.y + extent.y / 2;
+     }
+    
 }
 

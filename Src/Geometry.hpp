@@ -184,6 +184,8 @@ namespace ArsLexis
         }
         
         Rectangle& operator+= (const Rectangle& rect); 
+        
+        void center(Point& point) const;
                       
     };
     

@@ -38,24 +38,24 @@ void *createExtendedEventText(ulong_t eventId, const char_t* txt, ulong_t length
     return res;
 };
 
-void sendTextEvent(ulong_t eventId, const ArsLexis::char_t *txt)
+void sendTextEvent(ulong_t eventId, const ArsLexis::char_t* txt, const Point* point)
 {
     void *data = createExtendedEventText(eventId, txt, tstrlen(txt));
     if (NULL!=data)
-        sendExtendedEvent(data);
+        sendExtendedEvent(data, point);
 }
 
-void sendTextEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length)
+void sendTextNEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length, const Point* point)
 {
     void *data = createExtendedEventText(eventId, txt, length);
     if (NULL!=data)
-        sendExtendedEvent(data);
+        sendExtendedEvent(data, point);
 }
 
 
-void sendExtendedEvent(void *eventData)
+void sendExtendedEvent(void* eventData, const Point* point)
 {
-    ArsLexis::sendEvent(extEvent, eventData);
+    ArsLexis::sendEvent(extEvent, eventData, false, point);
 }
 
 ulong_t   getExtendedEventId(EventType *event)

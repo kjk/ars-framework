@@ -123,9 +123,9 @@ public:
     {
     public:
     
-        virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement)=0;
+        virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const ArsLexis::Point* point);
         
-        virtual void handleHyperlink(const ArsLexis::String& hyperlink);
+        virtual void handleHyperlink(const ArsLexis::String& hyperlink, const ArsLexis::Point* point);
     
         virtual ~HyperlinkHandler();
         
@@ -176,6 +176,8 @@ public:
         bool operator<(const HotSpot& other) const;
         
         ~HotSpot();
+        
+        bool center(ArsLexis::Point& point) const;
         
     };
     

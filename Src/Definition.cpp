@@ -70,6 +70,37 @@ bool Definition::HotSpot::operator<(const Definition::HotSpot& other) const
     return rectangles_.front()<other.rectangles_.front();
 }
 
+bool Definition::HotSpot::center(Point& point) const
+{
+    if (rectangles_.empty())
+        return false;
+    Rectangle r;
+    r.topLeft.x = INT_MAX;
+    r.topLeft.y = INT_MAX;
+    Rectangles_t::const_iterator end = rectangles_.end();
+    Rectangles_t::const_iterator it = rectangles_.begin();
+    while (it != end)
+    {
+        const Rectangle& o = *it++;
+        if (o.topLeft.x < r.topLeft.x)
+            r.topLeft.x = o.topLeft.x;
+        if (o.topLeft.y < r.topLeft.y)
+            r.topLeft.y = o.topLeft.y;
+        int d = o.topLeft.x + o.extent.x;
+        if (d > r.topLeft.x + r.extent.x)
+            r.extent.x = d - r.topLeft.x;
+        d = o.topLeft.y + o.extent.y;
+        if (d > r.topLeft.y + r.extent.y)
+            r.extent.y = d - r.topLeft.y;
+    }
+    if (INT_MAX == r.topLeft.x)
+        r.topLeft.x = 0;
+    if (INT_MAX == r.topLeft.y)
+        r.topLeft.y = 0;
+    point.x = r.topLeft.x + r.extent.x / 2;
+    point.y = r.topLeft.y + r.extent.y / 2;
+    return true;
+}
 
 Definition::Definition():
     firstLine_(0),
@@ -715,7 +746,7 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
             trackingSelection_ = false;
             selectionIsHyperlink_ = false;
             if (insideHyperlink)
-                (*elem)->performAction(*this);
+                (*elem)->performAction(*this, &point);
         }
         return true;
     }
@@ -945,7 +976,17 @@ bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPrefe
                 selectionStartElement_ = selectionEndElement_ = elements_.end();
                 selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
                 renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
-                (*inactiveSelectionStartElement_)->performAction(*this);
+                
+                {
+                    Point center;
+                    DefinitionElement* elem = (*inactiveSelectionStartElement_);
+                    const DefinitionElement::HyperlinkProperties* props = elem->hyperlinkProperties();
+                    if (NULL != props && NULL != props->hotSpot && props->hotSpot->center(center))
+                        elem->performAction(*this, &center);
+                    else
+                        elem->performAction(*this, NULL);
+                }
+                
                 inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
                 return true;
             
@@ -1218,6 +1259,17 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
 }
 #endif
 
-void Definition::HyperlinkHandler::handleHyperlink(const String&)
+
+void Definition::HyperlinkHandler::handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const Point* point)
+{
+    assert(hyperlinkElement.isHyperlink());
+    const DefinitionElement::HyperlinkProperties& props = *hyperlinkElement.hyperlinkProperties();
+    const String& hyperlink = props.resource;
+
+    handleHyperlink(hyperlink, point);
+}
+
+
+void Definition::HyperlinkHandler::handleHyperlink(const String&, const Point*)
 {
 }

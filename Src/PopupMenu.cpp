@@ -88,7 +88,9 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
 
     if (NULL != hyperlinkHandler && NULL != hyperlink)
     {
-        hyperlinkHandler->handleHyperlink(hyperlink);
+        Point p;
+        rect.center(p);
+        hyperlinkHandler->handleHyperlink(hyperlink, &p);
     }
            
     return sel;

@@ -3,13 +3,17 @@
 
 #include <Application.hpp>
 
+namespace ArsLexis {
+class Point;
+}
+
 static const eventsEnum extEvent = eventsEnum(ArsLexis::Application::appExtendedEvent);
 
 #define EVT_MAGIC_NUMBER 901107055L
 #define EXT_EVT_TEXT_TYPE  1
 
 void *    createExtendedEventText(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length);
-void      sendExtendedEvent(void *eventData);
+void      sendExtendedEvent(void* eventData, const ArsLexis::Point* point = NULL);
 ulong_t   getExtendedEventId(void *eventData);
 ulong_t   getExtendedEventId(EventType *event);
 ulong_t   getExtendedEventMagicNumber(void *eventData);
@@ -19,7 +23,9 @@ const ArsLexis::char_t* getTextEventData(EventType* event);
 ulong_t getTextEventDataLength(EventType* event);
 
 void freeExtendedEvent(EventType *event);
-void sendTextEvent(ulong_t eventId, const ArsLexis::char_t* txt);
-void sendTextEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length);
+
+void sendTextEvent(ulong_t eventId, const ArsLexis::char_t* txt,  const ArsLexis::Point* point = NULL);
+
+void sendTextNEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length, const ArsLexis::Point* point = NULL);
 
 #endif

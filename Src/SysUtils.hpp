@@ -12,11 +12,13 @@
 
 namespace ArsLexis
 {
-    void sendEvent(uint_t event, const void* data=0, uint_t dataSize=0, bool unique=false);
+    class Point;
+    
+    void sendEvent(uint_t event, const void* data = NULL, uint_t dataSize = 0, bool unique = false, const Point* point = NULL);
     
     template<class EventData>
-    void sendEvent(uint_t event, const EventData& data, bool unique=false)
-    {sendEvent(event, &data, sizeof(data), unique);}
+    void sendEvent(uint_t event, const EventData& data, bool unique = false, const Point* point = NULL)
+    {sendEvent(event, &data, sizeof(data), unique, point);}
 
     void processReadyUiEvents();
 

@@ -174,7 +174,8 @@ namespace ArsLexis
         FormGadget* gadget;
         bool taking = (event.eType == frmObjectFocusTakeEvent);
         const frmObjectFocusTake& data = reinterpret_cast<const frmObjectFocusTake&>(event.data);
-        assert(id_ == data.formID);
+        if (id_ != data.formID)
+            return false;
         UInt16 index = FrmGetObjectIndex(form_, data.objectID);
 
         UInt16 lastIndex = focusedControlIndex_;
