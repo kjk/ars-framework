@@ -4,24 +4,32 @@
 #include "ipedia.h"
 #include "Application.hpp"
 #include "DynamicInputAreas.hpp"
+#include "NetLibrary.hpp"
 
 class iPediaApplication: public ArsLexis::Application 
 {
     ArsLexis::DIA_Support diaSupport_;
     Boolean diaNotifyRegistered_;
+    
+    typedef std::auto_ptr<ArsLexis::NetLibrary> NetLibPtr;
+    NetLibPtr netLib_;
+    
+    Err getNetLib(ArsLexis::NetLibrary*& netLib);
         
 public:
 
-    const ArsLexis::DIA_Support& getDIASupport() const throw()
+    const ArsLexis::DIA_Support& getDIASupport() const
     {return diaSupport_;}
 
     iPediaApplication(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
     
-    ~iPediaApplication() throw();
+    ~iPediaApplication();
     
-    void handleSystemNotify(SysNotifyParamType& notify);
+    Err initialize();
     
-    void run();
+    Err handleSystemNotify(SysNotifyParamType& notify);
+    
+    Err normalLaunch();
 };
 
 

@@ -6,7 +6,7 @@
  * The obvious implementation will look like this:
  * @code
  * namespace ArsLexis {
- *     Application& Application::instance() throw() {
+ *     Application& Application::instance() {
  *         return getInstance(appFileCreator);
  *     }
  * }
@@ -19,12 +19,9 @@
 
 #include "Debug.hpp"
 
-#include <CWPalmOS.h>
 #include <CWCallbackThunks.h>
 
 #include <map>
-#include <memory>
-
 
 namespace ArsLexis 
 {
@@ -63,7 +60,7 @@ namespace ArsLexis
          * Stores form id -> @c Form mappings so that we can access @c Form objects from within event handlers.
          */
         Forms_t forms_;
-        
+
         /**
          * @internal 
          * Adds form id -> @c Form mapping. Used internally by @c Form class constructor.
@@ -81,22 +78,55 @@ namespace ArsLexis
         /**
          * @internal 
          * Called internally by @c Application(UInt32).
-         * @throws std::bad_alloc in case system runs out of memory.
          */
-        static void setInstance(UInt32 creatorId, Application* app) throw(std::bad_alloc);
+        static Err setInstance(UInt32 creatorId, Application* app);
         
         /**
          * @internal
          * Called internally by @c instance().
          */
-        static Application& getInstance(UInt32 creatorId) throw();
+        static Application& getInstance(UInt32 creatorId);
         
+        /**
+         * @internal 
+         * Actual @c EvtGetEvent() timeout used by @c runEventLoop().
+         */
         Int32 eventTimeout_;
+        
+        /**
+         * @internal 
+         * Launch code used while instantiating this @c Application.
+         */
         const UInt16 launchCommand_;
+        
+        /**
+         * @internal 
+         * Pointer to launch parameter block used while instantiating this @c Application.
+         */
         MemPtr const launchParameterBlock_;
+        
+        /**
+         * @internal
+         * Launch flags used instantiating this @c Application.
+         */
         const UInt16 launchFlags_;
+        
+        /**
+         * @internal
+         * Wraps @c Form::routeEventToForm() for use in expanded mode.
+         */
         _CW_EventHandlerThunk formEventHandlerThunk_;
+        
+        /**
+         * @internal 
+         * Stores card number this application's database resides on.
+         */
         UInt16 cardNo_;
+        
+        /**
+         * @internal 
+         * Stores id of this app's database.
+         */
         LocalID databaseId_;
 
         /**
@@ -115,27 +145,33 @@ namespace ArsLexis
          */
         enum Feature 
         {
+            /**
+             * Feature index that is used to store pointer to current @c Application instance.
+             */
             featureInstancePointer,
+            
+            /**
+             * First available feature index for use in subclasses.
+             */
             featureFirstAvailable
         };
     
 #ifdef appFileCreator    
-        explicit Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId=appFileCreator) throw(std::bad_alloc, PalmOSError);
+        explicit Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId=appFileCreator);
 #else
         /**
          * Constructor. 
          * Initializes @c Application object and sets it as current instance through the call to @c FtrSet().
          */
-        explicit Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId) throw(std::bad_alloc, PalmOSError);
+        explicit Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId);
 #endif
 
         /**
          * Checks if the ROM version is high enough to run application.
          * @param requiredVersion version needed to run this application.
          * @param alertId if version is lower than @c requiredVersion, this alert will be shown.
-         * @exception PalmOSError is thrown if version is too low (with code @c sysErrRomIncompatible).
          */
-        void checkRomVersion(UInt32 requiredVersion, UInt16 alertId=frmInvalidObjectId) throw(PalmOSError);
+        Err checkRomVersion(UInt32 requiredVersion, UInt16 alertId=frmInvalidObjectId);
         
         /**
          * Creates and activates a new @c Form object.
@@ -160,52 +196,68 @@ namespace ArsLexis
          */
         virtual void runEventLoop();
         
-        Form* getOpenForm(UInt16 id) const throw();
+        Form* getOpenForm(UInt16 id) const;
         
-        void registerNotify(UInt32 notifyType, Int8 priority=sysNotifyNormalPriority, void* userData=0) throw(PalmOSError);
-        void unregisterNotify(UInt32 notifyType, Int8 priority=sysNotifyNormalPriority) throw(PalmOSError);
+        Err registerNotify(UInt32 notifyType, Int8 priority=sysNotifyNormalPriority, void* userData=0);
+
+        Err unregisterNotify(UInt32 notifyType, Int8 priority=sysNotifyNormalPriority);
+        
+        /**
+         * Called from @c run() in case when application is run with @c sysAppLaunchCmdNotify code.
+         * Override it to perform some useful stuff.
+         */
+        virtual Err handleSystemNotify(SysNotifyParamType& notify)
+        {return errNone;}
+        
+        /**
+         * Called from @c run() in case when application is run with @c sysAppLaunchCmdNormalLaunch code.
+         * You must override it and provide some reasonable contents like this (error checking omitted for clarity):
+         * @code
+         *     checkRomVersion(myRequiredRomVersion, myRomIncompatibleAlert);
+         *     gotoForm(myMainForm);
+         *     runEventLoop();
+         * @endcode
+         */ 
+        virtual Err normalLaunch()=0;
 
     public:
+    
+        virtual Err initialize();
     
         /**
          * Destructor. Unregisters current instance.
          */
-        virtual ~Application() throw();
+        virtual ~Application();
 
         /**
          * Gets currently registered @c Application instance.
          */
-        static Application& instance() throw();
+        static Application& instance();
         
         
-        UInt16 launchCommand() const throw() 
+        UInt16 launchCommand() const 
         {return launchCommand_;}
         
-        MemPtr launchParameterBlock() const throw()
+        MemPtr launchParameterBlock() const
         {return launchParameterBlock_;}
         
-        UInt16 launchFlags() const throw()
+        UInt16 launchFlags() const
         {return launchFlags_;}
         
-        UInt16 cardNumber() const throw()
+        UInt16 cardNumber() const
         {return cardNo_;}
         
-        LocalID databaseId() const throw()
+        LocalID databaseId() const
         {return databaseId_;}
             
         friend class Form;
 
         /**
-         * Placeholder for main application loop.
-         * You must override it in your subclass..
-         * The typical implementation will look like this:
-         * @code
-         *     checkRomVersion(myRomVersion, myRomIncompatibleAlert);
-         *     gotoForm(myMainForm);
-         *     runEventLoop();
-         * @endcode
+         * Main application function. 
+         * Dispatches control flow to appropriate launch code handlers.
+         * @see normalLaunch().
          */
-        virtual void run()=0;
+        virtual Err run();
         
         /**
          * Instantiates object of @c AppClass class, calls its @c run() function and deletes object afterwards.
@@ -218,10 +270,10 @@ namespace ArsLexis
         template<class AppClass> 
         static Err main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
         
-        void gotoForm(UInt16 formId) throw()
+        void gotoForm(UInt16 formId)
         {FrmGotoForm(formId);}
         
-        void popupForm(UInt16 formId) throw()
+        void popupForm(UInt16 formId)
         {FrmPopupForm(formId);}
 
     };
@@ -234,18 +286,12 @@ namespace ArsLexis
             error=_CW_SetupExpandedMode(); // This makes it possible to use polymorphism, exceptions and all the other stuff that makes C++ rules.
         if (!error)
         {
-            AppClass* application=0;
-            try {            
-                application=new AppClass(cmd, cmdPBP, launchFlags);
-                application->run();
-            }
-            catch (const std::bad_alloc& ex)
+            AppClass* application=new AppClass(cmd, cmdPBP, launchFlags);
+            if (application)
             {
-                error=memErrNotEnoughSpace;
-            }
-            catch (const PalmOSError& ex)
-            {
-                error=ex.code();
+                error=application->initialize();
+                if (!error)
+                    error=application->run();
             }
             delete application;
         }
@@ -262,7 +308,7 @@ namespace ArsLexis
  */
 #define IMPLEMENT_APPLICATION_INSTANCE(creatorId) \
 namespace ArsLexis { \
-    Application& Application::instance() throw() { \
+    Application& Application::instance() { \
         return getInstance((creatorId)); \
     } \
 } 

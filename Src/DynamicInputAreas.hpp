@@ -7,6 +7,8 @@
 #define __ARSLEXIS_DYNAMIC_INPUT_AREAS_HPP__
 
 #include "Debug.hpp"
+#include "Library.hpp"
+
 #include <PalmOS.h>
 #include <bitset>
 
@@ -18,40 +20,40 @@ namespace ArsLexis
         enum Flag_t {
             flagHasPenInputMgr,
             flagHasSonySilkLib,
-            flagLoadedSonySilkLib,
             flagSonyLibIsVsk,
-            
+
             flagCount
         };
         
         typedef std::bitset<flagCount> Flags_t;
         Flags_t flags_;
-        UInt16 sonySilkLibRefNum_;
         
+        Library sonySilkLib_;
+                        
         DIA_Support(const DIA_Support&);
         DIA_Support& operator=(const DIA_Support&);
         
-        Boolean tryInitSonySilkLib() throw();
-        void sonySilkLibDispose() throw();
+        Boolean tryInitSonySilkLib();
+        void sonySilkLibDispose();
         
     public:
         
-        DIA_Support() throw();
-        ~DIA_Support() throw();
+        DIA_Support();
+        ~DIA_Support();
 
-        Boolean hasPenInputManager() const throw()
+        Boolean hasPenInputManager() const 
         {return flags_.test(flagHasPenInputMgr);}
         
-        Boolean hasSonySilkLib() const throw()
+        Boolean hasSonySilkLib() const 
         {return flags_.test(flagHasSonySilkLib);}
         
-        Boolean available() const throw()
+        Boolean available() const 
         {return hasPenInputManager()||hasSonySilkLib();}
 
-        UInt32 notifyType() const throw()
+        UInt32 notifyType() const 
         {return hasPenInputManager()?sysNotifyDisplayResizedEvent:sysNotifyDisplayChangeEvent;}        
         
-        void handleNotify() const throw();
+        void handleNotify() const;
         
     };
     

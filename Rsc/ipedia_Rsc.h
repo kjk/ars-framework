@@ -1,7 +1,5 @@
 /* pilrc generated file.  Do not edit!*/
-#define MainClearTextButton 1008
-#define MainDescriptionField 1007
-#define MainForm 1006
-#define RomIncompatibleAlert 1005
-#define EditOnlyMenuBar 1003
-#define MainMenuBar 1001
+#define mainForm 1005
+#define notEnoughMemoryAlert 1004
+#define romIncompatibleAlert 1003
+#define mainMenuBar 1001

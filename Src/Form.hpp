@@ -18,17 +18,17 @@ namespace ArsLexis
         FormType* form_;
         Boolean deleteOnClose;
         
-        static Boolean routeEventToForm(EventType* event) throw();
+        static Boolean routeEventToForm(EventType* event);
         
         Form(const Form&);
         Form& operator=(const Form&);
         
     protected:
     
-        FormType* form() throw()
+        FormType* form()
         {return form_;}
         
-        const FormType* form() const throw()
+        const FormType* form() const
         {return form_;}
 
         /**
@@ -60,30 +60,32 @@ namespace ArsLexis
         
         Form(Application& app, UInt16 id);
         
-        virtual ~Form() throw();
+        virtual Err initialize();
         
-        virtual Boolean handleEvent(EventType& event) throw();
+        virtual ~Form();
+        
+        virtual Boolean handleEvent(EventType& event);
 
-        Application& application() throw()
+        Application& application()
         {return application_;}
         
-        const Application& application() const throw()
+        const Application& application() const
         {return application_;}
         
-        void activate() throw();
+        void activate();
         
-        UInt16 id() const throw() 
+        UInt16 id() const 
         {return id_;}
         
-        Boolean isVisible() const throw() 
+        Boolean isVisible() const 
         {return FrmVisible(form());}
         
-        UInt16 showModal() throw();
+        UInt16 showModal();
         
         /**
          * Queues @c frmUpdateEvent for this form.
          */
-        void update(UInt16 updateCode=frmRedrawUpdateCode) throw()
+        void update(UInt16 updateCode=frmRedrawUpdateCode)
         {FrmUpdateForm(id(), updateCode);}
         
         /**

@@ -7,7 +7,7 @@
 GENERATEHEADER "ipedia_Rsc.h"
 RESETAUTOID 1000
 
-MENU ID MainMenuBar
+MENU ID mainMenuBar
 BEGIN
     PULLDOWN "Edit"
     BEGIN
@@ -24,22 +24,7 @@ BEGIN
 
 END	
 
-MENU ID EditOnlyMenuBar
-BEGIN
-    PULLDOWN "Edit"
-    BEGIN
-		MENUITEM "Undo" ID 10000 "U"
-		MENUITEM "Cut" ID 10001 "X"
-		MENUITEM "Copy"ID 10002 "C"
-		MENUITEM "Paste" ID 10003 "P"
-		MENUITEM "Select All" ID 10004 "S"
-		MENUITEM SEPARATOR ID 10005
-		MENUITEM "Keyboard" ID 10006 "K"
-		MENUITEM "Graffiti Help" ID 10007 "G"
-    END
-END
-
-ALERT ID RomIncompatibleAlert
+ALERT ID romIncompatibleAlert
     DEFAULTBUTTON 0
     ERROR
 BEGIN
@@ -48,18 +33,21 @@ BEGIN
     BUTTONS "OK"
 END
 
-FORM ID MainForm AT (0 0 160 160)
-	NOSAVEBEHIND NOFRAME
-	MENUID MainMenuBar
+ALERT ID notEnoughMemoryAlert
+    DEFAULTBUTTON 0
+    ERROR
 BEGIN
-	TITLE "ipedia"
-    GRAFFITISTATEINDICATOR AT (149 148)
-	FIELD ID MainDescriptionField AT (0 16 160 126)
-		MULTIPLELINES
-		EDITABLE
-		UNDERLINED
-		MAXCHARS 1024
-	BUTTON "Clear Text" ID MainClearTextButton AT (1 147 AUTO 12)
+    TITLE "Error"
+    MESSAGE "Not enough memory to complete current operation."
+    BUTTONS "OK"
+END
+
+FORM ID mainForm AT (0 0 160 160)
+	NOSAVEBEHIND NOFRAME
+	MENUID mainMenuBar
+BEGIN
+	TITLE "iPedia"
+       GRAFFITISTATEINDICATOR AT (149 148)
 END
 
 ICONFAMILYEX

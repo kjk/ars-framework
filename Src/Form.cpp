@@ -4,7 +4,7 @@
 namespace ArsLexis 
 {
 
-    Boolean Form::routeEventToForm(EventType* event) throw()
+    Boolean Form::routeEventToForm(EventType* event)
     {
         UInt16 formId=FrmGetActiveFormID();
         Application& app=Application::instance();
@@ -13,7 +13,7 @@ namespace ArsLexis
         return form->handleEvent(*event);
     }
     
-    void Form::activate() throw() 
+    void Form::activate() 
     {
         assert(form_!=0);
         FrmSetActiveForm(form_);
@@ -22,30 +22,33 @@ namespace ArsLexis
     Form::Form(Application& app, UInt16 id):
         application_(app),
         id_(id),
-        form_(FrmInitForm(id)),
+        form_(0), 
         deleteOnClose(true)
     {
-        if (!form_) // This probably means we're out of memory or id is invalid. 
-            throw std::bad_alloc(); // We can't easily detect which one is true, so assume out of memory.
-        FrmSetEventHandler(form_, application_.formEventHandlerThunk_);
-        try {
-            application_.registerForm(id_, this);
-        }
-        catch (...)
-        {
-            FrmDeleteForm(form_);
-            throw;
-        }
     }
     
-    Form::~Form() throw() 
+    Err Form::initialize()
+    {
+        Err error=errNone;
+        form_=FrmInitForm(id());
+        if (form_)
+        {
+            FrmSetEventHandler(form_, application_.formEventHandlerThunk_);
+            application_.registerForm(id_, this);
+        }
+        else 
+            error=memErrNotEnoughSpace;
+        return error;
+    }
+    
+    Form::~Form() 
     {
         if (deleteOnClose) 
             FrmDeleteForm(form_);
         application_.unregisterForm(id_);
     }
     
-    Boolean Form::handleEvent(EventType& event) throw()
+    Boolean Form::handleEvent(EventType& event)
     {
         Boolean handled=false;
         switch (event.eType)
@@ -66,7 +69,7 @@ namespace ArsLexis
         return handled;
     }
     
-    UInt16 Form::showModal() throw()
+    UInt16 Form::showModal()
     {
         assert(form_!=0);
         UInt16 result=FrmDoDialog(form_);

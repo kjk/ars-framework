@@ -25,7 +25,7 @@ namespace ArsLexis
 #endif        
     }
     
-    void Application::setInstance(UInt32 creatorId, Application* app) throw(std::bad_alloc)
+    Err Application::setInstance(UInt32 creatorId, Application* app)
     {
         assert(app!=0);
         Err error=errNone;
@@ -35,15 +35,10 @@ namespace ArsLexis
 #endif        
         assert(sizeof(app)<=sizeof(UInt32));
         error=FtrSet(creatorId, featureInstancePointer, reinterpret_cast<UInt32>(app));
-        if (error)
-        {
-            // According to PalmOS reference memErrNotEnoughSpace is the only possible error code here.
-            assert(memErrNotEnoughSpace==error);
-            throw std::bad_alloc();
-        }
+        return error;
     }
     
-    Application& Application::getInstance(UInt32 creatorId) throw()
+    Application& Application::getInstance(UInt32 creatorId)
     {
         Application* app=0;
         assert(sizeof(app)<=sizeof(UInt32));
@@ -53,7 +48,7 @@ namespace ArsLexis
         return *app;
     }
     
-    Application::Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId) throw(std::bad_alloc, PalmOSError):
+    Application::Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId):
         eventTimeout_(evtWaitForever),
         launchCommand_(cmd),
         launchParameterBlock_(cmdPBP),
@@ -65,40 +60,46 @@ namespace ArsLexis
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);
         assert(!error);
-        setInstance(creatorId_, this);
     }
     
-    Application::~Application() throw() 
+    Err Application::initialize()
+    {
+        return setInstance(creatorId_, this);
+    }
+    
+    Application::~Application() 
     {
         FrmCloseAllForms();
         Err error=FtrUnregister(creatorId_, featureInstancePointer);
         assert(!error);
     }
 
-    static const UInt32 kPalmOS20Version=sysMakeROMVersion(2,0,0,sysROMStageDevelopment,0);
+#define kPalmOS20Version sysMakeROMVersion(2,0,0,sysROMStageDevelopment,0)
     
-    void Application::checkRomVersion(UInt32 requiredVersion, UInt16 alertId) throw(PalmOSError)
+    Err Application::checkRomVersion(UInt32 requiredVersion, UInt16 alertId)
     {
         UInt32 romVersion=0;
         Err error=FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion);
-        if (error)
-            throw PalmOSError(error);
-        if (romVersion < requiredVersion)
+        if (!error)
         {
-            if ((launchFlags() & 
-                (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
-                (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp))
+            if (romVersion < requiredVersion)
             {
-                if (frmInvalidObjectId!=alertId)
-                    FrmAlert (alertId);
-                if (romVersion < kPalmOS20Version)
-                    AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
+                if ((launchFlags() & 
+                    (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
+                    (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp))
+                {
+                    if (frmInvalidObjectId!=alertId)
+                        FrmAlert (alertId);
+                    if (romVersion < kPalmOS20Version)
+                        AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
+                }
+                error=sysErrRomIncompatible;
             }
-            throw PalmOSError(sysErrRomIncompatible);
         }
+        return error;
     }
     
-    Form* Application::getOpenForm(UInt16 id) const throw()
+    Form* Application::getOpenForm(UInt16 id) const
     {
         Form* result=0;
         Forms_t::const_iterator it=forms_.find(id);
@@ -109,9 +110,17 @@ namespace ArsLexis
     
     void Application::loadForm(UInt16 formId)
     {
+        Err error=errNone;
         // No, that isn't a leak. Form will delete itself when it receives frmCloseEvent or user dismisses it (popup).
         Form* form=new Form(*this, formId); // Form constructor calls FrmInitForm(), and sets event handler.
-        form->activate();
+        if (form)
+        {
+            error=form->initialize();
+            if (!error)
+                form->activate();
+        }            
+        else
+            error=memErrNotEnoughSpace;
     }
     
     Boolean Application::handleApplicationEvent(EventType& event)
@@ -142,18 +151,27 @@ namespace ArsLexis
         } while (appStopEvent!=event.eType);
     }
     
-    void Application::registerNotify(UInt32 notifyType, Int8 priority, void* userData) throw(PalmOSError)
+    Err Application::registerNotify(UInt32 notifyType, Int8 priority, void* userData)
     {
-        Err error=SysNotifyRegister(cardNumber(), databaseId(), notifyType, NULL, priority, userData);
-        if (error)
-            throw PalmOSError(error);
+        return SysNotifyRegister(cardNumber(), databaseId(), notifyType, NULL, priority, userData);
     }
     
-    void Application::unregisterNotify(UInt32 notifyType, Int8 priority) throw(PalmOSError)
+    Err Application::unregisterNotify(UInt32 notifyType, Int8 priority)
     {
-        Err error=SysNotifyUnregister(cardNumber(), databaseId(), notifyType, priority);
-        if (error)
-            throw PalmOSError(error);
+        return SysNotifyUnregister(cardNumber(), databaseId(), notifyType, priority);
     }
 
+    Err Application::run()
+    {
+        Err error=errNone;
+        if (sysAppLaunchCmdNormalLaunch==launchCommand())
+            error=normalLaunch();
+        else if (sysAppLaunchCmdNotify==launchCommand())
+        {
+            SysNotifyParamType* notify=static_cast<SysNotifyParamType*>(launchParameterBlock());
+            error=handleSystemNotify(*notify);
+        }
+        return error;
+    }
+    
 }
