@@ -36,7 +36,7 @@ void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
     object.attach(termInputField);
     object.bounds(bounds);
     bounds.y()=screenBounds.extent.y-14;
-    bounds.width()=screenBounds.extent.x-55;
+    bounds.width()=screenBounds.extent.x-63;
     object.setBounds(bounds);
 
     object.attach(searchButton);
