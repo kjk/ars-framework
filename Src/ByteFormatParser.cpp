@@ -303,7 +303,7 @@ bool ByteFormatParser::parseElement()
     if (typePopParentElement == currentElementType_)
     {
         //no length, just pop from stack_...
-        if (stack_.size() > 0)
+        if (!stack_.empty())
             stack_.pop_back();
         else
             assert(false);
@@ -340,7 +340,7 @@ status_t ByteFormatParser::parse()
         //do nothing - just parsing
     }
     // remove parsed text from memory
-    inText_.erase(0,start_);
+    inText_.erase(0, start_);
     inLength_ -= start_;
     totalSize_ -= start_;
     start_ = 0;

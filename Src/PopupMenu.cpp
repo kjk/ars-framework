@@ -13,6 +13,12 @@ PopupMenu::~PopupMenu()
 {
     if (running_)
         close();
+    
+    if (valid())
+    {
+        form()->removeObject(index());
+        form()->update();
+    }
 }
 
 void PopupMenu::close()
@@ -20,62 +26,29 @@ void PopupMenu::close()
     if (!running_)
         return;
         
+    hide();
+
     if (frmInvalidObjectId != prevFocusIndex_) 
     {
         FormObject object(*form());
         object.attachByIndex(prevFocusIndex_);
         object.focus();
     }
-    form()->removeObject(index());
+    
     form()->update();
     
     running_ = false;
 }
 
-/*
-void PopupMenu::draw()
-{
-    if (!running_)
-        return;
-    RectangleType rr = toNative(bounds_);
-    WinEraseRectangle(&rr, 0);
-    WinDrawGrayRectangleFrame(simpleFrame, &rr);
-    
-/*    
-    PatternType p = WinGetPatternType();
-    RGBColorType old;
-    RGBColorType black;
-    setRgbColor(black, 0, 0, 0);
-    WinSetBackColorRGB(&black, &old);   
-//      WinSetPatternType(grayPattern);
-    rr.topLeft.x += rr.extent.x + 1;
-    rr.topLeft.y += 4;
-    rr.extent.x = 4;
-    ++rr.extent.y;
-    WinPaintRectangle(&rr, 0);
-    rr.topLeft.x = bounds_.x() + 4;
-    rr.topLeft.y = bounds_.y() + bounds_.height() + 1; 
-    rr.extent.x = bounds_.width() - 3;
-    rr.extent.y = 4;
-    WinPaintRectangle(&rr, 0);
-    WinSetPatternType(p);
-    WinSetBackColorRGB(&old, NULL);
-    
-    renderer.draw();
-}
-*/
-
 Err PopupMenu::run(UInt16 id, const Rectangle& rect)
 {
     assert(!running_);
-//    bounds_ = rect;
     Err error;
-//    prevFocusIndex_ = form()->focusedControlIndex_;
-//    form()->releaseFocus();
+    prevFocusIndex_ = form()->focusedControlIndex_;
+    form()->releaseFocus();
     
-    Rectangle r = rect;
-//    r.explode(1, 1, -2, -2);
-    UInt16 index = form()->createGadget(id, r);
+
+    UInt16 index = form()->createGadget(id, rect);
     if (frmInvalidObjectId == index)
     {
         error = memErrNotEnoughSpace;
@@ -84,8 +57,9 @@ Err PopupMenu::run(UInt16 id, const Rectangle& rect)
     attachByIndex(index);
     running_ = true;
     show();
-//    focus();
-//    draw();
+    focus();
+    draw();
+     
     return errNone;
 }
 

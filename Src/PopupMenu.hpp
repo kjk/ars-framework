@@ -12,7 +12,6 @@ class Form;
 class PopupMenu: public TextRenderer
 {
 
-    RenderingPreferences prefs_;
     bool running_;
     UInt16 prevFocusIndex_;
     

@@ -42,7 +42,7 @@ void TextRenderer::checkDrawingWindow()
     if (NULL == drawingWindow_)
     {
         assert(!drawingWindowIsOffscreen_);
-        drawingWindow_ = WinGetDrawWindow(); // form->windowHandle();
+        drawingWindow_ = form->windowHandle(); // WinGetDrawWindow(); // form->windowHandle();
         drawingWindowBounds_ = bounds;
         Err error;
         WinHandle offscreenWindow = WinCreateOffscreenWindow(bounds.width(), bounds.height(), nativeFormat, &error);
@@ -67,7 +67,7 @@ void TextRenderer::updateForm(Graphics& graphics)
     Rectangle bounds;
     this->bounds(bounds);
     bounds.explode(1, 1, -2, -2);
-    Graphics formWindow(WinGetDrawWindow()); //form()->windowHandle()
+    Graphics formWindow(form()->windowHandle()); //form()->windowHandle(); WinGetDrawWindow()
     graphics.copyArea(bounds, formWindow, bounds.topLeft);
 }
 
