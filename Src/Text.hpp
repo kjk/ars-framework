@@ -5,6 +5,7 @@
 #include <BaseTypes.hpp>
 #include <algorithm>
 #include <list>
+#include <vector>
 
 #if !defined(_WIN32)
 #include <cctype>
@@ -142,6 +143,10 @@ namespace ArsLexis
 
     
     void strip(String& str);
+    
+    std::vector<ArsLexis::String> split(const String& str, const String& spliter);
+    
+    String join(const std::vector<ArsLexis::String>& vec, const String& joiner);
 }
 
 /*

@@ -457,6 +457,41 @@ void strip(String& str)
         str.assign(str, left, right-left);
 }
 
+std::vector<ArsLexis::String> split(const String& str, const String& spliter = _T(" "))
+{
+    std::vector<ArsLexis::String> vec;
+    uint_t i = 0;
+    while (i < str.length())
+    {
+        uint_t j = str.find(spliter,i);
+        if (j < str.length())
+        {
+            vec.push_back(String(str,i,j-i));
+            i = j + spliter.length();
+        }    
+        else
+        {
+            vec.push_back(String(str,i));
+            i = str.length();
+        }
+    }
+    return vec;
+}
+   
+String join(const std::vector<ArsLexis::String>& vec, const String& joiner = _T(" "))
+{
+    String str = "";
+    for (uint_t i=0; i < vec.size(); i++)
+    {
+        if (i != 0)
+            str.append(joiner);
+        str.append(vec[i]);
+    }
+    return str;
+}
+
+
+
 } // namespace ArsLexis
 
 /*
