@@ -2,7 +2,7 @@
 #include <aygshell.h>
 #include <WinSysUtils.hpp>
 #include "resource.h"
-#include "reclookups.h"
+#include "StringListDialog.hpp"
 
 /*
 This is a common dialog to select a string from a list of strings.
