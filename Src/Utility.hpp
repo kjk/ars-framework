@@ -7,7 +7,7 @@
 namespace ArsLexis
 {
 
-    template<typename T>
+    template<class T> 
     struct ObjectDeleter
     {
         void operator() (T* object) const 
@@ -15,11 +15,13 @@ namespace ArsLexis
             delete object;
         }
     };
-
+    template<char>
     struct C_StringLess
     {
         bool operator ()(const char* str1, const char* str2) const
-        {return StrCompare(str1, str2)<0;}
+        {
+            return StrCompare(str1, str2)<0;
+        }
     };
     
     bool startsWith(const String& text, const char_t* start, uint_t startOffset=0);

@@ -10,8 +10,7 @@ namespace ArsLexis
 
     class Graphics
     {
-        NativeGraphicsHandle_t handle_;
-        
+        NativeGraphicsHandle_t handle_;        
         NativeGraphicsSupport support_;
 
     public:
@@ -26,7 +25,7 @@ namespace ArsLexis
             =Handle_t(0)
 #endif
         );
-        
+        Graphics();
         ~Graphics();
 
         /**

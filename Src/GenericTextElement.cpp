@@ -1,12 +1,14 @@
 #include "GenericTextElement.hpp"
+#include "BaseTypes.hpp"
 #include <cctype>
 #include <memory>
 
-using ArsLexis::String;
 using ArsLexis::char_t;
-using ArsLexis::Rectangle;
+using ArsLexis::String;
 using ArsLexis::Graphics;
 using ArsLexis::Point;
+
+
 
 GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
     resource(res),
@@ -88,7 +90,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
             --charsToDraw;
         graphics.drawText(text, charsToDraw, Point(left, top));
         if (isHyperlink())
-            defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
+            defineHotSpot(*definition, ArsLexis::Rectangle(left, top, width, lineHeight));
     }
 
     left+=width;    
@@ -115,7 +117,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
                         --charsToDraw;
                     graphics.drawText(text, length, Point(left, top));
                     if (isHyperlink())
-                        defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
+                        defineHotSpot(*definition, ArsLexis::Rectangle(left, top, width, lineHeight));
                 }
                 
                 layoutContext.renderingProgress+=length;
@@ -164,7 +166,7 @@ void GenericTextElement::invalidateHotSpot()
     hyperlink_->hotSpot=0;
 }
 
-void GenericTextElement::defineHotSpot(Definition& definition, const Rectangle& bounds)
+void GenericTextElement::defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds)
 {
     assert(isHyperlink());
     if (!hyperlink_->hotSpot)

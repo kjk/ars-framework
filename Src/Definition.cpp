@@ -10,11 +10,10 @@
 #include "GenericTextElement.hpp"
 
 using ArsLexis::Point;
-using ArsLexis::Rectangle;
 using ArsLexis::ObjectDeleter;
 using ArsLexis::Graphics;
 
-Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
+Definition::HotSpot::HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement& element):
     element_(element)
 {
     rectangles_.push_back(rect);
@@ -23,7 +22,7 @@ Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
 bool Definition::HotSpot::hitTest(const Point& point) const
 {
     bool result=false;
-    Rectangles_t::const_iterator it=std::find_if(rectangles_.begin(), rectangles_.end(), Rectangle::HitTest(point));
+    Rectangles_t::const_iterator it=std::find_if(rectangles_.begin(), rectangles_.end(), ArsLexis::Rectangle::HitTest(point));
     if (it!=rectangles_.end())
         result=true;
     return result;
@@ -34,13 +33,13 @@ Definition::HotSpot::~HotSpot()
     element_.invalidateHotSpot();
 }
 
-void Definition::HotSpot::move(const Point& delta, const Rectangle& validArea)
+void Definition::HotSpot::move(const Point& delta, const ArsLexis::Rectangle& validArea)
 {
     Rectangles_t::iterator end=rectangles_.end();
     Rectangles_t::iterator it=rectangles_.begin();
     while (it!=end)
     {
-        Rectangle& rect=*it;
+        ArsLexis::Rectangle& rect=*it;
         rect+=delta;
         Rectangles_t::iterator next=it;
         ++next;
@@ -161,13 +160,15 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
     if (unionFirst<unionLast)
     {
         uint_t unionTop=0;
-        for (uint_t index=firstLine_; index<unionFirst; ++index)
-            unionTop+=lines_[index].height;
+        {
+            for (uint_t index=firstLine_; index<unionFirst; ++index)
+                unionTop+=lines_[index].height;
+        }
         uint_t unionHeight=0;
         for (uint_t index=unionFirst; index<unionLast; ++index)
             unionHeight+=lines_[index].height;
 
-        Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
+        ArsLexis::Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
         
         Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
@@ -176,7 +177,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         {
             pointDelta.y=-unionTop;
             graphics.copyArea(unionRect, bounds_.topLeft);
-            graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
+            graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight);
         }
@@ -187,7 +188,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
                 pointDelta.y+=lines_[index].height;
                 
             graphics.copyArea(unionRect, bounds_.topLeft + pointDelta);
-            graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
+            graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);
@@ -209,7 +210,7 @@ void Definition::renderLine(RenderingContext& renderContext, const LinePosition_
     renderContext.usedWidth=0;
     renderContext.usedHeight=line->height;
     
-    renderContext.graphics.erase(Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+    renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
     
     renderContext.baseLine=line->baseLine;
     renderContext.renderingProgress=line->renderingProgress;
@@ -350,7 +351,7 @@ void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& pr
     uint_t rangeHeight=0;
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;
-    graphics.erase(Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
+    graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
 }
 
 void Definition::selectionToText(ArsLexis::String& out) const

@@ -19,7 +19,7 @@ public:
     
     void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
     {
-        appendTo.append("\n----");
+        appendTo.append(_T("\n----"));
     }
     
 };
