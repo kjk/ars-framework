@@ -53,6 +53,8 @@ public:
     void reset();
     
     friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo);
+    
+    bool empty() const {return header_.empty();}
 };
 
 template<> 

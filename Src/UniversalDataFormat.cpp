@@ -91,5 +91,5 @@ void UniversalDataFormat::reset()
     headerSize_ = 0;
     fNormalized_ = false;
     header_.clear();
-    data_.assign(1,_T('\0'));
+    data_.clear();
 }
