@@ -65,10 +65,10 @@ static char_t CharToUtf16(unsigned char in)
 #endif
 
 
-char *Utf16ToStr(const char_t *txt)
+char *Utf16ToStr(const char_t *txt, long txtLen)
 {
 #ifdef _PALM_OS
-    return StringCopy(txt);
+    return StringCopy2N(txt, txtLen);
 #else
     uint_t   txtLen = tstrlen(txt);    
     char_t * res = malloc(txtLen+1);
@@ -102,12 +102,13 @@ void ByteStreamToText(const NarrowString& inStream, String& outTxt)
 }
 
 // do a primitive conversion of txt in Palm charset to utf-16
-char_t *StrToUtf16(const char *txt)
+char_t *StrToUtf16(const char *txt, long txtLen)
 {
 #ifdef _PALM_OS
-    return StringCopy(txt);
+    return StringCopy2N(txt, txtLen);
 #else
-    uint_t   txtLen = strlen(txt);
+    if (-1 == txtLen)
+        txtLen = strlen(txt);
     char_t * res = malloc((txtLen+1)*sizeof(char_t));
     if (NULL == res)
         return NULL;

@@ -30,13 +30,17 @@ void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler
 
 status_t FieldPayloadProtocolConnection::notifyProgress()
 {
-    status_t error=errNone;
+    status_t error = errNone;
     if (!(sending() || response().empty()))
-        error=processResponseIncrement();
+        error = processResponseIncrement();
+#ifdef DEBUG
+    if (errNone != error)
+        LogStrUlong(eLogDebug, "FieldPayloadProtocolConnection::notifyProgress() has error", error);
+#endif
     return error;
 }
 
-status_t FieldPayloadProtocolConnection::handlePayloadIncrement(const char_t * payload, ulong_t& length, bool finish)
+status_t FieldPayloadProtocolConnection::handlePayloadIncrement(const char_t* payload, ulong_t& length, bool finish)
 {
     assert(NULL != payloadHandler_.get());
     return payloadHandler_->handleIncrement(payload, length, finish);
@@ -46,10 +50,11 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
 {
     bool goOn = false;
     status_t error = errNone;
-    char_t * resp = StrToUtf16(response().c_str());
+    ulong_t respLen = response().size();
+    char_t * resp = StrToUtf16(response().c_str(), respLen);
     char_t * toFree = resp;
     if (NULL == resp)
-        return 1; // TODO: better error
+        return memErrNotEnoughSpace;
     // TODO: on Palm avoid TextToByteStream() - it's just a copy of data (I think)
     do 
     {
@@ -67,6 +72,8 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 {
                     error = processLine(toConsume);
                     resp += toConsume+1; // swallow also lineSeparator
+                    assert( respLen >= toConsume+1 );
+                    respLen -= (toConsume+1);
                 }
                 else
                 {
@@ -75,21 +82,21 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                     resp += toConsume;
                     assert(_T('\0') == resp[0]);
                 }
-                char * newResp = Utf16ToStr(resp);
+                char * newResp = Utf16ToStr(resp, respLen);
                 if (NULL == newResp)
                 {
                     error = 1;  // TODO: better error
                     goto Exit;
                 }
 
-                NarrowString newRespString(newResp);
+                NarrowString newRespString;
+                newRespString.assign(newResp, respLen);
                 setResponse(newRespString);
                 free(newResp);
             }
         }
         else
         {
-            ulong_t respLen = tstrlen(resp);
             ulong_t length = respLen;
             if (length > payloadLengthLeft_)    // TODO: is it even possible?
                 length = payloadLengthLeft_;
@@ -103,14 +110,17 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 error = notifyPayloadFinished();
 
                 resp += payloadLengthLeft_ + lineSeparatorLength;
-                char * newResp = Utf16ToStr(resp);
+                assert( respLen >= payloadLengthLeft_ + lineSeparatorLength);
+                respLen -= (payloadLengthLeft_ + lineSeparatorLength);
+                char * newResp = Utf16ToStr(resp, respLen);
                 if (NULL == newResp)
                 {
-                    error = 1;  // TODO: better error
+                    error = memErrNotEnoughSpace;
                     goto Exit;
                 }
 
-                NarrowString newRespString(newResp);
+                NarrowString newRespString;
+                newRespString.assign(newResp, respLen);
                 setResponse(newRespString);
                 free(newResp);
                 goOn = true;
@@ -128,14 +138,17 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                     error = notifyPayloadFinished();
 
                 resp += length;
-                char * newResp = Utf16ToStr(resp);
+                assert( respLen >= length);
+                respLen -= length;
+                char * newResp = Utf16ToStr(resp, respLen);
                 if (NULL == newResp)
                 {
-                    error = 1;  // TODO: better error
+                    error = memErrNotEnoughSpace;
                     goto Exit;
                 }
 
-                NarrowString newRespString(newResp);
+                NarrowString newRespString;
+                newRespString.assign(newResp, respLen);
                 setResponse(newRespString);
                 free(newResp);
 
@@ -179,7 +192,7 @@ status_t FieldPayloadProtocolConnection::processLine(uint_t lineEnd)
     // TODO: should we detect fields with arguments that shouldn't have arguments
     // and vice-versa?
     if (separatorPos+1==lineEnd)
-        return handleField(name, value);
+        return handleField(name.c_str(), NULL);
 
     // we must have space after ":"
     String::size_type expectedSpacePos = separatorPos+1;
@@ -193,14 +206,18 @@ status_t FieldPayloadProtocolConnection::processLine(uint_t lineEnd)
     assert(valueStartPos<=lineEnd);
 
     value.assign(resp, valueStartPos,lineEnd-valueStartPos);
-    return handleField(name, value);
+    return handleField(name.c_str(), value.c_str());
 }
 
 status_t FieldPayloadProtocolConnection::notifyFinished()
 {
-    status_t error=SimpleSocketConnection::notifyFinished();
+    status_t error = SimpleSocketConnection::notifyFinished();
     if (!error)
-        error=processResponseIncrement(true);
+        error = processResponseIncrement(true);
+#ifdef DEBUG
+        if (errNone != error)
+            LogStrUlong(eLogDebug, "FieldPayloadProtocolConnection::notifyFinished() has error", error);
+#endif
     return error;    
 }
 

@@ -50,8 +50,6 @@ OnError:
     //! @todo remove stream from data store?
 }
 
-
-
 UniversalDataHandler::UniversalDataHandler():
     lineNo_(0), 
     controlDataLength_(0)
@@ -59,11 +57,11 @@ UniversalDataHandler::UniversalDataHandler():
 
 status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, long& controlDataLength)
 {
-    volatile status_t error=errNone;
     using namespace std;
     long resultLong;
     const char_t* data = line.data();
     const String::size_type len = line.length();
+    volatile status_t error=errNone;
     ErrTry {
         if (lineNo == 0)
         {
@@ -120,10 +118,15 @@ status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
     return parseUniversalDataFormatTextLine(line, universalData, lineNo_, controlDataLength_);
 }
 
+#ifdef DEBUG
+status_t UniversalDataHandler::handlePayloadFinish()
+#else
 inline status_t UniversalDataHandler::handlePayloadFinish()
+#endif
 {
-    assert(controlDataLength_ == universalData.dataLength());
-    if (controlDataLength_ != universalData.dataLength())
+    long realDataLen = universalData.dataLength();
+    assert(controlDataLength_ == realDataLen);
+    if (controlDataLength_ != realDataLen)
         return SocketConnection::errResponseMalformed;
     return errNone;
 }

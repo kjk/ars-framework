@@ -44,7 +44,7 @@ protected:
 
     virtual status_t handlePayloadIncrement(const char_t* payload, ulong_t& length, bool finish);
     
-    virtual status_t handleField(const String& name, const String& value)
+    virtual status_t handleField(const char_t *name, const char_t *value)
     {
         assert(false);
         return errResponseMalformed;
@@ -82,8 +82,6 @@ public:
 
     bool inPayload_;
 };
-
-//class Reader;
 
 status_t FeedHandlerFromReader(FieldPayloadProtocolConnection::PayloadHandler& handler, Reader& reader);
 

@@ -9,7 +9,7 @@ LineBufferedPayloadHandler::~LineBufferedPayloadHandler()
 
 status_t LineBufferedPayloadHandler::handleIncrement(const char_t * payload, ulong_t& length, bool finish)
 {
-    lineBuffer_.append(payload, 0, length);
+    lineBuffer_.append(payload, length);
     String::size_type pos = lineBuffer_.find(delimiter_);
     while (true) 
     {

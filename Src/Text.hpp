@@ -183,8 +183,9 @@ bool strToDouble(const char* str, double *dbl);
 
 int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo);    
 
-char *Utf16ToStr(const char_t *txt);
-char_t *StrToUtf16(const char *txt);
+char *Utf16ToStr(const char_t *txt, long txtLen);
+
+char_t *StrToUtf16(const char *txt, long txtLen = -1);
 
 using ArsLexis::char_t;
 
