@@ -13,7 +13,7 @@
 
 #if !defined(appErrorClass)
 
-# if defined(_WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) || defined(_WIN32_WCE)
 
 /////////////////////////////////
 // The following comes from winerror.h
@@ -62,10 +62,10 @@
 // The next lines probably will have to be uncommented for portable SocketConnection to work
 // #  define netErrTimeout WSAETIMEDOUT
 // #  define netErrWouldBlock WSAEWOULDBLOCK
-# else
-#  error "Define appErrorClass for your build target."    
-# endif
-#endif
+#else
+ #error "Define appErrorClass for your build target."    
+#endif  // _WIN32 || _WIN32_WCE
+#endif  // !defined(appErrorClass)
 
 #define psErrorClass appErrorClass+0x0100  // PrefsStore
 
