@@ -3,10 +3,16 @@
 
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
+#include <algorithm>
 
 #if !defined(_WIN32)
 #include <cctype>
 #endif
+
+#if defined(_WIN32_WCE)
+#include <Winnls.h>
+#endif
+
 
 #if defined(_MSC_VER)
 // disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
@@ -61,6 +67,54 @@ namespace ArsLexis
         return std::isspace(chr);
 #endif
     }
+    
+#if defined(_WIN32)
+    struct CharToByte 
+    { 
+        char operator()(char_t in) {return (char) in;}
+    };
+    struct ByteToChar 
+    { 
+        char_t operator()(char in) {return (char_t) in;}
+    };
+
+#endif
+
+    inline void TextToByteStream(String& inTxt, Narrow& outStream)
+    {
+#if defined(_WIN32)
+        
+        /*Why this doesn't work I have no idea
+        char *out=NULL;
+        int size = WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, 0, NULL,NULL);
+        out=new char[size];
+        WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
+        outStream.assign(out);
+        delete []out;*/
+        std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
+#else
+        outStream.assign(inTxt);
+#endif
+    }
+
+    inline void ByteStreamToText(Narrow& inStream, String& outTxt)
+    {
+#if defined(_WIN32)
+        
+        /*Why this doesn't work I have no idea
+        char_t *out=NULL;
+        int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
+        out=new char_t[size];
+        MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
+        outTxt.assign(out);
+        delete []out;*/
+        std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
+
+#else
+        outTxt.assign(inStream);
+#endif
+    }
+
 
     template<class Ch>
     struct C_StringLess

@@ -41,6 +41,8 @@ namespace ArsLexis
 # define tstrlen _tcslen
 # define tprintf _stprintf
 # define ticks   GetTickCount
+
+
 // Using xtoi functions is dangerous as they don't have any way to inform on invalid format. Use ArsLexis::numericValue() instead.
 //# define tatoi _wtoi
 
@@ -67,6 +69,8 @@ namespace ArsLexis
 #  define tstrcmp StrCompare
 #  define malloc MemPtrNew        
 #  define free MemPtrFree
+
+    
 # else
         
 #  define tprintf sprintf
@@ -82,7 +86,7 @@ namespace ArsLexis
 #endif
 
     typedef std::basic_string<char_t> String;
-
+    typedef std::basic_string<char>   Narrow;
 }  
 
 #if !defined(chrNull)
