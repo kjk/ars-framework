@@ -80,16 +80,22 @@ Definition::Definition():
     hyperlinkHandler_(0)
 {}
 
+namespace {
+	
+    struct HotSpotGreater {
+
+        const Definition::HotSpot* hotSpot;
+
+        HotSpotGreater(const Definition::HotSpot* hs): hotSpot(hs) {}
+
+        bool operator()(const Definition::HotSpot* hs) const 
+        {return !((*hs)<(*hotSpot));}
+    };
+
+}
+
 void Definition::addHotSpot(HotSpot* hotSpot)
 {
-    struct HotSpotGreater {
-        const HotSpot* hotSpot;
-        HotSpotGreater(const HotSpot* hs): hotSpot(hs) {}
-        bool operator()(const HotSpot* hs) const 
-        {
-            return !((*hs)<(*hotSpot));
-        }
-    };
     hotSpots_.insert(std::find_if(hotSpots_.begin(), hotSpots_.end(), HotSpotGreater(hotSpot)), hotSpot);
 }
 

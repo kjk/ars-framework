@@ -22,6 +22,9 @@ struct LayoutContext
     uint_t usedHeight;
     uint_t baseLine;
     const GenericTextElement* nextTextElement;
+    uint_t selectionStart;
+    uint_t selectionEnd;
+    
     bool breakTextOnLastWhitespace;
     
     LayoutContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
@@ -33,6 +36,8 @@ struct LayoutContext
         usedHeight(0),
         baseLine(0),
         nextTextElement(0),
+        selectionStart(progressCompleted),
+        selectionEnd(progressCompleted),
         breakTextOnLastWhitespace(false)
     {}
     

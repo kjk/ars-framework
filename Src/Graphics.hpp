@@ -53,13 +53,10 @@ namespace ArsLexis
         void drawLine(const Point& start, const Point& end)
         {drawLine(start.x, start.y, end.x, end.y);}
                 
-        // Windows CE: Use SetDCPenColor()                
         Color_t setForegroundColor(Color_t color);
         
-        // Windows CE: Use SetDCBrushColor() or SetBkColor()
         Color_t setBackgroundColor(Color_t color);
         
-        // Windows CE: Use SetTextColor()
         Color_t setTextColor(Color_t color);
         
         enum ColorChoice
@@ -141,7 +138,7 @@ namespace ArsLexis
         
         uint_t fontBaseline() const;      
         
-        void drawText(const char_t* text, uint_t length, const Point& topLeft);
+        void drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted=false);
         
         void drawCenteredText(const char_t* str, const Point& topLeft, uint_t width);
         
