@@ -1,5 +1,9 @@
 #include <SysUtils.hpp>
 
+#include <Shellapi.h>
+
+using ArsLexis::String;
+
 // TODO: implement. Used by iPediaConnection
 ulong_t ArsLexis::random(ulong_t range)
 {
@@ -68,5 +72,26 @@ bool GotoURL(const ArsLexis::char_t *url)
     if (ShellExecuteEx(&sei))
         return true;
     return false;
+}
+
+// return false on failure, true if ok
+bool GetSpecialFolderPath(String& pathOut)
+{
+#ifdef CSIDL_APPDATA
+    TCHAR szPath[MAX_PATH];
+    BOOL  fOk = SHGetSpecialFolderPath(NULL, szPath, CSIDL_APPDATA, FALSE);
+    if (!fOk)
+        return false;
+    pathOut.assign(szPath);
+    return true;
+#else
+    // Pocket PC doesn't have this defined so put our directory 
+    // at the root. This will likely change 
+    // in the future and this code should still work.
+    // TODO: see if SHGetSpecialFolderPath return path that ends with '\'
+    // pathOut.assign(_T("\\");
+    pathOut.assign(_T(""));
+    return true;
+#endif
 }
 
