@@ -71,9 +71,9 @@ namespace ArsLexis
         }
         uint_t dataSize=0;
         uint_t responseSize=response_.size();
+        uint_t tries=0;
         if (errNone!=error)
             goto Exit;
-        uint_t tries=0;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             error=resizeResponse(responseSize+chunkSize_);

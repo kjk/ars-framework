@@ -1,6 +1,9 @@
 #include <SocketConnection.hpp>
 #include <algorithm>
+
+#if defined(_PALM_OS)
 #include <Application.hpp>
+#endif
 
 namespace ArsLexis 
 {
@@ -231,9 +234,12 @@ namespace ArsLexis
     // those seem to be defined in Core\System\Unix\sys_errno.h but without the 10000 (0x2710) prefix 
     status_t SocketConnection::getSocketErrorStatus(status_t& out) const
     {
+        #if defined(_PALM_OS)
         ArsLexis::Application& app=ArsLexis::Application::instance();
         if (6==app.romVersionMajor())
             return netErrUnimplemented;
+        #endif
+
         NativeSocket_t socketRef=socket_;
         assert(socketRef!=0);
         int     status=0;
