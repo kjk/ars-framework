@@ -16,12 +16,37 @@ namespace ArsLexis
         full.append(buffer, 8).append("\t[", 2).append(context_, contextLength_).append("]:\t", 3).append(text, length).append(1, '\n');
         logRaw(full);
     }
+    
+    Logger::LineAppender& Logger::LineAppender::operator<<(unsigned short ui)
+    {
+        char buffer[6];
+        Int16 len=StrPrintF(buffer, "%hu", ui);
+        if (len>0)
+            line_.append(buffer, len);
+        return *this;
+    }
+
+    RootLogger::RootLogger(const char* context, LogSink* sink):
+        Logger(context),
+        sink_(sink)
+    {
+        Err error=FtrSet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32>(this));
+        if (error)
+            (*this)<<"Unable to set RootLogger instance pointer, error: "<<error;
+    }
+        
+    RootLogger::~RootLogger()
+    {
+        FtrUnregister(Application::creator(), Application::featureRootLoggerPointer);
+        delete sink_;
+    }
 
     RootLogger* RootLogger::instance()
     {
         RootLogger* logger=0;
-        //! @todo Implement static instance retrieval using FtrGet().
-        
+        Err error=FtrGet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32*>(&logger));
+        if (error)
+            assert(false);
         return logger;
     }
 

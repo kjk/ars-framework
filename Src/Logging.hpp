@@ -167,10 +167,7 @@ namespace ArsLexis
         
     public:
     
-        RootLogger(const char* context, LogSink* sink=0):
-            Logger(context),
-            sink_(sink)
-        {}
+        RootLogger(const char* context, LogSink* sink=0);
         
         LogSink* setSink(LogSink* newSink)
         {
@@ -189,10 +186,7 @@ namespace ArsLexis
             return setSink(0);
         }
         
-        ~RootLogger()
-        {
-            delete sink_;
-        }
+        ~RootLogger();
         
         static RootLogger* instance();
         

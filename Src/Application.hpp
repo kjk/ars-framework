@@ -263,6 +263,8 @@ namespace ArsLexis
          */
         static Application& instance();
         
+        static UInt32 creator();
+        
         UInt16 cardNumber() const
         {return cardNo_;}
         
@@ -351,6 +353,10 @@ namespace ArsLexis { \
         assert(app!=0); \
         return  *app;\
     } \
+    \
+    UInt32 Application::creator() {\
+        return creatorId; \
+    }\
 } 
 
 #endif

@@ -3,6 +3,7 @@
 
 #include "Socket.hpp"
 #include "ErrBase.h"
+#include "Logging.hpp"
 #include <vector>
 
 namespace ArsLexis
@@ -47,6 +48,7 @@ namespace ArsLexis
         SocketConnectionManager& manager_;
         Int32 transferTimeout_;
         const SocketAddress* address_;
+        mutable ChildLogger log_;
         
     protected:
 
@@ -68,6 +70,9 @@ namespace ArsLexis
         SocketConnection(SocketConnectionManager& manager);
         
     public:
+    
+        Logger& log() const
+        {return log_;}
     
         enum Error
         {

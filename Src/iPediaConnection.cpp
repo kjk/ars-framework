@@ -180,6 +180,7 @@ Err iPediaConnection::notifyFinished()
 
 void iPediaConnection::handleError(Err error)
 {
+    log()<<"handleError(): error code "<<error;
     UInt16 alertId=frmInvalidObjectId;
     switch (error)
     {

@@ -96,6 +96,7 @@ namespace ArsLexis
         manager_(manager),
         transferTimeout_(evtWaitForever),
         address_(0),
+        log_("SocketConnection"),
         socket_(manager.netLib_)
     {
     }
@@ -125,7 +126,12 @@ namespace ArsLexis
                 registerEvent(SocketSelector::eventException);
                 registerEvent(SocketSelector::eventWrite);
             }
+            else
+                log()<<"open(): unable to set socket option, "<<error;                
         }
+        else
+            log()<<"open(): unable to open socket, "<<error;
+        
         if (error)
             handleError(error);
     }
@@ -135,9 +141,12 @@ namespace ArsLexis
         Err error=socketStatus();
         if (errNone==error)
         {
+            log()<<"notifyException(): socketStatus() returned errNone.";
             assert(false);
             error=netErrTimeout;
         }
+        else
+            log()<<"notifyException(): socketStatus() returned error, "<<error;
         handleError(error);
     }
 
@@ -150,6 +159,8 @@ namespace ArsLexis
         //! @bug PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
         //! Nevertheless status is also filled in these cases and seems right...
         Err error=socket_.getOption(netSocketOptLevelSocket, netSocketOptSockErrorStatus, &status, size);
+        if (error)
+            log()<<"socketStatus(): unable to query socket option, "<<error;
         return status;
     }
 

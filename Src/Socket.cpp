@@ -124,7 +124,7 @@ namespace ArsLexis
 
 
 
-    SocketSelector::SocketSelector(NetLibrary& netLib, Boolean catchStandardEvents):
+    SocketSelector::SocketSelector(NetLibrary& netLib, bool catchStandardEvents):
         netLib_(netLib),
         width_(0),
         eventsCount_(0)

@@ -12,7 +12,7 @@
 
 class iPediaApplication: public ArsLexis::Application 
 {
-    ArsLexis::RootLogger log_;
+    mutable ArsLexis::RootLogger log_;
     ArsLexis::DIA_Support diaSupport_;
     Boolean diaNotifyRegistered_;
     
@@ -113,7 +113,7 @@ public:
     
     void sendDisplayAlertEvent(UInt16 alertId);
     
-    ArsLexis::Logger& log()
+    ArsLexis::Logger& log() const
     {return log_;}
     
 private:

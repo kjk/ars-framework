@@ -34,11 +34,15 @@ namespace ArsLexis
                 sending_=false;
                 registerEvent(SocketSelector::eventRead);
                 error=socket_.shutdown(netSocketDirOutput);
+                if (error)
+                    log()<<"notifyWritable(): Socket::shutdown() returned error, "<<error;
             }
             else
                 registerEvent(SocketSelector::eventWrite);                
             error=notifyProgress();
         }
+        else
+            log()<<"notifyWritable(): Socket::send() returned error, "<<error;
         
         if (error)
             handleError(error);
@@ -71,6 +75,8 @@ namespace ArsLexis
                     error=notifyProgress();
                 }
             }
+            else
+                log()<<"notifyReadable(): Socket::receive() returned error, "<<error;
         }
         else
             error=errResponseTooLong;                

@@ -141,7 +141,7 @@ namespace ArsLexis
             eventException
         };
         
-        SocketSelector(NetLibrary& netLib, Boolean catchStandardEvents=true);
+        SocketSelector(NetLibrary& netLib, bool catchStandardEvents=true);
         
         ~SocketSelector()
         {}
@@ -162,13 +162,13 @@ namespace ArsLexis
         
         Err select(Int32 timeout=evtWaitForever);
         
-        Boolean checkSocketEvent(const SocketBase& socket, EventType event) const
+        bool checkSocketEvent(const SocketBase& socket, EventType event) const
         {
             NetSocketRef ref=socket;
             return netFDIsSet(ref, &outputFDs_[event]);
         }
         
-        Boolean checkStandardEvent() const
+        bool checkStandardEvent() const
         {
             return netFDIsSet(sysFileDescStdIn, &outputFDs_[eventRead]);
         }
@@ -176,7 +176,7 @@ namespace ArsLexis
         UInt16 eventsCount() const
         {return eventsCount_;}
         
-        Boolean active() const
+        bool active() const
         {return inputFDs_[eventRead] || inputFDs_[eventWrite] || inputFDs_[eventException];}
         
     };
