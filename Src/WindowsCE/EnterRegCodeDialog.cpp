@@ -15,17 +15,26 @@ Look into sm_inoah and sm_ipedia to see how it's defined.
 
 using ArsLexis::String;
 
-static String g_oldRegCode;
-static String g_newRegCode;
+static String oldRegCode;
+static String newRegCode;
 
-static BOOL OnInitDialog(HWND hDlg)
+static BOOL OnInitDialog(HWND hDlg, const String& oldRegCode)
 {
     SHINITDLGINFO shidi;
     ZeroMemory(&shidi, sizeof(shidi));
     shidi.dwMask   = SHIDIM_FLAGS;
-    shidi.dwFlags  = SHIDIF_SIZEDLGFULLSCREEN;
+
+#ifdef WIN32_PLATFORM_PSPC
+        shidi.dwFlags  = SHIDIF_SIZEDLG | SHIDIF_EMPTYMENU;
+#else
+        shidi.dwFlags  = SHIDIF_SIZEDLGFULLSCREEN;
+#endif
     shidi.hDlg     = hDlg;
 
+    if (!SHInitDialog(&shidi))
+        return FALSE;
+
+#ifdef WIN32_PLATFORM_WFSP
     SHMENUBARINFO shmbi;
     ZeroMemory(&shmbi, sizeof(shmbi));
     shmbi.cbSize     = sizeof(shmbi);
@@ -33,22 +42,25 @@ static BOOL OnInitDialog(HWND hDlg)
     shmbi.nToolBarId = IDR_REGISTER_MENUBAR;
     shmbi.hInstRes   = GetModuleHandle(NULL);
 
-    if (!SHInitDialog(&shidi))
-        return FALSE;
-
     if (!SHCreateMenuBar(&shmbi))
         return FALSE;
 
     (void)SendMessage(shmbi.hwndMB, SHCMBM_OVERRIDEKEY, VK_TBACK,
         MAKELPARAM(SHMBOF_NODEFAULT | SHMBOF_NOTIFY,
         SHMBOF_NODEFAULT | SHMBOF_NOTIFY));
+#endif
 
     HWND hwndEdit = GetDlgItem(hDlg,IDC_EDIT_REGCODE);
 
-    SetEditWinText(hwndEdit, g_oldRegCode);
+    SetEditWinText(hwndEdit, oldRegCode);
     SendMessage(hwndEdit, EM_SETINPUTMODE, 0, EIM_NUMBERS);
 
     SetFocus(hwndEdit);
+
+#ifdef WIN32_PLATFORM_PSPC
+    SHSipPreference(hDlg, SIP_UP);
+#endif
+
     return TRUE;
 }
 
@@ -56,7 +68,7 @@ static BOOL CALLBACK RegCodeDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 {
     if (WM_INITDIALOG==msg)
     {
-        return OnInitDialog(hDlg);
+        return OnInitDialog(hDlg, oldRegCode);
     }
 
     if (WM_COMMAND==msg)
@@ -71,26 +83,52 @@ static BOOL CALLBACK RegCodeDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
         else if (IDM_REGISTER==wp)
         {
             HWND hwndEdit = GetDlgItem(hDlg,IDC_EDIT_REGCODE);
-            GetEditWinText(hwndEdit, g_newRegCode);
-            if (!g_newRegCode.empty())
+            GetEditWinText(hwndEdit, newRegCode);
+            if (!newRegCode.empty())
             {
                 EndDialog(hDlg, REGISTER_PRESSED);
             }
             return TRUE;
         }
     }
+
+#ifdef WIN32_PLATFORM_PSPC
+    // TODO: is this really necessary? seems to be working without
+    if (WM_SETTINGCHANGE==msg)
+    {
+        if (SPI_SETSIPINFO == wp)
+        {
+            SHACTIVATEINFO sai;
+            ZeroMemory(&sai, sizeof(sai));
+            SHHandleWMSettingChange(hDlg, -1 , 0, &sai);
+        }
+        return TRUE;
+    }
+
+    if (WM_ACTIVATE==msg)
+    {
+        if (SPI_SETSIPINFO == wp)
+        {
+            SHACTIVATEINFO sai;
+            ZeroMemory(&sai, sizeof(sai));
+            SHHandleWMActivate(hDlg, wp, lp, &sai, 0);
+        }
+        return TRUE;
+    }
+#endif
+
     return FALSE;
 }
 
 bool FGetRegCodeFromUser(HWND hwnd, const String& currentRegCode, String& newRegCodeOut)
 {
-    g_oldRegCode.assign(currentRegCode);
+    oldRegCode.assign(currentRegCode);
 
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_REGISTER), hwnd, RegCodeDlgProc);
 
     if (REGISTER_PRESSED==result)
     {
-        newRegCodeOut.assign(g_newRegCode);
+        newRegCodeOut.assign(newRegCode);
         return true;
     }
     else
