@@ -4,6 +4,7 @@
 #include <FormGadget.hpp>
 #include <DeviceInfo.hpp>
 #include <ExtendedEvent.hpp>
+#include <PalmSysUtils.hpp>
 
 #ifdef ARSLEXIS_USE_MEM_GLUE
 # include <MemGlue.h>
@@ -92,15 +93,12 @@ namespace ArsLexis
         cardNo_(0),
         databaseId_(0),
         creatorId_(creator()),
-        romVersion_(0),
         runningOnTreo600_(isTreo600()),
         underSimulator_(ArsLexis::underSimulator()),
         ticksPerSecond_(SysTicksPerSecond())
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);
         assert(!error);
-        error=FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion_);
-        assert(!error);        
     }
 
 #ifndef NDEBUG
@@ -124,9 +122,9 @@ namespace ArsLexis
     
     Err Application::checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId)
     {
-        UInt32 romVersion;
-        Err error=FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion);
-        if (romVersion < requiredVersion)
+        Err error = errNone;
+        UInt32 romVer = romVersion();
+        if (romVer < requiredVersion)
         {
             if ((launchFlags & 
                 (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
@@ -134,7 +132,7 @@ namespace ArsLexis
             {
                 if (frmInvalidObjectId!=alertId)
                     alert(alertId);
-                if (romVersion < kPalmOS20Version)
+                if (romVer < kPalmOS20Version)
                     AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
             }
             error=sysErrRomIncompatible;

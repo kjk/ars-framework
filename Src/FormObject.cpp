@@ -1,8 +1,12 @@
-#include <FormObject.hpp>
-#include <Graphics.hpp>
-#include <DeviceInfo.hpp>
-#include <FormGadget.hpp>
 #include <68k/Hs.h>
+
+#include <DeviceInfo.hpp>
+#include <SysUtils.hpp>
+
+#include <Graphics.hpp>
+
+#include <FormObject.hpp>
+#include <FormGadget.hpp>
 #include <Application.hpp>
 
 namespace ArsLexis
@@ -108,7 +112,7 @@ namespace ArsLexis
             form_->releaseFocus();          // To make sure event focus lost is sent before event focus taken on Treo 600
         FormObjectKind kind = type();
         bool isTreo = form_->application().runningOnTreo600();
-        bool isPastCobalt61 = (form_->application().romVersionMajor() > 6 || (form_->application().romVersionMajor() == 6 && form_->application().romVersionMinor() >= 1));
+        bool isPastCobalt61 = (romVersionMajor() > 6 || (romVersionMajor() == 6 && romVersionMinor() >= 1));
         if (isTreo && frmInvalidObjectId != id_)
             HsNavObjectTakeFocus(*form_, id_);
         else if (!isTreo && (frmFieldObj == kind || frmTableObj == kind))

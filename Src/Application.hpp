@@ -123,8 +123,6 @@ namespace ArsLexis
          */
         const UInt32 creatorId_;
         
-        UInt32 romVersion_;
-        
         bool runningOnTreo600_;
         bool underSimulator_;
         
@@ -309,15 +307,6 @@ namespace ArsLexis
         
         static void alert(UInt16 alertId)
         {FrmAlert(alertId);}
-        
-        UInt32 romVersion() const
-        {return romVersion_;}
-        
-        UInt16 romVersionMajor() const
-        {return sysGetROMVerMajor(romVersion());}
-        
-        UInt16 romVersionMinor() const
-        {return sysGetROMVerMinor(romVersion());}
         
         friend void handleBadAlloc();
         

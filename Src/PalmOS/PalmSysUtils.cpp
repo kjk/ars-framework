@@ -1,5 +1,24 @@
+#include <Debug.hpp>
 #include <SysUtils.hpp>
-#include <Application.hpp>
+
+UInt32 romVersion()
+{
+    UInt32 romVersion,
+    error = FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion);
+    assert(!error);
+    return romVersion;
+}
+
+UInt16 romVersionMajor()
+{
+    return sysGetROMVerMajor(romVersion());
+}
+
+UInt16 romVersionMinor()
+{
+    return sysGetROMVerMinor(romVersion());
+}
+
 
 bool ArsLexis::notifyManagerPresent()
 {

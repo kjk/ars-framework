@@ -1,10 +1,7 @@
+#include <SysUtils.hpp>
 #include <SocketConnection.hpp>
 #include <DeviceInfo.hpp>
 #include <Resolver.hpp>
-
-#if defined(_PALM_OS)
-#include <Application.hpp>
-#endif
 
 namespace ArsLexis 
 {
@@ -338,8 +335,7 @@ namespace ArsLexis
     status_t SocketConnection::getSocketErrorStatus(status_t& out) const
     {
 #if defined(_PALM_OS)
-        ArsLexis::Application& app=ArsLexis::Application::instance();
-        if (6 == app.romVersionMajor())
+        if (6 == romVersionMajor())
             return netErrUnimplemented;
 #endif
 

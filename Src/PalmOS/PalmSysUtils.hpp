@@ -1,13 +1,14 @@
 #ifndef __ARSLEXIS_PALM_SYSUTILS_HPP__
 #define __ARSLEXIS_PALM_SYSUTILS_HPP__
 
-#include <Debug.hpp>
 #include <BaseTypes.hpp>
+
+UInt32 romVersion();
+UInt16 romVersionMajor();
+UInt16 romVersionMinor();
 
 namespace ArsLexis
 {
-
-    
     void getScreenBounds(RectangleType& bounds);
 
     /** 
