@@ -210,7 +210,7 @@ namespace ArsLexis
 
     Err Application::handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16)
     {
-        Err error;
+        Err error=errNone;
         if (sysAppLaunchCmdNormalLaunch==cmd)
         {
             error=normalLaunch();

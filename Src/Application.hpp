@@ -314,35 +314,34 @@ namespace ArsLexis
     Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     {
         Err error=Application::checkRomVersion(AppClass::requiredRomVersion, launchFlags, AppClass::romIncompatibleAlertId);
-        if (!error)
+        if (error)
+            return error;
+        AppClass* volatile app=static_cast<AppClass*>(getInstance(AppClass::creatorId));
+        if (app)
+            error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
+        else
         {
-            AppClass* volatile app=static_cast<AppClass*>(getInstance(AppClass::creatorId));
-            if (app)
-                error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
-            else
-            {
-                if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
+            if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
 #ifdef __MWERKS__                
-                    error=_CW_SetupExpandedMode();
+                error=_CW_SetupExpandedMode();
 #else
-                    error=memErrNoStore;
+                error=memErrNoStore;
 #endif // __MWERKS__                                        
-                if (!error)
-                {
-                    ErrTry {
-                        app=new AppClass;
-                        error=app->initialize();
-                        if (!error)
-                            error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
-                    }
-                    ErrCatch (ex) {
-                        error=ex;
-                    } ErrEndCatch
-                    delete app;
-                    cleanAllocationLogging();
-                    if (memErrNotEnoughSpace==error)
-                        Application::alert(AppClass::notEnoughMemoryAlertId);
+            if (!error)
+            {
+                ErrTry {
+                    app=new AppClass;
+                    error=app->initialize();
+                    if (!error)
+                        error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
                 }
+                ErrCatch (ex) {
+                    error=ex;
+                } ErrEndCatch
+                delete app;
+                cleanAllocationLogging();
+                if (memErrNotEnoughSpace==error)
+                    Application::alert(AppClass::notEnoughMemoryAlertId);
             }
         }
         return error;
