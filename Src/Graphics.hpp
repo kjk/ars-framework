@@ -17,6 +17,10 @@ namespace ArsLexis
     {
         NativeGraphicsHandle_t handle_;        
         NativeGraphicsSupport support_;
+        
+        #if defined(_WIN32_WCE)
+        HWND hwnd_;
+        #endif
 
     public:
     
@@ -28,6 +32,9 @@ namespace ArsLexis
         explicit Graphics(const Handle_t& handle
 #ifdef USE_DEFAULT_NATIVE_GRAPHICS_HANDLE
             =Handle_t(0)
+#endif
+#ifdef _WIN32_WCE
+            , HWND hwnd
 #endif
         );
         
