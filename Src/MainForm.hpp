@@ -59,12 +59,19 @@ class MainForm: public iPediaForm
     {
         MainForm& form_;
         UInt32 ticksAtStart_;
+        uint_t lastPercent_;
+        bool showProgress_:1;
+        bool afterTrigger_:1;
+        
         
     public:
         
         RenderingProgressReporter(MainForm& form):
             form_(form),
-            ticksAtStart_(0)
+            ticksAtStart_(0),
+            lastPercent_(-1),
+            showProgress_(false),
+            afterTrigger_(false)
         {}
         
         virtual void reportProgress(uint_t percent);

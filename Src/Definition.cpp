@@ -307,6 +307,8 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
                 ++next;
                 if (last!=next && (*next)->isTextElement())
                     renderContext.nextTextElement=static_cast<GenericTextElement*>(*next);
+                else
+                    renderContext.nextTextElement=0;
             }
             (*current)->render(renderContext);
             if (renderContext.isElementCompleted())
@@ -370,6 +372,8 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
                 ++next;
                 if (next!=end && (*next)->isTextElement())
                     layoutContext.nextTextElement=static_cast<GenericTextElement*>(*next);
+                else
+                    layoutContext.nextTextElement=0;
             }
             if (element==end || (*element)->breakBefore(prefs))
                 startNewLine=true;

@@ -697,36 +697,46 @@ void MainForm::search(bool fullText)
 
 void MainForm::RenderingProgressReporter::reportProgress(uint_t percent) 
 {
-    if (percent==0)
+    if (percent==lastPercent_)
+        return;
+
+    if (0==(lastPercent_=percent))
     {
         ticksAtStart_=TimGetTicks();
+        showProgress_=false;
+        afterTrigger_=false;
+        return;
     }
-    else 
-    {
+    
+    if (!afterTrigger_)    {
         // Delay before we start displaying progress meter in milliseconds. Timespans < 300ms are typically perceived "instant"
         // So we shouldn't distract user if the time is short enough.
-        static const uint_t delay=350; 
+        static const uint_t delay=100; 
         UInt32 ticksDiff=TimGetTicks()-ticksAtStart_;
         iPediaApplication& app=static_cast<iPediaApplication&>(form_.application());
         ticksDiff*=1000;
         ticksDiff/=app.ticksPerSecond();
-        if (ticksDiff<delay)
-            return;
-
-        Graphics graphics(form_.windowHandle());
-        Rectangle bounds=form_.bounds();
-        bounds.explode(2, 17, -12, -37);
-        
-        Font f;
-        Graphics::FontSetter fset(graphics, f);
-        uint_t height=graphics.fontHeight();
-        Rectangle rect(bounds.x(), bounds.y()+(bounds.height()-height)/2, bounds.width(), height);
-        graphics.erase(rect);
-
-        char buffer[100];
-        StrPrintF(buffer, "Wait... %d%%", percent);
-        WinHandle wh=WinSetDrawWindow(form_.windowHandle());
-        graphics.drawCenteredText(buffer, rect.topLeft, rect.width());
-        WinSetDrawWindow(wh);
+        if (ticksDiff>=delay)
+            afterTrigger_=true;
+        if (afterTrigger_ && percent<=20)
+            showProgress_=true;
     }
+    
+    if (!showProgress_)        return;
+        
+    Graphics graphics(form_.windowHandle());
+    Rectangle bounds=form_.bounds();
+    bounds.explode(2, 17, -12, -37);
+    
+    Font f;
+    Graphics::FontSetter fset(graphics, f);
+    uint_t height=graphics.fontHeight();
+    Rectangle rect(bounds.x(), bounds.y()+(bounds.height()-height)/2, bounds.width(), height);
+    graphics.erase(rect);
+
+    char buffer[100];
+    StrPrintF(buffer, "Wait... %d%%", percent);
+    WinHandle wh=WinSetDrawWindow(form_.windowHandle());
+    graphics.drawCenteredText(buffer, rect.topLeft, rect.width());
+    WinSetDrawWindow(wh);
 }
