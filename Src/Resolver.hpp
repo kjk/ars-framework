@@ -8,7 +8,6 @@
 namespace ArsLexis
 {
     class NetLibrary;
-    class SocketAddress;
 
     status_t resolve(SocketAddress& out, NetLibrary& netLib, const String& address, ushort_t port=0, ulong_t timeout=evtWaitForever);
 }
