@@ -18,6 +18,13 @@ class FormattedTextElement;
 
 class ListNumberElement;
 
+/**
+ * Transforms textual definition representation into Definition object.
+ * Parser should be initiaited with reference to @c String that acts as a response
+ * buffer. After each update to buffer's content @c parseIncrement() should be called.
+ * When all data is received @c parseIncrement(true) should be called to parse all the
+ * remeining lines.
+ */
 class DefinitionParser
 {
     Boolean openEmphasize_;
@@ -161,7 +168,7 @@ class DefinitionParser
     
 public:
 
-    DefinitionParser(const ArsLexis::String& text);
+    DefinitionParser(const ArsLexis::String& text, UInt16 initialOffset=0);
 
     void parseIncrement(bool finish=false);
     

@@ -10,7 +10,7 @@
 using ArsLexis::String;
 using ArsLexis::isWhitespace;
 
-DefinitionParser::DefinitionParser(const String& text):
+DefinitionParser::DefinitionParser(const String& text, UInt16 initialOffset):
     openEmphasize_(false),
     openStrong_(false),
     openVeryStrong_(false),
@@ -20,7 +20,7 @@ DefinitionParser::DefinitionParser(const String& text):
     openUnderline_(0),
     openNowiki_(0),
     text_(text),
-    parsePosition_(0),
+    parsePosition_(initialOffset),
     lineEnd_(0),
     lastElementStart_(0),
     lastElementEnd_(0),
@@ -528,7 +528,10 @@ void DefinitionParser::parseIncrement(bool finish)
 void DefinitionParser::updateDefinition(Definition& definition)
 {
     assert(parsePosition_>=text_.length()); // This should generally happen after parsing is finished...
-    std::swap(definition, definition_); }
+    Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
+    std::swap(definition, definition_); 
+    definition.setHyperlinkHandler(handler);
+}
 
 //! @todo Add header indexing
 void DefinitionParser::parseHeaderLine()

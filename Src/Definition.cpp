@@ -18,9 +18,9 @@ Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     rectangles_.push_back(rect);
 }
 
-Boolean Definition::HotSpot::hitTest(const PointType& point) const
+bool Definition::HotSpot::hitTest(const PointType& point) const
 {
-    Boolean result=false;
+    bool result=false;
     Rectangles_t::const_iterator it=std::find_if(rectangles_.begin(), rectangles_.end(), Rectangle::HitTest(point));
     if (it!=rectangles_.end())
         result=true;
@@ -51,7 +51,8 @@ void Definition::HotSpot::move(const PointType& delta, const Rectangle& validAre
 
 Definition::Definition():
     firstLine_(0),
-    lastLine_(0)
+    lastLine_(0),
+    hyperlinkHandler_(0)
 {}
 
 void Definition::addHotSpot(HotSpot* hotSpot)
@@ -210,7 +211,7 @@ void Definition::renderLine(RenderingContext& renderContext, const LinePosition_
     renderContext.renderingProgress=line->renderingProgress;
     ElementPosition_t last=elements_.end();
     ElementPosition_t current=line->firstElement;
-    Boolean lineFinished=false;    
+    bool lineFinished=false;    
     while (!lineFinished && current!=last)
     {
         (*current)->render(renderContext);
@@ -253,7 +254,7 @@ void Definition::calculateLayout(const ElementPosition_t& firstElement, UInt16 r
             firstLine_=lines_.size();
         }
         
-        Boolean startNewLine=false;    
+        bool startNewLine=false;    
         if (layoutContext.isElementCompleted())
         {
             ++current;
@@ -297,7 +298,7 @@ void Definition::render(const ArsLexis::Rectangle& bounds, const RenderingPrefer
     }
     else {
         clearHotSpots();
-        Boolean heightChanged=(bounds_.height()!=bounds.height());
+        bool heightChanged=(bounds_.height()!=bounds.height());
         bounds_=bounds;
         if (heightChanged)
             calculateVisibleRange(firstLine_, lastLine_);
@@ -314,6 +315,7 @@ void Definition::swap(Definition& other)
     std::swap(lastLine_, other.lastLine_);
     std::swap(bounds_, other.bounds_);
     hotSpots_.swap(other.hotSpots_);
+    std::swap(hyperlinkHandler_, other.hyperlinkHandler_);
 }
 
 void Definition::appendElement(DefinitionElement* element)

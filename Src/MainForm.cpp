@@ -1,7 +1,7 @@
 #include "MainForm.hpp"
 #include "DefinitionParser.hpp"
 #include "iPediaApplication.hpp"
-#include "SimpleSocketConnection.hpp"
+#include "DefinitionRequestConnection.hpp"
 #include "SocketAddress.hpp"
 
 void MainForm::resize(const RectangleType& screenBounds)
@@ -222,10 +222,11 @@ void MainForm::handleControlSelect(const ctlSelect& data)
     if (!error)
     {
         assert(manager);
-        SimpleSocketConnection* connection=new SimpleSocketConnection(*manager);
+        SimpleSocketConnection* connection=new DefinitionRequestConnection(*manager, "Term: Science fiction\r\n");
         connection->setTransferTimeout(app.ticksPerSecond()*15L);
+        connection->setChunkSize(256);
 //        error=connection->open(INetSocketAddress(0xcf2c860b, 80), "GET / HTTP/1.0\r\n\r\n");
-        error=connection->open(INetSocketAddress(0x7f000001, 9000), "Term: Science fiction\r\n");
+        error=connection->open(INetSocketAddress(0x7f000001, 9000));
         if (!(errNone==error || netErrWouldBlock==error))
             delete connection;
     }

@@ -191,8 +191,6 @@ namespace ArsLexis
          */
         virtual void runEventLoop();
         
-        Form* getOpenForm(UInt16 id) const;
-        
         Err registerNotify(UInt32 notifyType, Int8 priority=sysNotifyNormalPriority, void* userData=0);
 
         Err unregisterNotify(UInt32 notifyType, Int8 priority=sysNotifyNormalPriority);
@@ -221,6 +219,8 @@ namespace ArsLexis
         
     public:
     
+        Form* getOpenForm(UInt16 id) const;
+        
         virtual Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
 
         /**

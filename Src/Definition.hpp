@@ -109,6 +109,17 @@ class Definition
     
 public:
 
+    class HyperlinkHandler
+    {
+    public:
+    
+        virtual void handleHyperlink(const ArsLexis::String& resource, HyperlinkType type)=0;
+        
+        virtual ~HyperlinkHandler()
+        {}
+        
+    };
+    
     /**
      * Hot spot is a place in definition that allows to execute some action on clicking it.
      * It's made of one or more rectangular areas, that represent the space in which 
@@ -137,7 +148,7 @@ public:
         void addRectangle(const ArsLexis::Rectangle& rect)
         {rectangles_.push_back(rect);}
         
-        Boolean hitTest(const PointType& point) const;
+        bool hitTest(const PointType& point) const;
         
         DefinitionElement& element()
         {return element_;}
@@ -149,7 +160,7 @@ public:
          */
         void move(const PointType& delta, const ArsLexis::Rectangle& validArea);
         
-        Boolean valid() const
+        bool valid() const
         {return !rectangles_.empty();}
         
         ~HotSpot();
@@ -207,8 +218,18 @@ public:
      */
     void clear();
     
+    HyperlinkHandler* hyperlinkHandler()
+    {return hyperlinkHandler_;}
+    
+    void setHyperlinkHandler(HyperlinkHandler* handler)
+    {hyperlinkHandler_=handler;}
+    
+    void goToBookmark(const ArsLexis::String& bookmark)
+    {}
+    
 private:
 
+    HyperlinkHandler* hyperlinkHandler_;
     RenderingPreferences preferences_;
 
     typedef std::list<HotSpot*, ArsLexis::Allocator<HotSpot*> > HotSpots_t;

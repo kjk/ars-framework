@@ -3,8 +3,9 @@
 namespace ArsLexis
 {
 
-    SimpleSocketConnection::SimpleSocketConnection(SocketConnectionManager& manager):
+    SimpleSocketConnection::SimpleSocketConnection(SocketConnectionManager& manager, const String& request):
         SocketConnection(manager),
+        request_(request),
         maxResponseSize_(32768),
         sending_(true),
         transferTimeout_(evtWaitForever),
@@ -17,18 +18,6 @@ namespace ArsLexis
     {
     }
 
-    Err SimpleSocketConnection::open(const SocketAddress& address, const String& request, Int32 timeout)
-    {
-        request_=request;
-        Err error=SocketConnection::open(address, timeout);
-        if (!error || netErrWouldBlock==error)
-        {
-            registerEvent(SocketSelector::eventException);
-            registerEvent(SocketSelector::eventWrite);
-        }
-        return error;
-    }
-    
     void SimpleSocketConnection::notifyWritable()
     {
         assert(sending_);

@@ -113,7 +113,8 @@ namespace ArsLexis
         Err error=errNone;
         const NetSocketAddrType* addr=address;
         UInt16 addrLen=address.size();
-        Int16 result=NetLibSocketConnect(netLib_, socket_, const_cast<NetSocketAddrType*>(addr), addrLen, timeout, &error);
+//        Int16 result=NetLibSocketConnect(netLib_, socket_, const_cast<NetSocketAddrType*>(addr), addrLen, timeout, &error);
+        Int16 result=NetLibSocketConnect(netLib_, socket_, const_cast<NetSocketAddrType*>(addr), 8, timeout, &error);
         if (-1==result)
             assert(error);
         else

@@ -2,6 +2,7 @@
 #include "iPediaApplication.hpp"
 #include "SysUtils.hpp"
 #include "MainForm.hpp"
+#include "NetLibrary.hpp"
 
 IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 
@@ -27,7 +28,23 @@ Err iPediaApplication::initialize()
                 diaNotifyRegistered_=true;
         }
     }
+    
+    detectViewer();
+       
     return error;
+}
+
+void iPediaApplication::detectViewer()
+{
+    DmSearchStateType searchState;
+    UInt16 cardNo=0;
+    LocalID dbID=0;
+    Err error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, sysFileCClipper, true, &cardNo, &dbID);
+    if (!error)
+    {
+        assert(dbID!=0);
+        hyperlinkHandler_.setViewerLocation(cardNo, dbID);
+    }
 }
 
 iPediaApplication::~iPediaApplication()
@@ -49,20 +66,6 @@ static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStage
 
 Err iPediaApplication::normalLaunch()
 {
-    setEventTimeout(0);
-    
-/*    
-    NetLibrary* netLib=0;
-    getNetLib(netLib);
-    if (netLib)
-    {
-        SimpleSocketConnection* connection=new SimpleSocketConnection(*connectionManager_);
-        Err error=connection->open(INetSocketAddress(0xcf2c860b, 80), "GET / HTTP/1.0\r\n\r\n");
-        if (!(errNone==error || netErrWouldBlock==error))
-            delete connection;
-    }
-*/
-
     gotoForm(mainForm);
     runEventLoop();
     return errNone;

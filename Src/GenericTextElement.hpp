@@ -63,6 +63,8 @@ public:
     ElementStyle style() const
     {return style_;}
     
+    void hotSpotClicked(Definition& definition);
+    
 };
 
 #endif

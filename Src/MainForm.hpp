@@ -29,7 +29,9 @@ public:
         iPediaForm(app, mainForm)
     {}
 
-    
+    //! @todo Make the following don't compromise encapsulation...
+    Definition& definition()
+    {return definition_;}    
 };
 
 #endif

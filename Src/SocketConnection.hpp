@@ -58,11 +58,11 @@ namespace ArsLexis
         virtual void abortConnection()
         {delete this;}
         
-        Err open(const SocketAddress& address, Int32 timeout=evtWaitForever);
-        
         SocketConnection(SocketConnectionManager& manager);
         
     public:
+
+        virtual Err open(const SocketAddress& address, Int32 timeout=evtWaitForever);
         
         void registerEvent(SocketSelector::EventType event)
         {

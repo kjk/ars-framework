@@ -4,9 +4,9 @@
 #include "ipedia.h"
 #include "Application.hpp"
 #include "DynamicInputAreas.hpp"
-#include "NetLibrary.hpp"
 #include "SocketConnection.hpp"
 #include "RenderingPreferences.hpp"
+#include "iPediaHyperlinkHandler.hpp"
 
 class iPediaApplication: public ArsLexis::Application 
 {
@@ -20,6 +20,10 @@ class iPediaApplication: public ArsLexis::Application
     
     UInt16 ticksPerSecond_;
     RenderingPreferences renderingPrefs_;
+    
+    iPediaHyperlinkHandler hyperlinkHandler_;
+    
+    void detectViewer();
 
 protected:
 

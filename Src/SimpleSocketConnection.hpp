@@ -13,7 +13,7 @@ namespace ArsLexis
         UInt16 maxResponseSize_;
         UInt16 chunkSize_;
         
-        Boolean sending_;
+        bool sending_;
         UInt32 transferTimeout_;
         UInt16 requestBytesSent_;
         
@@ -36,11 +36,9 @@ namespace ArsLexis
         
     public:
 
-        SimpleSocketConnection(SocketConnectionManager& manager);
+        SimpleSocketConnection(SocketConnectionManager& manager, const String& request);
         
         ~SimpleSocketConnection();
-        
-        Err open(const SocketAddress& address, const String& request, Int32 timeout=evtWaitForever);
         
         const String& response() const
         {return response_;}
@@ -53,6 +51,9 @@ namespace ArsLexis
         
         void setChunkSize(UInt16 size)
         {chunkSize_=size;}
+        
+        bool sending() const
+        {return sending_;}
     
     };
 }

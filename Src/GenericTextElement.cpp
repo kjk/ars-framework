@@ -173,3 +173,15 @@ void GenericTextElement::setHyperlink(const ArsLexis::String& resource, Hyperlin
     }
 }
 
+void GenericTextElement::hotSpotClicked(Definition& definition)
+{
+    assert(isHyperlink());
+    if (hyperlinkBookmark==hyperlink_->type)
+        definition.goToBookmark(hyperlink_->resource);
+    else
+    {        
+        Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
+        if (handler)
+            handler->handleHyperlink(hyperlink_->resource, hyperlink_->type);
+    }
+}

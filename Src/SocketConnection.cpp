@@ -113,6 +113,11 @@ namespace ArsLexis
             error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
             if (!error)
                 error=socket_.connect(address, timeout);
+            if (!error || netErrWouldBlock==error)
+            {
+                registerEvent(SocketSelector::eventException);
+                registerEvent(SocketSelector::eventWrite);
+            }
         }
         return error;
     }
