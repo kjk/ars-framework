@@ -366,7 +366,7 @@ ArsLexis::String ArsLexis::GetNextLine(const ArsLexis::String& str, String::size
             lineEndPos = 0;
         else
             lineEndPos = delimPos;
-        assert ( (_T('\n')!=str[lineEndPos]) && (_T('\r')!=str[lineEndPos]))
+        assert ( (_T('\n')!=str[lineEndPos]) && (_T('\r')!=str[lineEndPos]));
 
         curPos = delimPos+1;
         while ( (_T('\n')==str[curPos]) || (_T('\r')==str[curPos]))
