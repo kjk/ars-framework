@@ -18,6 +18,7 @@
 #   -limit N : only process first N rows
 #   -random : show a random word
 #   -title $title : show diff of a given title
+#   -dump : dump before and after to stdout
 #   fileName - which sql file to process
 #
 # TODO:
@@ -33,10 +34,9 @@ except:
 
 try:
     import psyco
-    g_fPsycoAvailable = True
+    psyco.full()
 except:
     print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
-    g_fPsycoAvailable = False
 
 # windiff doesn't do that well with long lines so I break long lines into
 # a paragraph. It does make the text uglier but for our purpose we don't
@@ -295,19 +295,69 @@ def showDiffRandom(fileName):
     showDiff(article)
 
 def findArticle(fileName,title):
-    title = string.tolower(title.replace(" ", "_"))
-    print "looking for article with title %s" % title
+    #title = string.lower(title.replace(" ", "_"))
+    #title = string.lower(title.replace(" ", "_"))
+    titleLower = title.lower()
+    print "looking for article with title %s" % titleLower
+    count = 0
     for article in iterArticles(fileName):
-        if string.tolower(article.getTitle()) == title:
+        #if article.getTitle().lower() == titleLower:
+        title = article.getTitle().lower.strip()
+        if 0 == title.find(titleLower):
             return article
+        if count % 1000 == 0:
+            print "processed %d articles, last title %s" % (count,article.getTitle().lower().strip())
+        count += 1
     return None
+
+def iterArticlesMatchingTitle(fileName,title):
+    #title = string.lower(title.replace(" ", "_"))
+    #title = string.lower(title.replace(" ", "_"))
+    titleLower = title.lower()
+    print "looking for article with title %s" % titleLower
+    count = 0
+    for article in iterArticles(fileName):
+        title = article.getTitle().lower().strip()
+        if -1 != title.find(titleLower):
+            yield article
+        if count % 1000 == 0:
+            print "processed %d articles, last title %s" % (count,article.getTitle().lower().strip())
+        count += 1
+
+def iterArticlesExactTitle(fileName,title):
+    #title = string.lower(title.replace(" ", "_"))
+    #title = string.lower(title.replace(" ", "_"))
+    titleLower = title.lower()
+    print "looking for article with title %s" % titleLower
+    count = 0
+    for article in iterArticles(fileName):
+        title = article.getTitle().lower().strip()
+        #if 0 == title.find(titleLower):
+        if title == titleLower:
+            yield article
+        if count % 1000 == 0:
+            print "processed %d articles, last title %s" % (count,article.getTitle().lower().strip())
+        count += 1
 
 def showDiffTitle(fileName,title):
     article = findArticle(fileName,title)
     if not article:
-        print "couldn't find the body of article %s" % title
+        print "couldn't find article with the title %s" % title
         return
     showDiff(article)
+
+def dumpArticle(fileName,title):
+    for article in iterArticlesExactTitle(fileName,title):
+        if not article:
+            print "couldn't find the body of article %s" % title
+            return
+        title = article.getTitle().strip() + "\n"
+        txt = article.getTxt()
+        converted = articleconvert.convertArticle(title,txt)
+        print "TITLE: %s" % title
+        print "ORIGINAL: %s" % txt
+        print "CONVERTED: %s" % converted
+        return
 
 if __name__=="__main__":
     limit = getRemoveCmdArg("-limit")
@@ -316,12 +366,12 @@ if __name__=="__main__":
     else:
         limit = int(limit)
 
-    # always use psyco if available
-    if g_fPsycoAvailable:
-        #print "using psyco"
-        psyco.full()
-
     fRandom = fDetectRemoveCmdFlag("-random")
+    fDump = fDetectRemoveCmdFlag("-dump")
+
+    if fDump and fRandom:
+        print "Can't use -dump and -random at the same time"
+        usageAndExit()
 
     title = getRemoveCmdArg("-title")
 
@@ -345,5 +395,8 @@ if __name__=="__main__":
         showDiffRandom(fileName)
     else:
         assert title
-        showDiffTitle(fileName,title)
+        if fDump:
+            dumpArticle(fileName,title)
+        else:
+            showDiffTitle(fileName,title)
 

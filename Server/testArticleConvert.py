@@ -6,15 +6,6 @@
 # Usage:
 #   testFileName : file with tests to use
 #
-# TODO:
-#   Maybe add syntax for short tests to make them easier to write e.g. instead:
-#        @2
-#        &minus;
-#        @
-#        -
-#   just:
-#        @s2 &minus;*-
-
 import sys,os,os.path,string,time,md5,bz2,articleconvert
 try:
     import psyco
@@ -55,6 +46,25 @@ class ConvertTest:
     def setConverted(self,converted):
         self.converted = converted
 
+def fShortTest(line):
+    if len(line)>2 and line[:2]=="@s":
+        return True
+    return False
+
+# short test is in the form:
+# @s2 orig*expected
+# i.e.: "@s", name of the test (everything up to a space),
+# original text and expected text separated by a "*"
+def parseShortTest(line):
+    assert line[:2] == "@s"
+    line = line[2:]
+    parts = line.split(" ",1)
+    assert len(parts)==2
+    name = parts[0]
+    txt = parts[1]
+    (orig,expected) = txt.split("*")    
+    return (name,orig,expected)
+
 def iterTests(fileName):
     fo = open(fileName,"rb")
     # skip comments and empty lines at the beginning of the file
@@ -78,6 +88,12 @@ def iterTests(fileName):
             print "! line should start with '@' (line: '%s')" % line
             assert line[0] == '@'
         line = line.strip()
+        if fShortTest(line):
+            (name,orig,expected) = parseShortTest(line)
+            test = ConvertTest(name,orig,expected)
+            yield test
+            line = fo.readline()
+            continue
         name = line[1:]
         # read the text before conversion and expected result of conversion
         orig = ""
