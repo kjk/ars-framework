@@ -45,7 +45,7 @@ void FormGadget::drawProxy()
         return;
     if (form()->application().runningOnTreo600() && hasFocus())
         drawFocusRing();
-    Graphics graphics(form()->windowHandle());
+    Graphics graphics(WinGetDrawWindow()); // form()->windowHandle()
     Rectangle rect;
     bounds(rect);
     bool db=doubleBuffer_;

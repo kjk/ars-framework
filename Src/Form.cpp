@@ -474,5 +474,16 @@ namespace ArsLexis
         return false;
     }
     
+    
+    UInt16 Form::createGadget(UInt16 id, const Rectangle& rect)
+    {
+        FormGadgetType* g = FrmNewGadget(&form_, id, rect.x(), rect.y(), rect.width(), rect.height());
+        if (NULL == g)
+            return frmInvalidObjectId;
+        UInt16 index = FrmGetObjectIndexFromPtr(form_, g);
+        assert(frmInvalidObjectId != index);
+        return index;
+    }
+    
 }
 

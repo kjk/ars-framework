@@ -42,7 +42,7 @@ void TextRenderer::checkDrawingWindow()
     if (NULL == drawingWindow_)
     {
         assert(!drawingWindowIsOffscreen_);
-        drawingWindow_ = form->windowHandle();
+        drawingWindow_ = WinGetDrawWindow(); // form->windowHandle();
         drawingWindowBounds_ = bounds;
         Err error;
         WinHandle offscreenWindow = WinCreateOffscreenWindow(bounds.width(), bounds.height(), nativeFormat, &error);
@@ -67,7 +67,7 @@ void TextRenderer::updateForm(Graphics& graphics)
     Rectangle bounds;
     this->bounds(bounds);
     bounds.explode(1, 1, -2, -2);
-    Graphics formWindow(form()->windowHandle());
+    Graphics formWindow(WinGetDrawWindow()); //form()->windowHandle()
     graphics.copyArea(bounds, formWindow, bounds.topLeft);
 }
 
@@ -80,8 +80,10 @@ void TextRenderer::drawProxy()
     checkDrawingWindow();
     {
         Graphics graphics(drawingWindow_);
+        {
         ActivateGraphics activate(graphics);
         handleDraw(graphics);
+        }
         if (errNone == lastRenderingError_)
             updateForm(graphics);
     }
@@ -111,8 +113,10 @@ void TextRenderer::scroll(WinDirectionType direction, uint_t items, ScrollbarUpd
     checkDrawingWindow();
     {
         Graphics graphics(drawingWindow_);
+        {
         ActivateGraphics activate(graphics);
         definition_.scroll(graphics, renderingPreferences_, i);
+        }
         if (errNone == lastRenderingError_)
             updateForm(graphics);
     }
@@ -198,9 +202,13 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
         scheduledScrollDirection_ = scheduledScrollAbandoned;
     checkDrawingWindow();
     {
+        bool update;
         Graphics graphics(drawingWindow_);
+        {
         ActivateGraphics activate(graphics);
-        if (definition_.extendSelection(graphics, renderingPreferences_, p, tapCount))
+        update = definition_.extendSelection(graphics, renderingPreferences_, p, tapCount);
+        }
+        if (update)
             updateForm(graphics);
     }
     fireDrawCompleted();
@@ -259,6 +267,8 @@ void TextRenderer::handleNilEvent()
     checkDrawingWindow();
     Graphics graphics(drawingWindow_);
     {
+        bool update;
+        {
         ActivateGraphics activate(graphics);
         definition_.scroll(graphics, renderingPreferences_, i);
         Rectangle bounds;
@@ -267,7 +277,9 @@ void TextRenderer::handleNilEvent()
         Point p(bounds.topLeft);
         if (winDown == dir)
             p += bounds.extent;
-        if (definition_.extendSelection(graphics, renderingPreferences_, p, 0))
+        update = definition_.extendSelection(graphics, renderingPreferences_, p, 0);
+        }
+        if (update)
             updateForm(graphics);
     }
     fireDrawCompleted();
@@ -281,8 +293,10 @@ bool TextRenderer::handleNavigatorKey(Definition::NavigatorKey navKey)
     {
         checkDrawingWindow();
         Graphics graphics(drawingWindow_);
+        {
         ActivateGraphics activate(graphics);
         handled = definition_.navigatorKey(graphics, renderingPreferences_, navKey);
+        }
         updateForm(graphics);
     }
     fireDrawCompleted();

@@ -37,14 +37,13 @@ namespace ArsLexis
         const void* wrappedObject() const
         {return object_;}
         
+    public:
         Form* form()
         {return form_;}
         
         const Form* form() const
         {return form_;}
 
-    public:
-    
         void attach(UInt16 id);
 
         void attachByIndex(UInt16 index);

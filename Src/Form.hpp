@@ -188,6 +188,12 @@ namespace ArsLexis
         friend class Application;
         friend class FormGadget;
         friend class FormObject;
+        
+        // @return index of new gadget or frmInvalidObjectId on failure.
+        UInt16 createGadget(UInt16 id, const Rectangle& rect);
+        
+        void removeObject(UInt16 index) {FrmRemoveObject(&form_, index);}
+        
     };
     
 }

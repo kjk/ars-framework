@@ -849,7 +849,7 @@ void ExtendedList::handleFocusChange(FocusChange change)
         if (sel >= topItem_ + viewCapacity)
             return;
         bool showScrollbar = (itemsCount > viewCapacity);
-        Graphics graphics(form()->windowHandle());
+        Graphics graphics(WinGetDrawWindow()); //form()->windowHandle()
         drawItemProxy(graphics, listBounds, sel, showScrollbar);
     }
 }

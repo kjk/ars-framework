@@ -104,7 +104,10 @@ Err ArsLexis::getResource(UInt16 stringId, String& out)
         const char* str=static_cast<const char*>(MemHandleLock(handle));
         if (str)
         {
-            out.assign(str);
+            UInt32 len = MemHandleSize(handle);
+            if (0 != len)
+                --len;
+            out.assign(str, len);
             MemHandleUnlock(handle);
         }
         else
