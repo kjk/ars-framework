@@ -1,4 +1,6 @@
 /* pilrc generated file.  Do not edit!*/
+#define searchResultsList 1035
+#define searchResultsForm 1034
 #define serialNumberField 1033
 #define registrationForm 1031
 #define cancelButton 1030
@@ -26,6 +28,7 @@
 #define registerMenuItem 1008
 #define useDictPcMenuItem 1007
 #define useLocalhostMenuItem 1006
+#define AUTOID 1005
 #define selectAllMenuItem 1003
 #define copyMenuItem 1002
 #define mainMenuBar 1001

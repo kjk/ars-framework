@@ -8,9 +8,11 @@
 #include "RenderingPreferences.hpp"
 #include "iPediaHyperlinkHandler.hpp"
 #include "Resolver.hpp"
+#include "Logging.hpp"
 
 class iPediaApplication: public ArsLexis::Application 
 {
+    ArsLexis::RootLogger log_;
     ArsLexis::DIA_Support diaSupport_;
     Boolean diaNotifyRegistered_;
     
@@ -110,6 +112,9 @@ public:
     {return termList_;}
     
     void sendDisplayAlertEvent(UInt16 alertId);
+    
+    ArsLexis::Logger& log()
+    {return log_;}
     
 private:
     

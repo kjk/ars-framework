@@ -10,6 +10,7 @@ IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 using namespace ArsLexis;
 
 iPediaApplication::iPediaApplication():
+    log_("root", "\\log\\iPedia.log"),
     diaNotifyRegistered_(false),
     netLib_(0),
     connectionManager_(0),
@@ -113,7 +114,7 @@ Err iPediaApplication::getNetLibrary(NetLibrary*& netLib)
     if (!error)
         netLib=netLib_;
     else
-        FrmAlert(networkUnavailableAlert);        
+        sendDisplayAlertEvent(networkUnavailableAlert);        
     return error;
 }
 
@@ -175,7 +176,8 @@ Err iPediaApplication::getResolver(Resolver*& resolver)
 void iPediaApplication::sendDisplayAlertEvent(UInt16 alertId)
 {
     EventType event;
-    MemSet(&event, sizeof(event), 0);    event.eType=static_cast<eventsEnum>(appDisplayAlertEvent);
+    MemSet(&event, sizeof(event), 0);
+    event.eType=static_cast<eventsEnum>(appDisplayAlertEvent);
     DisplayAlertEventData& data=reinterpret_cast<DisplayAlertEventData&>(event.data);
     data.alertId=alertId;
     EvtAddEventToQueue(&event);

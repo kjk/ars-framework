@@ -73,7 +73,7 @@ inline void operator delete(void *ptr)
     {
         MemPtrFree(ptr);
 #ifndef NDEBUG
-//        ArsLexis::logAllocation(ptr, true, 0, 0);
+        ArsLexis::logAllocation(ptr, true, 0, 0);
 #endif            
     }        
 }

@@ -119,25 +119,6 @@ namespace ArsLexis
         
     protected:
     
-        /**
-         * Enumerates used feature indexes.
-         * Subclasses should not assume that next available feature index is some fixed number,
-         * but declare it's first feature as 
-         * <code>featureSomeSubclassFeature=Application::featureFirstAvailable</code>.
-         */
-        enum Feature 
-        {
-            /**
-             * Feature index that is used to store pointer to current @c Application instance.
-             */
-            featureInstancePointer,
-            
-            /**
-             * First available feature index for use in subclasses.
-             */
-            featureFirstAvailable
-        };
-    
 #ifdef appFileCreator    
         explicit Application(UInt32 creatorId=appFileCreator);
 #else
@@ -216,6 +197,30 @@ namespace ArsLexis
         {eventTimeout_=timeout;}
         
     public:
+    
+        /**
+         * Enumerates used feature indexes.
+         * Subclasses should not assume that next available feature index is some fixed number,
+         * but declare it's first feature as 
+         * <code>featureSomeSubclassFeature=Application::featureFirstAvailable</code>.
+         */
+        enum Feature 
+        {
+            /**
+             * Feature index that is used to store pointer to current @c Application instance.
+             */
+            featureInstancePointer,
+            
+            /**
+             * Used to store pointer to current @c RootLogger.
+             */
+            featureRootLoggerPointer,
+            
+            /**
+             * First available feature index for use in subclasses.
+             */
+            featureFirstAvailable
+        };
     
         Form* getOpenForm(UInt16 id) const;
         

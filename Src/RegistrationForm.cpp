@@ -33,7 +33,8 @@ bool RegistrationForm::handleOpen()
         char* text=static_cast<char*>(MemHandleLock(handle));
         if (text)
         {
-            assert(prefs.serialNumber.length()<=prefs.serialNumberLength);            StrNCopy(text, prefs.serialNumber.data(), prefs.serialNumber.length());
+            assert(prefs.serialNumber.length()<=prefs.serialNumberLength);
+            StrNCopy(text, prefs.serialNumber.data(), prefs.serialNumber.length());
             text[prefs.serialNumber.length()]=chrNull;
             MemHandleUnlock(handle);
         }
@@ -54,14 +55,10 @@ void RegistrationForm::handleControlSelect(const ctlSelect& data)
             text="";
         iPediaApplication::Preferences& prefs=static_cast<iPediaApplication&>(application()).preferences();
         ArsLexis::String newSn(text);
-//        if (0!=StrCompare(prefs.serialNumber, text))
         if (newSn!=prefs.serialNumber)
         {
-//            uint_t len=StrLen(text);
-//            assert(len<=prefs.serialNumberLength);
-//            StrNCopy(prefs.serialNumber, text, prefs.serialNumberLength);
-//            prefs.serialNumber[prefs.serialNumberLength]=chrNull;
-            assert(newSn.length()<=prefs.serialNumberLength);            prefs.serialNumber=newSn;
+            assert(newSn.length()<=prefs.serialNumberLength);
+            prefs.serialNumber=newSn;
             prefs.serialNumberRegistered=false;
         }
     }

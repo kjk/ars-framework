@@ -16,7 +16,6 @@ namespace ArsLexis
         logRaw(full);
     }
 
-
     RootLogger::RootLogger(const char* context, const char* fileName):
         Logger(context),
         file_(HostFOpen(fileName, "w"))
@@ -50,19 +49,19 @@ namespace ArsLexis
     FunctionLogger::FunctionLogger(const char* context, Logger& parent):
         ChildLogger(context, parent)
     {
-        (*this)<<">>> Enter";
+        log(">>> Enter");
     }
         
 
     FunctionLogger::FunctionLogger(const char* context):
         ChildLogger(context)
     {
-        (*this)<<">>> Enter";
+        log(">>> Enter");
     }
     
     FunctionLogger::~FunctionLogger()
     {
-        (*this)<<"<<< Exit";
+        log("<<< Exit");
     }
 
 }

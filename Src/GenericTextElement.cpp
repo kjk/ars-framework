@@ -60,7 +60,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         uint_t newLineLength=graphics.wordWrap(text, layoutContext.screenWidth-indent);
         if (nextWhitespace<=newLineLength)
         {
-            layoutContext.usedWidth+=layoutContext.availableWidth();
+//            layoutContext.usedWidth+=layoutContext.availableWidth();
             return;
         }
     }
@@ -106,7 +106,8 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
             }
             
             layoutContext.renderingProgress+=length;
-            layoutContext.usedWidth+=layoutContext.availableWidth();
+//            layoutContext.usedWidth+=layoutContext.availableWidth();
+            layoutContext.usedWidth+=width;
         }
     }
     else

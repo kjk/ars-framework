@@ -304,16 +304,10 @@ void MainForm::synchronizeWithHistory()
 
     UInt16 buttonsWidth=0;
     Control control(*this, backButton);
-    if (history().hasPrevious())
-        control.show();
-    else 
-        control.hide();
+    control.setEnabled(history().hasPrevious());
         
     control.attach(forwardButton);
-    if (history().hasNext())
-        control.show();
-    else 
-        control.hide();
+    control.setEnabled(history().hasNext());
 }
 
 bool MainForm::handleKeyPress(const EventType& event)

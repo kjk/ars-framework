@@ -145,7 +145,13 @@ namespace ArsLexis
         
         void hit()
         {CtlHitControl(object());}
+
+        void setEnabled(bool enabled)
+        {CtlSetEnabled(object(), enabled);}
         
+        bool enabled() const
+        {return CtlEnabled(object());}
+                
     };        
     
 }

@@ -57,45 +57,36 @@ namespace ArsLexis
             }
 
             
-            LineAppender& append(const char* text)
+            LineAppender& operator<<(const char* text)
             {
                 line_.append(text);
                 return *this;
             }
 
-            LineAppender& append(const String& text)
+            LineAppender& operator<<(const String& text)
             {
                 line_.append(text);
                 return *this;
             }
             
-            LineAppender& append(char chr)
+            LineAppender& operator<<(char chr)
             {
                 line_.append(1, chr);
                 return *this;
             }
             
-            LineAppender& append(int i);
-            LineAppender& append(unsigned int ui);
-            LineAppender& append(short i);
-            LineAppender& append(unsigned short ui);
-            LineAppender& append(long l);
-            LineAppender& append(unsigned long ul);
-            
-            template<typename T>
-            LineAppender operator<<(T val)
-            {
-                return append(val);
-            }
+            LineAppender& operator<<(int i);
+            LineAppender& operator<<(unsigned int ui);
+            LineAppender& operator<<(short i);
+            LineAppender& operator<<(unsigned short ui);
+            LineAppender& operator<<(long l);
+            LineAppender& operator<<(unsigned long ul);
             
         };
-        
+
         template<typename T>
-        LineAppender operator<<(T val)
-        {
-            return LineAppender(*this)<<val;
-        }
-        
+        LineAppender operator<<(T val);
+
     protected:
         
         virtual void logRaw(const String& text)=0;
@@ -103,6 +94,12 @@ namespace ArsLexis
         friend class ChildLogger;
         
     };
+    
+    template<typename T>
+    Logger::LineAppender Logger::operator<<(T val)        
+    {
+        return LineAppender(*this)<<val;
+    }
     
     class RootLogger: public Logger
     {
