@@ -20,9 +20,9 @@ namespace ArsLexis {
     
         ReaderMemory(const char_t* buf, long bufSize);
         
-        status_t read(int &ret);
+        status_t read(int& chr);
         
-        status_t read(int &ret, String& dst, int offset, int range);
+        status_t read(int& num, String& dst, int offset, int range);
         
 //        long getActPosition();
         

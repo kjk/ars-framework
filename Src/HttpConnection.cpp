@@ -38,7 +38,8 @@ namespace ArsLexis {
         insideResponseBody_(false),
         chunkedEncoding_(false),
         skippingInfoResponse_(false),
-        responseBodyAvailable_(false)
+        bodyContentsAvailable_(false),
+        finished_(false)
     {}        
 
     HttpConnection::~HttpConnection() 
@@ -128,10 +129,10 @@ namespace ArsLexis {
     
     Err HttpConnection::notifyReadable() 
     {
-//        if (!insideResponseBody_)
+        if (!insideResponseBody_)
             return SimpleSocketConnection::notifyReadable();
-//        else
-//            return processResponseBody();
+        else
+            return processResponseBody();
     }
 
     //! @todo Handle case when field value spans through multiple lines
@@ -226,5 +227,114 @@ namespace ArsLexis {
             value.assign(line, pos, line.npos);
         return handleResponseField(field, value);
     }
+    
+    Err HttpConnection::processResponseBody()
+    {
+        bodyContentsAvailable_=true;
+        if (!reader_.get())
+            //! @todo Handle chunkedEncoding_ flag creating ChunkedBodyReader.
+            reader_.reset(new BodyReader(*this));
+        return processBodyContents(*reader_);
+    }
 
+    HttpConnection::BodyReader::BodyReader(HttpConnection& conn):
+        connection_(conn),
+        charsRead_(0)
+    {
+    }  
+    
+    status_t HttpConnection::BodyReader::readNextChunk()
+    {
+        connection_.bodyContentsAvailable_=false;
+        return connection_.SimpleSocketConnection::notifyReadable();
+    }
+    
+    void HttpConnection::BodyReader::flush()
+    {
+        body().erase(0, charsRead_);
+        charsRead_=0;
+    }
+    
+    status_t HttpConnection::BodyReader::read(int& chr) 
+    {
+        if (body().length()==charsRead_) 
+        {
+            if (eof())
+            {
+                chr=npos;
+                flush();
+                return errNone;
+            }
+            status_t error=readNextChunk();
+            if (errNone!=error)
+                return error;
+            if (body().length()==charsRead_)
+            {
+                chr=npos;
+                flush();
+                return errNone;
+            }
+            else
+                chr=body()[charsRead_++];
+        }
+        else 
+            chr=body()[charsRead_++];
+        if (chunkLength==charsRead_) 
+            flush();
+        return errNone;
+    }
+    
+    status_t HttpConnection::BodyReader::read(int& num, String& dst, int offset, int range) 
+    {
+        if (body().empty() && eof())
+        {
+            num=npos;
+            return errNone;
+        }
+        for (int pos=0; pos<range; pos++)
+        {
+            int chr;
+            status_t error=BodyReader::read(chr);
+            if (errNone!=error)
+                return error;
+            if (npos!=chr)
+                dst[offset+pos]=chr;
+            else
+            {
+                num=pos;
+                return errNone;
+            }
+        }
+        return errNone;      
+    }
+
+    Err HttpConnection::processBodyContents(Reader& reader) 
+    {
+        while (bodyContentsAvailable()) 
+        {
+            int chr;
+            status_t error=reader.read(chr);
+            if (errNone!=error)
+                return error;
+            if (reader.npos==chr)
+                break;
+            char_t c=chr;                
+        }                   
+        return errNone;
+    }
+
+    Err HttpConnection::notifyFinished()
+    {
+        if (!insideResponseBody_)
+            return processResponseHeaders(true);
+        return errNone;
+    }
+    
+    Err HttpConnection::notifyProgress()
+    {
+        if (!insideResponseBody_)
+            return processResponseHeaders(false);
+        return errNone;
+    }
+    
 }

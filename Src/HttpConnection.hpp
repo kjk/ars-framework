@@ -2,9 +2,11 @@
 #define __ARSLEXIS_HTTP_CONNECTION_HPP__
 
 #include <SimpleSocketConnection.hpp>
+#include <Reader.hpp>
 #include <vector>
 #include <utility>
 #include <list>
+#include <memory>
 
 namespace ArsLexis {
 
@@ -59,7 +61,8 @@ namespace ArsLexis {
         bool insideResponseBody_:1;
         bool chunkedEncoding_:1;
         bool skippingInfoResponse_:1;
-        bool responseBodyAvailable_:1;
+        bool bodyContentsAvailable_:1;
+        bool finished_:1;
         
         String uri_;
         String messageBody_;
@@ -84,7 +87,39 @@ namespace ArsLexis {
         
         Err processHeaderLine(const String& line);
 
-//        Err processResponseBody();
+        class BodyReader: public Reader {
+            HttpConnection& connection_;
+            uint_t charsRead_;
+            
+            //! Number of chars to read before we start removing them from start of body.
+            static const uint_t chunkLength=128;
+            
+            String& body() 
+            {return connection_.response();}
+            
+            status_t readNextChunk();
+            
+            bool eof() const
+            {return connection_.finished_;}
+            
+            void flush();
+                
+        public:
+        
+            explicit BodyReader(HttpConnection& conn);
+            
+            status_t read(int& chr);
+            
+            status_t read(int& num, String& dst, int offset, int range);
+            
+        };
+        
+        friend class BodyReader;
+
+        typedef std::auto_ptr<BodyReader> ReaderPtr;
+        ReaderPtr reader_;
+        
+        Err processResponseBody();
         
     protected:
     
@@ -96,11 +131,14 @@ namespace ArsLexis {
         
         Err notifyReadable();
         
-        Err notifyFinished()
-        {return processResponseHeaders(true);}
+        Err notifyFinished();
         
-        Err notifyProgress()
-        {return processResponseHeaders(false);}
+        Err notifyProgress();
+        
+        bool bodyContentsAvailable() const
+        {return bodyContentsAvailable_;}
+        
+        virtual Err processBodyContents(Reader& reader);
         
     };
 
