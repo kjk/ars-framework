@@ -101,20 +101,25 @@ def convertDefinition(text):
     return text
 
 def main():
-    query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 """
+    #query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 """
+    query="""select cur_title, cur_timestamp from enwiki.cur where cur_namespace=0 """
 
     if len(sys.argv)>1:
         query+=""" and cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
 
     srcCursor=db.cursor()
     targetCursor=db.cursor()
+    defCursor=db.cursor()
     srcCursor.execute(query)
     row=srcCursor.fetchone()
     rowCount = 0
     while row:
+        defCursor.execute("""SELECT cur_text FROM enwiki.cur WHERE cur_namespace=0 AND cur_title='%s'""" % db.escape_string(row[0]))
+        defRow=defCursor.fetchone()
         term=row[0].replace('_', ' ')
-        definition=row[1]
-        ts=row[2]
+        #definition=row[1]
+        definition=defRow[0]
+        ts=row[1]
         timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
         #print "Converting term: ", term
         
