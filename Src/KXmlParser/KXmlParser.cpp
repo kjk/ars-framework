@@ -3,14 +3,14 @@
   (http://kxml.org, http://kobjects.dyndns.org/kobjects/auto?self=%23c0a80001000000f5ad6a6fb3)
 */
 
-#include "KxmlParser.hpp"
+#include "KXmlParser.hpp"
 
 using namespace std;
 using namespace KXml2;
 
 //TODO: all with this (when this line is commented)
 #define MUSTDO ;
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -19,7 +19,7 @@ using namespace KXml2;
 #define NO_NAMESPACE ""
 
 /*Init TYPES (we don't have XmlPullParser.cpp)*/
-const String XmlPullParser::TYPES[] = 
+const XmlPullParser::TypeDescription_t XmlPullParser::TYPES[XmlPullParser::typesArrayLength] = 
 {
     "START_DOCUMENT",
     "END_DOCUMENT",
@@ -33,26 +33,8 @@ const String XmlPullParser::TYPES[] =
     "COMMENT",
     "DOCDECL"
 };
-#define TYPESLENGHT 11
 
-String XmlPullParser::FEATURE_PROCESS_NAMESPACES = "http://xmlpull.org/v1/doc/features.html#process-namespaces";
-
-KXmlParser::KXmlParser()
-{
-    fRelaxed_ = false;    
-    entityMap_ = NULL;   
-    reader_ = NULL;
-
-    srcBuf_ = String(128,' ');
-    txtBuf_ = String(128,' ');
-
-    ensureCapacity(attributes_, 16);
-    ensureCapacity(elementStack_, 16);
-    ensureCapacity(nspStack_, 8);
-    ensureCapacityInt(nspCounts_, 4);
-}
-
-KXmlParser::~KXmlParser() {}
+const char_t* XmlPullParser::FEATURE_PROCESS_NAMESPACES = "http://xmlpull.org/v1/doc/features.html#process-namespaces";
 
 /* PRIVATE */
 void KXmlParser::ensureCapacity(vector<String>& vect, int size)
@@ -64,6 +46,28 @@ void KXmlParser::ensureCapacityInt(vector<int>& vect, int size)
 {
     vect.resize(size,0);
 }
+
+inline int KXmlParser::getEventType()
+{
+    return type_;
+}
+
+KXmlParser::KXmlParser()
+{
+    fRelaxed_ = false;    
+    entityMap_ = NULL;   
+    reader_ = NULL;
+
+    srcBuf_.assign(128, ' ');
+    txtBuf_.assign(128, ' ');
+
+    ensureCapacity(attributes_, 16);
+    ensureCapacity(elementStack_, 16);
+    ensureCapacity(nspStack_, 8);
+    ensureCapacityInt(nspCounts_, 4);
+}
+
+KXmlParser::~KXmlParser() {}
 
 error_t KXmlParser::peek(int& ret, int pos)
 {
@@ -148,7 +152,7 @@ error_t KXmlParser::peekType(int& ret)
     }
 }
 
-error_t KXmlParser::read(const char c) 
+error_t KXmlParser::read(const char_t c) 
 {
     error_t error;
     int a;
@@ -202,7 +206,7 @@ void KXmlParser::push(int c)
 
     if (txtPos_ == (int)txtBuf_.length()) 
         txtBuf_.resize((txtBuf_.size()*4)/3 + 4);
-    txtBuf_[txtPos_++] = (char) c;
+    txtBuf_[txtPos_++] = std::char_traits<char_t>::to_char_type(c);
 }
 
 error_t KXmlParser::skip()
@@ -376,7 +380,7 @@ error_t KXmlParser::getNamespaceCount(int& ret, int depth)
     return eNoError; 
 }
 
-String KXmlParser::getNamespace(String prefix) 
+String KXmlParser::getNamespace(const String& prefix) 
 {
     if ("xml" == prefix)
         return "http://www.w3.org/XML/1998/namespace";
@@ -1009,7 +1013,7 @@ error_t KXmlParser::setInput(XmlReader *reader)
     return eNoError;
 }
 
-bool KXmlParser::isProp (String n1, bool prop, String n2) {
+bool KXmlParser::isProp (const String& n1, bool prop, const String& n2) {
         //if (!n1.startsWith("http://xmlpull.org/v1/doc/")) return false;
         if(n1.compare(0, 26, "http://xmlpull.org/v1/doc/")!=0) return false;
         if (prop) 
@@ -1018,7 +1022,7 @@ bool KXmlParser::isProp (String n1, bool prop, String n2) {
             return n1.substr(40) == n2;
 }
 
-error_t KXmlParser::setFeature(String feature, bool flag)
+error_t KXmlParser::setFeature(const String& feature, bool flag)
 {
     if (FEATURE_PROCESS_NAMESPACES == feature)
         processNsp_ = flag;
@@ -1074,7 +1078,7 @@ error_t KXmlParser::next(int& ret)
     return eNoError;
 }
 
-bool KXmlParser::getFeature(String feature) 
+bool KXmlParser::getFeature(const String& feature) 
 {
     if (XmlPullParser::FEATURE_PROCESS_NAMESPACES == feature)
         return processNsp_;
@@ -1183,7 +1187,7 @@ error_t KXmlParser::getAttributeValue(String& ret, int index)
     return eNoError;
 }
 
-String KXmlParser::getAttributeValue(String nameSpace, String name) 
+String KXmlParser::getAttributeValue(const String& nameSpace, const String& name) 
 {
     for (int i = (attributeCount_ << 2) - 4; i >= 0; i -= 4) 
     {
@@ -1250,7 +1254,7 @@ error_t KXmlParser::getPositionDescription(String& ret)
 {
     String buf;
 
-    if (type_ < TYPESLENGHT)
+    if (type_ < typesArrayLength)
         buf = TYPES[type_];
     else
         buf = "unknown";
@@ -1318,13 +1322,8 @@ error_t KXmlParser::getPositionDescription(String& ret)
     return eNoError;
 }
 
-int KXmlParser::getEventType()
-{
-    return type_;
-}
-
 // TODO: is this the right interface? What to do in case of not finding the substitution
-String KXmlParser::resolveEntity(String entity)
+String KXmlParser::resolveEntity(const String& entity)
 {
     // first resolve standard entities
     // TODO: could be optimized further by doing case on first letter first
@@ -1344,7 +1343,7 @@ String KXmlParser::resolveEntity(String entity)
     return value;
 }
 
-void KXmlParser::defineEntityReplacementText(String entity, String value)
+void KXmlParser::defineEntityReplacementText(const String& entity, const String& value)
 {
     // TODO: should we check if a given replacement already exists?
     MUSTDO

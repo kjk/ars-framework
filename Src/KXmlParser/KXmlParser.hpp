@@ -1,12 +1,13 @@
 #ifndef __KXML2_KXML_PARSER_HPP__
 #define __KXML2_KXML_PARSER_HPP__
 
-#include <vector>
 #include "XmlPull.hpp"
+#include <vector>
 #include "..\Hashtable.hpp"
 
 namespace KXml2{
-    #define FEATURE_RELAXED "http://xmlpull.org/v1/doc/features.html#relaxed"
+
+    #define FEATURE_RELAXED _T("http://xmlpull.org/v1/doc/features.html#relaxed")
 
     // Defines a concrete implementation of pull XML parsing
     class KXmlParser : public XmlPullParser
@@ -72,7 +73,7 @@ namespace KXml2{
     private:
         void    ensureCapacity(std::vector<String>& vect, int size);
         void    ensureCapacityInt(std::vector<int>& vect, int size);
-        String  resolveEntity(String entity);
+        String  resolveEntity(const String& entity);
         error_t peek(int& ret, int pos);
         error_t peekType(int& ret);
         error_t nextImpl();
@@ -80,7 +81,7 @@ namespace KXml2{
         error_t pushText(int delimiter, bool resolveEntities);
         String  get(int pos);
         void    push(int c);
-        error_t read(const char c);
+        error_t read(const char_t c);
         error_t read(int& ret);
         error_t readName(String& ret);
         error_t skip();
@@ -89,20 +90,20 @@ namespace KXml2{
         error_t parseEndTag();
         error_t parseLegacy(int& ret, bool pushV);
         error_t parseDoctype(bool pushV);
-        bool    isProp (String n1, bool prop, String n2);
+        bool    isProp (const String& n1, bool prop, const String& n2);
     public:
         KXmlParser();
         ~KXmlParser();
         String  getText();
         error_t setInput(XmlReader *reader);
-        error_t setFeature(String feature, bool flag);
+        error_t setFeature(const String& feature, bool flag);
         error_t nextToken(int& ret);
         error_t next(int& ret);
         error_t getPositionDescription(String& ret);
         int     getEventType();
-        void    defineEntityReplacementText(String entity, String value);
+        void    defineEntityReplacementText(const String& entity, const String& value);
 
-        bool    getFeature(String feature);
+        bool    getFeature(const String& feature);
         String  getInputEncoding();
         String  getNamespacePrefix(int pos);
         String  getNamespaceUri(int pos);
@@ -119,8 +120,8 @@ namespace KXml2{
         error_t getAttributeName(String& ret, int index);
         error_t getAttributePrefix(String& ret, int index);
         error_t getAttributeValue(String& ret, int index);
-        String  getAttributeValue(String nameSpace, String name);
-        String  getNamespace(String prefix);
+        String  getAttributeValue(const String& nameSpace, const String& name);
+        String  getNamespace(const String& prefix);
         error_t getNamespaceCount(int& ret, int depth);
         error_t nextText(String& ret);
         error_t nextTag(int& ret);

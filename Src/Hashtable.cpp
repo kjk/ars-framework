@@ -12,7 +12,7 @@ Hashtable::Hashtable()
 }
 
 #define CACHE_ADD 8
-void Hashtable::put(String entity, String value)
+void Hashtable::put(const String& entity, const String& value)
 {
     int i;
     int size;
@@ -77,7 +77,7 @@ void Hashtable::put(String entity, String value)
     (entity_[i])[size] = 0;
 }
 
-String Hashtable::get(String code)
+String Hashtable::get(const String& code) const
 {
     String tempS;
     int i;
