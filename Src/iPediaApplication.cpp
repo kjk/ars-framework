@@ -89,7 +89,7 @@ LookupManager* iPediaApplication::getLookupManager(bool create)
     Err error=errNone;
     if (!lookupManager_ && create)
     {
-        std::auto_ptr<LookupManager> tmp(new LookupManager());
+        std::auto_ptr<LookupManager> tmp(new LookupManager(history_));
         error=tmp->initialize();
         if (errNone==error)
             lookupManager_=tmp.release();
@@ -165,7 +165,11 @@ namespace {
     {
         cookiePrefId,
         serialNumberPrefId,
-        serialNumberRegFlagPrefId
+        serialNumberRegFlagPrefId,
+        lookupHistoryFirstPrefId,
+        
+        
+        preferenceIdNextAvail=lookupHistoryFirstPrefId+LookupHistory::reservedPrefIdCount
     };
 
     // These globals will be removed by dead code elimination.
@@ -190,6 +194,9 @@ void iPediaApplication::loadPreferences()
     prefs.serialNumber=text;
     if (errNone!=(error=reader->ErrGetBool(serialNumberRegFlagPrefId, reinterpret_cast<Boolean*>(&prefs.serialNumberRegistered))))
         return;
+    if (errNone!=(error=history_.serializeIn(*reader, lookupHistoryFirstPrefId)))
+        return;
+        
     preferences_=prefs;    
 }
 
@@ -202,6 +209,8 @@ void iPediaApplication::savePreferences()
     if (errNone!=(error=writer->ErrSetStr(serialNumberPrefId, preferences_.serialNumber.c_str())))
         goto OnError;
     if (errNone!=(error=writer->ErrSetBool(serialNumberRegFlagPrefId, preferences_.serialNumberRegistered)))
+        goto OnError;
+    if (errNone!=(error=history_.serializeOut(*writer, lookupHistoryFirstPrefId)))
         goto OnError;
     if (errNone!=(error=writer->ErrSavePreferences()))
         goto OnError;

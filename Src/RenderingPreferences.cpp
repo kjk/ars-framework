@@ -2,6 +2,7 @@
 
 using ArsLexis::FontEffects;
 using ArsLexis::Graphics;
+using ArsLexis::Font;
 
 RenderingPreferences::RenderingPreferences():
     standardIndentation_(16)
@@ -30,7 +31,7 @@ RenderingPreferences::RenderingPreferences():
     for (uint_t i=0; i<hyperlinkTypesCount_; ++i) 
         hyperlinkDecorations_[i].font.setEffects(fx);
     
-    Graphics::Font_t font(symbolFont);
+    Font font(symbolFont);
     char bullet[3];
     bullet[0]=(bulletType()==bulletCircle)?symbolShiftPunc:symbolDiamondChr;
     bullet[1]=symbolShiftNone;

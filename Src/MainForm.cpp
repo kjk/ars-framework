@@ -8,12 +8,19 @@ using namespace ArsLexis;
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
     displayMode_(showSplashScreen),
-    searchPenDownTimestamp_(0)
+    lastPenDownTimestamp_(0)
 {
 }
 
 MainForm::~MainForm()
 {
+}
+
+bool MainForm::handleOpen()
+{
+    bool result=iPediaForm::handleOpen();
+    updateNavigationButtons();
+    return result;
 }
 
 Definition* MainForm::getDefinition()
@@ -26,14 +33,9 @@ Definition* MainForm::getDefinition()
     return def;
 }        
 
-const LookupHistory* MainForm::getLookupHistory() const
+const LookupHistory& MainForm::getHistory() const
 {
-    const LookupHistory* hist=0;
-    const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
-    const LookupManager* lm=app.getLookupManager();
-    if (lm)
-        hist=&lm->history();
-    return hist;
+    return static_cast<const iPediaApplication&>(application()).history();
 }
 
 void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
@@ -236,8 +238,8 @@ void MainForm::handleControlSelect(const EventType& event)
         case searchButton:
             {
                 UInt32 timestamp=TimGetTicks();
-                 // If button held for more than 200msec, perform full text search.
-                search(timestamp-searchPenDownTimestamp_>app.ticksPerSecond()/5);
+                 // If button held for more than ~300msec, perform full text search.
+                search(timestamp-lastPenDownTimestamp_>app.ticksPerSecond()/3);
             }                
             break;
             
@@ -314,6 +316,7 @@ void MainForm::handleLookupFinished(const EventType& event)
 
 void MainForm::handlePenDown(const EventType& event)
 {
+/*
     Coord x=event.screenX;
     Coord y=event.screenY;
     WinDisplayToWindowPt(&x, &y);
@@ -321,7 +324,8 @@ void MainForm::handlePenDown(const EventType& event)
     Control control(*this, searchButton);
     Rectangle bounds(control.bounds());
     if (bounds && point)
-        searchPenDownTimestamp_=TimGetTicks();
+*/    
+   lastPenDownTimestamp_=TimGetTicks();
 }
 
 bool MainForm::handleEvent(EventType& event)
@@ -366,35 +370,42 @@ bool MainForm::handleEvent(EventType& event)
     return handled;
 }
 
+void MainForm::updateNavigationButtons()
+{
+    const LookupHistory& history=getHistory();
+
+    Control control(*this, backButton);
+    bool enabled=history.hasPrevious();
+    control.setEnabled(enabled);
+    control.setGraphics(enabled?backBitmap:backDisabledBitmap);
+        
+    control.attach(forwardButton);
+    enabled=history.hasNext();
+    control.setEnabled(enabled);
+    control.setGraphics(enabled?forwardBitmap:forwardDisabledBitmap);
+}
+
+
 void MainForm::updateAfterLookup()
 {
     const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
     const LookupManager* lookupManager=app.getLookupManager();
+    assert(lookupManager!=0);
     if (lookupManager)
     {
         setDisplayMode(showDefinition);
-        const LookupHistory& history=lookupManager->history();
-        if (!history.empty())
+        const LookupHistory& history=getHistory();
+        if (history.hasCurrentTerm())
             setTitle(history.currentTerm());
         
-        {
-            Control control(*this, backButton);
-            bool enabled=history.hasPrevious();
-            control.setEnabled(enabled);
-            control.setGraphics(enabled?backBitmap:backDisabledBitmap);
-                
-            control.attach(forwardButton);
-            enabled=history.hasNext();
-            control.setEnabled(enabled);
-            control.setGraphics(enabled?forwardBitmap:forwardDisabledBitmap);
-        }
-        {
-            Field field(*this, termInputField);        
-            field.replace(lookupManager->lastInputTerm());
-            field.select();                    
-        }    
+        Field field(*this, termInputField);        
+        field.replace(lookupManager->lastInputTerm());
+        field.select();                    
+
         update();
     }
+
+    updateNavigationButtons();
 }
 
 bool MainForm::handleKeyPress(const EventType& event)
@@ -439,6 +450,7 @@ bool MainForm::handleKeyPress(const EventType& event)
         case chrLineFeed:
         case chrCarriageReturn:
             {
+                lastPenDownTimestamp_=TimGetTicks();
                 Control control(*this, searchButton);
                 control.hit();
             }                
@@ -535,7 +547,6 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
     {
         FormObject object(*this, termInputField);
         object.focus();
-
         
         iPediaApplication& app=static_cast<iPediaApplication&>(application());
         LookupManager* lookupManager=app.getLookupManager();
@@ -570,8 +581,7 @@ void MainForm::handleAbout()
     }
     else 
     {
-        Definition* definition=getDefinition();
-        if (definition)
+        if (getDefinition())
         {
             setDisplayMode(showDefinition);
             update();

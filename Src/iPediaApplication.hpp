@@ -7,6 +7,7 @@
 #include <Logging.hpp>
 #include "RenderingPreferences.hpp"
 #include "iPediaHyperlinkHandler.hpp"
+#include "LookupHistory.hpp"
 
 class LookupManager;
 
@@ -20,6 +21,7 @@ class iPediaApplication: public ArsLexis::Application
     bool diaNotifyRegistered_;
     UInt16 ticksPerSecond_;
     iPediaHyperlinkHandler hyperlinkHandler_;
+    LookupHistory history_;
     LookupManager* lookupManager_;
     ArsLexis::String server_;
     bool stressMode_;
@@ -135,7 +137,10 @@ public:
     
     void toggleStressMode(bool enable)
     {stressMode_=enable;}
-
+    
+    const LookupHistory& history() const
+    {return history_;}
+    
 private:
     
     Preferences preferences_;

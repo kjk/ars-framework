@@ -56,8 +56,8 @@ public:
 
     struct StyleFormatting
     {
-        ArsLexis::Graphics::Font_t font;
-        ArsLexis::Graphics::Color_t textColor;
+        ArsLexis::Font font;
+        ArsLexis::Color textColor;
         
         StyleFormatting():
             font(stdFont),
@@ -81,7 +81,7 @@ public:
     uint_t standardIndentation() const
     {return standardIndentation_;}
     
-    ArsLexis::Graphics::Color_t backgroundColor() const
+    ArsLexis::Color backgroundColor() const
     {return 0;}
 
 private:

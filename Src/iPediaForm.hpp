@@ -1,7 +1,7 @@
 #ifndef __IPEDIAFORM_HPP__
 #define __IPEDIAFORM_HPP__
 
-#include "Form.hpp"
+#include <Form.hpp>
 #include "iPediaApplication.hpp"
 
 

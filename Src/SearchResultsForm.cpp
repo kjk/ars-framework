@@ -180,7 +180,8 @@ void SearchResultsForm::handleListSelect(const EventType& event)
     if (lookupManager)
     {
         const String& term=listPositions_[event.data.lstSelect.selection];
-        if (!lookupManager->history().empty() && lookupManager->history().currentTerm()==term)
+        const LookupHistory& history=app.history();
+        if (history.hasCurrentTerm() && history.currentTerm()==term)
             closePopup();
         else
             lookupManager->lookupTerm(term);

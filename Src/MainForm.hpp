@@ -11,7 +11,7 @@ class MainForm: public iPediaForm
 {
     Definition* getDefinition();
     
-    const LookupHistory* getLookupHistory() const;
+    const LookupHistory& getHistory() const;
     
     const RenderingPreferences& renderingPreferences() const
     {return static_cast<const iPediaApplication&>(application()).renderingPreferences();}
@@ -52,6 +52,8 @@ class MainForm: public iPediaForm
     
     void handleLookupFinished(const EventType& event);
     
+    void updateNavigationButtons();
+    
 protected:
 
     void resize(const ArsLexis::Rectangle& screenBounds);
@@ -63,6 +65,8 @@ protected:
     bool handleEvent(EventType& event);
     
     bool handleMenuCommand(UInt16 itemId);
+    
+    bool handleOpen();
 
 public:
     
@@ -93,7 +97,7 @@ public:
 private:
     
     DisplayMode displayMode_;
-    UInt32 searchPenDownTimestamp_;
+    UInt32 lastPenDownTimestamp_;
     
 };
 

@@ -1,10 +1,10 @@
 #ifndef __LOOKUP_MANAGER_HPP__
 #define __LOOKUP_MANAGER_HPP__
 
-#include "LookupHistory.hpp"
 #include <SocketConnection.hpp>
 #include <NetLibrary.hpp>
 #include <Resolver.hpp>
+#include <Utility.hpp>
 #include "Definition.hpp"
 
 namespace ArsLexis
@@ -13,9 +13,11 @@ namespace ArsLexis
     class Rectangle;
 }    
 
-class LookupManager
+class LookupHistory;
+
+class LookupManager: private ArsLexis::NonCopyable
 {
-    LookupHistory history_;
+    LookupHistory& history_;
     ArsLexis::NetLibrary netLibrary_;
     ArsLexis::SocketConnectionManager connectionManager_;
     ArsLexis::Resolver resolver_;
@@ -78,7 +80,8 @@ public:
         {}
     };
 
-    LookupManager():
+    LookupManager(LookupHistory& history):
+        history_(history),
         connectionManager_(netLibrary_),
         resolver_(netLibrary_),
         historyChange_(historyMoveForward),
@@ -92,9 +95,6 @@ public:
     ArsLexis::SocketConnectionManager& connectionManager()
     {return connectionManager_;}    
 
-    const LookupHistory& history() const
-    {return history_;}
-    
     const ArsLexis::String& lastSearchResults() const
     {return lastSearchResults_;}
     

@@ -144,6 +144,8 @@ void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
                 }
                 else
                     chr=decoder_.decode(entity.c_str());
+                if (!chr)
+                    chr=1;                    
                 if (chr)
                 {
                     text.replace(entityStart, index-entityStart+1, &chr, 1);

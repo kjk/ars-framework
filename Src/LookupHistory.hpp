@@ -5,14 +5,27 @@
 #include <BaseTypes.hpp>
 #include <list>
 
+namespace ArsLexis
+{
+    class PrefsStoreReader;
+    class PrefsStoreWriter;
+}    
+
 class LookupHistory
 {
-    enum {historyLength_=20};
+
+    // Not quite effective. But using std::deque for this purpose would increase code size significantly.
     typedef std::list<ArsLexis::String> TermHistory_t;
     TermHistory_t termHistory_;
     TermHistory_t::iterator historyPosition_;
     
 public:
+
+    enum {
+        maxLength=25, 
+        // Ugly.
+        reservedPrefIdCount=maxLength+2
+    };
 
     LookupHistory();
     
@@ -21,13 +34,7 @@ public:
     bool hasPrevious() const
     {return historyPosition_!=termHistory_.begin();}
     
-    bool hasNext() const
-    {
-        TermHistory_t::const_iterator last=termHistory_.end();
-        if (!termHistory_.empty())
-            --last;
-        return historyPosition_!=last;
-    }
+    bool hasNext() const;
     
     void replaceAllNext(const ArsLexis::String& term);
     
@@ -63,8 +70,15 @@ public:
         return *(++it);
     }
     
-    bool empty() const
-    {return termHistory_.empty();}
+    void clearPast()
+    {termHistory_.erase(termHistory_.begin(), historyPosition_);}
+    
+    bool hasCurrentTerm() const
+    {return historyPosition_!=termHistory_.end();}
+    
+    Err serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const;
+    
+    Err serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId);
     
 };
 
