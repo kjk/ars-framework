@@ -46,10 +46,7 @@ namespace ArsLexis
          * Calls FrmDrawForm().
          */
         virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
-        {
-            assert(form_!=0);
-            FrmDrawForm(form_);
-        }
+        {FrmDrawForm(form_);}
         
         virtual Boolean handleEvent(EventType& event);
             
@@ -101,34 +98,26 @@ namespace ArsLexis
         
         Boolean visible() const
         {
-            assert(form_);
             return FrmVisible(form_);
         }
         
         UInt16 getObjectIndex(UInt16 objectId) const
-        {   
-            assert(form_!=0);
-            return FrmGetObjectIndex(form_, objectId);
-        }
+        {return FrmGetObjectIndex(form_, objectId);}
         
         void getObjectBounds(UInt16 index, RectangleType& bounds) const
-        {
-            assert(form_!=0);
-            assert(frmInvalidObjectId!=index);
-            FrmGetObjectBounds(form_, index, &bounds);
-        }
+        {FrmGetObjectBounds(form_, index, &bounds);}
         
         void setObjectBounds(UInt16 index, const RectangleType& bounds) const
-        {
-            assert(form_!=0);
-            assert(frmInvalidObjectId!=index);
-            FrmSetObjectBounds(form_, index, &bounds);
-        }
+        {FrmSetObjectBounds(form_, index, &bounds);}
         
-        void getBounds(RectangleType& bounds) const
+        void bounds(RectangleType& bounds) const
+        {FrmGetFormBounds(form_, &bounds);}
+        
+        RectangleType bounds() const
         {
-            assert(form_!=0);
-            FrmGetFormBounds(form_, &bounds);
+            RectangleType rect;
+            bounds(rect);
+            return rect;
         }
         
         void setBounds(const RectangleType& bounds);

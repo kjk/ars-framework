@@ -2,50 +2,58 @@
 #define __ARSLEXIS_SOCKETADDRESS_HPP__
 
 #include "Debug.hpp"
-#include <utility>
 
 namespace ArsLexis
 {
 
     class SocketAddress 
     {
-    public:
-
-        typedef std::pair<NetSocketAddrType*, UInt16> NetSocketAddrProxy;
-        typedef std::pair<const NetSocketAddrType*, UInt16> ConstNetSocketAddrProxy;
+    protected:
+        NetSocketAddrType address_;        
         
-        virtual ConstNetSocketAddrProxy getNetSocketAddrProxy() const=0;
-        virtual NetSocketAddrProxy getNetSocketAddrProxy()=0;
+    public:
+        
+        SocketAddress();
+
+        operator const NetSocketAddrType* () const
+        {return &address_;}
+        
+        UInt16 size() const
+        {return sizeof(address_);}
         
         virtual ~SocketAddress();
     };
     
-    struct INetSocketAddress: public SocketAddress
+    class INetSocketAddress: public SocketAddress
     {
-        NetSocketAddrINType address_;
+        NetSocketAddrINType& address() 
+        {return reinterpret_cast<NetSocketAddrINType&>(address_);}
+        
+        const NetSocketAddrINType& address() const
+        {return reinterpret_cast<const NetSocketAddrINType&>(address_);}
+        
     public:
         
-        INetSocketAddress();
+        INetSocketAddress()
+        {}
+        
         INetSocketAddress(const NetIPAddr& ipAddr, UInt16 port, Int16 addressFamily=netSocketAddrINET);
 
         void setIpAddress(const NetIPAddr& ipAddr)
-        {address_.addr=ipAddr;}
+        {address().addr=ipAddr;}
         
         void setPort(UInt16 port)
-        {address_.port=NetHToNS(port);}
+        {address().port=NetHToNS(port);}
 
         void setAddressFamily(Int16 addressFamily)
-        {address_.family=addressFamily;}
+        {address().family=addressFamily;}
         
         const NetIPAddr& ipAddress() const
-        {return address_.addr;}
+        {return address().addr;}
         
         UInt16 port() const 
-        {return NetNToHS(address_.port);}
+        {return NetNToHS(address().port);}
         
-        virtual ConstNetSocketAddrProxy getNetSocketAddrProxy() const;
-        virtual NetSocketAddrProxy getNetSocketAddrProxy();
-
     };
     
 }

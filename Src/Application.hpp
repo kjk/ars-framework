@@ -20,7 +20,7 @@
 #include "Debug.hpp"
 
 #include <CWCallbackThunks.h>
-#include <map>
+#include <list>
 
 namespace ArsLexis 
 {
@@ -50,9 +50,9 @@ namespace ArsLexis
         
         /**
          * @internal 
-         * Type used to map form identifiers to concrete @c Form objects.
+         * Type used to store @c Form objects through application's lifetime.
          */
-        typedef std::map<UInt16, Form*> Forms_t;
+        typedef std::list<Form*, Allocator<Form*> > Forms_t;
         
         /**
          * @internal 
@@ -62,17 +62,15 @@ namespace ArsLexis
 
         /**
          * @internal 
-         * Adds form id -> @c Form mapping. Used internally by @c Form class constructor.
-         * @param id form id.
-         * @param form pointer to associated @c Form object.
+         * Adds to internal store. Used internally by @c Form class constructor.
          */
-        void registerForm(UInt16 id, Form* form);
+        void registerForm(Form& form);
         
         /**
          * @internal 
-         * Removes form id -> @c Form mapping. Used internally by @c Form class destructor.
+         * Removes form from store. Used internally by @c Form class destructor.
          */
-        void unregisterForm(UInt16 id);
+        void unregisterForm(Form& form);
         
         /**
          * @internal 
@@ -215,10 +213,10 @@ namespace ArsLexis
         virtual Err normalLaunch()
         {return errNone;}
         
-        virtual Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
-
     public:
     
+        virtual Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
+
         virtual Err initialize();
     
         /**
@@ -266,21 +264,21 @@ namespace ArsLexis
             error=_CW_SetupExpandedMode();
         if (!error)
         {
-            Application* application=getInstance(creatorId);
-            if (application)
-                error=application->handleLaunchCode(cmd, cmdPBP, launchFlags);
+            AppClass* app=static_cast<AppClass*>(getInstance(creatorId));
+            if (app)
+                error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
             else
             {
-                application=new AppClass;
-                if (application)
+                app=new AppClass;
+                if (app)
                 {
-                    error=application->initialize();
+                    error=app->initialize();
                     if (!error)
-                        error=application->handleLaunchCode(cmd, cmdPBP, launchFlags);
+                        error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
                 }
                 else
                     error=memErrNotEnoughSpace;
-                delete application;
+                delete app;
             }
         }
         return error;

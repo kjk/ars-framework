@@ -28,10 +28,10 @@ protected:
     
     Err initializeForm(ArsLexis::Form& form);
     
-    Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
-        
 public:
 
+    Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
+        
     const ArsLexis::DIA_Support& getDIASupport() const
     {return diaSupport_;}
 

@@ -8,6 +8,12 @@ void std::__msl_error(const char* str)
 	abort();
 }
 
+void ArsLexis::handleBadAlloc()
+{
+    FrmAlert(notEnoughMemoryAlert);
+    std::abort();
+}
+
 UInt32 PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
     return ArsLexis::Application::main<iPediaApplication, appFileCreator>(cmd, cmdPBP, launchFlags);

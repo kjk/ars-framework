@@ -49,9 +49,8 @@ namespace ArsLexis
         UInt16 addrLen=0;
         if (address)
         {
-            SocketAddress::ConstNetSocketAddrProxy proxy=address->getNetSocketAddrProxy();
-            addr=proxy.first;
-            addrLen=proxy.second;
+            addr=*address;
+            addrLen=address->size();
         }
         Int16 result=NetLibSend(netLib_, socket_, const_cast<void*>(buffer), bufferLength, flags, 
             const_cast<NetSocketAddrType*>(addr), addrLen, timeout, &error);
@@ -87,9 +86,8 @@ namespace ArsLexis
     {
         assert(socket_!=0);
         Err error=errNone;
-        SocketAddress::ConstNetSocketAddrProxy proxy=address.getNetSocketAddrProxy();
-        const NetSocketAddrType* addr=proxy.first;
-        UInt16 addrLen=proxy.second;
+        const NetSocketAddrType* addr=address;
+        UInt16 addrLen=address.size();
         Int16 result=NetLibSocketConnect(netLib_, socket_, const_cast<NetSocketAddrType*>(addr), addrLen, timeout, &error);
         if (result<0)
             assert(error);

@@ -34,7 +34,6 @@ void MainForm::resize(const RectangleType& screenBounds)
 void MainForm::draw(UInt16 updateCode)
 {
     iPediaForm::draw(updateCode);
-    RectangleType bounds;
-    getBounds(bounds);
-    WinPaintLine(bounds.topLeft.x, bounds.extent.y-18, bounds.extent.x, bounds.extent.y-18);
+    RectangleType rect=bounds();
+    WinPaintLine(rect.topLeft.x, rect.extent.y-18, rect.extent.x, rect.extent.y-18);
 }

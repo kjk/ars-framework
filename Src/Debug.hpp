@@ -1,5 +1,13 @@
-#ifndef __DEBUG_HPP__
-#define __DEBUG_HPP__
+/**
+ * @file Debug.hpp
+ * Debugging enhancements etc.
+ *
+ * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
+ */
+#ifndef __ARSLEXIS_DEBUG_HPP__
+#define __ARSLEXIS_DEBUG_HPP__
+
+//#pragma warn_a5_access on
 
 #if __ide_target("Release")
 #define NDEBUG
@@ -13,12 +21,23 @@
 #define _MSL_ERROR_FUNC -1
 
 #include <new>
+#include <cassert>
+
+namespace ArsLexis 
+{
+    void handleBadAlloc();
+}
 
 inline void * operator new(unsigned long size)
 {
+    void* ptr=0;
     if (size) 
-        return MemPtrNew(size);
-    return MemPtrNew(1);
+        ptr=MemPtrNew(size);
+    else
+        ptr=MemPtrNew(1);
+    if (!ptr)
+        ArsLexis::handleBadAlloc();
+    return ptr;
 }
 
 inline void operator delete(void *ptr)
@@ -29,17 +48,76 @@ inline void operator delete(void *ptr)
 
 inline void * operator new[](unsigned long size)
 {
-    if (size) 
-        return MemPtrNew(size);
-    return MemPtrNew(1);
+    return ::operator new(size);
 }
 
 inline void operator delete[](void *ptr)
 {
-    if (ptr) 
-        MemPtrFree(ptr);
+    ::operator delete(ptr);
 }
 
-#include <cassert>
+namespace ArsLexis 
+{
+
+    /**
+     * Replacement for @c std::allocator. The former one uses (not explicitely) some 
+     * globals.
+     */
+    template <class T> 
+    class Allocator
+    {
+    public:
+        typedef std::size_t size_type;
+        typedef std::ptrdiff_t difference_type;
+        typedef T*        pointer;
+        typedef const T*  const_pointer;
+        typedef T&        reference;
+        typedef const T&  const_reference;
+        typedef T         value_type;
+
+        template <class U> 
+        struct rebind { typedef Allocator<U> other; };
+
+        Allocator()
+        {}
+
+        template <class U> inline
+        Allocator(const Allocator<U>&) 
+        {}
+
+        pointer address(reference x) const
+        {return &x;}
+
+        const_pointer address(const_reference x) const
+        {return &x;}
+
+        pointer allocate(size_type n, const_pointer hint = 0)
+        {
+            return static_cast<pointer>(::operator new(n*sizeof(T)));
+        }
+
+        void deallocate(pointer p, size_type n)
+        {
+            ::operator delete(p);
+        }
+
+        size_type max_size() const
+        {
+            return ((size_type)-1)/sizeof(T);
+        }
+
+        void construct(pointer p, const T& val)
+        {
+            new (p) T(val);
+        }
+
+        void destroy(pointer p)
+        {
+            p->T::~T();
+        }
+        
+    };
+
+}
 
 #endif

@@ -34,7 +34,7 @@ namespace ArsLexis
         if (form_)
         {
             FrmSetEventHandler(form_, application_.formEventHandlerThunk_);
-            application_.registerForm(id_, this);
+            application_.registerForm(*this);
         }
         else 
             error=memErrNotEnoughSpace;
@@ -45,7 +45,7 @@ namespace ArsLexis
     {
         if (deleteOnClose) 
             FrmDeleteForm(form_);
-        application_.unregisterForm(id_);
+        application_.unregisterForm(*this);
     }
     
     Boolean Form::handleEvent(EventType& event)

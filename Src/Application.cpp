@@ -4,25 +4,20 @@
 namespace ArsLexis
 {
     
-    void Application::registerForm(UInt16 id, Form* form)
+    void Application::registerForm(Form& form)
     {
-        assert(form!=0);
 #ifndef NDEBUG
-        Forms_t::iterator it=forms_.find(id);
+        Forms_t::iterator it=std::find(forms_.begin(), forms_.end(), &form);
         assert(forms_.end()==it);
 #endif        
-        forms_[id]=form;
+        forms_.push_front(&form);
     }
     
-    void Application::unregisterForm(UInt16 id)
+    void Application::unregisterForm(Form& form)
     {
-#ifdef NDEBUG
-        forms_.erase(id);
-#else
-        Forms_t::iterator it=forms_.find(id);
+        Forms_t::iterator it=std::find(forms_.begin(), forms_.end(), &form);
         assert(it!=forms_.end());
         forms_.erase(it);
-#endif        
     }
     
     Err Application::setInstance(UInt32 creatorId, Application* app)
@@ -67,6 +62,7 @@ namespace ArsLexis
         FrmCloseAllForms();
         Err error=FtrUnregister(creatorId_, featureInstancePointer);
         assert(!error);
+        assert(forms_.empty());
     }
 
 #define kPalmOS20Version sysMakeROMVersion(2,0,0,sysROMStageDevelopment,0)
@@ -94,12 +90,26 @@ namespace ArsLexis
         return error;
     }
     
+    struct FormComparator
+    {
+        UInt16 id;
+        FormComparator(UInt16 anId):
+            id(anId)
+        {}
+        
+        bool operator ()(const Form* form) const
+        {
+            return id==form->id();
+        }
+        
+    };
+    
     Form* Application::getOpenForm(UInt16 id) const
     {
         Form* result=0;
-        Forms_t::const_iterator it=forms_.find(id);
+        Forms_t::const_iterator it=std::find_if(forms_.begin(), forms_.end(), FormComparator(id));
         if (it!=forms_.end())
-            result=it->second;
+            result=*it;
         return result;
     }
     
