@@ -37,9 +37,11 @@ namespace ArsLexis
             {
                 // Maybe binary search - MS doesn't support 
                 // as always standard and bsearch
-                for(int i=0; i<24; i++)
-                    if(UnicodeToPalm[i][0]==in)
+                for (int i=0; i<24; i++)
+                {
+                    if (UnicodeToPalm[i][0]==in)
                         return (char)UnicodeToPalm[i][1];
+                }
                 assert(false); //we never shall reach this point
                 return 0;
             }

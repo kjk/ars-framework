@@ -4,6 +4,7 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 #include <algorithm>
+#include <list>
 
 #if !defined(_WIN32)
 #include <cctype>
@@ -14,6 +15,8 @@
 // TODO: move it to a more centralized place (like BaseTypes.hpp) ?
 # pragma warning( disable : 4800 )
 #endif
+
+typedef std::list<const ArsLexis::char_t *> StrList_t;
 
 namespace ArsLexis
 {

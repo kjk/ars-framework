@@ -38,23 +38,32 @@ void ArsLexis::processReadyUiEvents()
 
 }
 
-void GetListSelectedItemText(HWND ctrl, String& txtOut)
+// Put the text of currently selected item in list control into txtOut
+// return false if no item is currently selected 
+bool FGetListSelectedItemText(HWND ctrl, String& txtOut)
 {
     int idx = SendMessage(ctrl, LB_GETCURSEL, 0, 0);
+    if (-1==idx)
+    {
+        txtOut.clear();
+        return false;
+    }
     int len = SendMessage(ctrl, LB_GETTEXTLEN, idx, 0);
     char_t *buf = new char_t[len+1];
+    ZeroMemory(buf, sizeof(char_t)*(len+1));
     SendMessage(ctrl, LB_GETTEXT, idx, (LPARAM) buf);
     txtOut.assign(buf);
     delete [] buf;
+    return true;
 }
 
 // return a text in text edit window represented by hwnd in txtOut
 void GetEditWinText(HWND hwnd, ArsLexis::String &txtOut)
 {
     // 128 should be enough for anybody
-    TCHAR buf[128];
+    TCHAR buf[128] = {0};
 
-    ZeroMemory(buf,sizeof(buf));
+    //ZeroMemory(buf,sizeof(buf));
 
     int len = SendMessage(hwnd, EM_LINELENGTH, 0,0)+1;
 

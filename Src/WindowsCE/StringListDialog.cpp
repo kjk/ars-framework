@@ -18,15 +18,17 @@ TODO: build resources dynamically so that we don't need them in resource files.
 Makes it easier to use this code.
 */
 
-WNDPROC g_oldListWndProc;
-HWND    g_hRecentLookupDlg = NULL;
-bool    fRemoveDups = false;
+using ArsLexis::char_t;
+
+static WNDPROC g_oldListWndProc;
+static HWND    g_hRecentLookupDlg = NULL;
+static bool    fRemoveDups = false;
 
 #define SELECT_PRESSED  1
 #define CANCEL_PRESSED  2
 
-StrList_t g_strList;
-String    selectedWord;
+static StrList_t g_strList;
+static String    selectedWord;
 
 const int hotKeyCode = 0x32;
 
@@ -45,15 +47,13 @@ static LRESULT CALLBACK ListWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 static BOOL InitStringList(HWND hDlg)
 {
     // Specify that the dialog box should stretch full screen
-    SHINITDLGINFO shidi;
-    ZeroMemory(&shidi, sizeof(shidi));
+    SHINITDLGINFO shidi = {0};
     shidi.dwMask  = SHIDIM_FLAGS;
     shidi.dwFlags = SHIDIF_SIZEDLGFULLSCREEN;
     shidi.hDlg    = hDlg;
 
     // Set up the menu bar
-    SHMENUBARINFO shmbi;
-    ZeroMemory(&shmbi, sizeof(shmbi));
+    SHMENUBARINFO shmbi = {0};  
     shmbi.cbSize     = sizeof(shmbi);
     shmbi.hwndParent = hDlg;
     shmbi.nToolBarId = IDR_STRING_LIST_MENUBAR;
@@ -100,10 +100,12 @@ static BOOL InitStringList(HWND hDlg)
     return TRUE;
 }
 
-static void OnSelect(HWND hDlg)
+static void DoSelect(HWND hDlg)
 {
     HWND ctrl = GetDlgItem(hDlg, IDC_STRING_LIST);    
-    GetListSelectedItemText(ctrl, selectedWord);
+    bool fSelected = FGetListSelectedItemText(ctrl, selectedWord);
+    if (fSelected)
+        EndDialog(hDlg, SELECT_PRESSED);
 }
 
 // TODO: handle SIP
@@ -136,8 +138,7 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
         }
         else if (wp==ID_SELECT)
         {
-            OnSelect(hDlg);
-            EndDialog(hDlg, SELECT_PRESSED);
+            DoSelect(hDlg);
         }
     }
     return FALSE;
