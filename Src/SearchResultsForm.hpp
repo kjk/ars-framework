@@ -20,6 +20,8 @@ class SearchResultsForm: public iPediaForm
     
     void handleListSelect(const EventType& event);
     
+    void refineSearch();
+    
 protected:
     
     bool handleEvent(EventType& event);

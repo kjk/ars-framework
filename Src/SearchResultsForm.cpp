@@ -51,7 +51,7 @@ void SearchResultsForm::draw(UInt16 updateCode)
 {
     ArsLexis::Graphics graphics;
     ArsLexis::Rectangle rect(bounds());
-    Rectangle progressArea(rect.x(), rect.height()-17, rect.width(), 17);
+    Rectangle progressArea(rect.x(), rect.height()-16, rect.width(), 16);
     if (redrawAll==updateCode)
     {   
         if (visible())
@@ -106,9 +106,38 @@ void SearchResultsForm::resize(const ArsLexis::Rectangle& screenBounds)
     }
 }
 
+void SearchResultsForm::refineSearch()
+{
+    Field field(*this, refineSearchInputField);
+    const char* text=field.text();
+    uint_t textLen;
+    if (0==text || 0==(textLen=StrLen(text)))
+        return;
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager();
+    if (0==lookupManager)
+        return;
+    
+    String expression(lookupManager->lastSearchExpression());
+    expression.reserve(expression.length()+textLen+1);    expression.append(1, ' ').append(text, textLen);
+    lookupManager->search(expression);
+}
+
 inline void SearchResultsForm::handleControlSelect(const EventType& event)
 {
-    closePopup();
+    switch (event.data.ctlSelect.controlID)
+    {
+        case refineSearchButton:
+            refineSearch();
+            break;
+        
+        case cancelButton:
+            closePopup();
+            break;
+        
+        default:
+            assert(false);            
+    }
 }
 
 void SearchResultsForm::setControlsState(bool enabled)
@@ -177,7 +206,7 @@ bool SearchResultsForm::handleEvent(EventType& event)
                 else if (data.outcomeList==data.outcome)
                     updateSearchResults();
                 else
-                    update(redrawProgressIndicator);
+                    update();
             }
             break;     
             
