@@ -126,6 +126,8 @@ namespace ArsLexis {
         
         uint_t downBitmapId() const {return downBitmapId_;}
         
+        void setChangeSelectionNotification(bool notify);
+        
     protected:
     
         void drawFocusRing();
@@ -192,6 +194,7 @@ namespace ArsLexis {
         bool screenIsDoubleDensity_;
         bool windowSettingsChecked_;
         bool trackingScrollbar_;
+        bool notifyChangeSelection_;
         int topItemBeforeTracking_;
         uint_t upBitmapId_;
         uint_t downBitmapId_;

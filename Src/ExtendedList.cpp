@@ -3,6 +3,7 @@
 #include <DeviceInfo.hpp>
 #include <68k/Hs.h>
 #include <Application.hpp>
+#include <SysUtils.hpp>
 
 #ifdef __MWERKS__
 #pragma pcrelconstdata on
@@ -112,6 +113,7 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     screenIsDoubleDensity_(false),
     windowSettingsChecked_(false),
     trackingScrollbar_(false),
+    notifyChangeSelection_(false),
     topItemBeforeTracking_(noListSelection),
     upBitmapId_(frmInvalidObjectId),
     downBitmapId_(frmInvalidObjectId),
@@ -268,9 +270,21 @@ void ExtendedList::setItemHeight(uint_t h, RedrawOption ro)
         drawProxy();
 }
 
+void ExtendedList::setChangeSelectionNotification(bool notify)
+{
+    notifyChangeSelection_ = notify;
+}
+
 void ExtendedList::setSelection(int item, RedrawOption ro)
 {
     int oldSelection=selection_;
+    if (notifyChangeSelection_)
+    {
+        if (oldSelection != item)
+        {
+            sendEvent(selChangedEvent);
+        }    
+    }    
     bool scrolled=false;
     bool showScrollbar=false;
     if (noListSelection!=(selection_=item)) 
