@@ -2,6 +2,10 @@
 #include <File.hpp>
 #include <bitset>
 
+#ifdef _PALM_OS
+#include <Application.hpp>
+#endif
+
 using namespace ArsLexis;
 
 namespace {
@@ -60,6 +64,39 @@ DataStore::~DataStore()
 {
     std::for_each(streamHeaders_.begin(), streamHeaders_.end(), ObjectDeleter<StreamHeader>());
     std::for_each(fragmentHeaders_.begin(), fragmentHeaders_.end(), ObjectDeleter<FragmentHeader>());
+#ifdef _PALM_OS
+    if (file_.isOpen()) 
+        file_.close();
+    else
+        return;
+    UInt32 creator = Application::creator();
+    DmSearchStateType searchState;
+    LocalID localId;
+    UInt16 cardNo;
+    bool firstSearch = true;
+    Err error;
+    char name[32];
+    UInt16 attribs;
+    bool found = false;
+    while (true)
+    {
+        error = DmGetNextDatabaseByTypeCreator(firstSearch, &searchState, sysFileTFileStream, creator, true, &cardNo, &localId);
+        if (errNone != error)
+            return;
+        firstSearch = false;
+        error = DmDatabaseInfo(cardNo, localId, name, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        if (errNone != error)
+            return;
+        if (fileName_ == name)
+        {
+            found = true;
+            break;
+        }
+    }
+    assert(found);
+    attribs |= dmHdrAttrBackup;
+    error = DmSetDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+#endif
 }
 
 status_t DataStore::createIndex()
@@ -116,7 +153,8 @@ status_t DataStore::open()
     status_t error = file_.open(fileName_.c_str(), fileModeUpdate);
     if (errNone != error)
         return error;
-#ifdef _PALM_OS
+/*        
+#ifdef _PALM_OS 
     DmOpenRef ref = file_.databaseHandle();
     if (0 != ref) 
     {   
@@ -137,6 +175,7 @@ Continue:
         error = errNone;
     }
 #endif    
+ */
     error = readIndex();
     if (errNone != error)
         goto OnError;

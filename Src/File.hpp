@@ -10,13 +10,23 @@ namespace ArsLexis {
     class File: private NonCopyable {
         
 #if defined(_PALM_OS)
+
+        uint_t findCardNumber(const char* name, ulong_t openMode, ulong_t type, ulong_t creator) const;
+        
         typedef FileHand FileHandle_t;
+        
         enum {invalidFileHandle=0};
+        
 #elif defined(_WIN32)
+
         typedef HANDLE FileHandle_t;
+        
         enum {invalidFileHandle=reinterpret_cast<ulong_t>(INVALID_HANDLE_VALUE)};
+        
 #else
+
 # error "Define FileReader::FileHandle_t for your system."
+
 #endif
 
         FileHandle_t handle_;
@@ -38,8 +48,12 @@ namespace ArsLexis {
         ~File();
         
 #if defined(_PALM_OS)
+        
+        enum {
+            anyCard = uint_t(-1)
+        };
 
-        status_t open(const char_t* name, ulong_t openMode, ulong_t type=0, ulong_t creator=0, uint_t cardNo=0);
+        status_t open(const char_t* name, ulong_t openMode, uint_t cardNo = anyCard, ulong_t type=0, ulong_t creator=0);
         
         DmOpenRef databaseHandle();
         

@@ -1,4 +1,5 @@
 #include <File.hpp>
+#include <Application.hpp>
 
 using namespace ArsLexis;
 
@@ -23,12 +24,44 @@ status_t File::close()
     return error;
 }
 
-status_t File::open(const char_t* name, ulong_t openMode, ulong_t type, ulong_t creator, uint_t cardNo)
+uint_t File::findCardNumber(const char* name, ulong_t openMode, ulong_t type, ulong_t creator) const 
+{
+    if (0 == creator)
+        creator = Application::creator();
+    if (0 == type)
+    {
+        type = sysFileTFileStream;
+        if (0 != openMode & fileModeTemporary)
+            type = sysFileTTemp;
+    }
+    DmSearchStateType searchState;
+    LocalID localId;
+    UInt16 cardNo;
+    bool firstSearch = true;
+    Err error;
+    char nameBuffer[32];
+    while (true)
+    {
+        error = DmGetNextDatabaseByTypeCreator(firstSearch, &searchState, type, creator, true, &cardNo, &localId);
+        if (errNone != error)
+            return 0;
+        firstSearch = false;
+        error = DmDatabaseInfo(cardNo, localId, nameBuffer, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        if (errNone != error)
+            return 0;
+        if (0 == StrCompareAscii(name, nameBuffer))
+            return  cardNo;
+    }
+}
+
+
+status_t File::open(const char_t* name, ulong_t openMode, uint_t cardNo, ulong_t type, ulong_t creator)
 {
     if (isOpen())
         close();
     status_t error;
-    handle_=FileOpen(cardNo, name, type, creator, openMode, &error);
+    if (anyCard == cardNo)
+        cardNo = findCardNumber(name, openMode, type, creator);    handle_=FileOpen(cardNo, name, type, creator, openMode, &error);
     if (errNone!=error)
     {
         FileClearerr(handle_);
