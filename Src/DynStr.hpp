@@ -60,12 +60,30 @@ DynStr *   DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize);
 DynStr *   DynStrAppendCharP(DynStr *dstr, const char_t *str);
 DynStr *   DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, UInt32 strLen);
 DynStr *   DynStrAppendChar(DynStr *dstr, const char_t c);
+void       DynStrFree(DynStr *dstr);
 void       DynStrDelete(DynStr *dstr);
 char_t *   DynStrCharPCopy(DynStr *dstr);
 void       DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len);
 DynStr *   DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend);
 DynStr *   DynStrUrlEncode(DynStr *srcUrl);
 void       DynStrReplace(DynStr *dstr, char_t orig, char_t replace);
+
+class CDynStr : public DynStr
+{
+public:
+    CDynStr() { bufSize = 0; strLen = 0; reallocIncrement = 0; str = NULL; }
+    ~CDynStr() { DynStrFree(this); }
+    void SetReallocIncrement(UInt32 increment) { DynStrSetReallocIncrement(this, increment); }
+    CDynStr *AppendData(const char *data, UInt32 dataSize) { return (CDynStr*) DynStrAppendData(this, data, dataSize); }
+    void Truncate(UInt32 len) { DynStrTruncate(this, len); }
+    CDynStr *AssignCharP(const char_t *str) { return (CDynStr*) DynStrAssignCharP(this, str); }
+    char_t *GetCStr() { return DynStrGetCStr(this); }
+    UInt32 Len() { return DynStrLen(this); }
+    CDynStr *AppendCharP(const char_t *str) { return (CDynStr*)DynStrAppendCharP(this, str); }
+    CDynStr *AppendCharPBuf(const char_t *str, UInt32 strLen) { return (CDynStr*)DynStrAppendCharPBuf(this, str, strLen); }
+    CDynStr *AppendChar(const char_t c) { return (CDynStr*)DynStrAppendChar(this, c); }
+    CDynStr *Append(CDynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }
+};
 
 #ifdef DEBUG
 void test_DynStrReplace();

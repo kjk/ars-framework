@@ -42,10 +42,16 @@ void   DynStrTruncate(DynStr *dstr, UInt32 len)
     dstr->strLen = len;
 }
 
-void DynStrDelete(DynStr *dstr)
+inline void DynStrFree(DynStr *dstr)
 {
     assert(NULL != dstr);
-    free(dstr->str);
+    if (NULL != dstr->str)
+        free(dstr->str);
+}
+
+void DynStrDelete(DynStr *dstr)
+{
+    DynStrFree(dstr);
     free(dstr);
 }
 
