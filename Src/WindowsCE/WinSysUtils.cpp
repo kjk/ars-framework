@@ -1,4 +1,6 @@
+#include "sm_ipedia.h"
 #include <SysUtils.hpp>
+
 
 // TODO: implement. Used by iPediaConnection
 ulong_t ArsLexis::random(ulong_t range)
@@ -187,15 +189,9 @@ bool ArsLexis::highDensityFeaturesPresent()
 
 void ArsLexis::sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
 {
-    /*EventType event;
-    MemSet(&event, sizeof(event), 0);
-    event.eType=static_cast<eventsEnum>(e);
-    if (data && dataSize)
-    {
-        assert(dataSize<=sizeof(event.data));
-        MemMove(&event.data, data, dataSize);
-    }
-    EvtAddEventToQueue(&event);*/
+    void *realData=new char[dataSize];
+    memcpy(realData, data, dataSize);
+    PostMessage(HWND_BROADCAST, event, (WPARAM)realData, dataSize);
 }
 
 void ArsLexis::localizeNumber(char_t* begin, char_t* end)

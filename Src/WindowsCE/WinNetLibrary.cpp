@@ -105,12 +105,12 @@ namespace ArsLexis
     {
         
 
-        error = shutdown (socket, direction); 
+        /*error = shutdown (socket, direction); 
         if(error)
         {
             error=WSAGetLastError();
             return -1;
-        }
+        }*/
         return 0;    
     }
     
@@ -146,6 +146,11 @@ namespace ArsLexis
     int NetLibrary::socketOptionGet(NativeSocket_t socket, uint_t level, uint_t  option, void* optValueP, uint_t& optValueLen, long timeout, status_t& error)
     {
         error = errNone;
+        if(option == socketOptSockErrorStatus)
+        {
+            //if (error=WSAGetLastError()) return -1;
+            return 0;
+        }
         if(getsockopt(socket, level, option, (char*)optValueP, (int*)&optValueLen)== SOCKET_ERROR)
         {
             error=WSAGetLastError();
