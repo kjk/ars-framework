@@ -44,7 +44,7 @@ namespace ArsLexis
         {return form_;}
 
     public:
-
+    
         void attach(UInt16 id);
 
         void attachByIndex(UInt16 index);

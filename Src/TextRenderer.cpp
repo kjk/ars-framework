@@ -270,6 +270,22 @@ void TextRenderer::handleNilEvent()
         doUpdateScrollbar();
 }
 
+bool TextRenderer::handleNavigatorKey(Definition::NavigatorKey navKey) 
+{
+    bool handled = false;
+    {
+        checkDrawingWindow();
+        Graphics graphics(drawingWindow_);
+        ActivateGraphics activate(graphics);
+        handled = definition_.navigatorKey(graphics, renderingPreferences_, navKey);
+        updateForm(graphics);
+    }
+    fireDrawCompleted();
+    if (handled)
+        doUpdateScrollbar();
+    return handled;
+}
+
 bool TextRenderer::handleKeyDownEvent(const EventType& event)
 {
     if (form()->application().runningOnTreo600() && !hasFocus())
@@ -290,19 +306,9 @@ bool TextRenderer::handleKeyDownEvent(const EventType& event)
         key = Definition::navKeyRight;
     else if (form.fiveWayCenterPressed(&event) || chrLineFeed == event.data.keyDown.chr)
         key = Definition::navKeyCenter;
-    bool handled = false;
-    if (Definition::NavigatorKey(-1) != key)
-    {
-        checkDrawingWindow();
-        Graphics graphics(drawingWindow_);
-        ActivateGraphics activate(graphics);
-        handled = definition_.navigatorKey(graphics, renderingPreferences_, key);
-        updateForm(graphics);
-    }
-    fireDrawCompleted();
-    if (handled)
-        doUpdateScrollbar();
-    return handled;
+    if (Definition::NavigatorKey(-1) == key)
+        return false;
+    return handleNavigatorKey(key);
 }
 
 void TextRenderer::drawFocusRing()
@@ -357,8 +363,6 @@ bool TextRenderer::handleMenuEvent(const EventType& event)
         return false;
     if (noFocus != FrmGetFocus(*form()))
         return false;
-//    if (!hasFocus())
-//        return false;
     if (sysEditMenuCopyCmd != event.data.menu.itemID)
         return false;
     return copySelection();         

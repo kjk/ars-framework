@@ -24,6 +24,8 @@ namespace ArsLexis
         
         bool handleMouseEvent(const EventType& event);
         
+        bool handleNavigatorKey(Definition::NavigatorKey navKey);
+        
     public:
  
         TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* scrollBar = NULL);
@@ -107,6 +109,18 @@ namespace ArsLexis
         bool usesMenuBarCopyButton() const {return usesInteractionBehavior(behavMenuBarCopyButton);}
         
         bool handleEventInForm(EventType& event);
+        
+        enum NavOrderOption {
+            navOrderFirst = Definition::navOrderFirst,
+            navOrderLast = Definition::navOrderLast
+        };
+        
+        void setNavOrderOptions(uint_t options) { definition_.setNavOrderOptions(options); }
+        
+        uint_t navOrderOptions() const { return definition_.navOrderOptions(); }
+        
+        bool isFirstInNavOrder() const { return definition_.isFirstInNavOrder(); }
+        bool isLastInNavOrder() const {return definition_.isLastInNavOrder(); }
                 
     protected:
     

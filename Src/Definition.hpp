@@ -292,7 +292,23 @@ public:
     bool hasSelection() const;
     
     void clearSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs);
+    
+    bool isFirstLinkSelected() const;
 
+    bool isLastLinkSelected() const;
+    
+
+    enum NavOrderOption {
+        navOrderFirst = 1,
+        navOrderLast = 2
+    };
+    
+    void setNavOrderOptions(uint_t options) { navOrderOptions_ = options; }
+    
+    uint_t navOrderOptions() const { return navOrderOptions_; }
+    
+    bool isFirstInNavOrder() const { return 0 != navOrderOptions_ & navOrderFirst; }
+    bool isLastInNavOrder() const {return 0 != navOrderOptions_ & navOrderLast; }
 private:
 
     void renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t element);
@@ -349,6 +365,9 @@ private:
     bool trackingSelection_;
     RenderingProgressReporter* renderingProgressReporter_; 
     uint_t interactionBehavior_;
+    uint_t navOrderOptions_;
+    bool navigatingUp_;
+    bool navigatingDown_;
     
     bool navigateHyperlink(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, bool next);
 };

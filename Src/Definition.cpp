@@ -86,7 +86,10 @@ Definition::Definition():
     trackingSelection_(false),
     renderingProgressReporter_(0),
     interactionBehavior_(0),
-    selectionIsHyperlink_(false)
+    selectionIsHyperlink_(false),
+    navOrderOptions_(0),
+    navigatingUp_(false),
+    navigatingDown_(false)
 {}
 
 namespace {
@@ -827,6 +830,7 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
 
 bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount)
 {
+    navigatingDown_ = navigatingUp_ = false;
     if (elements_.empty())
         return false;
     if (!trackingSelection_ && !(bounds_ && point))
@@ -883,40 +887,24 @@ Definition::HyperlinkHandler::~HyperlinkHandler()
 
 bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey)
 {
-    if (usesUpDownScroll())
-    {
-        int items = 0;
-        switch (navKey)
-        {
-            case navKeyUp:
-                items = -(int)shownLinesCount() + 1;
-                break;
-                
-            case navKeyDown:
-                items = shownLinesCount() - 1;
-                break;
-        }
-        if (0 != items)
-        {
-            uint_t top = firstShownLine();
-            scroll(graphics, prefs, items);
-            if (firstShownLine() != top)
-                return true;
-            else
-                clearSelection(graphics, prefs);
-        }
-    }
     if (usesHyperlinkNavigation())
     {
-        bool handled = false;
         switch (navKey)
         {
             case navKeyRight:
-                handled = navigateHyperlink(graphics, prefs, true);
+                navigatingUp_ = false;
+                if (!navigatingDown_ && navigateHyperlink(graphics, prefs, true))
+                    return true;
+                navigatingDown_ = true;
+                navKey = navKeyDown;
                 break;
             
             case navKeyLeft:
-                handled = navigateHyperlink(graphics, prefs, false);
+                navigatingDown_ = false;
+                if (!navigatingUp_ && navigateHyperlink(graphics, prefs, false))
+                    return true;
+                navigatingUp_ = true;
+                navKey = navKeyUp;
                 break;
             
             case navKeyCenter:
@@ -930,17 +918,47 @@ bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPrefe
                 renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
                 (*inactiveSelectionStartElement_)->performAction(*this);
                 inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
-                handled = true;
+                return true;
             
         }
-        if (!handled && hasSelection())
-            clearSelection(graphics, prefs);
-        return handled;
+    }
+    if (navigatingUp_ || navigatingDown_ || usesUpDownScroll())
+    {
+        int items = 0;
+        switch (navKey)
+        {
+            case navKeyUp:
+                navigatingDown_ = false;
+                items = -int(shownLinesCount() + 1);
+                break;
+                
+            case navKeyDown:
+                navigatingUp_ = false;
+                items = shownLinesCount() - 1;
+                break;
+        }
+        if (0 != items)
+        {
+            uint_t top = firstShownLine();
+            scroll(graphics, prefs, items);
+            if (firstShownLine() != top)
+                return true;
+            bool unselect = true;
+            if (navigatingUp_ && isFirstInNavOrder())
+                unselect = false;
+            else if (navigatingDown_ && isLastInNavOrder())
+                unselect = false;
+            if (unselect) 
+            {
+                clearSelection(graphics, prefs);
+                navigatingUp_ = navigatingDown_ = false;
+            }
+        }
     }
     return false;
 }
 
-static bool isHyperlink(Definition::ElementPosition_t pos)
+static bool isHyperlink(Definition::const_iterator pos)
 {
     if (!(*pos)->isTextElement())
         return false;
@@ -1064,6 +1082,44 @@ void Definition::clearSelection(ArsLexis::Graphics& graphics, const RenderingPre
     inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
     selectionIsHyperlink_ = false;
     renderElementRange(graphics, prefs, start, end);
+}
+
+bool Definition::isFirstLinkSelected() const 
+{
+    if (!hasSelection())
+        return false;
+    if (!selectionIsHyperlink_)
+        return false;
+    Elements_t::const_iterator elem = selectionStartElement_;
+    Elements_t::const_iterator begin = elements_.begin();
+    while (elem != begin) 
+    {
+        --elem;
+        if (!isHyperlink(elem))
+            continue;
+        return false;
+    }
+    return true;
+}
+
+bool Definition::isLastLinkSelected() const
+{
+    if (!hasSelection())
+        return false;
+    if (!selectionIsHyperlink_)
+        return false;
+    Elements_t::const_iterator elem = selectionEndElement_;
+    Elements_t::const_iterator end = elements_.end();
+    while (elem != end) 
+    {
+        ++elem;
+        if (end == elem)
+            return true;
+        if (!isHyperlink(elem))
+            continue;
+        return false;
+    }
+    return true;
 }
 
 #define brTag "<br>"

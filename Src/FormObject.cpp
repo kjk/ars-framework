@@ -23,11 +23,11 @@ namespace ArsLexis
     
     void FormObject::attach(UInt16 id)
     {
-        assert(frmInvalidObjectId!=id);
-        index_=FrmGetObjectIndex(*form_, id_=id);
-        assert(frmInvalidObjectId!=index_);
-        object_=FrmGetObjectPtr(*form_, index_);
-        assert(0!=object_);
+        assert(frmInvalidObjectId != id);
+        index_ = FrmGetObjectIndex(*form_, id_ = id);
+        assert(frmInvalidObjectId != index_);
+        object_ = FrmGetObjectPtr(*form_, index_);
+        assert(NULL != object_);
     }
     
     void FormObject::bounds(Rectangle& out) const
@@ -46,10 +46,10 @@ namespace ArsLexis
 
     void FormObject::attachByIndex(UInt16 index)
     {
-        assert(frmInvalidObjectId!=index);
-        id_=FrmGetObjectId(*form_, index_=index);
-        object_=FrmGetObjectPtr(*form_, index_);
-        assert(0!=object_);
+        assert(frmInvalidObjectId != index);
+        id_ = FrmGetObjectId(*form_, index_ = index);
+        object_ = FrmGetObjectPtr(*form_, index_);
+        assert(0 != object_);
     }
     
     void FormObject::anchor(const Rectangle& boundingBox, FormObjectAnchorStyle horizAnchor, Coord rightMargin, FormObjectAnchorStyle vertAnchor, Coord bottomMargin)
