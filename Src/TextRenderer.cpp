@@ -94,13 +94,17 @@ void TextRenderer::drawProxy()
         renderingErrorListener_->handleRenderingError(*this, lastRenderingError_);
 }
 
+void TextRenderer::drawRendererInBounds(Graphics& graphics, const Rectangle& bounds)
+{
+    lastRenderingError_ = definition_.render(graphics, bounds, renderingPreferences_, false);
+}
 
 void TextRenderer::handleDraw(Graphics& graphics)
 {
     Rectangle bounds;
     this->bounds(bounds);
     bounds.explode(1, 1, -2, -2);
-    lastRenderingError_ = definition_.render(graphics, bounds, renderingPreferences_, false);
+    drawRendererInBounds(graphics, bounds);
 }
 
 void TextRenderer::scroll(WinDirectionType direction, uint_t items, ScrollbarUpdateOption update)

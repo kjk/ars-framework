@@ -108,7 +108,7 @@ namespace ArsLexis
         
         bool usesMenuBarCopyButton() const {return usesInteractionBehavior(behavMenuBarCopyButton);}
         
-        bool handleEventInForm(EventType& event);
+        virtual bool handleEventInForm(EventType& event);
         
         enum NavOrderOption {
             navOrderFirst = Definition::navOrderFirst,
@@ -129,6 +129,8 @@ namespace ArsLexis
         void removeFocusRing();
 
         void drawProxy();
+
+        void drawRendererInBounds(Graphics& graphics, const Rectangle& bounds);
 
         void handleDraw(Graphics& graphics);
         

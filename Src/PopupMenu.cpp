@@ -2,8 +2,8 @@
 
 using namespace ArsLexis;
 
-PopupMenu::PopupMenu(Form& form):
-    renderer(form, prefs_),
+PopupMenu::PopupMenu(Form& form, RenderingPreferences& prefs):
+    TextRenderer(form, prefs),
     running_(false),
     prevFocusIndex_(frmInvalidObjectId)
 {
@@ -20,19 +20,19 @@ void PopupMenu::close()
     if (!running_)
         return;
         
-    Form& form = *renderer.form();
-    if (noFocus != prevFocusIndex_) 
+    if (frmInvalidObjectId != prevFocusIndex_) 
     {
-        FormObject object(form);
+        FormObject object(*form());
         object.attachByIndex(prevFocusIndex_);
         object.focus();
     }
-    form.removeObject(renderer.index());
-    form.update();
+    form()->removeObject(index());
+    form()->update();
     
     running_ = false;
 }
 
+/*
 void PopupMenu::draw()
 {
     if (!running_)
@@ -60,32 +60,32 @@ void PopupMenu::draw()
     WinPaintRectangle(&rr, 0);
     WinSetPatternType(p);
     WinSetBackColorRGB(&old, NULL);
-*/
     
     renderer.draw();
 }
+*/
 
 Err PopupMenu::run(UInt16 id, const Rectangle& rect)
 {
     assert(!running_);
-    Form& form = *renderer.form();
-    bounds_ = rect;
+//    bounds_ = rect;
     Err error;
-    prevFocusIndex_ = form.focusedControlIndex_;
- 
+//    prevFocusIndex_ = form()->focusedControlIndex_;
+//    form()->releaseFocus();
+    
     Rectangle r = rect;
-    r.explode(1, 1, -2, -2);
-    UInt16 index = form.createGadget(id, r);
+//    r.explode(1, 1, -2, -2);
+    UInt16 index = form()->createGadget(id, r);
     if (frmInvalidObjectId == index)
     {
         error = memErrNotEnoughSpace;
         return error;
     }
-    renderer.attachByIndex(index);
+    attachByIndex(index);
     running_ = true;
-    renderer.show();
-    renderer.focus();
-    draw();
+    show();
+//    focus();
+//    draw();
     return errNone;
 }
 
@@ -94,16 +94,15 @@ bool PopupMenu::handleEventInForm(EventType& event)
     if (!running_)
         return false;
         
-    if (renderer.handleEventInForm(event))
+    if (TextRenderer::handleEventInForm(event))
         return true;
     
-    Form& form = *renderer.form();
     switch (event.eType)
     {
         case penDownEvent:
         {
             Point p(event.screenX, event.screenY);
-            if (!bounds_.hitTest(p))
+            if (!bounds().hitTest(p))
             {
                 close();
                 return true;
@@ -113,10 +112,10 @@ bool PopupMenu::handleEventInForm(EventType& event)
         
         case keyDownEvent:
         {
-            if (form.fiveWayUpPressed(&event) ||  chrUpArrow == event.data.keyDown.chr ||
-                form.fiveWayDownPressed(&event) ||  chrDownArrow == event.data.keyDown.chr ||
-                form.fiveWayLeftPressed(&event) || chrLeftArrow == event.data.keyDown.chr ||
-                form.fiveWayRightPressed(&event) || chrRightArrow == event.data.keyDown.chr)
+            if (form()->fiveWayUpPressed(&event) ||  chrUpArrow == event.data.keyDown.chr ||
+                form()->fiveWayDownPressed(&event) ||  chrDownArrow == event.data.keyDown.chr ||
+                form()->fiveWayLeftPressed(&event) || chrLeftArrow == event.data.keyDown.chr ||
+                form()->fiveWayRightPressed(&event) || chrRightArrow == event.data.keyDown.chr)
                 return true;
             return false;
         }
@@ -124,3 +123,16 @@ bool PopupMenu::handleEventInForm(EventType& event)
     }
     return false;
 }
+
+void PopupMenu::handleDraw(Graphics& graphics)
+{
+    Rectangle bounds;
+    this->bounds(bounds);
+    RectangleType r = toNative(bounds);
+    WinEraseRectangle(&r, 0);
+    WinDrawGrayRectangleFrame(simpleFrame, &r);
+
+    bounds.explode(2, 2, -4, -4);
+    drawRendererInBounds(graphics, bounds);
+}
+

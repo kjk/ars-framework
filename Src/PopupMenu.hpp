@@ -9,21 +9,19 @@ namespace ArsLexis
 
 class Form;
 
-class PopupMenu
+class PopupMenu: public TextRenderer
 {
 
     RenderingPreferences prefs_;
     bool running_;
-    Rectangle bounds_;
     UInt16 prevFocusIndex_;
     
 public:
 
-    PopupMenu(Form& form);
+    PopupMenu(Form& form, RenderingPreferences& prefs);
     
     ~PopupMenu();
 
-    TextRenderer renderer;
     
     void close();
     
@@ -31,8 +29,10 @@ public:
     
     bool handleEventInForm(EventType& event);
     
-    void draw();
+protected:
 
+    void handleDraw(Graphics& graphics);
+    
 };
 
 }
