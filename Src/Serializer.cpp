@@ -199,7 +199,7 @@ Serializer& Serializer::operator()(char_t array[], uint_t arraySize, uint_t id)
         serializeChunk(array, length*sizeof(*array));
     else if (!skipLastRecord_)
     {
-        if (arraySize <= length + 1)
+        if (arraySize < length + 1)
             ErrThrow(errBufferTooSmall);
         serializeChunk(array, length*sizeof(*array));
         array[length] = _T('\0');

@@ -4,6 +4,7 @@
 #include <DataStore.hpp>
 #include <PopupMenu.hpp>
 #include <Text.hpp>
+#include <Logging.hpp>
 
 #ifdef __MWERKS__
 using std::memcpy;
@@ -96,7 +97,10 @@ FreshIndex:
     Serializer serialize(reader);
     err = serializeIndexIn(serialize);
     if (errNone != err)
+    {
+        LogStrUlong(eLogError, _T("HistoryCache::readIndex(): serializeIndexIn() returned error: "), err);
         goto FreshIndex;
+    }
     return err;
 }
 
