@@ -8,7 +8,7 @@
 
 struct UniversalDataFormat //: private ArsLexis::NonCopyable
 {
-    typedef unsigned int VectorRange;
+    typedef ulong_t VectorRange;
     typedef std::vector<VectorRange> Vector_t;
     typedef std::vector<Vector_t> VectorOfVectors_t;
 
@@ -39,7 +39,7 @@ public:
     
     const ArsLexis::char_t *getItemText(int itemNo, int elemNo) const;
 
-    const ArsLexis::char_t *getItemTextAndLen(int itemNo, int elemNo, uint_t *lenOut) const;
+    const ArsLexis::char_t *getItemTextAndLen(int itemNo, int elemNo, ulong_t* lenOut) const;
     
     ArsLexis::String getItemTextAsString(int intemNo, int elemNo) const;
   
@@ -54,13 +54,13 @@ public:
     
     void reset();
     
-    friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, long& controlDataLength);
+    friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, ulong_t& controlDataLength);
 
     friend class UniversalDataHandler;
     
     bool empty() const {return header_.empty();}
     
-    uint_t dataLength() {return data_.length();}
+    ulong_t dataLength() {return data_.length();}
     
 };
 

@@ -18,9 +18,11 @@ void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
         wideNumber=88;
     else if (totalCount_>=100 && totalCount_<1000)
         wideNumber=888;
+    else if (totalCount_>=1000 && totalCount_<10000)
+        wideNumber=8888;
 
     // This probably means that parser screwed something and didn't set totalCount_ properly.
-    assert(totalCount_<1000);
+    assert(totalCount_<10000);
 
     // Assuming we have properly set totalCount_, we'll get all the ListNumbers indented the same.
     tprintf(buffer, _T("%hd. "), wideNumber);

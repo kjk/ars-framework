@@ -55,7 +55,7 @@ UniversalDataHandler::UniversalDataHandler():
     controlDataLength_(0)
 {}
 
-status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, long& controlDataLength)
+status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, ulong_t& controlDataLength)
 {
     using namespace std;
     long resultLong;
@@ -124,7 +124,7 @@ status_t UniversalDataHandler::handlePayloadFinish()
 inline status_t UniversalDataHandler::handlePayloadFinish()
 #endif
 {
-    long realDataLen = universalData.dataLength();
+    ulong_t realDataLen = universalData.dataLength();
     assert(controlDataLength_ == realDataLen);
     if (controlDataLength_ != realDataLen)
         return SocketConnection::errResponseMalformed;
@@ -145,7 +145,7 @@ status_t readUniversalDataFromReader(Reader& origReader, UniversalDataFormat& ou
 {
     BufferedReader reader(origReader, 1024);
     int lineNo = 0;
-    long controlDataLength = 0;
+    ulong_t controlDataLength = 0;
     bool eof = false;
     out.reset();
     while (!eof)

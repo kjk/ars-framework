@@ -18,7 +18,7 @@ extern void readUniversalDataFromStream(const ArsLexis::char_t* streamName, Univ
 class UniversalDataHandler: public LineBufferedPayloadHandler {
 
     int                     lineNo_;
-    long                    controlDataLength_;
+    ulong_t                 controlDataLength_;
     
 protected:    
     

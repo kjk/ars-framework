@@ -57,21 +57,21 @@ const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo)
 
     if (!fNormalized_)
         const_cast<UniversalDataFormat*>(this)->normalize();
-    uint_t offset = header_[itemNo][elemNo];
+    VectorRange offset = header_[itemNo][elemNo];
     const ArsLexis::char_t *txt = data_.data();
     txt += offset;
     return txt;
 }
 
-const ArsLexis::char_t* UniversalDataFormat::getItemTextAndLen(int itemNo, int elemNo, uint_t *lenOut) const
+const ArsLexis::char_t* UniversalDataFormat::getItemTextAndLen(int itemNo, int elemNo, ulong_t *lenOut) const
 {
     assert(0 <= itemNo && itemNo < header_.size());
     assert(0 <= elemNo && elemNo < header_[itemNo].size());
 
     if (!fNormalized_)
         const_cast<UniversalDataFormat*>(this)->normalize();
-    uint_t offset = header_[itemNo][elemNo];
-    uint_t nextOffset = 0;
+    VectorRange offset = header_[itemNo][elemNo];
+    VectorRange nextOffset = 0;
     if (header_[itemNo].size() > elemNo+1)
         nextOffset = header_[itemNo][elemNo+1] - 1;
     else if (header_.size() > itemNo+1)
