@@ -71,7 +71,8 @@ namespace ArsLexis
         if (fx.strikeOut())
         {
             uint_t baseline=fontBaseline();
-            top=topLeft.y+baseline*0.667;
+            // top=topLeft.y+baseline*0.667;
+            top = topLeft.y + ((baseline * 667) / 1000);
             drawLine(topLeft.x, top, topLeft.x+width, top);
         }
         int style;
