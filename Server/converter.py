@@ -46,7 +46,7 @@ targetCursor=db.cursor()
 srcCursor.execute(query)
 row=srcCursor.fetchone()
 while row:
-	term=row[0]
+	term=row[0].replace('_', ' ')
 	definition=row[1]
 	ts=row[2]
 	timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))

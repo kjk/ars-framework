@@ -28,6 +28,8 @@ termEndDelimiter = "]]"
 definitionFormatVersion = 1
 protocolVersion = 1
 
+listLengthLimit = 100
+
 class iPediaServerError:
     serverFailure=1
     unsupportedDevice=2
@@ -244,39 +246,43 @@ class iPediaProtocol(basic.LineReceiver):
         self.outputField(definitionForField, self.term)
         self.outputPayloadField(definitionField, definition)
         
-    def findDefinition(self, db, cursor):
-        finished = False
-        result=None
-        history=[self.term]
-        while not finished:
-            query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(self.term.replace(' ', '_'))
-            #query="""select 1, cur_title, cur_text from enwiki.cur where cur_title='%s' and cur_namespace=0 order by cur_timestamp desc limit 1""" % db.escape_string(self.term.replace(' ', '_'))
-            cursor.execute(query)
-            row=cursor.fetchone()
-            if row:
-                result=row[2]
-                if startsWithIgnoreCase(result, redirectCommand):
-                    termStart=result.find(termStartDelimiter)+2
-                    termEnd=result.find(termEndDelimiter)
-                    self.term=result[termStart:termEnd]
-                else:
-                    result=result.replace('\r', '')  
-                    self.term=row[1].replace('_', ' ');
-                    self.definitionId=row[0]
-                    finished=True
-            else: 
-                result=None             
-                finished = True
-            if not finished:
-                if history.count(self.term)>0:
+    def findTarget(self, db, cursor, idTermDef):
+        defId, term, definition=idTermDef
+        history=[]
+        while True:
+            if not startsWithIgnoreCase(definition, redirectCommand):
+                return defId, term, definition
+            else:
+                history.append(term)
+                termStart=definition.find(termStartDelimiter)+2
+                termEnd=definition.find(termEndDelimiter)
+                term=definition[termStart:termEnd].replace('_', ' ')
+                if term in history:
                     print "--------------------------------------------------------------------------------"
-                    print "WARNING! Circular reference: "+self.term
+                    print "WARNING! Circular reference: ", term
                     print "--------------------------------------------------------------------------------"
-                    result=None
-                    finished=True
+                    return None
                 else:
-                    history.append(self.term)
-        return result
+                    query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(term)
+                    cursor.execute(query)
+                    row=cursor.fetchone()
+                    if row:
+                        defId, term, definition=row[0], row[1], row[2]
+                    else:
+                        return None
+        
+    def findExactDefinition(self, db, cursor):
+        query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(self.requestedTerm)
+        cursor.execute(query)
+        row=cursor.fetchone()
+        if row:
+            definition=None
+            idTermDef=self.findTarget(db, cursor, (row[0], row[1], row[2]))
+            if idTermDef:
+                self.definitionId, self.term, definition=idTermDef
+            return definition
+        else:
+            return None
 
     def preprocessDefinition(self, definition):
         definition=definition.replace("__NOTOC__", '')
@@ -290,13 +296,56 @@ class iPediaProtocol(basic.LineReceiver):
         definition=definition.replace("{{NUMBEROFARTICLES}}", str(self.factory.articleCount))
         return definition
         
+    def findFullTextMatches(self, db, cursor):
+        print "Performing full text search..."
+        query="""select id, term, definition from definitions where match(term, definition) against('%s') limit %d""" % (db.escape_string(self.requestedTerm), listLengthLimit)
+        cursor.execute(query)
+        tupleList=[]
+        row=cursor.fetchone()
+        while row:
+            tupleList.append((row[0], row[1], row[2]))
+            print row[1]
+            row=cursor.fetchone()
+            
+        if not len(tupleList):
+            return None
+
+        validatedIds=[]
+        termList=[]
+        for idTermDef in tupleList:
+            defId, term, definition=idTermDef
+            print "Checking term: ", term
+            resTuple=self.findTarget(db, cursor, idTermDef)
+            if resTuple:
+                defId, term, definition=resTuple
+                if defId not in validatedIds:
+                    validatedIds.append(defId)
+                    termList.append(term)
+                else:
+                    print "Discarding duplicate term: ", term
+            else:
+                print "Discarding failed redirection..."
+        
+        if not len(termList):
+            return None
+        else:
+            return termList
+        
     def handleDefinitionRequest(self):
         cursor=None
         definition=None
         try:
             db=self.getDatabase()
             cursor=db.cursor()
-            definition=self.findDefinition(db, cursor)
+            definition=self.findExactDefinition(db, cursor)
+            if definition:
+                self.outputDefinition(self.preprocessDefinition(definition))
+            else:
+                self.termList=self.findFullTextMatches(db, cursor)
+                if self.termList:
+                    self.outputField(definitionNotFoundField)
+                else:
+                    self.outputField(definitionNotFoundField)
             cursor.close()
         except _mysql_exceptions.Error, ex:
             print inst
@@ -304,11 +353,6 @@ class iPediaProtocol(basic.LineReceiver):
                 cursor.close()
             self.error=iPediaServerError.serverFailure
             return False;
-            
-        if definition:
-            self.outputDefinition(self.preprocessDefinition(definition))
-        else:
-            self.outputField(definitionNotFoundField)
         return True
         
     def answer(self):
