@@ -92,6 +92,8 @@ namespace ArsLexis
     {inOut=hexBinEncode(inOut);}
     
     void urlEncode(String& out, const String& in);
+    
+    void eraseStart(String& str, String::size_type length);
    
 }
 

@@ -49,7 +49,9 @@ namespace ArsLexis {
         chunkedBodyFinished_(false),
         contentLength_(contentLengthUnavailable),
         readContentLength_(0)
-    {}        
+    {
+        setChunkSize(1024);
+    }        
 
     HttpConnection::~HttpConnection() 
     {
@@ -73,7 +75,7 @@ namespace ArsLexis {
         out.append(field.first).append(": ", 2).append(field.second).append(crLf);
     }
 
-    void HttpConnection::commitRequest() 
+    status_t HttpConnection::commitRequest() 
     {
         String request;
         renderRequestLine(request);
@@ -89,6 +91,7 @@ namespace ArsLexis {
             messageBody_.clear();
         }
         setRequest(request);
+        return errNone;
     }
 
     status_t HttpConnection::handleResponseField(const String& field, const String& value)
@@ -167,7 +170,7 @@ namespace ArsLexis {
         if (resp.npos==pos && !finish)
             return false;
         out.assign(resp, 0, pos);
-        resp.erase(0, resp.npos==pos?pos:pos+2);
+        eraseStart(resp, resp.npos==pos?pos:pos+2);
         return true;
     }
     
@@ -277,7 +280,7 @@ namespace ArsLexis {
     
     void HttpConnection::BodyReader::flush()
     {
-        body().erase(0, charsRead_);
+        eraseStart(body(), charsRead_);
         charsRead_=0;
     }
     

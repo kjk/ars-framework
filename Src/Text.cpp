@@ -167,3 +167,17 @@ void ArsLexis::urlEncode(ArsLexis::String& out, const ArsLexis::String& in)
         }
     }
 }
+
+void ArsLexis::eraseStart(ArsLexis::String& str, String::size_type length)
+{
+#if defined(_PALM_OS)
+    if (str.npos==length)
+        length=str.length();
+    String::size_type newLength=str.length()-length;
+    MemMove(&str[0], &str[length], newLength);
+    str.resize(newLength);
+#else
+    str.erase(0, length);
+#endif    
+}
+    

@@ -84,7 +84,7 @@ namespace ArsLexis {
 
         void renderHeaderField(String& out, const RequestField_t& field);
 
-        void commitRequest();
+        status_t commitRequest();
         
         typedef std::list<String> Chunks_t;
         Chunks_t chunks_;
@@ -106,8 +106,6 @@ namespace ArsLexis {
         
             uint_t charsRead_;
             
-            //! Number of chars to read before we start removing them from start of body.
-            static const uint_t chunkLength=256;
             
             String& body() 
             {return connection_.response();}
@@ -123,6 +121,9 @@ namespace ArsLexis {
                 
         public:
         
+            //! Number of chars to read before we start removing them from start of body.
+            enum {chunkLength=512};
+            
             explicit BodyReader(HttpConnection& conn);
             
             status_t read(int& chr);
