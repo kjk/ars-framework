@@ -14,11 +14,12 @@ namespace ArsLexis
         static const uint_t lineSeparatorLength=1;
         
     }
+    
+    FieldPayloadProtocolConnection::PayloadHandler::~PayloadHandler()
+    {}
 
     FieldPayloadProtocolConnection::~FieldPayloadProtocolConnection()
-    {
-        delete payloadHandler_;
-    }
+    {}
 
     void FieldPayloadProtocolConnection::appendField(String& out, const char_t* name, uint_t nameLength, const char_t* value, uint_t valueLength)
     {
@@ -34,9 +35,9 @@ namespace ArsLexis
 
     void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler, ulong_t length)
     {
-        delete payloadHandler_;
+        payloadHandler_.reset(payloadHandler);
+        inPayload_=true;
         payloadLengthLeft_=payloadLength_=length;
-        payloadHandler_=payloadHandler;
     }
 
     status_t FieldPayloadProtocolConnection::notifyProgress()
@@ -52,7 +53,7 @@ namespace ArsLexis
         bool goOn=false;
         status_t error=errNone;
         String resp;
-        ByteStreamToText(response(),resp);
+        ByteStreamToText(response(), resp);
         do 
         {
             if (!inPayload())

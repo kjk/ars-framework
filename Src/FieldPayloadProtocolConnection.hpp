@@ -15,18 +15,19 @@ namespace ArsLexis
         {
         public:
         
-            virtual ~PayloadHandler()
-            {}
+            virtual ~PayloadHandler();
             
             virtual status_t handleIncrement(const String& payload, ulong_t& length, bool finish)=0;
             
         };
         
     private:
-        
-        PayloadHandler* payloadHandler_;
+    
+        typedef std::auto_ptr<PayloadHandler> PayloadHandlerPtr;
+        PayloadHandlerPtr payloadHandler_;
         ulong_t payloadLengthLeft_;
         ulong_t payloadLength_;
+        bool inPayload_;
         
         status_t processResponseIncrement(bool finish=false);
         
@@ -38,16 +39,13 @@ namespace ArsLexis
         {return errResponseMalformed;}
         
         PayloadHandler* releasePayloadHandler()
-        {
-            PayloadHandler* handler=payloadHandler_;
-            payloadHandler_=0;
-            return handler;
-        }
+        {return payloadHandler_.release();}
+        
+        PayloadHandler* payloadHandler() const
+        {return payloadHandler_.get();}
         
         virtual void notifyPayloadFinished()
-        {
-            delete releasePayloadHandler();
-        }
+        {inPayload_=false;}
         
         void startPayload(PayloadHandler* payloadHandler, ulong_t length);
         
@@ -56,7 +54,7 @@ namespace ArsLexis
         status_t notifyFinished();
         
         bool inPayload() const
-        {return payloadHandler_!=0;}
+        {return inPayload_;}
         
         ulong_t payloadLengthLeft() const
         {return payloadLengthLeft_;}
@@ -68,9 +66,9 @@ namespace ArsLexis
     
         FieldPayloadProtocolConnection(SocketConnectionManager& manager):
             SimpleSocketConnection(manager),
-            payloadHandler_(0),
             payloadLengthLeft_(0),
-            payloadLength_(0)
+            payloadLength_(0),
+            inPayload_(false)
         {}
         
         ~FieldPayloadProtocolConnection();
