@@ -22,6 +22,8 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
                 //! @todo Handle error running www viewer.
             }
         }
+        else
+            handleBadAlloc();
     }
 }
 

@@ -607,7 +607,7 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
             parsePosition_=lineEnd_+1;
         }
     } while (goOn);
-    if (finish)
+    if (finish && emptyLine!=lineType_)
     {
         if (lineAllowsContinuation(previousLineType_))
             popParent(); 
