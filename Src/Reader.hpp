@@ -29,7 +29,7 @@ namespace ArsLexis {
          * @param num on successful return contains actual number of read characters or @c Reader::npos if you trying to read past end of stream.
          * @return status code, @c errNone on success.
          */
-        virtual status_t read(int& num, String& dst, int offset, int range)=0;
+        virtual status_t read(char_t* buffer, uint_t& length)=0;
         
         status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
         

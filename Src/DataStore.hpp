@@ -26,6 +26,8 @@ namespace ArsLexis {
         
         status_t open();
         
+        status_t create();
+        
         status_t removeStream(const String& name);
         
         enum {
@@ -40,6 +42,8 @@ namespace ArsLexis {
     
         status_t readIndex();
         
+        status_t createIndex();
+        
         status_t readHeaders();
         
         File& file_;
@@ -50,8 +54,6 @@ namespace ArsLexis {
             File::Position firstFragment;
             
             StreamHeader(const String& name, uint_t index, File::Position firstFragment);
-            
-            StreamHeader();
             
         };
         
@@ -73,7 +75,7 @@ namespace ArsLexis {
             
             FragmentHeader(File::Position start, uint_t ownerIndex, uint_t length, File::Position nextFragment);
             
-            FragmentHeader();
+//            FragmentHeader();
             
         };
         
@@ -85,6 +87,8 @@ namespace ArsLexis {
         typedef std::set<FragmentHeader*, FragmentHeaderLess> FragmentHeaders_t;
         FragmentHeaders_t fragmentHeaders_;
         
+        status_t findStream(const String& name, StreamHeader*& header);
+        
         status_t createStream(const String& name, StreamHeader*& header);
         
         enum { minFragmentLength = sizeof(FragmentHeader) + 128};
@@ -92,6 +96,8 @@ namespace ArsLexis {
         status_t createFragment(uint_t ownerIndex, FragmentHeader*& header);
         
         status_t writeFragmentHeader(const FragmentHeader& header);
+        
+        status_t writeStreamHeader(const StreamHeader& header);
         
         uint_t maxAllowedFragmentLength(FragmentHeader& header) const;
         
@@ -111,32 +117,62 @@ namespace ArsLexis {
             
         };
         
+        typedef std::auto_ptr<StreamPosition> StreamPositionPtr;
+        
         status_t readFragment(const FragmentHeader& fragment, uint_t& startOffset, void*& buffer, uint_t& length);
         
         status_t readStream(StreamPosition& position, void* buffer, uint_t& length);
         
+        status_t writeFragment(FragmentHeader& fragment, uint_t& startOffset, const void*& buffer, uint_t& length);
+        
+        status_t writeStream(StreamPosition& position, const void* buffer, uint_t length);
+        
+        status_t findEof();
+        
+        friend class DataStoreReader;
+        friend class DataStoreWriter;
     };
     
     class DataStoreReader: public Reader {
         DataStore& store_;
+        DataStore::StreamPositionPtr position_;
         
     public:
         
         DataStoreReader(DataStore& store);
         
+        ~DataStoreReader();
+        
         status_t open(const String& name);
+        
+        status_t read(int& chr);
+        
+        status_t read(char_t* buffer, uint_t& length);
+        
+        status_t readRaw(void* buffer, uint_t& length);
         
     };
     
     class DataStoreWriter: public Writer {
     
         DataStore& store_;
+        DataStore::StreamPositionPtr position_;
         
     public:
     
         DataStoreWriter(DataStore& store);
         
-        status_t open(const String& name);
+        ~DataStoreWriter();
+        
+        status_t open(const String& name, bool dontCreate = false);
+        
+        status_t write(char_t chr);
+
+        status_t write(const char_t* buffer, uint_t length);
+        
+        status_t writeRaw(const void* buffer, uint_t length);
+        
+        status_t flush();
         
     };
     

@@ -19,15 +19,13 @@ namespace ArsLexis {
         return error;
     }
 
-    status_t FileReader::read(int& ret, String& dst, int offset, int range)
+    status_t FileReader::read(char_t* buffer, uint_t& length)
     {
         assert(isOpen());
         File::Size read;
-        status_t error = file_.read(&dst[offset], sizeof(char)*range, read);
-        if (errNone == error && 0 == read)
-            ret = npos;
-        else if (errNone == error)
-            ret = read;
+        status_t error = file_.read(buffer, sizeof(char_t)*length, read);
+        if (errNone == error)
+            length = read;
         return error;        
     }
 

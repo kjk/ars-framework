@@ -88,7 +88,7 @@ status_t File::size(Size& val) const
         return fileErrInvalidDescriptor;
     Int32 size;
     Err error;
-    FileTell(handle_, &size, &error);
+    Int32 pos=FileTell(handle_, &size, &error);
     if (errNone!=error)
         FileClearerr(handle_);
     else
@@ -118,6 +118,23 @@ status_t File::truncate()
     if (errNone!=error)
         return error;
     error=FileTruncate(handle_, pos);
+    if (errNone!=error)
+        FileClearerr(handle_);
+    return error;        
+}
+
+status_t File::seek(SeekOffset offset, SeekType type)
+{
+    if (!isOpen())
+        return fileErrInvalidDescriptor;
+        
+    FileOriginEnum origin = fileOriginBeginning;
+    if (seekFromCurrentPosition == type)
+        origin = fileOriginCurrent;
+    else if (seekFromEnd == type)
+        origin = fileOriginEnd;
+        
+    Err error = FileSeek(handle_, offset, origin);
     if (errNone!=error)
         FileClearerr(handle_);
     return error;        

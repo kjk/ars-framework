@@ -42,7 +42,7 @@ namespace ArsLexis {
 
         status_t read(int& ret);
 
-        status_t read(int& ret, String& dst, int offset, int range);
+        status_t read(char_t* buffer, uint_t& length);
         
     };
     
