@@ -3,54 +3,20 @@
 
 #include <Application.hpp>
 
-namespace ArsLexis {
+static const eventsEnum extEvent = eventsEnum(ArsLexis::Application::appExtendedEvent);
 
-    static const eventsEnum extEvent = eventsEnum(Application::appExtendedEvent);
+#define EVT_MAGIC_NUMBER 90110705415L
+#define EXT_EVT_TEXT_TYPE  1
 
-    struct EventProperties {
-    
-        ulong_t magicNumber;
-    
-        virtual void dispose();
-        
-        virtual ~EventProperties();
-    };
-    
-    typedef void (* ExtendedEventDeleter)(EventProperties*);
-    
-    struct ExtendedEventData {
-    
-        uint_t eventType;
-        
-        EventProperties* properties;
-        
-        ExtendedEventData();
-        
-        void dispose();
-        
-    };
-    
-    void sendExtendedEvent(uint_t eventType, EventProperties* properties);
-
-
-    struct TextEventProperties: public EventProperties
-    {
-        String text;
-        
-        enum {magicNumberConstant = ulong_t(90110705415)};
-        
-        static TextEventProperties* create(const String& text);
-        
-        ~TextEventProperties();
-        
-    };
-    
-    void sendTextEvent(uint_t eventType, const String& text);
-    
-    const String& extractEventText(const EventType& event);
-    
-    bool isExtendedEvent(const EventType& event, uint_t eventType);
-    
-}
+void *    createExtendedEventText(ulong_t eventId, const ArsLexis::char_t *txt);
+void      sendExtendedEvent(void *eventData);
+ulong_t   getExtendedEventId(void *eventData);
+ulong_t   getExtendedEventId(EventType *event);
+ulong_t   getExtendedEventMagicNumber(void *eventData);
+ulong_t   getExtendedEventType(void *eventData);
+ArsLexis::char_t *getTextEventDataCopy(void *eventData);
+ArsLexis::char_t *getTextEventDataCopy(EventType *event);
+void freeExtendedEvent(EventType *event);
+void sendTextEvent(ulong_t eventId, const ArsLexis::char_t *txt);
 
 #endif

@@ -400,7 +400,20 @@ char_t* StringCopy(const char_t *curStr)
     memcpy(newStr, curStr, len*sizeof(char_t));
     newStr[len] = chrNull;
     return newStr;
-}    
+}
+
+// note: caller needs to free memory with free
+char_t* StringCopy2(const char_t *curStr)
+{
+    using namespace std;
+    int len = tstrlen(curStr);
+    char_t *newStr = (char_t*) malloc(sizeof(char_t)*(len+1));
+    if (NULL==newStr)
+        return NULL;
+
+    memcpy(newStr, curStr, sizeof(char_t)*(len+1));
+    return newStr;
+}
 
 // note: caller needs to free memory with delete[]
 char_t* StringCopyN(const char_t* str, int strLen)

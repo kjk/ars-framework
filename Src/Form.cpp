@@ -240,9 +240,10 @@ namespace ArsLexis
                 focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.tblEnter.tableID);
                 break;
             
-            case extEvent: {
-                ExtendedEventData& data = reinterpret_cast<ExtendedEventData&>(event.data);
-                handled = handleExtendedEvent(data.eventType, data.properties);
+            case extEvent: 
+            {
+                char *data = reinterpret_cast<char*>(&(event.data));
+                handled = handleExtendedEvent((void*)data);
                 break;
             }
         }
@@ -469,7 +470,7 @@ namespace ArsLexis
             handleFocusOnEntry();
     }
 
-    bool Form::handleExtendedEvent(uint_t, EventProperties*) 
+    bool Form::handleExtendedEvent(void *eventData) 
     {
         return false;
     }

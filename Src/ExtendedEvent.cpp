@@ -1,72 +1,87 @@
 #include <ExtendedEvent.hpp>
 #include <SysUtils.hpp>
+#include <Text.hpp>
 
-using namespace ArsLexis;
+using ArsLexis::char_t;
 
-void ExtendedEventData::dispose() 
+static void *buildDataForEvent(ulong_t eventId, ulong_t magicNumber, ulong_t type, char *eventData, ulong_t dataLen)
 {
-    if (NULL != properties) 
-    {
-        properties->dispose();
-        properties = NULL;
-    }
+    char *data = (char*)malloc(sizeof(eventId)+sizeof(magicNumber)+sizeof(type)+dataLen);
+    if (NULL==data) 
+        return NULL;
+    MemMove(data, &magicNumber, sizeof(magicNumber));
+    data += sizeof(magicNumber);
+    MemMove(data, (char*)&magicNumber, sizeof(magicNumber));
+    data += sizeof(magicNumber);
+    MemMove(data, (char*)&type, sizeof(type));
+    data += sizeof(type);
+    MemMove(data, eventData, dataLen);
+    return (void*)data;
+}  
+
+void *createExtendedEventText(ulong_t eventId, const char_t *txt)
+{
+    return buildDataForEvent(eventId, EVT_MAGIC_NUMBER, EXT_EVT_TEXT_TYPE, (char*)txt, sizeof(char_t)*(tstrlen(txt)+1));
+};
+
+void sendTextEvent(ulong_t eventId, const ArsLexis::char_t *txt)
+{
+    void *data = createExtendedEventText(eventId, txt);
+    if (NULL!=data)
+        sendExtendedEvent(data);
 }
 
-void EventProperties::dispose()
+void sendExtendedEvent(void *eventData)
 {
-    delete this;
+    ArsLexis::sendEvent(extEvent, eventData);
 }
 
-EventProperties::~EventProperties()
+ulong_t   getExtendedEventId(EventType *event)
 {
+    void *data = reinterpret_cast<void*>(&(event->data));    
+    return getExtendedEventId(data);
 }
 
-ExtendedEventData::ExtendedEventData():
-    eventType(0),
-    properties(NULL)
-{}
-
-TextEventProperties* TextEventProperties::create(const String& text)
+ulong_t getExtendedEventId(void *eventData)
 {
-    TextEventProperties* p = new TextEventProperties;
-    p->magicNumber = magicNumberConstant;
-    p->text.assign(text);
-    return p;
+    assert(EVT_MAGIC_NUMBER == getExtendedEventMagicNumber(eventData));
+    char *data = (char*)eventData;
+    ulong_t *typePtr = (ulong_t*)data;
+    return *typePtr;
 }
 
-TextEventProperties::~TextEventProperties()
+ulong_t getExtendedEventMagicNumber(void *eventData)
 {
+    char *data = (char*)eventData+sizeof(ulong_t);
+    ulong_t *magicPtr = (ulong_t*)data;
+    return *magicPtr;
 }
 
-void ArsLexis::sendExtendedEvent(uint_t eventType, EventProperties* properties)
+ulong_t getExtendedEventType(void *eventData)
 {
-    ExtendedEventData data;
-    data.eventType = eventType;
-    data.properties = properties;
-    sendEvent(extEvent, data);
+    assert(EVT_MAGIC_NUMBER == getExtendedEventMagicNumber(eventData));
+    char *data = (char*)eventData+sizeof(ulong_t)+sizeof(ulong_t);
+    ulong_t *typePtr = (ulong_t*)data;
+    return *typePtr;
 }
 
-
-void ArsLexis::sendTextEvent(uint_t eventType, const String& text)
+char_t *getTextEventDataCopy(void *eventData)
 {
-    TextEventProperties* p = TextEventProperties::create(text);
-    sendExtendedEvent(eventType, p);
+    assert(EVT_MAGIC_NUMBER == getExtendedEventMagicNumber(eventData));
+    char_t *data = (char_t*)((char*)eventData+sizeof(ulong_t)+sizeof(ulong_t)+sizeof(ulong_t));
+    return ArsLexis::StringCopy2(data);
+}   
+
+char_t *getTextEventDataCopy(EventType *event)
+{
+    void *data = reinterpret_cast<void*>(&(event->data));    
+    return getTextEventDataCopy(data);
 }
 
-const String& ArsLexis::extractEventText(const EventType& event)
+void freeExtendedEvent(EventType *event)
 {
     assert(extEvent == event.eType);
-    const ExtendedEventData& data = reinterpret_cast<const ExtendedEventData&>(event.data);
-    assert(NULL != data.properties);
-    assert(TextEventProperties::magicNumberConstant == data.properties->magicNumber);
-    TextEventProperties* p = static_cast<TextEventProperties*>(data.properties);
-    return p->text;    
+    void *data = reinterpret_cast<void*>(&(event->data));    
+    free(data);
 }
 
-bool ArsLexis::isExtendedEvent(const EventType& event, uint_t eventType)
-{
-    if (extEvent != event.eType)
-        return false;
-    const ExtendedEventData& data = reinterpret_cast<const ExtendedEventData&>(event.data);
-    return data.eventType == eventType;
-}

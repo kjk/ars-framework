@@ -83,7 +83,7 @@ namespace ArsLexis
         
         virtual void afterGadgetDraw() {}
             
-        virtual bool handleExtendedEvent(uint_t eventType, EventProperties* properties);
+        virtual bool handleExtendedEvent(void *eventData);
 
     public:
         

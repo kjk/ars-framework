@@ -237,8 +237,8 @@ namespace ArsLexis
         }
         else if (extEvent == event.eType) 
         {
-            ExtendedEventData& data = reinterpret_cast<ExtendedEventData&>(event.data);
-            handled = handleExtendedEvent(data.eventType, data.properties);
+            char *data = reinterpret_cast<char*>(&(event.data));
+            handled = handleExtendedEvent((void*)data);
         }
         return handled;
     }
@@ -246,24 +246,29 @@ namespace ArsLexis
     void Application::runEventLoop()
     {
         EventType event;
-        do
+        while (true)
         {
             Err error;
             waitForEvent(event);
-            if (appStopEvent!=event.eType)
+            if (appStopEvent == event.eType)
+                break;
+
+            if (!SysHandleEvent(&event))
             {
-                if (!SysHandleEvent(&event))
-                    if (!MenuHandleEvent(0, &event, &error))
-                        if (!handleApplicationEvent(event))
-                            FrmDispatchEvent(&event);
-                if (extEvent == event.eType) 
+                if (!MenuHandleEvent(0, &event, &error))
                 {
-                    ExtendedEventData& data = reinterpret_cast<ExtendedEventData&>(event.data);
-                    data.dispose();
-                    assert(NULL == data.properties);
+                    if (!handleApplicationEvent(event))
+                    {
+                        FrmDispatchEvent(&event);
+                    }
                 }
             }
-        } while (appStopEvent!=event.eType);
+
+            if (extEvent == event.eType) 
+            {
+                freeExtendedEvent(&event);
+            }
+       };
     }
     
     Err Application::registerNotify(UInt32 notifyType, Int8 priority, void* userData)
@@ -328,7 +333,7 @@ namespace ArsLexis
             gotoForm(form->id());                
     }
     
-    bool Application::handleExtendedEvent(uint_t, EventProperties*) 
+    bool Application::handleExtendedEvent(void *eventData) 
     {
         return false;
     }

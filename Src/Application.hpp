@@ -203,7 +203,7 @@ namespace ArsLexis
         void setEventTimeout(Int32 timeout)
         {eventTimeout_=timeout;}
         
-        virtual bool handleExtendedEvent(uint_t eventType, EventProperties* properties);
+        virtual bool handleExtendedEvent(void *eventData);
         
     public:
     
