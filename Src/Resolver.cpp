@@ -60,7 +60,7 @@ namespace ArsLexis
                 long value=0;
                 error=numericValue(origAddress.data()+pos+1, origAddress.data()+pos+1+portLength, value);
                 if (!error && value<(ushort_t)-1)
-                    port=value;
+                    port=(ushort_t)value;
                 else
                     error=netErrParamErr;                    
             }

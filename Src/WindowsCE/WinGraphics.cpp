@@ -305,9 +305,9 @@ namespace ArsLexis
         if (italic&&(weight==FontEffects::weightPlain))
             fontDescr_.lfWeight = FW_BOLD;
         if (index)
-            fontDescr_.lfHeight *= 0.75;
+            fontDescr_.lfHeight = fontDescr_.lfHeight * 3 / 4; // * 0.75;
         if (isSmall)
-            fontDescr_.lfHeight *= 0.9;
+            fontDescr_.lfHeight = fontDescr_.lfHeight * 9 / 10; // * 0.9
         newFont_ = CreateFontIndirect(&fontDescr_);
         SelectObject(handle_, newFont_);
     }
