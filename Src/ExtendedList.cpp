@@ -39,7 +39,7 @@ namespace {
     {
         RGBColorType oldColor;
         RGBColorType tmp=color;
-        saturate(tmp, 32);
+        saturate(tmp, 80);
         WinSetForeColorRGB(&tmp, &oldColor);
         uint_t x0=bounds.x();
         uint_t y0=bounds.y();
@@ -51,38 +51,44 @@ namespace {
             x0*=2;
             y0*=2;
             x1*=2;
+            x1+=1;
             y1*=2;
+            y1+=1;
             origCoordinateSystem=WinSetCoordinateSystem(kCoordinatesNative);
         }
         graphics.drawLine(x0+1, y0, x1-1, y0);
         graphics.drawLine(x0, y0+1, x0, y1-2);
         graphics.drawLine(x0, y0+1, x0+1, y0+1);
         tmp=color;
-        saturate(tmp, 16);
+        saturate(tmp, 20);
         WinSetForeColorRGB(&tmp, 0);
         graphics.drawLine(x0+2, y0+1, x1-2, y0+1);
         graphics.drawLine(x0+1, y0+2, x0+1, y1-3);
         tmp=color;
-        saturate(tmp, -32);
+        saturate(tmp, -80);
         WinSetForeColorRGB(&tmp, 0);
         graphics.drawLine(x0+1, y1-1, x1-1, y1-1);
         graphics.drawLine(x1, y0+1, x1, y1-2);
         graphics.drawLine(x1-1, y1-2, x1, y1-2);
         tmp=color;
-        saturate(tmp, -16);
+        saturate(tmp, -20);
         WinSetForeColorRGB(&tmp, 0);
         graphics.drawLine(x0+1, y1-2, x1-2, y1-2);
         graphics.drawLine(x1-1, y0+1, x1-1, y1-3);
         WinSetForeColorRGB(&oldColor, 0);
+        WinSetBackColorRGB(&color, &oldColor);
         if (doubleDensity)
         {
+            Rectangle fore(x0+2, y0+2, x1-x0-3, y1-y0-4);
+            graphics.erase(fore);
             WinSetCoordinateSystem(origCoordinateSystem);
             bounds.explode(1, 1, -2, -3);
         }
         else
+        {
             bounds.explode(2, 2, -4, -5);
-        WinSetBackColorRGB(&color, &oldColor);
-        graphics.erase(bounds);
+            graphics.erase(bounds);
+        }
         WinSetBackColorRGB(&oldColor, 0);
     }
     
@@ -102,23 +108,14 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     scrollButtonHeight_(12),
     hasHighDensityFeatures_(false),
     screenIsDoubleDensity_(false),
-    windowSettingsChecked_(false)
+    windowSettingsChecked_(false),
+    trackingScrollbar_(false),
+    topItemBeforeTracking_(noListSelection)
 {
     UInt32 version;
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
     if (errNone==error && 4<=version)
         hasHighDensityFeatures_=true;
-
-//    setRgbColor(itemBackground_, 76, 124, 189);
-//    setRgbColor(selectedItemBackground_, 87, 152, 211);
-//    setRgbColor(listBackground_, 65, 97, 166);
-//    setRgbColor(listBackground_, 255, 255, 255);
-//    WinSetBackColorRGB(0, &listBackground_);
-//    setRgbColor(foreground_, 255, 255, 255);
-    
-//    UInt32 screenDepths=1;
-//    Boolean color=false;
-//    Err error=WinScreenMode(winScreenModeGet, NULL, NULL, &screenDepths, &color);
 }
 
 ExtendedList::~ExtendedList()
@@ -347,6 +344,22 @@ void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
     buttonBounds=orig;
     buttonBounds.y()+=(bounds.height()-widthHeight);
     drawBevel(graphics, buttonBounds, itemBackground_, screenIsDoubleDensity_);
+    buttonBounds=orig;
+    buttonBounds.y()=bounds.y()+scrollButtonHeight_;
+    buttonBounds.height()=bounds.height()-2*scrollButtonHeight_;
+    long totalHeight=buttonBounds.height();
+    long viewCapacity=height()/itemHeight_;
+    long itemsCount=this->itemsCount();
+    assert(itemsCount>viewCapacity);
+    long traktorHeight=(viewCapacity*totalHeight)/itemsCount;
+    traktorHeight=std::max(traktorHeight, 5L);
+    RGBColorType oldColor;
+    WinSetBackColorRGB(&itemBackground_, &oldColor);
+    graphics.erase(buttonBounds);
+    WinSetBackColorRGB(&oldColor, 0);
+    buttonBounds.y()+=(long(topItem_)*totalHeight)/itemsCount;
+    buttonBounds.height()=traktorHeight;
+    drawBevel(graphics, buttonBounds, selectedItemBackground_, screenIsDoubleDensity_);
 }
 
 ExtendedList::ItemRenderer::ItemRenderer()
@@ -451,6 +464,7 @@ bool ExtendedList::handleEvent(EventType& event)
 
 bool ExtendedList::handleEnter(const EventType& event)
 {
+    assert(!trackingScrollbar_);
     Point penPos(event.screenX, event.screenY);
     WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
@@ -461,7 +475,7 @@ bool ExtendedList::handleEnter(const EventType& event)
     if (itemsBounds && penPos)
         handlePenInItemsList(bounds, penPos, false);
     else 
-        handlePenInScrollBar(bounds, penPos, false);
+        handlePenInScrollBar(bounds, penPos, false, true);
     return true;
 }
 
@@ -479,9 +493,59 @@ void ExtendedList::handlePenInItemsList(const Rectangle& bounds, const Point& pe
         fireItemSelectEvent();
 }
 
-void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp)
+void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp, bool enter)
 {
-    //! @todo handle pen in scrollbar
+    int viewCapacity=bounds.height()/itemHeight_;
+    int itemsCount=this->itemsCount();
+    int height=penPos.y-bounds.y();
+    Rectangle scrollBar(bounds.x()+bounds.width()-scrollBarWidth_, bounds.y(), scrollBarWidth_, bounds.height());
+    if (enter && height>=scrollButtonHeight_ && height<=scrollBar.height()-scrollButtonHeight_)
+    {
+        trackingScrollbar_=true;
+        topItemBeforeTracking_=topItem_;
+    }
+    if (trackingScrollbar_)
+    {
+        int prevTopItem=topItem_;
+        if ((scrollBar && penPos) && height>=scrollButtonHeight_ && height<=scrollBar.height()-scrollButtonHeight_)
+        {
+            long traktorTrackHeight=bounds.height()-(2*scrollButtonHeight_);
+            long traktorPos=height-scrollButtonHeight_;
+            long traktorHeight=(viewCapacity*traktorTrackHeight)/itemsCount;
+            long newTopItem=((traktorPos-traktorHeight/2)*long(itemsCount-viewCapacity))/(traktorTrackHeight-traktorHeight);
+            newTopItem=std::min(std::max(0L, newTopItem), long(itemsCount-viewCapacity));
+            if (topItem_!=newTopItem)
+            {
+                topItem_=newTopItem;
+                draw();
+            }
+        }
+        else
+            topItem_=topItemBeforeTracking_;
+        if (topItem_!=prevTopItem)
+            draw();
+    }
+    if (!penUp)
+        return;
+    if (trackingScrollbar_)
+    {
+        trackingScrollbar_=false;
+        return;
+    }
+    if (!(scrollBar && penPos))
+        return;
+    if (height<scrollButtonHeight_ && 0<topItem_) 
+    {
+        topItem_-=viewCapacity;
+        topItem_=std::max(0, topItem_);
+        draw();
+    }
+    else if (height>bounds.height()-scrollButtonHeight_ && itemsCount>viewCapacity && topItem_<itemsCount-viewCapacity)
+    {
+        topItem_+=viewCapacity;
+        topItem_=std::min(itemsCount-viewCapacity, topItem_);
+        draw();
+    }
 }
 
 void ExtendedList::handlePenUp(const EventType& event)
@@ -490,14 +554,17 @@ void ExtendedList::handlePenUp(const EventType& event)
     WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
-    if (!(bounds && penPos))
-        return;
-    Rectangle itemsBounds=bounds;
-    itemsBounds.width()-=visibleScrollBarWidth();
-    if (itemsBounds && penPos)
-        handlePenInItemsList(bounds, penPos, true);
+    int visW=visibleScrollBarWidth();
+    Rectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
+    if (trackingScrollbar_ || (scrollBounds && penPos))
+        handlePenInScrollBar(bounds, penPos, true, false);
     else
-        handlePenInScrollBar(bounds, penPos, true);
+    {
+        Rectangle itemsBounds=bounds;
+        itemsBounds.width()-=visW;
+        if (itemsBounds && penPos)
+            handlePenInItemsList(bounds, penPos, true);
+    }
 }
 
 void ExtendedList::handlePenMove(const EventType& event)
@@ -506,18 +573,16 @@ void ExtendedList::handlePenMove(const EventType& event)
     WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
-    if (!(bounds && penPos))
-    {
-        //! @todo add scrolling when pen moves outside of list
-    }
-    else
+    int visW=visibleScrollBarWidth();
+    Rectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
+    if (trackingScrollbar_ || (scrollBounds && penPos))
+        handlePenInScrollBar(bounds, penPos, false, false);
+    else 
     {
         Rectangle itemsBounds=bounds;
-        itemsBounds.width()-=visibleScrollBarWidth();
+        itemsBounds.width()-=visW;
         if (itemsBounds && penPos)
             handlePenInItemsList(bounds, penPos, false);
-        else
-            handlePenInScrollBar(bounds, penPos, false);
     }    
 }
 

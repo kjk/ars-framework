@@ -121,7 +121,7 @@ namespace ArsLexis {
     
         void drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item, bool showScrollbar);
         
-        void handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp);
+        void handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp, bool enter);
         
         void handlePenInItemsList(const Rectangle& bounds, const Point& penPos, bool penUp);
         
@@ -148,6 +148,8 @@ namespace ArsLexis {
         bool hasHighDensityFeatures_;
         bool screenIsDoubleDensity_;
         bool windowSettingsChecked_;
+        bool trackingScrollbar_;
+        int topItemBeforeTracking_;
     };
     
     class BasicStringItemRenderer: public ExtendedList::ItemRenderer {
