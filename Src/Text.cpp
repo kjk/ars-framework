@@ -375,11 +375,8 @@ String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
     }
     else
     {
-        if (0==delimPos)
-            lineEndPos = 0;
-        else
-            lineEndPos = delimPos;
-        assert ( (_T('\n')!=str[lineEndPos]) && (_T('\r')!=str[lineEndPos]));
+        lineEndPos = delimPos;
+        assert ( (_T('\n')==str[lineEndPos]) || (_T('\r')==str[lineEndPos]));
 
         curPos = delimPos+1;
         while ( (_T('\n')==str[curPos]) || (_T('\r')==str[curPos]))

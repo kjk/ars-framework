@@ -194,25 +194,28 @@ void Definition::moveHotSpots(const Point& delta)
     }
 }
 
-
 void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, int delta)
 {
-    uint_t newFirstLine=0;
-    uint_t newLastLine=0;
+    uint_t newFirstLine = 0;
+    uint_t newLastLine = 0;
     calculateVisibleRange(newFirstLine, newLastLine, delta);
 
-    uint_t unionFirst=std::max(firstLine_, newFirstLine);
-    uint_t unionLast=std::min(lastLine_, newLastLine);
+    uint_t unionFirst = std::max(firstLine_, newFirstLine);
+    uint_t unionLast = std::min(lastLine_, newLastLine);
     if (unionFirst<unionLast)
     {
-        uint_t unionTop=0;
+        uint_t unionTop = 0;
         {
             for (uint_t index=firstLine_; index<unionFirst; ++index)
-                unionTop+=lines_[index].height;
+            {
+                unionTop += lines_[index].height;
+            }
         }
-        uint_t unionHeight=0;
+        uint_t unionHeight = 0;
         for (uint_t index=unionFirst; index<unionLast; ++index)
-            unionHeight+=lines_[index].height;
+        {
+            unionHeight += lines_[index].height;
+        }
 
         ArsLexis::Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
@@ -221,7 +224,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         
         if (delta>0) 
         {
-            pointDelta.y=-(int)unionTop;
+            pointDelta.y =- (int)unionTop;
             graphics.copyArea(unionRect, bounds_.topLeft);
             graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
             moveHotSpots(pointDelta);
@@ -229,9 +232,11 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         }
         else
         {
-            pointDelta.y=0;
+            pointDelta.y = 0;
             for (uint_t index=newFirstLine; index<firstLine_; ++index)
-                pointDelta.y+=lines_[index].height;
+            {
+                pointDelta.y += lines_[index].height;
+            }
                 
             graphics.copyArea(unionRect, bounds_.topLeft + pointDelta);
             graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
@@ -239,14 +244,14 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);
         }
-        firstLine_=newFirstLine;
-        lastLine_=newLastLine;
+        firstLine_ = newFirstLine;
+        lastLine_ = newLastLine;
     }
     else
     {
         clearHotSpots();
-        firstLine_=newFirstLine;
-        lastLine_=newLastLine;
+        firstLine_ = newFirstLine;
+        lastLine_ = newLastLine;
         renderLayout(graphics, prefs);
     }
 }
@@ -346,8 +351,10 @@ void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences&
 {
     RenderingContext renderContext(graphics, prefs, *this, bounds_.x(), bounds_.y()+topOffset, bounds_.width());
     for (Lines_t::iterator line=begin; line!=end; ++line)
+    {
         if (renderLine(renderContext, line, elementToRepaint))
             break;
+    }
 }
 
 void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress)
@@ -401,7 +408,8 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
             lastLine.baseLine=layoutContext.baseLine;
             switch (justify) 
             {
-                case DefinitionElement::justifyRightLastElementInLine: //no break (when longer than one line)
+                case DefinitionElement::justifyRightLastElementInLine: 
+                    //no break (when longer than one line)
                 case DefinitionElement::justifyRight:
                     lastLine.leftMargin=layoutContext.screenWidth-layoutContext.usedWidth;
                     break;
@@ -486,7 +494,9 @@ void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& pr
     renderLineRange(graphics, prefs, lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0, elementToRepaint);
     uint_t rangeHeight=0;
     for (uint_t i=firstLine_; i<lastLine_; ++i)
+    {
         rangeHeight+=lines_[i].height;
+    }
     graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
 }
 
@@ -494,7 +504,9 @@ void Definition::selectionToText(ArsLexis::String& out) const
 {
     Elements_t::const_iterator end=elements_.end();
     for (Elements_t::const_iterator it=elements_.begin(); it!=end; ++it)
+    {
         (*it)->toText(out);
+    }
 }
 
 void Definition::renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element)

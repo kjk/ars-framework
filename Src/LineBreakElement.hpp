@@ -32,10 +32,10 @@ public:
     void render(RenderingContext& rc)
     {calculateOrRender(rc, true);}
 
-    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+    virtual void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
     {
         if (from!=to)
-            appendTo.append(1, '\n');
+            appendTo.append(1, _T('\n'));
     }
 
     ~LineBreakElement();

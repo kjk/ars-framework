@@ -17,7 +17,7 @@ public:
     
     void render(RenderingContext& renderingContext);
     
-    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+    virtual void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
     {
         if (from!=to)
             appendTo.append(_T("\n----"));

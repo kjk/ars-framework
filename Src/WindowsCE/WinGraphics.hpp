@@ -153,7 +153,7 @@ namespace ArsLexis
         
         uint_t wordWrap(const char_t* text, uint_t width);
 
-        uint_t wordWrap2(const char_t* text, uint_t availableDx, uint_t& textDx);
+        uint_t wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx);
         
         uint_t textWidth(const char_t* text, uint_t length);
         

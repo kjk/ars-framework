@@ -276,8 +276,10 @@ void GenericTextElement::performAction(Definition& definition)
     }
 }
 
-void GenericTextElement::toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+void GenericTextElement::toText(String& appendTo, uint_t from, uint_t to) const
 {
-    appendTo.append(text(), from, (to==LayoutContext::progressCompleted?text().npos:to));
+    if (LayoutContext::progressCompleted==to)
+        to = String::npos;
+    appendTo.append(text(), from, to);
 }
 

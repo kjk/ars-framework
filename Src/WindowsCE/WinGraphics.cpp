@@ -65,8 +65,9 @@ namespace ArsLexis
     
     Graphics::~Graphics()
     {
+#ifdef DEBUG
         assert(0==statePushCounter_);
-
+#endif
         if(hwnd_)
             ReleaseDC(this->hwnd_,this->handle_);
         else
@@ -160,7 +161,6 @@ namespace ArsLexis
     void Graphics::erase(const ArsLexis::Rectangle& rect)
     {
         NativeRectangle_t nr=toNative(rect);
-        //TODO: Not effective at all
         HBRUSH hbr = CreateSolidBrush(GetBkColor(handle_));
         FillRect(handle_, &nr, hbr);
         DeleteObject(hbr);
@@ -240,7 +240,7 @@ namespace ArsLexis
         return fntDescent;
     }
 
-    uint_t Graphics::wordWrap2(const char_t* text, uint_t availableDx, uint_t& textDx)
+    uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
     {
         int     lenThatFits;
         SIZE    size;
@@ -279,7 +279,7 @@ DoItAgain:
     uint_t Graphics::wordWrap(const char_t* text, uint_t width)
     {
         uint_t textDx;
-        uint_t lenThatFits = wordWrap2(text, width, textDx);
+        uint_t lenThatFits = wordWrap(text, width, textDx);
         return lenThatFits;
     }
 

@@ -86,7 +86,7 @@ public:
     bool isTextElement() const
     {return true;}
 
-    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const;
+    virtual void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const;
 
     void setActionCallback(action_callback *actionCb, void *data)
     {
