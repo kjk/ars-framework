@@ -14,10 +14,14 @@ class IconElement: public DefinitionElement
     uint_t width_;
     uint_t height_;
     
-    uint_t spacePx_;
+    uint_t margin_;
     
     // for internal by id
     uint_t bitmapId_;
+    
+protected:
+
+    void calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render);
 
 public:
 
@@ -26,20 +30,16 @@ public:
     bool breakBefore() const
     {return false;}
 
-    void setSpace(uint_t newSpace)
+    void setMargin(uint_t newSpace)
     {
-        spacePx_ = newSpace;
+        margin_ = newSpace;
     }
 
     void calculateLayout(LayoutContext& layoutContext);
     
     void render(RenderingContext& renderingContext);
     
-    virtual void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
-    {
-        if (from!=to)
-            appendTo.append(_T("[x]"));
-    }
+    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const;
     
     uint_t charIndexAtOffset(LayoutContext& lc, uint_t offset);
     

@@ -89,7 +89,7 @@ void TextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
     uint_t baseLine=graphics.fontBaseline();
     uint_t lineHeight=graphics.fontHeight();
     
-    const char_t* text=text_.c_str()+layoutContext.renderingProgress;
+    const char_t* text=text_.c_str() + layoutContext.renderingProgress;
     left += layoutContext.usedWidth;
     top += (layoutContext.baseLine-baseLine);
     

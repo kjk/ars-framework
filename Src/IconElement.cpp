@@ -1,18 +1,39 @@
 #include "IconElement.hpp"
 
-void IconElement::calculateLayout(LayoutContext& layoutContext)
-{
-    layoutContext.extendHeight(height_+2*spacePx_, height_+2*spacePx_);
-    layoutContext.markElementCompleted(width_+2*spacePx_);
-}
+#ifndef _PALM_OS
+#error IconElement currently works only on Palm OS
+#endif 
 
-void IconElement::render(RenderingContext& renderingContext)
+
+void IconElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
 {
-    uint_t indent=indentation();
-    if (renderingContext.usedWidth<indent)
-        renderingContext.usedWidth=indent;
+    uint_t totalHeight = height_ + 2 * margin_;
+    uint_t baseLine = (totalHeight * 2) / 3;
+    layoutContext.extendHeight(totalHeight, baseLine);
     
-    if (frmInvalidObjectId != bitmapId_)
+    uint_t indent=indentation();
+    layoutContext.usedWidth=std::max(layoutContext.usedWidth, indent);
+    
+    if (render)
+    {
+        left += layoutContext.usedWidth;
+        top += (layoutContext.baseLine-baseLine);
+    }
+    
+    uint_t totalWidth = width_ + 2 * margin_;
+    
+    if (layoutContext.screenWidth - indent < totalWidth)
+        layoutContext.markElementCompleted(layoutContext.availableWidth());
+
+    if (layoutContext.availableWidth() < totalWidth)
+    {
+        layoutContext.usedWidth = layoutContext.screenWidth;
+        return;
+    }
+        
+    layoutContext.markElementCompleted(totalWidth);
+   
+    if (render && frmInvalidObjectId != bitmapId_)
     {
         MemHandle handle = DmGet1Resource(bitmapRsc, bitmapId_);
         if (handle) 
@@ -20,33 +41,28 @@ void IconElement::render(RenderingContext& renderingContext)
             BitmapType* bmp = static_cast<BitmapType*>(MemHandleLock(handle));
             if (bmp) 
             {
-                WinDrawBitmap(bmp, renderingContext.usedWidth+spacePx_, renderingContext.top+spacePx_);
+                WinDrawBitmap(bmp, left + margin_, top + margin_);
                 if (isHyperlink())
-                {
-                    ArsRectangle imgArea(renderingContext.usedWidth, renderingContext.top, width_+2*spacePx_, height_+2*spacePx_);
-                    defineHotSpot(renderingContext.definition, imgArea);
-                }
+                    defineHotSpot(*definition, ArsRectangle(left, top, totalWidth, totalHeight));
                 
                 MemHandleUnlock(handle);
             }
             DmReleaseResource(handle);
         }
     }
-    renderingContext.markElementCompleted(width_+2*spacePx_);
-}
-    
-IconElement::~IconElement()
-{
-    if (imageTypeInternalById == imageType_)
-        return;
-    else
-        assert(false);
 }
 
-IconElement::IconElement(uint_t bitmapId)
+IconElement::~IconElement()
 {
-    imageType_ = imageTypeInternalById;
-    bitmapId_ = bitmapId;
+}
+
+IconElement::IconElement(uint_t bitmapId):
+    imageType_(imageTypeInternalById),
+    bitmapId_(bitmapId),
+    margin_(0),
+    width_(0),
+    height_(0)
+{
     if (frmInvalidObjectId != bitmapId_)
     {
         MemHandle handle = DmGet1Resource(bitmapRsc, bitmapId_);
@@ -60,14 +76,21 @@ IconElement::IconElement(uint_t bitmapId)
                 BmpGetDimensions(bmp, &bmpW, &bmpH, &rowSize);
                 width_ = bmpW;
                 height_ = bmpH;
-                spacePx_ = 0;
             }
             DmReleaseResource(handle);
         }
     }
 }
 
-uint_t IconElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
+void IconElement::toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+{
+    if (from!=to)
+        appendTo.append(_T("[x]"));
+}
+
+
+uint_t IconElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) 
+{
     return 0;
 }
 
@@ -75,3 +98,14 @@ void IconElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart
 {
     wordStart = wordEnd = offsetOutsideElement;
 }
+
+void IconElement::calculateLayout(LayoutContext& layoutContext)
+{
+    calculateOrRender(layoutContext, 0, 0, NULL, false);
+}
+
+void IconElement::render(RenderingContext& renderContext)
+{
+    calculateOrRender(renderContext, renderContext.left, renderContext.top, &renderContext.definition, true);
+}
+
