@@ -252,7 +252,7 @@ bool SearchResultsForm::handleEvent(EventType& event)
                     MainForm* form=static_cast<MainForm*>(application().getOpenForm(mainForm));
                     assert(form);
                     if (form)
-                        form->setDisplayMode(form->showDefinition);
+                        form->setUpdateDefinitionOnEntry();
                     handled=true;
                     closePopup();
                 }

@@ -8,7 +8,8 @@ using namespace ArsLexis;
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
     displayMode_(showSplashScreen),
-    lastPenDownTimestamp_(0)
+    lastPenDownTimestamp_(0),
+    updateDefinitionOnEntry_(false)
 {
 }
 
@@ -285,12 +286,19 @@ void MainForm::handleLookupFinished(const EventType& event)
 {
     setControlsState(true);
     const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
-    if (data.outcomeDefinition==data.outcome)
-        updateAfterLookup();
-    else if (data.outcomeList==data.outcome)
-        Application::popupForm(searchResultsForm);
-    else
-        update();
+    switch (data.outcome)
+    {
+        case data.outcomeDefinition:
+            updateAfterLookup();
+            break;
+            
+        case data.outcomeList:
+            Application::popupForm(searchResultsForm);
+            break;
+
+        default:
+            update();
+    }
 
     const iPediaApplication& app=iPediaApplication::instance();
     if (app.inStressMode())
@@ -389,13 +397,12 @@ void MainForm::updateAfterLookup()
         if (history.hasCurrentTerm())
             setTitle(history.currentTerm());
         
+        update();
+        
         Field field(*this, termInputField);        
         field.replace(lookupManager->lastInputTerm());
         field.select();                    
-
-        update();
     }
-
     updateNavigationButtons();
 }
 
@@ -559,8 +566,11 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
         LookupManager* lookupManager=app.getLookupManager();
         if (lookupManager)
         {
-            if (showDefinition==displayMode())
+            if (updateDefinitionOnEntry_)
+            {
+                updateDefinitionOnEntry_=false;
                 updateAfterLookup();
+            }
             setControlsState(!lookupManager->lookupInProgress());
         }
     }        

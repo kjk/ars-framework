@@ -94,10 +94,14 @@ public:
     
     void scrollDefinition(int units, ScrollUnit unit);
     
+    void setUpdateDefinitionOnEntry(bool val=true)
+    {updateDefinitionOnEntry_=val;}
+    
 private:
     
     DisplayMode displayMode_;
     UInt32 lastPenDownTimestamp_;
+    bool updateDefinitionOnEntry_;
     
 };
 
