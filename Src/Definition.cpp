@@ -312,6 +312,15 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
                 else
                     renderContext.nextTextElement=0;
             }
+            
+            if (DefinitionElement::justifyRightLastElementInLine == (*current)->justification() && line->firstElement != current)
+            {
+                //move last element to right
+                LayoutContext lc(renderContext);
+                (*current)->calculateLayout(lc);
+                renderContext.left += lc.availableWidth();
+            }
+            
             (*current)->render(renderContext);
             if (renderContext.isElementCompleted())
             {
@@ -322,7 +331,7 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
                 }
                 ++current;
                 renderContext.renderingProgress=0;
-                if (renderContext.availableWidth()==0 || current==last || (*current)->breakBefore(renderContext.preferences) || justify!=(*current)->justification())
+                if (renderContext.availableWidth()==0 || current==last || (*current)->breakBefore(renderContext.preferences) || (justify!=(*current)->justification() && DefinitionElement::justifyRightLastElementInLine != (*current)->justification()))
                     lineFinished=true;
             }
             else
@@ -380,7 +389,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
                 else
                     layoutContext.nextTextElement=0;
             }
-            if (element==end || (*element)->breakBefore(prefs) || (*element)->justification()!=justify)
+            if (element==end || (*element)->breakBefore(prefs) || ((*element)->justification()!=justify && DefinitionElement::justifyRightLastElementInLine != (*element)->justification()))
                 startNewLine=true;
         }
         else
@@ -392,6 +401,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
             lastLine.baseLine=layoutContext.baseLine;
             switch (justify) 
             {
+                case DefinitionElement::justifyRightLastElementInLine: //no break (when longer than one line)
                 case DefinitionElement::justifyRight:
                     lastLine.leftMargin=layoutContext.screenWidth-layoutContext.usedWidth;
                     break;

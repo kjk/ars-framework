@@ -158,7 +158,9 @@ namespace ArsLexis
         uint_t textWidth(const char_t* text, uint_t length);
         
         void charsInWidth(const char_t* text, uint_t& length, uint_t& width);
-        
+
+        void stripToWidthWithEllipsis(ArsLexis::String& textInOut, uint_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
+
         Handle_t handle() 
         {return handle_;}
 

@@ -51,7 +51,8 @@ public:
         justifyInherit, // It means "inherit from parent or use default (left)"
         justifyLeft,
         justifyCenter,
-        justifyRight
+        justifyRight,
+        justifyRightLastElementInLine //only one - last element can be justified like this!
     };
     
     virtual bool isTextElement() const
