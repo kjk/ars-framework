@@ -8,7 +8,7 @@ namespace ArsLexis
         SocketConnection(manager),
         maxResponseSize_(32768),
         sending_(true),
-        chunkSize_(256),
+        chunkSize_(536),
         requestBytesSent_(0),
         totalReceived_(0)
     {}

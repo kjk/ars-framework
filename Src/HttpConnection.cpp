@@ -393,7 +393,10 @@ charAvailable:
     start:
         if (stateAfterBodyCr==state_ || stateAfterLastChunkCr==state_)
         {
-            log().debug()<<"ChunkedBodyReader::read";
+            if (stateAfterBodyCr==state_)
+                log().debug()<<"ChunkedBodyReader::read(): stateAfterBodyCr";
+            else 
+                log().debug()<<"ChunkedBodyReader::read(): stateAfterLastChunkCr";
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
@@ -403,6 +406,10 @@ charAvailable:
         }
         if (stateAfterBodyLf==state_ || stateAfterLastChunkLf==state_)
         {
+            if (stateAfterBodyCr==state_)
+                log().debug()<<"ChunkedBodyReader::read(): stateAfterBodyCr";
+            else 
+                log().debug()<<"ChunkedBodyReader::read(): stateAfterLastChunkLf";
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
@@ -427,6 +434,7 @@ charAvailable:
         }
         if (stateInHeader==state_)
         {
+            log().debug()<<"ChunkedBodyReader::read(): stateInHeader";
             while (stateInHeader==state_)
             {
                 error=BodyReader::read(c);
@@ -440,6 +448,7 @@ charAvailable:
                     error=parseChunkHeader();
                     if (errNone!=error)
                         return error;
+                    log().debug()<<"ChunkedBodyReader::read(): chunkLength_: "<<chunkLength_;
                     chunkPosition_=0;
                 }
                 else
@@ -448,6 +457,7 @@ charAvailable:
         }
         if (stateAfterHeader==state_)
         {
+            log().debug()<<"ChunkedBodyReader::read(): stateAfterHeader";
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
