@@ -1,5 +1,6 @@
 #include <PalmOS.h>
 #include <Graphics.hpp>
+#include <DefinitionStyle.hpp>
 
 static bool useFontScaling()
 {
@@ -235,6 +236,29 @@ uint_t Graphics::wordWrap(const char_t* text, uint_t width)
 
 void Graphics::applyStyle(const DefinitionStyle& style)
 {
-    //TODO:
+    DefinitionStyle s = *getStaticStyle(styleIndexDefault);
+    s |= style;
+    
+    FontEffects fx;
+    fx.setItalic(s.yes == s.italic);
+    fx.setSmall(s.yes == s.small);
+    fx.setStrikeOut(s.yes == s.strike);
+    fx.setSubscript(s.yes == s.subscript);
+    fx.setSuperscript(s.yes == s.superscript);
 
+    if (grayUnderline == s.underline)
+        fx.setUnderline(fx.underlineDotted);
+    else if (solidUnderline == s.underline || colorUnderline == s.underline)
+        fx.setUnderline(fx.underlineSolid);
+        
+    if (s.yes == s.bold)
+        fx.setWeight(fx.weightBold);
+
+    PalmFont font(s.fontId);
+    font.setEffects(fx);
+    
+    setFont(font);
+    WinSetForeColorRGB(&s.foregroundColor, NULL);
+    WinSetTextColorRGB(&s.foregroundColor, NULL);
+    WinSetBackColorRGB(&s.backgroundColor, NULL);
 }

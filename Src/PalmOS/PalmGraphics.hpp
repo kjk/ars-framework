@@ -6,9 +6,8 @@
 #include <Geometry.hpp>
 #include <Utility.hpp>
 #include <PalmFont.hpp>
-#include <DefinitionStyle.hpp>
 
-using ArsLexis::char_t;
+class DefinitionStyle;
 
 class Graphics: private NonCopyable
 {
