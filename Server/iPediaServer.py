@@ -46,6 +46,8 @@ protocolVersionField =  "Protocol-Version"
 clientVersionField =    "Client-Version"
 searchField =           "Search"
 searchResultsField =    "Search-Results"
+getArticleCountField=   "Get-Article-Count"
+articleCountField=      "Article-Count"
 
 definitionFormatVersion = 1
 protocolVersion = 1
@@ -154,6 +156,7 @@ class iPediaProtocol(basic.LineReceiver):
         self.definitionId=None
         self.getRandom=None
         self.linesCount=0
+        self.getArticleCount=False
         self.searchExpression=None
         
     def getDatabase(self):
@@ -469,6 +472,9 @@ class iPediaProtocol(basic.LineReceiver):
 
         if self.getRandom and not self.handleGetRandomRequest():
             return self.finish()
+            
+        if self.getArticleCount:
+            self.outputField(articleCountField, str(self.factory.articleCount))
 
         self.finish()
 
@@ -517,6 +523,9 @@ class iPediaProtocol(basic.LineReceiver):
                 
             elif request.startswith(searchField):
                 self.searchExpression=self.extractFieldValue(request)        
+                
+            elif request.startswith(getArticleCountField):
+                self.getArticleCount=True
             else:
                 self.error=iPediaServerError.malformedRequest
 
@@ -531,10 +540,9 @@ class iPediaFactory(protocol.ServerFactory):
         cursor=db.cursor()
         cursor.execute("""select count(*), min(id), max(id) from definitions""")
         row=cursor.fetchone()
-        self.articleCount=row[0]
+        g_articleCount=self.articleCount=row[0]
         self.minDefinitionId=row[1]
         self.maxDefinitionId=row[2]
-        g_articleCount=row[0]
         print "Number of Wikipedia articles: ", self.articleCount
         cursor.close()
         db.close()

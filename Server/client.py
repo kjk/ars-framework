@@ -8,7 +8,7 @@
 #   -perfrandom N : do a performance test for Get-Random-Definitions by issuing N requests
 #   -get term : get and display a definition of term
 #   -getrandom
-#
+#   -articlecount
 import sys, re, socket, random, pickle, time, arsutils
 
 # server string must be of form "name:port"
@@ -29,6 +29,9 @@ PROTOCOL_VER    = "Protocol-Version:"
 CLIENT_VER      = "Client-Version:"
 GET_DEF         = "Get-Definition:"
 GET_RANDOM      = "Get-Random-Definition:"
+GET_ARTICLE_COUNT=   "Get-Article-Count"
+ARTICLE_COUNT=      "Article-Count:"
+
 
 g_pickleFileName = "client_pickled_data.dat"
 def pickleState():
@@ -101,6 +104,17 @@ def buildGetDefinitionRequest(term):
     req += buildLine(GET_DEF, term)
     req += "\n"
     return req
+    
+def buildGetArticleCountRequest():
+    req = buildCommonRequestPart()
+    if getGlobalCookie():
+        req += buildLine(COOKIE, getGlobalCookie())
+    else:
+        req += buildLine(GET_COOKIE, g_exampleDeviceInfo)
+    req += GET_ARTICLE_COUNT
+    req += "\n\n"
+    return req
+    
 
 # parser server response. Returns a dictionary where keys are the
 # names of fields e.g. like FORMAT_VER, COOKIE and values their values
@@ -172,6 +186,22 @@ def getRandomDef():
     #print "Received:", response
     sock.close()
     return response
+    
+def getArticleCount():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    (serverName, serverPort) = getServerNamePort()
+    sock.connect((serverName,serverPort))
+    #print "Connected to server"
+
+    req = buildGetArticleCountRequest()
+    #print "Sening:", req
+    sock.sendall(req)
+    #print "Sent all"
+    response = socket_readAll(sock)
+    #print "Received:", response
+    sock.close()
+    return response
+    
 
 def doGetDef(term):
     global g_cookie
@@ -215,6 +245,22 @@ def doGetRandomDefNoTiming():
     if not getGlobalCookie() and parsedResponse.has_key(COOKIE):
         print "Found cookie: %s" % parsedResponse[COOKIE]
         g_cookie = parsedResponse[COOKIE]
+        
+def doGetArticleCount():
+    global g_cookie
+    defResponse = getArticleCount()
+    parsedResponse = parseServerResponse(defResponse)
+    if not parsedResponse:
+        print "FAILURE in parseServerResponse"
+        sys.exit(0)
+    if not getGlobalCookie() and parsedResponse.has_key(COOKIE):
+        print "Found cookie: %s" % parsedResponse[COOKIE]
+        g_cookie = parsedResponse[COOKIE]
+    if not parsedResponse.has_key(ARTICLE_COUNT):
+        print "FAILURE: no Article-Count field"
+        sys.exit(0)
+    else:
+        print "Article count: ", parsedResponse[ARTICLE_COUNT]
 
 def doRandomPerf(count):
     timer = arsutils.Timer(fStart=True)
@@ -225,7 +271,7 @@ def doRandomPerf(count):
     print "Number of runs: %d" % count
 
 def usageAndExit():
-    print "client.py [-perfrandom N] [-getrandom] [-get term]"
+    print "client.py [-perfrandom N] [-getrandom] [-get term] [-articlecount]"
 
 if __name__=="__main__":
     try:
@@ -242,7 +288,11 @@ if __name__=="__main__":
                 if term:
                     doGetDef(term)
                 else:
-                    usageAndExit()
+                    fGetArticle = arsutils.fDetectRemoveCmdFlag("-articlecount")
+                    if fGetArticle:
+                        doGetArticleCount()
+                    else:
+                        usageAndExit()
     finally:
         # make sure that we pickle the state even if we crash
         pickleState()
