@@ -1,3 +1,4 @@
+#include <BaseTypes.hpp>
 #include <Debug.hpp>
 #include <SysUtils.hpp>
 #include <Text.hpp>
@@ -243,7 +244,7 @@ void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool uniqu
     if (data && dataSize)
     {
         assert(dataSize<=sizeof(event.data));
-        MemMove(&event.data, data, dataSize);
+        memmove(&event.data, data, dataSize);
     }
     if (unique)
         EvtAddUniqueEventToQueue(&event, 0, false);

@@ -22,32 +22,6 @@ namespace ArsLexis
     FieldPayloadProtocolConnection::~FieldPayloadProtocolConnection()
     {}
 
-    // The rules are:
-    // - if field has a value, we do "$field" ":" " " "$value" lineSeparator
-    // - if field doesn't have value, we do "$field" ":" lineSeparator
-    void FieldPayloadProtocolConnection::appendField(String& out, const char_t* name, uint_t nameLength, const char_t* value, uint_t valueLength)
-    {
-        assert(nameLength>0);
-        assert(':' != name[nameLength-1]);
-
-        uint_t len;
-        if (valueLength>0)
-            len = out.length() + 2 + valueLength + lineSeparatorLength; // 2 is for ":" and " "
-        else
-            len = out.length() + 1 + lineSeparatorLength; // 1 is for ":"
-
-        out.reserve(len);
-        out.append(name, nameLength);
-        if (valueLength>0)
-        {
-            out.append(_T(": "),2);
-            out.append(value, valueLength);
-        }
-        else
-            out.append(_T(":"),1);
-        out.append(lineSeparator, lineSeparatorLength);
-    }
-
     void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler, ulong_t length)
     {
         payloadHandler_.reset(payloadHandler);

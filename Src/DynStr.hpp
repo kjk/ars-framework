@@ -33,11 +33,6 @@ typedef struct DynStrTag {
    Note that DynStr doesn't have a notion of NULL string,
    it only has empty string */
 #define DYNSTR_STR(dstr) (dstr->str)
-/* the same as DYNSTR_STR, but enforces the idea, that DynStr can handle
-   arbitrary binary data */
-#define DYNSTR_DATA(dstr) (dstr->str)
-/* length of the data inside DynStr */
-#define DYNSTR_LEN(dstr) (dstr->strLen)
 
 DynStr *   DynStrInit(DynStr* dstr, UInt32 bufSize);
 DynStr *   DynStrNew__(UInt32 bufSize, const char_t* file, int line);
@@ -52,10 +47,14 @@ DynStr *   DynStrFromCharP3(const char_t *strOne, const char_t *strTwo, const ch
 DynStr *   DynStrAssignCharP(DynStr *dstr, const char_t *str);
 void       DynStrTruncate(DynStr *dstr, UInt32 len);
 char_t *   DynStrGetCStr(DynStr *dstr);
-char_t *   DynStrGetData(DynStr *dstr);
+char_t *   DynStrReleaseStr(DynStr *dstr);
+char *     DynStrGetData(DynStr *dstr);
+UInt32     DynStrGetDataLen(DynStr *dstr);
 UInt32     DynStrLen(DynStr *dstr);
 DynStr *   DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize);
 DynStr *   DynStrAppendCharP(DynStr *dstr, const char_t *str);
+DynStr *   DynStrAppendCharP2(DynStr *dstr, const char_t *str1, const char_t *str2);
+DynStr *   DynStrAppendCharP3(DynStr *dstr, const char_t *str1, const char_t *str2, const char_t *str3);
 DynStr *   DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, UInt32 strLen);
 DynStr *   DynStrAppendChar(DynStr *dstr, const char_t c);
 void       DynStrFree(DynStr *dstr);
@@ -65,7 +64,7 @@ void       DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len);
 DynStr *   DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend);
 DynStr *   DynStrUrlEncode(DynStr *srcUrl);
 void       DynStrReplace(DynStr *dstr, char_t orig, char_t replace);
-DynStr* DynStrResize(DynStr* dstr, UInt32 newLen);
+DynStr *   DynStrResize(DynStr* dstr, UInt32 newLen);
 
 class CDynStr : public DynStr
 {
@@ -77,8 +76,11 @@ public:
     void Truncate(UInt32 len) { DynStrTruncate(this, len); }
     CDynStr *AssignCharP(const char_t *str) { return (CDynStr*) DynStrAssignCharP(this, str); }
     char_t *GetCStr() { return DynStrGetCStr(this); }
+    char_t *GetCharPCopy() { return DynStrCharPCopy(this); }
     UInt32 Len() { return DynStrLen(this); }
     CDynStr *AppendCharP(const char_t *str) { return (CDynStr*)DynStrAppendCharP(this, str); }
+    CDynStr *AppendCharP2(const char_t *str1, const char_t *str2) { return (CDynStr*)DynStrAppendCharP2(this, str1, str2); }
+    CDynStr *AppendCharP3(const char_t *str1, const char_t *str2, const char_t *str3) { return (CDynStr*)DynStrAppendCharP3(this, str1, str2, str3); }
     CDynStr *AppendCharPBuf(const char_t *str, UInt32 strLen) { return (CDynStr*)DynStrAppendCharPBuf(this, str, strLen); }
     CDynStr *AppendChar(const char_t c) { return (CDynStr*)DynStrAppendChar(this, c); }
     CDynStr *Append(DynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }

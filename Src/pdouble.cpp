@@ -54,7 +54,7 @@ void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int 
         i -= 3;
         while (i > 0)
         {
-            MemMove(s+i+1,s+i,StrLen(s)-i+1);
+            memmove(s+i+1,s+i,StrLen(s)-i+1);
             s[i] = ',';        
             i -=3;
         }

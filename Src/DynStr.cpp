@@ -11,14 +11,33 @@ using ArsLexis::char_t;
 //   not be the whole string
 char_t *DynStrGetCStr(DynStr *dstr)
 {
-    return DYNSTR_STR(dstr);
+    return dstr->str;
 }
+
+// Return C-compatible, NULL-terminated string from DynStr and give up
+// ownership of it (i.e. client will have to release memory for it using free())
+// NOTE: the real length might be different than what strlen() will give. If
+// caller cares about that, he needs to call DynStrLen() first.
+char_t *DynStrReleaseStr(DynStr *dstr)
+{
+    char_t *toReturn = dstr->str;
+    DynStrInit(dstr, 0);
+    return toReturn;
+}
+
 
 // same as DynStrGetCStr but reinforces the notion that DynStr can handle
 // arbitrary binary data
-char_t *DynStrGetData(DynStr *dstr)
+char *DynStrGetData(DynStr *dstr)
 {
-    return DYNSTR_DATA(dstr);
+    return (char*)dstr->str;
+}
+
+// same as DynStrLen but reinforces the notion that DynStr can handle
+// arbitrary binary data
+UInt32     DynStrGetDataLen(DynStr *dstr)
+{
+    return dstr->strLen*sizeof(char_t);
 }
 
 // get length of the string. Note that since DynStr is binary-safe, this
@@ -124,7 +143,7 @@ DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* f
     }
 
     dstr->strLen = strLen;
-    MemMove( DYNSTR_STR(dstr), str, strLen + 1);
+    memmove( dstr->str, str, strLen + 1);
 
     return dstr;
 }
@@ -201,9 +220,29 @@ DynStr * DynStrAppendCharP(DynStr *dstr, const char_t *str)
     return DynStrAppendData(dstr, (const char*)str, strLen*sizeof(char_t));
 }
 
+DynStr * DynStrAppendCharP2(DynStr *dstr, const char_t *str1, const char_t *str2)
+{
+    if (NULL == DynStrAppendData(dstr, (const char*)str1, tstrlen(str1)*sizeof(char_t)))
+        return NULL;
+    if (NULL == DynStrAppendData(dstr, (const char*)str2, tstrlen(str2)*sizeof(char_t)))
+        return NULL;
+    return dstr;
+}
+
+DynStr * DynStrAppendCharP3(DynStr *dstr, const char_t *str1, const char_t *str2, const char_t *str3)
+{
+    if (NULL == DynStrAppendData(dstr, (const char*)str1, tstrlen(str1)*sizeof(char_t)))
+        return NULL;
+    if (NULL == DynStrAppendData(dstr, (const char*)str2, tstrlen(str2)*sizeof(char_t)))
+        return NULL;
+    if (NULL == DynStrAppendData(dstr, (const char*)str3, tstrlen(str3)*sizeof(char_t)))
+        return NULL;
+    return dstr;
+}
+
 DynStr *DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend)
 {
-    return DynStrAppendCharPBuf(dstr, DYNSTR_STR(toAppend), DynStrLen(toAppend));
+    return DynStrAppendCharPBuf(dstr, toAppend->str, toAppend->strLen);
 }
 
 // a generic append which appends arbitrary binary data
@@ -238,7 +277,7 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
             return NULL;
         if (NULL != dstr->str)
         {
-            MemMove(newStr, dstr->str, DynStrLen(dstr));
+            memmove(newStr, dstr->str, DynStrLen(dstr));
             free(dstr->str);
         }
         dstr->str     = newStr;
@@ -250,11 +289,11 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
 
     if (NULL != dstr->str)
     {
-        curEnd = DYNSTR_STR(dstr) + dstr->strLen;
-        MemMove(curEnd, data, dataSize);
+        curEnd = dstr->str + dstr->strLen;
+        memmove(curEnd, data, dataSize);
     }
     newStrLen = dstr->strLen + dataSize;
-    DYNSTR_STR(dstr)[newStrLen] = '\0';
+    dstr->str[newStrLen] = '\0';
     dstr->strLen = newStrLen;
 
     return dstr;
@@ -276,7 +315,7 @@ char_t * DynStrCharPCopy(DynStr *dstr)
     if (NULL == result)
         return NULL;
     if (strLen > 0)
-        MemMove(result, dstr->str, strLen);
+        memmove(result, dstr->str, strLen);
     result[strLen] = '\0';
     return result;
 }
@@ -306,7 +345,7 @@ void DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len)
         return;
 
     toMove = dstr->strLen - start - len;
-    MemMove(str+start, str+start+len, toMove);
+    memmove(str+start, str+start+len, toMove);
     dstr->strLen -= len;
     dstr->str[dstr->strLen] = '\0';
 }
@@ -440,9 +479,9 @@ static void test_DynStrReplace()
 {
     DynStr *dstr = DynStrFromCharP(_T("hello"), 0);
     DynStrReplace(dstr, _T('h'), _T('p'));
-    assert( 0 == tstrcmp(_T("pello"), DYNSTR_STR(dstr)) );
+    assert( 0 == tstrcmp(_T("pello"), dstr->str) );
     DynStrReplace(dstr, _T('z'), _T('k'));
-    assert( 0 == tstrcmp(_T("pello"), DYNSTR_STR(dstr)) );
+    assert( 0 == tstrcmp(_T("pello"), dstr->str) );
     DynStrDelete(dstr);
 }
 
@@ -450,7 +489,7 @@ static void test_DynStrAppendToNull()
 {
     DynStr dstr;
     DynStrInit(&dstr,0);
-    DynStrAppendCharP(&dstr, "Hello");
+    DynStrAppendCharP(&dstr, _T("Hello"));
     DynStrFree(&dstr);
 }
 
@@ -458,28 +497,28 @@ static void test_DynStrRemoveStartLen()
 {
     char    *str = NULL;
 
-    DynStr *dstr = DynStrFromCharP("hello", 32);
+    DynStr *dstr = DynStrFromCharP(_T("hello"), 32);
     assert( 5 == DynStrLen(dstr) );
     DynStrRemoveStartLen(dstr, 0, 1);
     // should be "ello" now
     assert( 4 == DynStrLen(dstr) );
     str = DynStrGetCStr(dstr);
-    assert( 0 == StrCompare("ello", str) );
+    assert( 0 == tstrcmp(_T("ello"), str) );
     DynStrRemoveStartLen(dstr, 3, 1);
     // should be "ell" now
     assert( 3 == DynStrLen(dstr) );
     str = DynStrGetCStr(dstr);
-    assert( 0 == StrCompare("ell", str) );
-    DynStrAppendCharP(dstr, "blast");
+    assert( 0 == tstrcmp(_T("ell"), str) );
+    DynStrAppendCharP(dstr, _T("blast"));
     // should be "ellblast" now
     assert( 8 == DynStrLen(dstr) );
     str = DynStrGetCStr(dstr);
-    assert( 0 == StrCompare("ellblast", str) );
+    assert( 0 == tstrcmp(_T("ellblast"), str) );
     DynStrRemoveStartLen(dstr, 2, 4);
     // should be "elst" now
     assert( 4 == DynStrLen(dstr) );
     str = DynStrGetCStr(dstr);
-    assert( 0 == StrCompare("elst", str) );
+    assert( 0 == tstrcmp(_T("elst"), str) );
     DynStrDelete(dstr);
 }
 
@@ -492,22 +531,22 @@ static void test_DynStrTruncate()
     assert(0 == DynStrLen(&dstr));
     DynStrTruncate(&dstr,0);
     assert(0 == DynStrLen(&dstr));
-    DynStrAppendCharP(&dstr, "hello");
+    DynStrAppendCharP(&dstr, _T("hello"));
     assert(5 == DynStrLen(&dstr));
     DynStrTruncate(&dstr, 3);
     assert(3 == DynStrLen(&dstr));
     str = DynStrGetCStr(&dstr);
-    assert( 0 == StrCompare("hel", str) );
+    assert( 0 == tstrcmp(_T("hel"), str) );
 
     DynStrTruncate(&dstr, 2);
     assert(2 == DynStrLen(&dstr));
     str = DynStrGetCStr(&dstr);
-    assert( 0 == StrCompare("he", str) );
+    assert( 0 == tstrcmp(_T("he"), str) );
 
     DynStrTruncate(&dstr, 0);
     assert(0 == DynStrLen(&dstr));
     str = DynStrGetCStr(&dstr);
-    assert( 0 == StrCompare("", str) );
+    assert( 0 == tstrcmp(_T(""), str) );
 
     DynStrFree(&dstr);    
 
@@ -518,27 +557,48 @@ static void test_DynStrFromCharP()
     DynStr * dstr;
     char_t * str;
 
-    dstr = DynStrFromCharP("hello", 0);
+    dstr = DynStrFromCharP(_T("hello"), 0);
     assert( 5 == DynStrLen(dstr) );
     str = DynStrGetCStr(dstr);
-    assert( 0 == StrCompare("hello", str));
+    assert( 0 == tstrcmp(_T("hello"), str));
     DynStrDelete(dstr);
 
-    dstr = DynStrFromCharP2("from", "hell");
+    dstr = DynStrFromCharP2(_T("from"), _T("hell"));
     assert( 8 == DynStrLen(dstr) );
     str = DynStrGetCStr(dstr);
-    assert( 0 == StrCompare("fromhell", str));
+    assert( 0 == tstrcmp(_T("fromhell"), str));
     DynStrDelete(dstr);
 
-    dstr = DynStrFromCharP3("me", "", "llow");
+    dstr = DynStrFromCharP3(_T("me"), _T(""), _T("llow"));
     assert( 6 == DynStrLen(dstr) );
     str = DynStrGetCStr(dstr);
-    assert( 0 == StrCompare("mellow", str));
+    assert( 0 == tstrcmp(_T("mellow"), str));
     DynStrDelete(dstr);
+}
+
+static void test_DynStrRelease()
+{
+    char_t * str;
+    DynStr * dstr = DynStrFromCharP(_T("rusty"), 20);
+    str = DynStrReleaseStr(dstr);
+    assert( 0 == tstrcmp(_T("rusty"), str));
+    assert( 0 == DynStrLen(dstr) );
+    assert( NULL == DynStrGetCStr(dstr) );
+    DynStrAppendCharP(dstr, _T("moo"));
+    assert( 3 == DynStrLen(dstr) );
+    assert( 0 == tstrcmp(_T("moo"), DynStrGetCStr(dstr)));
+    DynStrAppendCharP2(dstr, _T(""), _T("r"));
+    assert( 4 == DynStrLen(dstr) );
+    assert( 0 == tstrcmp(_T("moor"), DynStrGetCStr(dstr)));
+    assert( 0 == tstrcmp(_T("rusty"), str));
+    DynStrDelete(dstr);
+    assert( 0 == tstrcmp(_T("rusty"), str));
+    free(str);
 }
 
 void test_DynStrAll()
 {
+    test_DynStrRelease();
     test_DynStrFromCharP();
     test_DynStrReplace();
     test_DynStrAppendToNull();

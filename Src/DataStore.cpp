@@ -311,7 +311,7 @@ status_t DataStore::createStream(const char_t* name, StreamHeader*& header)
         return error;
     StreamIndexEntry indexEntry;
     indexEntry.used = true;
-    MemMove(indexEntry.name, name, nlen * sizeof(char_t));
+    memmove(indexEntry.name, name, nlen * sizeof(char_t));
     error = file_.write(&indexEntry, sizeof(indexEntry));
     if (errNone != error)
         return error;
@@ -339,7 +339,7 @@ status_t DataStore::writeStreamHeader(const DataStore::StreamHeader& header)
         return error;
     StreamIndexEntry indexEntry;
     indexEntry.used = true;
-    MemMove(indexEntry.name, header.name.data(), header.name.length()*sizeof(char_t));
+    memmove(indexEntry.name, header.name.data(), header.name.length()*sizeof(char_t));
     indexEntry.firstFragment=header.firstFragment;
     error = file_.write(&indexEntry, sizeof(indexEntry));
     if (errNone != error)

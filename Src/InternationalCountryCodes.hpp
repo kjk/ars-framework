@@ -4,16 +4,9 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 
-namespace ArsLexis {
-
-    int getCountryCodesCount();
-    
-    const char_t* getCountryName(int pos);
-    
-    const char_t* getCountryCode(int pos);
-    
-    int getCountryIndexByFirstChar(char_t inChar);
-    
-}
+int           getCountryCodesCount();
+const char_t* getCountryName(int pos);
+const char_t* getCountryCode(int pos);
+int           getCountryIndexByFirstChar(char_t inChar);
 
 #endif

@@ -11,13 +11,13 @@ static void *buildDataForEvent(ulong_t eventId, ulong_t magicNumber, ulong_t typ
     if (NULL == data) 
         return NULL;
     void* p = data;
-    MemMove(data, &eventId, sizeof(eventId));
+    memmove(data, &eventId, sizeof(eventId));
     data += sizeof(eventId);
-    MemMove(data, &magicNumber, sizeof(magicNumber));
+    memmove(data, &magicNumber, sizeof(magicNumber));
     data += sizeof(magicNumber);
-    MemMove(data, &type, sizeof(type));
+    memmove(data, &type, sizeof(type));
     data += sizeof(type);
-    MemMove(data, eventData, dataLen);
+    memmove(data, eventData, dataLen);
     return p;
 }  
 
@@ -30,7 +30,7 @@ void *createExtendedEventText(ulong_t eventId, const char_t* txt, ulong_t length
     ulong_t* p = (ulong_t*)data;
     *p = length;
     data += sizeof(length);
-    MemMove(data, txt, length * sizeof(char_t));
+    memmove(data, txt, length * sizeof(char_t));
     data += sizeof(char_t) * length;
     MemSet(data, sizeof(char_t), 0);
     void* res = buildDataForEvent(eventId, EVT_MAGIC_NUMBER, EXT_EVT_TEXT_TYPE, (char*)p, l);

@@ -97,9 +97,11 @@ namespace ArsLexis
     
 #  define tprintf StrPrintF
 #  define tstrlen StrLen
+#  define strlen  StrLen
 #  define tstrcmp StrCompare
 #  define tstrncmp StrNCompare
-    
+#  define memmove  MemMove
+
 # else
 
 #  define tprintf sprintf
