@@ -18,6 +18,7 @@
 #endif
 
 typedef std::list<const ArsLexis::char_t *> CharPtrList_t;
+typedef std::list<ArsLexis::String> StringList_t;
 
 namespace ArsLexis
 {
@@ -135,6 +136,8 @@ namespace ArsLexis
 
     String GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd);
 
+    char_t *StringCopy(const char_t *str);
+
     char_t *StringCopy(const String& str);
 
     char_t *StringCopyN(const char_t *str, int strLen);
@@ -144,12 +147,17 @@ namespace ArsLexis
     int AddLinesToList(const String& txt, CharPtrList_t& strList);
 
     char_t **StringListFromString(const String& str, const String& sep, int& stringCount);
-    
+
+    char_t **StringListFromStringList(const StringList_t& strList, int& stringCount);
+
     void strip(String& str);
     
     std::vector<ArsLexis::String> split(const String& str, const String& spliter);
     
     String join(const std::vector<ArsLexis::String>& vec, const String& joiner);
+
+    void replaceCharInString(char_t *str, char_t orig, char_t replacement);
+
 }
 
 /*

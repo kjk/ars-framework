@@ -391,11 +391,9 @@ String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
     return str.substr(lineStartPos, lineLen);
 }
 
-// note: caller needs to free memory with delete[]
-char_t *StringCopy(const String& str)
+char_t *StringCopy(const char_t *curStr)
 {
     using namespace std;
-    const char_t *curStr = str.c_str();
     int len = tstrlen(curStr);
     char_t *newStr = new char_t[len+1];
     if (NULL==newStr)
@@ -404,6 +402,12 @@ char_t *StringCopy(const String& str)
     memcpy(newStr, curStr, len*sizeof(char_t));
     newStr[len] = chrNull;
     return newStr;
+}    
+
+// note: caller needs to free memory with delete[]
+char_t *StringCopy(const String& str)
+{
+    return StringCopy(str.c_str());
 }
 
 char_t *StringCopyN(const char_t *str, int strLen)
@@ -490,6 +494,29 @@ std::vector<ArsLexis::String> split(const String& str, const String& spliter = _
     return vec;
 }
 
+// ok, the name sucks
+char_t **StringListFromStringList(const StringList_t& strList, int& stringCount)
+{
+
+    char_t **result;
+    stringCount = strList.size(); 
+    if (0==stringCount)
+        return NULL;
+
+    result = new char_t *[stringCount];
+    if (NULL == result)
+        return NULL;
+
+    int curPos = 0;
+    StringList_t::const_iterator end(strList.end());
+    for (StringList_t::const_iterator it(strList.begin()); it!=end; ++it)
+    {
+        result[curPos] = StringCopy(*it);
+        ++curPos;
+    }
+    return result;
+}
+    
 // Given a String str returns an array of pointers to strings (a string list).
 // Returns the 
 char_t **StringListFromString(const String& str, const String& sep, int& stringCount)
@@ -514,6 +541,8 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
             assert(0!=stringCountTmp);
             stringCount = stringCountTmp;
             strList = new char_t *[stringCount];
+            if (NULL == strList)
+                return NULL;
             stringCountTmp = 0;
         }
 
@@ -552,7 +581,15 @@ String join(const std::vector<ArsLexis::String>& vec, const String& joiner = _T(
     return str;
 }
 
-
+void replaceCharInString(char_t *str, char_t orig, char_t replacement)
+{
+    while (_T('\0')!=*str)
+    {
+        if (*str==orig)
+            *str = replacement;
+        ++str;
+    }
+}
 
 } // namespace ArsLexis
 
