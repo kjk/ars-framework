@@ -151,6 +151,9 @@ namespace ArsLexis
 
         bool fiveWayDownPressed(const EventType *event) const
         {return fiveWay_.DownPressed(event);}
+        
+        bool fiveWayCenterPressed(const EventType* event) const
+        {return fiveWay_.CenterPressed(event);}
 
         friend class Application;
     };

@@ -13,7 +13,6 @@ public:
 
     FiveWay();
 
-    //bool CenterPressed(EventType *event);
     bool HsLeftPressed(const EventType *event) const;
     bool HsRightPressed(const EventType *event) const;
     bool HsUpPressed(const EventType *event) const;
@@ -23,6 +22,8 @@ public:
     bool RightPressed(const EventType *event) const;
     bool UpPressed(const EventType *event) const;
     bool DownPressed(const EventType *event) const;
+
+    bool CenterPressed(const EventType *event) const;
 };
 
 #endif

@@ -177,6 +177,17 @@ namespace ArsLexis
             delta=-page;
         else if (scrollPagesWithLeftRight && form.fiveWayRightPressed(&event))
             delta=page;
+        else if (form.fiveWayCenterPressed(&event))
+        {
+            EventType e;
+            MemSet(&e, sizeof(e), 0);
+            e.eType=lstSelectEvent;
+            e.data.lstSelect.listID=id();
+            e.data.lstSelect.pList=object();
+            e.data.lstSelect.selection=selection();
+            EvtAddEventToQueue(&e);
+            handled = true;
+        }
         else {
             switch (event.data.keyDown.chr)
             {
@@ -204,19 +215,6 @@ namespace ArsLexis
                 case chrRightArrow:
                     if (scrollPagesWithLeftRight)
                         delta=page;
-                    break;
-
-                case vchrRockerCenter:
-                    {
-                        EventType e;
-                        MemSet(&e, sizeof(e), 0);
-                        e.eType=lstSelectEvent;
-                        e.data.lstSelect.listID=id();
-                        e.data.lstSelect.pList=object();
-                        e.data.lstSelect.selection=selection();
-                        EvtAddEventToQueue(&e);
-                    }
-                    handled = true;
                     break;
             }
         }

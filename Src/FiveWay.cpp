@@ -89,3 +89,8 @@ bool FiveWay::DownPressed(const EventType *event) const
     return NavDirectionPressed(event,Down) || HsDownPressed(event);
 }
 
+bool FiveWay::CenterPressed(const EventType *event) const
+{
+    return NavSelectPressed(event) || HsNavDirectionPressed(event, Center);
+}
+
