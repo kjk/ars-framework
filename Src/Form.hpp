@@ -28,6 +28,7 @@ namespace ArsLexis
         mutable String title_;
         UInt16 entryFocusControlId_;
         UInt16 focusedControlIndex_;
+        UInt16 returnToFormId_;
         RectangleType screenBoundsBeforeWinExit_;
         
         FormGadget* trackingGadget_;

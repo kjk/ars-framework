@@ -20,15 +20,15 @@ namespace ArsLexis
             switch (eventType)
             {
                 case winExitEvent:
-                    form=app.getOpenForm(event->data.winExit.exitWindow);
+                    form = app.getOpenForm(event->data.winExit.exitWindow);
                     break;
                     
                 case winEnterEvent:
-                    form=app.getOpenForm(event->data.winEnter.enterWindow);
+                    form = app.getOpenForm(event->data.winEnter.enterWindow);
                     break;
                     
                 default:
-                    form=app.getOpenForm(FrmGetActiveFormID());
+                    form = app.getOpenForm(FrmGetActiveFormID());
             }
             
         }
@@ -46,6 +46,16 @@ namespace ArsLexis
                 if (!form->controlsAttached_)
                     form->attachControls();
                 result = form->handleEvent(*event);
+            }
+            if (frmInvalidObjectId != form->returnToFormId_)
+            {
+                form->deleteOnClose_=false;
+                form->handleClose();
+                FrmReturnToForm(form->returnToFormId_);
+                form->returnToFormId_ = frmInvalidObjectId;
+                form->form_ = NULL;
+                form->id_ = frmInvalidObjectId;
+                assert(form->deleteAfterEvent_);
             }
             if (form->deleteAfterEvent_)
             {
@@ -65,7 +75,8 @@ namespace ArsLexis
         controlsAttached_(false),
         trackingGadget_(0),
         entryFocusControlId_(frmInvalidObjectId),
-        focusedControlIndex_(noFocus)
+        focusedControlIndex_(noFocus),
+        returnToFormId_(frmInvalidObjectId)
     {
         getScreenBounds(screenBoundsBeforeWinExit_);
     }
@@ -241,11 +252,7 @@ namespace ArsLexis
 
     void Form::returnToForm(UInt16 formId)
     {
-        deleteOnClose_=false;
-        handleClose();        
-        FrmReturnToForm(formId);
-        form_=0;
-        id_=frmInvalidObjectId;
+        returnToFormId_ = formId;    
     }
     
     void Form::setBounds(const Rectangle& bounds)
