@@ -72,10 +72,36 @@ void iPediaConnection::prepareRequest()
 
 void iPediaConnection::open()
 {
+    String status;
+    getResource(connectionStatusStrings, statusStringOpeningConnection, status);
+    lookupManager_.setStatusText(status);
+    lookupManager_.setPercentProgress(LookupManager::percentProgressDisabled);
     Application::sendEvent(iPediaApplication::appLookupStartedEvent);
+    
     prepareRequest();
     SimpleSocketConnection::open();
 }
+
+Err iPediaConnection::notifyProgress()
+{
+    Err error=FieldPayloadProtocolConnection::notifyProgress();
+    if (!error)
+    {
+        String status;
+        StatusString index=statusStringSendingRequest;
+        if (!sending())
+            index=(response().empty()?statusStringWaitingForAnswer:statusStringRetrievingResponse);
+        getResource(connectionStatusStrings, index, status);
+        lookupManager_.setStatusText(status);
+        uint_t progress=LookupManager::percentProgressDisabled;
+        if (inPayload())
+            progress=(payloadPosition()*100L)/payloadLength();
+        lookupManager_.setPercentProgress(progress);
+        Application::sendEvent(iPediaApplication::appLookupProgressEvent);
+    }
+    return error;
+}
+
 
 Err iPediaConnection::handleField(const String& name, const String& value)
 {

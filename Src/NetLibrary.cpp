@@ -46,16 +46,19 @@ namespace ArsLexis
 
     Err NetLibrary::getSetting(UInt16 setting, void* value, UInt16& valueLength) const
     {
+        assert(refNum());
         return NetLibSettingGet(refNum(), setting, value, &valueLength);
     }
     
     Err NetLibrary::setSetting(UInt16 setting, const void* value, UInt16 valueLength)
     {
+        assert(refNum());
         return NetLibSettingSet(refNum(), setting, const_cast<void*>(value), valueLength);
     }
 
     Err NetLibrary::getHostByName(const char* name, NetHostInfoBufType* buffer, Int32 timeout)
     {
+        assert(refNum());
         Err error=errNone;
         NetHostInfoType* info=NetLibGetHostByName(refNum(), name, buffer, timeout, &error);
         return error;

@@ -71,30 +71,31 @@ void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
     update();    
 }
 
-void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
+void MainForm::drawSplashScreen(Graphics& graphics, const ArsLexis::Rectangle& bounds)
 {
     FormObject object(*this, definitionScrollBar);
     object.hide();
     
     const iPediaApplication& app=static_cast<iPediaApplication&>(application());
     Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, app.renderingPreferences().backgroundColor());
-    bounds.explode(0, 15, 0, -33);
-    graphics.erase(bounds);
+    Rectangle rect(bounds);
+    rect.explode(0, 15, 0, -33);
+    graphics.erase(rect);
     
-    Point point(bounds.x(), bounds.y()+20);
+    Point point(rect.x(), rect.y()+20);
     
     PalmFont font(largeFont);
     
     Graphics::FontSetter setFont(graphics, font);
-    graphics.drawCenteredText("ArsLexis iPedia", point, bounds.width());
+    graphics.drawCenteredText("ArsLexis iPedia", point, rect.width());
     point.y+=16;
 #ifdef DEMO
-    graphics.drawCenteredText("Ver 0.5 (demo)", point, bounds.width());
+    graphics.drawCenteredText("Ver 0.5 (demo)", point, rect.width());
 #else
   #ifdef DEBUG
-    graphics.drawCenteredText("Ver 0.5 (beta)", point, bounds.width());
+    graphics.drawCenteredText("Ver 0.5 (beta)", point, rect.width());
   #else
-    graphics.drawCenteredText("Ver 0.5", point, bounds.width());
+    graphics.drawCenteredText("Ver 0.5", point, rect.width());
   #endif
 #endif
     point.y+=20;
@@ -106,7 +107,7 @@ void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
 
     setFont.changeTo(font);
     
-    graphics.drawCenteredText("Copyright (c) ArsLexis", point, bounds.width());
+    graphics.drawCenteredText("Copyright (c) ArsLexis", point, rect.width());
     point.y+=24;
     
     fx.clear();
@@ -114,7 +115,7 @@ void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
     
     setFont.changeTo(font);
     
-    graphics.drawCenteredText("http://www.arslexis.com", point, bounds.width());
+    graphics.drawCenteredText("http://www.arslexis.com", point, rect.width());
 }
 
 void MainForm::updateScrollBar(const Definition& definition)
@@ -124,30 +125,39 @@ void MainForm::updateScrollBar(const Definition& definition)
     scrollBar.show();
 }
 
-void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
+void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bounds)
 {
     Definition* definition=getDefinition();
     if (definition)
     {
         Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, renderingPreferences().backgroundColor());
-        bounds.explode(0, 15, 0, -33);
-        graphics.erase(bounds);
-        bounds.explode(2, 2, -12, -4);
-        definition->render(graphics, bounds, renderingPreferences(), false);
+        Rectangle rect(bounds);
+        rect.explode(0, 15, 0, -33);
+        graphics.erase(rect);
+        rect.explode(2, 2, -12, -4);
+        definition->render(graphics, rect, renderingPreferences(), false);
         updateScrollBar(*definition);    
     }
 }
 
 void MainForm::draw(UInt16 updateCode)
 {
-    iPediaForm::draw(updateCode);
-    Rectangle rect=bounds();
     Graphics graphics(windowHandle());
-    graphics.drawLine(rect.x(), rect.height()-18, rect.width(), rect.height()-18);
-    if (showSplashScreen==displayMode())
-        drawSplashScreen(graphics, rect);
-    else
-        drawDefinition(graphics, rect);
+    Rectangle rect(bounds());
+    if (redrawAll==updateCode)
+    {
+        iPediaForm::draw(updateCode);
+        graphics.drawLine(rect.x(), rect.height()-18, rect.width(), rect.height()-18);
+        if (showSplashScreen==displayMode())
+            drawSplashScreen(graphics, rect);
+        else
+            drawDefinition(graphics, rect);
+    }
+
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager && lookupManager->lookupInProgress())
+        lookupManager->showProgress(graphics, Rectangle(rect.x(), rect.height()-16, rect.width(), 16));
 }
 
 
@@ -189,7 +199,7 @@ void MainForm::moveHistory(bool forward)
 {
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
     LookupManager* lookupManager=app.getLookupManager(true);
-    if (lookupManager)
+    if (lookupManager && !lookupManager->lookupInProgress())
         lookupManager->moveHistory(forward);
 }
 
@@ -206,7 +216,7 @@ void MainForm::handleControlSelect(const EventType& event)
                 if (textPtr!=0)
                 {
                     LookupManager* lookupManager=app.getLookupManager(true);
-                    if (lookupManager)
+                    if (lookupManager && !lookupManager->lookupInProgress())
                         lookupManager->lookupIfDifferent(textPtr);
                 }
             }
@@ -225,6 +235,23 @@ void MainForm::handleControlSelect(const EventType& event)
     }
 }
 
+void MainForm::setControlsState(bool enabled)
+{
+    Control control(*this, backButton);
+    control.setEnabled(enabled);
+    control.attach(forwardButton);
+    control.setEnabled(enabled);
+    control.attach(searchButton);
+    control.setEnabled(enabled);
+    if (enabled)
+    {
+        Field field(*this, termInputField);
+        field.focus();
+    }
+    else
+        releaseFocus();        
+}
+
 bool MainForm::handleEvent(EventType& event)
 {
     bool handled=false;
@@ -236,7 +263,6 @@ bool MainForm::handleEvent(EventType& event)
             
         case ctlSelectEvent:
             handleControlSelect(event);
-            handled=true;
             break;
         
         case penUpEvent:
@@ -249,6 +275,7 @@ bool MainForm::handleEvent(EventType& event)
             
         case iPediaApplication::appLookupFinishedEvent:
             {
+                setControlsState(true);
                 const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
                 if (data.outcomeDefinition==data.outcome)
                 {
@@ -261,7 +288,14 @@ bool MainForm::handleEvent(EventType& event)
                 else if (data.outcomeList==data.outcome)
                     Application::popupForm(searchResultsForm);
             }
-            break;                    
+            break;     
+            
+        case iPediaApplication::appLookupStartedEvent:
+            setControlsState(false);            // No break is intentional.
+            
+        case iPediaApplication::appLookupProgressEvent:
+            update(redrawProgressIndicator);
+            break;
     
         default:
             handled=iPediaForm::handleEvent(event);
@@ -274,14 +308,8 @@ void MainForm::synchronizeWithHistory()
     const LookupHistory* history=getLookupHistory();
     if (history)
     {
-        Field field(*this, currentTermField);
         if (!history->empty())
-        {
-            field.setText(history->currentTerm().c_str());
-            field.show();
-        }
-        else
-            field.hide();
+            setTitle(history->currentTerm());
 
         UInt16 buttonsWidth=0;
         Control control(*this, backButton);
@@ -424,5 +452,19 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
         FormObject object(*this, termInputField);
         object.focus();
     }
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager)
+    {
+        if (!lookupManager->lastDefinition().empty())
+        {
+            synchronizeWithHistory();
+            setDisplayMode(showDefinition);
+            if (!app.diaSupport().available()) // If there's DIA support update() will be called anyway...
+                update();
+        }            
+        if (lookupManager->lookupInProgress())
+            setControlsState(false);
+    }            
     return iPediaForm::handleWindowEnter(data);
 }

@@ -58,6 +58,15 @@ namespace ArsLexis
         
         Err notifyFinished();
         
+        bool inPayload() const
+        {return payloadHandler_!=0;}
+        
+        uint_t payloadLength() const
+        {return payloadLength_;}
+        
+        uint_t payloadPosition() const
+        {return responsePosition_-payloadStart_;}
+        
     public:
     
         FieldPayloadProtocolConnection(SocketConnectionManager& manager):

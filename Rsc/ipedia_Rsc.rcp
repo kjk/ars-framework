@@ -159,7 +159,6 @@ BEGIN
 	BUTTON "Search" ID searchButton   AT (PrevRight+5 PrevTop 32 AUTO)
 	BUTTON "" ID backButton  AT (0 146 10 11) FONT 4 NOFRAME DISABLED BITMAPID backDisabledBitmap GRAPHICAL    
 	BUTTON "" ID forwardButton   AT (8 146 10 11) FONT 4 NOFRAME DISABLED GRAPHICAL BITMAPID forwardDisabledBitmap    
-	FIELD ID currentTermField  AT (40 1 118 Auto) MAXCHARS 255   NONEDITABLE
 	END
 
 ICONFAMILYEX
@@ -181,8 +180,6 @@ BEGIN
     BITMAP "icon-sm-2-d144.bmp" BPP 2 DENSITY 2
     BITMAP "icon-sm-8-d144.bmp" BPP 8 TRANSPARENTINDEX 210 COMPRESS DENSITY 2 
 END
-
-
 
 
 FORM ID preferencesForm  AT ( 2 2 156 156 )
@@ -244,13 +241,6 @@ BEGIN
 	 BITMAP "back-disabled-lg.bmp" BPP 1 DENSITY 2        
 END
 
-
-
-//FONTFAMILY ID testFont FONTID 128 
-//BEGIN
-//	 FONT "../Fonts/Verdana\ 8.pfn" DENSITY 144
-//END	 
-
 MENU ID searchResultsMenu 
 BEGIN
     PULLDOWN "Search"
@@ -260,8 +250,4 @@ BEGIN
      END
 END
 
-
-
-
-
-
+STRINGTABLE ID connectionStatusStrings  "" "Resolving host address..." "Opening connection..." "Sending request..." "Waiting for server\'s answer..." "Retrieving response..."  

@@ -7,49 +7,62 @@ using ArsLexis::FormObject;
 using ArsLexis::List;
 using ArsLexis::Rectangle;
 using ArsLexis::Control;
+using ArsLexis::Field;
 
-void SearchResultsForm::prepareListChoices()
+void SearchResultsForm::updateSearchResults()
 {
-    String::iterator end(listPositionsString_.end());
-    String::iterator lastStart=listPositionsString_.begin();
-    for (String::iterator it=listPositionsString_.begin(); it!=end; ++it)
-    {
-        if ('\n'==*it)
-        {
-            ++listPositionsCount_;
-            const char* start=&(*lastStart);
-            lastStart=it;
-            ++lastStart;
-            *it=chrNull;
-            listPositions_.push_back(start);
-        }
-    }
-}
-
-SearchResultsForm::SearchResultsForm(iPediaApplication& app):
-    iPediaForm(app, searchResultsForm),
-    listPositionsCount_(0)
-{
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
     LookupManager* lookupManager=app.getLookupManager();
     if (lookupManager)
     {
         listPositionsString_=lookupManager->lastSearchResults();    
-        prepareListChoices();
+        listPositions_.clear();
+        String::iterator end(listPositionsString_.end());
+        String::iterator lastStart=listPositionsString_.begin();
+        for (String::iterator it=listPositionsString_.begin(); it!=end; ++it)
+        {
+            if ('\n'==*it)
+            {
+                const char* start=&(*lastStart);
+                lastStart=it;
+                ++lastStart;
+                *it=chrNull;
+                listPositions_.push_back(start);
+            }
+        }
+        setTitle(lookupManager->lastSearchExpression());
     }
+    List list(*this, searchResultsList);
+    list.setChoices(&listPositions_[0], listPositions_.size());
+    
+}
+
+SearchResultsForm::SearchResultsForm(iPediaApplication& app):
+    iPediaForm(app, searchResultsForm)
+{
 }
 
 SearchResultsForm::~SearchResultsForm()
 {
 }
 
+void SearchResultsForm::draw(UInt16 updateCode)
+{
+    ArsLexis::Graphics graphics(windowHandle());
+    ArsLexis::Rectangle rect(bounds());
+    if (redrawAll==updateCode)
+        iPediaForm::draw(updateCode);
+
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager && lookupManager->lookupInProgress())
+        lookupManager->showProgress(graphics, Rectangle(rect.x(), rect.height()-16, rect.width(), 16));
+}
+
 bool SearchResultsForm::handleOpen()
 {
     bool handled=iPediaForm::handleOpen();
-    if (!listPositions_.empty())
-    {
-        List list(*this, searchResultsList);
-        list.setChoices(&listPositions_[0], listPositions_.size());
-    }
+    updateSearchResults();
     return handled;
 }
 
@@ -90,6 +103,36 @@ inline void SearchResultsForm::handleControlSelect(const EventType& event)
     closePopup();
 }
 
+void SearchResultsForm::setControlsState(bool enabled)
+{
+    Control control(*this, refineSearchButton);
+    control.setEnabled(enabled);
+    control.attach(cancelButton);
+    control.setEnabled(enabled);
+    if (enabled)
+    {
+        Field field(*this, refineSearchInputField);
+        field.focus();
+    }
+    else
+        releaseFocus();        
+}
+
+void SearchResultsForm::handleListSelect(const EventType& event)
+{
+    assert(searchResultsList==event.data.lstSelect.listID);
+    assert(listPositions_.size()>event.data.lstSelect.selection);
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager)
+    {
+        const String& term=listPositions_[event.data.lstSelect.selection];
+        if (!lookupManager->history().empty() && lookupManager->history().currentTerm()==term)
+            closePopup();
+        else
+            lookupManager->lookupTerm(term);
+    }        
+}
 
 bool SearchResultsForm::handleEvent(EventType& event)
 {
@@ -100,6 +143,33 @@ bool SearchResultsForm::handleEvent(EventType& event)
             handleControlSelect(event);
             handled=true;
             break;
+            
+        case lstSelectEvent:
+            handleListSelect(event);
+            handled=true;
+            break;
+
+        case iPediaApplication::appLookupFinishedEvent:
+            {
+                setControlsState(true);
+                const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
+                if (data.outcomeDefinition==data.outcome)
+                {
+                    handled=true;
+                    closePopup();
+                }
+                else if (data.outcomeList==data.outcome)
+                    updateSearchResults();
+            }
+            break;     
+            
+        case iPediaApplication::appLookupStartedEvent:
+            setControlsState(false);            // No break is intentional.
+            
+        case iPediaApplication::appLookupProgressEvent:
+            update(redrawProgressIndicator);
+            break;
+            
     
         default:
             handled=iPediaForm::handleEvent(event);
@@ -140,5 +210,10 @@ bool SearchResultsForm::handleWindowEnter(const struct _WinEnterEventType& data)
         FormObject object(*this, refineSearchInputField);
         object.focus();
     }
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager && lookupManager->lookupInProgress())
+        setControlsState(false);
+
     return iPediaForm::handleWindowEnter(data);
 }

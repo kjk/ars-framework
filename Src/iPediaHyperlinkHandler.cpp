@@ -31,7 +31,7 @@ void iPediaHyperlinkHandler::handleTermHyperlink(const ArsLexis::String& term)
 {
     iPediaApplication& app=iPediaApplication::instance();
     LookupManager* lookupManager=app.getLookupManager();  
-    if (lookupManager)
+    if (lookupManager && !lookupManager->lookupInProgress())
         lookupManager->lookupIfDifferent(term);
 }
 

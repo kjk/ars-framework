@@ -15,6 +15,15 @@ class iPediaConnection: public ArsLexis::FieldPayloadProtocolConnection
     ArsLexis::String resultsFor_;
     DefinitionParser* definitionParser_;
     
+    enum StatusString
+    {
+        statusStringResolvingAddress,
+        statusStringOpeningConnection,
+        statusStringSendingRequest,
+        statusStringWaitingForAnswer,
+        statusStringRetrievingResponse
+    };        
+    
     class SearchResultsHandler: public FieldPayloadProtocolConnection::PayloadHandler
     {
         const ArsLexis::String* text_;
@@ -69,6 +78,8 @@ protected:
     Err handleField(const ArsLexis::String& name, const ArsLexis::String& value);
     
     void notifyPayloadFinished();
+    
+    Err notifyProgress();
 
 public:
 

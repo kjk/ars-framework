@@ -113,6 +113,9 @@ public:
     
     void moveHistory(bool forward=false);
     
+    const ArsLexis::String& lastSearchExpression() const
+    {return lastSearchExpression_;}
+    
 private:
     
     void handleServerError(ServerError serverError);

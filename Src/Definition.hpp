@@ -227,6 +227,9 @@ public:
     
     void selectionToText(ArsLexis::String& out) const;
     
+    bool empty() const
+    {return elements_.empty();}
+    
 private:
 
     HyperlinkHandler* hyperlinkHandler_;

@@ -13,9 +13,15 @@ protected:
     
     virtual void resize(const ArsLexis::Rectangle&)
     {}
-
+    
 public:
 
+    enum RedrawCode
+    {
+        redrawAll=frmRedrawUpdateCode,
+        redrawProgressIndicator
+    };
+    
     iPediaForm(iPediaApplication& app, UInt16 formId):
         Form(app, formId)
     {}

@@ -136,4 +136,60 @@ namespace ArsLexis
         return true;
     }
 
+
+    Err getResource(UInt16 stringId, String& out)
+    {
+        Err error=errNone;
+        MemHandle handle=DmGet1Resource(strRsc, stringId);
+        if (handle)
+        {
+            const char* str=static_cast<const char*>(MemHandleLock(handle));
+            if (str)
+            {
+                out.assign(str);
+                MemHandleUnlock(handle);
+            }
+            else
+                error=memErrChunkNotLocked;
+            DmReleaseResource(handle);
+        }
+        else 
+            error=sysErrParamErr;
+        return error;
+    }
+    
+    Err getResource(UInt16 tableId, UInt16 index, String& out)
+    {
+        Err error=errNone;
+        MemHandle handle=DmGet1Resource(strListRscType, tableId);
+        if (handle)
+        {
+            const char* str=static_cast<const char*>(MemHandleLock(handle));
+            if (str)
+            {
+                str+=(StrLen(str)+1); // skip "prefix"
+                UInt16 count=(*((UInt8 *)(str)) << 8) | *((UInt8 *)(str+1)); // ugly way of deserializing 2 bytes into UInt16
+                if (index<count)
+                {
+                    str+=2;
+                    while (index)
+                    {
+                        str+=(StrLen(str)+1);   // skip some strings and their terminators
+                        --index;
+                    }
+                    out.assign(str);
+                }
+                else
+                    error=sysErrParamErr;
+                MemHandleUnlock(handle);
+            }
+            else
+                error=memErrChunkNotLocked;
+            DmReleaseResource(handle);
+        }
+        else 
+            error=sysErrParamErr;
+        return error;
+    }
+
 }

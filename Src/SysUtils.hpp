@@ -38,6 +38,11 @@ namespace ArsLexis
     // returns true if detected some viewer, false if none was found
     bool fDetectViewer(UInt16 *cardNoOut, LocalID *dbIDOut);
     
+    
+    Err getResource(UInt16 tableId, UInt16 index, String& out);
+    
+    Err getResource(UInt16 stringId, String& out);
+    
 }
 
 #endif

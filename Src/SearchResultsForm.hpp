@@ -8,14 +8,17 @@ class SearchResultsForm: public iPediaForm
 {
 
     ArsLexis::String listPositionsString_;
-    uint_t listPositionsCount_;
     
     typedef std::vector<const char*> ListChoices_t;
     ListChoices_t listPositions_;
     
-    void prepareListChoices();
+    void updateSearchResults();
 
     void handleControlSelect(const EventType& data);
+
+    void setControlsState(bool enabled);
+    
+    void handleListSelect(const EventType& event);
     
 protected:
     
@@ -28,6 +31,8 @@ protected:
     bool handleMenuCommand(UInt16 menuItem);
 
     bool handleWindowEnter(const struct _WinEnterEventType& data);
+    
+    void draw(UInt16 updateCode);
     
 public:
 
