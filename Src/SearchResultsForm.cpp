@@ -202,9 +202,17 @@ bool SearchResultsForm::handleKeyPress(const EventType& event)
 
     if (fiveWayLeftPressed(&event))
     {
-        list.setSelectionDelta(-1);
+        list.setSelectionDelta(-list.visibleItems());
         handled = true;
     } else if (fiveWayRightPressed(&event))
+    {
+        list.setSelectionDelta(list.visibleItems());
+        handled = true;
+    } else if (fiveWayUpPressed(&event))
+    {
+        list.setSelectionDelta(-1);
+        handled = true;
+    } else if (fiveWayDownPressed(&event))
     {
         list.setSelectionDelta(1);
         handled = true;
