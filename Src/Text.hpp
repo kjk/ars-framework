@@ -129,6 +129,7 @@ namespace ArsLexis
 
     void HexBinEncodeBlob(unsigned char *blob, int blobSize, String& out);
 
+    String GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd);
 }
 
 #endif

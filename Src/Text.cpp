@@ -336,3 +336,44 @@ int ArsLexis::formatNumber(long num, char_t* buf, int bufSize)
     return lenOut;
 }
 
+// given a string str and curPos which is a valid index within str, return
+// a substring from curPos until newline or end of string. Removes the newline
+// from the string. Updates curPos so that it can be called in sequence.
+// Sets fEnd to true if there are no more lines.
+// Handles the following kinds of new lines: "\n", "\r", "\n\r", "\r\n"
+ArsLexis::String ArsLexis::GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd)
+{
+    fEnd = false;
+    if (curPos==str.length())
+    {
+        fEnd = true;
+        return String();
+    }
+
+    String::size_type lineStartPos = curPos;
+    String::size_type lineEndPos;
+    String::size_type delimPos   = str.find_first_of(_T("\n\r"), lineStartPos);
+
+    if (String::npos == delimPos)
+    {
+        lineEndPos = str.length()-1;
+        curPos = str.length();     
+    }
+    else
+    {
+        if (0==delimPos)
+            lineEndPos = 0;
+        else
+            lineEndPos = delimPos;
+        assert ( (_T('\n')!=str[lineEndPos]) && (_T('\r')!=str[lineEndPos]))
+
+        curPos = delimPos+1;
+        while ( (_T('\n')==str[curPos]) || (_T('\r')==str[curPos]))
+        {
+            curPos++;
+        }
+    }
+    String::size_type lineLen = lineEndPos - lineStartPos;
+    return str.substr(lineStartPos, lineLen);
+}
+
