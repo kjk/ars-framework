@@ -14,6 +14,7 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
     getCookie_(false),
     inPayload_(false),
     payloadIsError_(false),
+    definitionNotFound_(false),
     formatVersion_(0),
     payloadStart_(0),
     payloadLength_(0),
@@ -53,6 +54,7 @@ static void appendField(String& out, const char* fieldName, const String& value)
 #define definitionForField         "Definition-For"
 #define definitionField              "Definition"
 #define errorField                   "Error"
+#define definitionNotFoundField "Definition-Not-Found"
 
 void iPediaConnection::prepareRequest()
 {
@@ -108,7 +110,10 @@ void iPediaConnection::processLine(UInt16 start, UInt16 end)
 {
     Int32 value=0;
     Err error=errNone;
-    if (start==response().find(formatVersionField, start))
+    const char* line=response().data()+start;
+    if (start==response().find(definitionNotFoundField, start))
+        definitionNotFound_=true;
+    else if (start==response().find(formatVersionField, start))
     {
         error=extractFieldIntValue(response(), start, end, value);
         if (!error)
@@ -134,6 +139,7 @@ void iPediaConnection::processLine(UInt16 start, UInt16 end)
         //! @todo Set cookie in preferences according to field value
         String cookie=extractFieldValue(response(), start, end);
     }
+
     if (error)
         handleError(error);
 }
@@ -198,6 +204,8 @@ void iPediaConnection::finalize()
             form->update();
         }
     }
+    if (definitionNotFound_)
+        FrmAlert(definitionNotFoundAlert);
     SimpleSocketConnection::finalize();
 }
 

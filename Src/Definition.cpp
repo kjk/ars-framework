@@ -339,4 +339,8 @@ void Definition::renderLayout(Graphics& graphics)
 {
     Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, preferences_.backgroundColor());
     renderLineRange(graphics, lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0);
+    uint_t rangeHeight=0;
+    for (uint_t i=firstLine_; i<lastLine_; ++i)
+        rangeHeight+=lines_[i].height;
+    graphics.erase(Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
 }

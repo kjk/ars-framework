@@ -202,10 +202,13 @@ void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
         error=app.getResolver(resolver);
         assert(manager);
         assert(resolver);
-        iPediaConnection* conn=new iPediaConnection(*manager);
-        conn->setTransferTimeout(app.ticksPerSecond()*15L);
-        conn->setTerm(newTerm);
-        resolver->resolveAndConnect(conn, "localhost:9000");
+        if (!manager->active())
+        {
+            iPediaConnection* conn=new iPediaConnection(*manager);
+            conn->setTransferTimeout(app.ticksPerSecond()*15L);
+            conn->setTerm(newTerm);
+            resolver->resolveAndConnect(conn, "localhost:9000");
+        }            
     }
     else ;
         //! @todo Show alert that connection failed.

@@ -482,8 +482,9 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
     bool goOn=false;
     do 
     {
+        const char* text=text_.data()+parsePosition_;
         goOn=detectNextLine(end, finish);
-        if (goOn)
+        if (goOn || finish)
         {
             if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ && listElementLine!=previousLineType_)
                 popParent(); 
@@ -572,11 +573,13 @@ void DefinitionParser::parseIndentedLine()
 {
     assert(indentLineChar==text_[parsePosition_]);
     ++parsePosition_;
-    while (parsePosition_<lineEnd_ && isWhitespace(text_[parsePosition_]))
+    while (parsePosition_<lineEnd_ && (isWhitespace(text_[parsePosition_]) || indentLineChar==text_[parsePosition_]))
         ++parsePosition_;
+        
     uint_t lineEnd=lineEnd_;
     while (lineEnd>parsePosition_ && isWhitespace(text_[lineEnd-1]))
         --lineEnd;
+        
     IndentedParagraphElement* para=new IndentedParagraphElement();
     appendElement(para);
     pushParent(para);
