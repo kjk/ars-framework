@@ -6,8 +6,6 @@
 
 namespace ArsLexis
 {
-
-    
     /*void getScreenBounds(RectangleType& bounds);*/
        
     ulong_t random(ulong_t range);
@@ -28,5 +26,9 @@ namespace ArsLexis
     void sendEvent(uint_t event, short wph, short wpl, int lp);
     struct EventData {LPARAM lParam; WPARAM wParam;};
 }
+
+void GetEditWinText(HWND hwnd, ArsLexis::String &txtOut);
+void SetEditWinText(HWND hwnd, ArsLexis::String& txt);
+bool GotoURL(const ArsLexis::char_t *url);
 
 #endif

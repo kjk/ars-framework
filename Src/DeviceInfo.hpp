@@ -1,22 +1,12 @@
 #ifndef __ARSLEXIS_DEVICE_INFO_HPP__
 #define __ARSLEXIS_DEVICE_INFO_HPP__
 
-#include <Debug.hpp>
 #include <BaseTypes.hpp>
 
-namespace ArsLexis
-{
-    status_t getOEMCompanyId(String& out);
-    
-    status_t getOEMDeviceId(String& out);
-    
-    status_t getHotSyncName(String& out);
+#if defined(_PALM_OS)
+bool isTreo600();
+#endif
 
-    status_t getPhoneNumber(String& out);
-
-    String deviceInfoToken();
-
-    bool isTreo600();    
-}
+ArsLexis::String deviceInfoToken();
 
 #endif

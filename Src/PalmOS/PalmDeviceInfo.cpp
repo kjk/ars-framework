@@ -5,15 +5,16 @@
  *
  * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
  */
-#include <DeviceInfo.hpp>
-#include <SysUtils.hpp>
 #include <DLServer.h>
 #include <68K/Hs.h>
+#include <Debug.hpp>
+#include <SysUtils.hpp>
 #include <Text.hpp>
+#include <DeviceInfo.hpp>
 
-
-namespace ArsLexis
-{
+using ArsLexis::status_t;
+using ArsLexis::String;
+using ArsLexis::hexBinEncode;
 
 // "PL" tag
 static status_t getPlatform(String& out)
@@ -62,7 +63,7 @@ static status_t getDeviceSerialNumber(String& out)
 }
 
 // "OC" tag
-status_t getOEMCompanyId(String& out)
+static status_t getOEMCompanyId(String& out)
 {
     UInt32  id;
     char*   idAsChar;
@@ -76,7 +77,7 @@ status_t getOEMCompanyId(String& out)
 }
 
 // "OD" tag
-status_t getOEMDeviceId(String& out)
+static status_t getOEMDeviceId(String& out)
 {
     UInt32  id;
     char *  idAsChar;
@@ -90,7 +91,7 @@ status_t getOEMDeviceId(String& out)
 }
 
 // "HN" tag
-status_t getHotSyncName(String& out)
+static status_t getHotSyncName(String& out)
 {
     char  nameBuffer[dlkUserNameBufSize];
     status_t error=DlkGetSyncInfo(NULL, NULL, NULL, nameBuffer, NULL, NULL);
@@ -156,7 +157,7 @@ static status_t getIMEI(String& out)
 
 
 // "PN" tag, should be unique
-status_t getPhoneNumber(String& out)
+static status_t getPhoneNumber(String& out)
 {
     bool libLoaded=false;
     UInt16 refNum=sysInvalidRefNum ;
@@ -201,8 +202,6 @@ status_t getPhoneNumber(String& out)
     return error;
 }
 
-namespace {
-
 typedef status_t (TokenGetter)(String&);
 
 static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGetter* getter)
@@ -219,11 +218,9 @@ static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGe
     out.append(hexBinEncode(token));
 }
 
-} // namespace
-
-String deviceInfoToken()
+ArsLexis::String deviceInfoToken()
 {
-    String out;
+    ArsLexis::String out;
     renderDeviceIdentifierToken(out, "SN", getDeviceSerialNumber);
     renderDeviceIdentifierToken(out, "HS", getHotSyncName);
     renderDeviceIdentifierToken(out, "HN", getHsSerialNum);
@@ -251,4 +248,3 @@ bool isTreo600()
     return false;
 }
 
-} // namespace ArsLexis

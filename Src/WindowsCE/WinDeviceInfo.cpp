@@ -3,23 +3,19 @@
  *
  * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
  */
-#include <winuser.h>
-#include <winbase.h>
 #include <uniqueid.h>
 #include <sms.h>
 
-#ifdef WIN32_PLATFORM_WFSP
-#include <tpcshell.h>
-#endif
-
-#include <SysUtils.hpp>
 #include <Text.hpp>
 #include <DeviceInfo.hpp>
 
-namespace ArsLexis
-{
+using ArsLexis::String;
+using ArsLexis::status_t;
+using ArsLexis::char_t;
+using ArsLexis::HexBinEncodeBlob;
+using ArsLexis::hexBinEncode;
 
-status_t getSystemParameter(String& out, UINT uiAction)
+static status_t getSystemParameter(String& out, UINT uiAction)
 {
     int      bufChars = 128;
     int      bufSize;
@@ -50,17 +46,17 @@ status_t getSystemParameter(String& out, UINT uiAction)
     return error;
 }
 
-status_t getOEMCompanyId(String& out)
+static status_t getOEMCompanyId(String& out)
 {
     return getSystemParameter(out,SPI_GETOEMINFO);
 }
 
-status_t getHotSyncName(String& out)
+static status_t getHotSyncName(String& out)
 {   
     return sysErrParamErr;
 }
 
-status_t getPhoneNumber(String& out)
+static status_t getPhoneNumber(String& out)
 {
 #ifdef WIN32_PLATFORM_WFSP  // smartphone
     SMS_ADDRESS address;
@@ -75,65 +71,8 @@ status_t getPhoneNumber(String& out)
     return sysErrParamErr;
 }
 
-#if 0
-status_t getUUID_broken(String& out)
-{
-    GUID         guid;
-    BOOL         fRes;
-    DWORD        dwBytesReturned = 0;
-    DEVICE_ID *  pDevID;
-    int          wSize;
-
-    memset(&guid, 0, sizeof(GUID));
-    pDevID = (DEVICE_ID*)malloc(sizeof(DEVICE_ID));
-    memset(pDevID, 0, sizeof(DEVICE_ID));
-    pDevID->dwSize = sizeof(DEVICE_ID);
-
-    fRes = KernelIoControl( IOCTL_HAL_GET_DEVICEID, NULL, 0,
-            pDevID, sizeof( DEVICE_ID ), &dwBytesReturned );
-
-    wSize = pDevID->dwSize;
-    free(pDevID);
-
-    if ( (FALSE != fRes) || (ERROR_INSUFFICIENT_BUFFER != GetLastError()))
-        return sysErrParamErr;
-
-    pDevID = (DEVICE_ID*)malloc(sizeof(wSize));
-    memset(pDevID, 0, sizeof(wSize));
-    pDevID->dwSize = wSize;
-    fRes = KernelIoControl( IOCTL_HAL_GET_DEVICEID, NULL, 0,
-            pDevID, wSize, &dwBytesReturned );
-
-    if ((FALSE == fRes) || (ERROR_INSUFFICIENT_BUFFER == GetLastError()) )
-        return sysErrParamErr;  
-    
-    int    totalLen = pDevID->dwPresetIDBytes + pDevID->dwPlatformIDBytes;
-
-    //char * sDevID = new char[totalLen+1];
-    // this malloc causes crash, probably because code between beginning of the
-    // function and here trashed stack
-    char * sDevID = (char*) malloc(totalLen+1);
-
-    memcpy(sDevID, (char*)pDevID+pDevID->dwPresetIDOffset, pDevID->dwPresetIDBytes);
-    memcpy(sDevID + pDevID->dwPresetIDBytes, pDevID+pDevID->dwPlatformIDOffset,
-        pDevID->dwPlatformIDBytes);
-    sDevID[totalLen] = 0;
-
-    char_t * lDevID = new char_t[totalLen+1];
-    char *   src = sDevID;
-    char_t * tmp = lDevID;
-    for (int len = totalLen; len>0; len --)
-        *tmp++=*src++;
-    out.append(lDevID,totalLen);
-    //delete [] sDevID;
-    free(sDevID);
-    delete [] lDevID;
-    return errNone;
-}
-#endif
-
 #define DEVID_BUF_SIZE 512
-status_t getUUID(String& out)
+static status_t getUUID(String& out)
 { 
     DWORD dwOutBytes; 
     char  devIdBuf[DEVID_BUF_SIZE]; 
@@ -198,23 +137,19 @@ static status_t getPlatform(String& out)
     return errNone;
 }
 
-namespace {
+typedef status_t (TokenGetter)(String&);
 
-    typedef status_t (TokenGetter)(String&);
-
-    static void renderDeviceIdentifierToken(String& out, const char_t* prefix, TokenGetter* getter)
+static void renderDeviceIdentifierToken(String& out, const char_t* prefix, TokenGetter* getter)
+{
+    String token;
+    status_t error=(*getter)(token);
+    if (!error)
     {
-        String token;
-        status_t error=(*getter)(token);
-        if (!error)
-        {
-            if (!out.empty())
-                out+=':';
-            out.append(prefix);
-            out.append(hexBinEncode(token));
-        }
+        if (!out.empty())
+            out+=':';
+        out.append(prefix);
+        out.append(hexBinEncode(token));
     }
-
 }
 
 String deviceInfoToken()
@@ -227,4 +162,3 @@ String deviceInfoToken()
     return out;
 }
 
-}

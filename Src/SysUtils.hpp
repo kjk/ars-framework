@@ -12,7 +12,6 @@
 
 namespace ArsLexis
 {
-
     void sendEvent(uint_t event, const void* data=0, uint_t dataSize=0, bool unique=false);
     
     template<class EventData>
@@ -22,7 +21,6 @@ namespace ArsLexis
     void processReadyUiEvents();
 
     void localizeNumber(char_t* begin, char_t* end);
-
 }
 
 #endif
