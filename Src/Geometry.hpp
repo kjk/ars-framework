@@ -91,8 +91,9 @@ namespace ArsLexis
         Coord_t& height()
         {return extent.y;}
 
-        bool hitTest(const Point& point) const
-        {return (point.x>=x() && point.x<x()+width() && point.y>=y() && point.y<y()+height());}
+//        bool hitTest(const Point& point) const
+//        {return (point.x>=x() && point.x<x()+width() && point.y>=y() && point.y<y()+height());}
+        bool hitTest(const Point& point) const;
         
         struct HitTest
         {
@@ -117,21 +118,19 @@ namespace ArsLexis
         {width()=0; height()=0;}
         
         Rectangle& operator &= (const Rectangle& rect);
-        
+
         Rectangle operator & (const Rectangle& rect)
         {
             Rectangle result(*this);
             result &=rect;
             return result;
         }
-
             
         bool operator && (const Rectangle& rect) const
         {
             Rectangle tmp(*this);
             return (tmp &= rect);
         }
-        
         bool operator && (const Point& point) const
         {return hitTest(point);}
         

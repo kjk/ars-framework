@@ -48,9 +48,6 @@ namespace ArsLexis
         bool sending() const
         {return sending_;}
     
-        const String& response() const
-        {return response_;}
-        
     };
     
 }

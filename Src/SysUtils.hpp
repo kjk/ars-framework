@@ -45,7 +45,7 @@ namespace ArsLexis
     bool highDensityFeaturesPresent();
     
     bool notifyManagerPresent();
-
+    
 }
 
 #endif
