@@ -132,3 +132,37 @@ ArsLexis::String ArsLexis::hexBinEncode(const String& in)
     return out;
 }
 
+namespace {
+
+    inline static void CharToHexString(ArsLexis::char_t* buffer, ArsLexis::char_t chr)
+    {
+        buffer[0]=HEX_DIGITS[chr/16];
+        buffer[1]=HEX_DIGITS[chr%16];
+    }
+
+}
+
+void ArsLexis::urlEncode(ArsLexis::String& out, const ArsLexis::String& in)
+{
+    const char_t* begin=in.data();
+    const char_t* end=begin+in.length();
+    out.clear();
+    out.reserve(in.length());
+    while (begin!=end)
+    {        
+        char_t chr=*begin++;
+        if ((chr>=_T('a') && chr<=_T('z')) || 
+            (chr>=_T('A') && chr<=_T('Z')) || 
+            (chr>=_T('0') && chr<=_T('9')) || 
+            _T('-')==chr || _T('_')==chr || _T('.')==chr || _T('!')==chr || 
+            _T('~')==chr || _T('*')==chr || _T('\'')==chr || _T('(')==chr || _T(')')==chr)
+            out.append(1, chr);
+        else
+        {
+            char_t buffer[3];
+            *buffer=_T('%');
+            CharToHexString(buffer+1, chr);
+            out.append(buffer, 3);
+        }
+    }
+}

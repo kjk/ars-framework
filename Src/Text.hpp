@@ -91,6 +91,7 @@ namespace ArsLexis
     inline void hexBinEncodeInPlace(String& inOut)
     {inOut=hexBinEncode(inOut);}
     
+    void urlEncode(String& out, const String& in);
    
 }
 
