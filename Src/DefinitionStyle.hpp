@@ -58,8 +58,6 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length = uint_t(-
 
 DefinitionStyle* StyleParse(const char* style, ulong_t length);
 
-bool StyleParseColor(const char* value, ulong_t length, unsigned char& r, unsigned char& g, unsigned char& b);
-
 #define styleAttrNameFontFamily "font-family" // PalmOS: ignored
 #define styleAttrValueFontFamilySerif "serif"
 #define styleAttrValueFontFamilySansSerif "sans-serif"
@@ -86,6 +84,9 @@ enum {
     styleAttrValueFontWeightNormalNum = 400,
     styleAttrValueFontWeightBoldNum = 700
 };
+
+// returns numeric font weight or -1 when value is invalid
+long StyleParseFontWeight(const char* value, ulong_t length);
     
 #define styleAttrNameFontSize "font-size" // PalmOS: (size <= medium) -> medium; (size > medium) -> large; medium == 10pt
 #define styleAttrValueFontSizeXXSmall "xx-small"
@@ -97,11 +98,17 @@ enum {
 #define styleAttrValueFontSizeXXLarge "xx-large"
 
 enum {
-    styleAttrValueFontSizeMediumNum = 10
+    styleAttrValueFontSizeMediumNum = 10,
+    styleAttrValueFontSizeLargeNum = 14
 };
+
+// returns numeric font size in points or -1 when value is invalid
+long StyleParseFontSize(const char* value, ulong_t length);
 
 #define styleAttrNameColor "color"
 #define styleAttrNameBackgroundColor "background-color"
+
+bool StyleParseColor(const char* value, ulong_t length, unsigned char& r, unsigned char& g, unsigned char& b);
 
 #define styleAttrNameTextDecoration "text-decoration"
 #define styleAttrValueTextDecorationNone "none"
