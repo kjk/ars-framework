@@ -211,5 +211,12 @@ void iPediaConnection::finalize()
 
 void iPediaConnection::handleError(Err error)
 {
+    switch (error)
+    {
+        case netErrBufTooSmall:
+            FrmAlert(definitionTooBigAlert);
+            break;
+            //! @todo Display meaningful messages in case of other errors as well.
+    }
     SimpleSocketConnection::handleError(error);
 }

@@ -1,8 +1,8 @@
 #ifndef __ARSLEXIS_GRAPHICS_HPP__
 #define __ARSLEXIS_GRAPHICS_HPP__
 
-#include "Geometry.hpp"
 #include "BaseTypes.hpp"
+#include "Geometry.hpp"
 #include "NativeGraphics.hpp"
 
 namespace ArsLexis
@@ -146,7 +146,10 @@ namespace ArsLexis
         
         void charsInWidth(const char_t* text, uint_t& length, uint_t& width);
 
-    };                    
+    };
+    
+    typedef Graphics::Font_t Font;
+    typedef Graphics::Color_t Color;
 
 }
 

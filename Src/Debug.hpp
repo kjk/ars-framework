@@ -7,7 +7,9 @@
 #ifndef __ARSLEXIS_DEBUG_HPP__
 #define __ARSLEXIS_DEBUG_HPP__
 
-#if defined(__MWERKS__)
+#if defined(__MWERKS__) && defined(__MC68K__)
+
+#define _PALM_OS
 
 #if __ide_target("Release") && !defined(NDEBUG)
 #define NDEBUG
@@ -21,12 +23,12 @@
 //! Prevents using MSL-provided error function (called when normally exception would be thrown).
 #define _MSL_ERROR_FUNC -1
 
-#endif // __MWERKS__
+#endif // __MWERKS__ && __MC68K__
 
 #include <new>
 #include <cassert>
 
-#if defined(__MWERKS__)
+#if defined(_PALM_OS)
 
 namespace ArsLexis 
 {

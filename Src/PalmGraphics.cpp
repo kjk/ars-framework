@@ -61,14 +61,15 @@ namespace ArsLexis
     
     void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft)
     {
-        PalmUnderlineSetter setUnderline(convertUnderlineMode(support_.font.effects().underline()));
+        FontEffects fx=support_.font.effects();    
+        PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
         
         uint_t height=fontHeight();
         uint_t top=topLeft.y;
-        if (support_.font.effects().subscript())
+        if (fx.subscript())
             top+=(height*0.333);
         WinDrawChars(text, length, topLeft.x, top);
-        if (support_.font.effects().strikeOut())
+        if (fx.strikeOut())
         {
             uint_t baseline=fontBaseline();
             top=topLeft.y+baseline*0.667;

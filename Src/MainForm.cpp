@@ -125,14 +125,18 @@ void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
     point.y+=20;
     
     font.setFontId(stdFont);
-    font.effects().setWeight(FontEffects::weightBold);
+    FontEffects fx;
+    fx.setWeight(FontEffects::weightBold);
+    font.setEffects(fx);
 
     setFont.changeTo(font);
     
     graphics.drawCenteredText("Copyright (c) ArsLexis", point, bounds.width());
     point.y+=24;
     
-    font.effects().setWeight(FontEffects::weightPlain);
+    fx.clear();
+    font.setEffects(fx);
+    
     setFont.changeTo(font);
     
     graphics.drawCenteredText("http://www.arslexis.com", point, bounds.width());

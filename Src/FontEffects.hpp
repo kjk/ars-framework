@@ -9,14 +9,21 @@ namespace ArsLexis
 
     class FontEffects
     {
-        uint_t weight_:2;
-        uint_t italic_: 1;
-        uint_t small_:1;
-        uint_t strike_:1;
-        uint_t superscript_:1;
-        uint_t subscript_:1;
-        uint_t underline_:2;
-
+        union
+        {   
+            struct 
+            {
+                uint_t weight:2;
+                uint_t italic: 1;
+                uint_t small:1;
+                uint_t strike:1;
+                uint_t superscript:1;
+                uint_t subscript:1;
+                uint_t underline:2;
+            } fx;
+            uint_t all;
+        } effects_;
+        
     public:
 
         FontEffects();
@@ -36,48 +43,60 @@ namespace ArsLexis
         };
 
         void setWeight(Weight weight)
-        {weight_=weight;}
+        {effects_.fx.weight=weight;}
         
         Weight weight() const
-        {return static_cast<Weight>(weight_);}
+        {return static_cast<Weight>(effects_.fx.weight);}
         
         bool small() const
-        {return small_;}
+        {return effects_.fx.small;}
         
         void setSmall(bool val)
-        {small_=val;}
+        {effects_.fx.small=val;}
         
         bool strikeOut() const
-        {return strike_;}
+        {return effects_.fx.strike;}
         
         void setStrikeOut(bool val)
-        {strike_=val;}
+        {effects_.fx.strike=val;}
         
         Underline underline() const
-        {return static_cast<Underline>(underline_);}
+        {return static_cast<Underline>(effects_.fx.underline);}
         
        void setUnderline(Underline val)
-       {underline_=val;}
+       {effects_.fx.underline=val;}
        
        bool italic() const
-       {return italic_;}
+       {return effects_.fx.italic;}
        
        void setItalic(bool val)
-       {italic_=val;}
+       {effects_.fx.italic=val;}
 
         bool superscript() const
-        {return superscript_;}
+        {return effects_.fx.superscript;}
         
         void setSuperscript(bool val)
-        {superscript_=val;}
+        {effects_.fx.superscript=val;}
         
         bool subscript() const
-        {return subscript_;}
+        {return effects_.fx.subscript;}
         
         void setSubscript(bool val)
-        {subscript_=val;}
+        {effects_.fx.subscript=val;}
         
         FontEffects& operator+=(const FontEffects& eff);
+        
+        bool empty() const
+        {return (0==effects_.all);}
+
+        bool operator==(const FontEffects& eff) const
+        {return effects_.all==eff.effects_.all;}
+
+        bool operator!=(const FontEffects& eff) const
+        {return effects_.all!=eff.effects_.all;}
+        
+        void clear()
+        {effects_.all=0;}
 
     };
 

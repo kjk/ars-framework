@@ -40,7 +40,8 @@ namespace ArsLexis
     inline uint_t Graphics::fontHeight() const
     {
         uint_t height=FntLineHeight();
-        if (support_.font.effects().superscript() || support_.font.effects().subscript())
+        FontEffects fx=support_.font.effects();
+        if (fx.superscript() || fx.subscript())
             height*=1.333;
         return height;
     }

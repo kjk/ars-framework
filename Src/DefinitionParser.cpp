@@ -221,15 +221,17 @@ bool DefinitionParser::detectHyperlink(uint_t end)
         {
             parsePosition_+=2;
             bool isOtherLanguage=(parsePosition_<linkEnd-2 && ':'==text_[parsePosition_+2]);
+            uint_t pastLinkEnd=linkEnd+2;
             // We don't want other language links as we provide only English contents, and we can't render names in some languages.
             if (!isOtherLanguage) 
             {
                 String::size_type separatorPos=text_.find(linkPartSeparator, parsePosition_);
+                GenericTextElement* textElement;
                 if (text_.npos==separatorPos || separatorPos>=linkEnd)
                 {
                     lastElementStart_=parsePosition_;
                     lastElementEnd_=linkEnd;
-                    GenericTextElement* textElement=createTextElement();
+                    textElement=createTextElement();
                     if (textElement)
                         textElement->setHyperlink(textElement->text(), hyperlinkTerm);
                 }
@@ -237,12 +239,22 @@ bool DefinitionParser::detectHyperlink(uint_t end)
                 {
                     lastElementStart_=separatorPos+1;
                     lastElementEnd_=linkEnd;
-                    GenericTextElement* textElement=createTextElement();
+                    textElement=createTextElement();
                     if (textElement)
                         textElement->setHyperlink(String(text_, parsePosition_, separatorPos-parsePosition_), hyperlinkTerm);
                 }
+                uint_t afterLinkTextEnd=pastLinkEnd;
+                while (afterLinkTextEnd<end && (std::isalpha(text_[afterLinkTextEnd]) || '-'==text_[afterLinkTextEnd] /* || '\''==text_[afterLinkTextEnd] */))
+                    ++afterLinkTextEnd;
+                if (afterLinkTextEnd>pastLinkEnd && textElement)
+                {
+                    String textCopy=textElement->text();
+                    textCopy.append(text_, pastLinkEnd, afterLinkTextEnd-pastLinkEnd);
+                    textElement->swapText(textCopy);
+                    pastLinkEnd=afterLinkTextEnd;
+                }
             }                
-            parsePosition_=linkEnd+2;
+            parsePosition_=pastLinkEnd;
         }
         else // In case of external link...
         {

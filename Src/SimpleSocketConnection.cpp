@@ -48,13 +48,13 @@ namespace ArsLexis
         assert(!sending_);
         UInt16 dataSize=0;
         UInt16 responseSize=response_.size();
-        response_.resize(responseSize+chunkSize_);
-        Err error=socket_.receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout());
-        if (!error)
+        if (responseSize<maxResponseSize_-chunkSize_)
         {
-            assert(dataSize<=chunkSize_);
-            if (responseSize+dataSize<maxResponseSize_)
+            response_.resize(responseSize+chunkSize_);
+            Err error=socket_.receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout());
+            if (!error)
             {
+                assert(dataSize<=chunkSize_);
                 response_.resize(responseSize+dataSize);
                 if (0==dataSize)
                     finalize();
@@ -66,10 +66,10 @@ namespace ArsLexis
                 }
             }
             else
-                handleError(netErrBufTooSmall);
+                handleError(error);
         }
         else
-            handleError(error);
+            handleError(netErrBufTooSmall);                
     }
         
     void SimpleSocketConnection::notifyException()

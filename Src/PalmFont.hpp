@@ -10,19 +10,17 @@ namespace ArsLexis
 
     class PalmFont
     {
-        
+    
         class PalmFontImpl
         {
             mutable uint_t refCount_;
             FontID fontId_;
             FontEffects effects_;
             
-        protected:
-            
-            ~PalmFontImpl();
-            
         public:
         
+            ~PalmFontImpl();
+            
             uint_t refCount() const
             {return refCount_;}
         
@@ -59,54 +57,65 @@ namespace ArsLexis
             
             
         };
-        
+
         PalmFontImpl* impl_;
         
         void selfish();
     
     public:
     
-        PalmFont(FontID fontId=stdFont);
+        PalmFont();
+    
+        PalmFont(FontID fontId);
         
         PalmFont(const PalmFont& ref):
             impl_(ref.impl_)
-        {impl_->attach();}
+        {
+            if (impl_)
+                impl_->attach();
+        }
         
         ~PalmFont()
-        {impl_->release();}
+        {
+            if (impl_)
+                impl_->release();
+        }
         
         PalmFont& operator=(const PalmFont& ref);
         
         FontID fontId() const
-        {return impl_->fontId();}
+        {return impl_?impl_->fontId():stdFont;}
         
-        const FontEffects& effects() const
-        {return impl_->effects();}       
+        FontEffects effects() const
+        {return impl_?impl_->effects():FontEffects();}       
         
         FontID withEffects() const;
         
         void addEffects(const FontEffects& effects)
         {
-            selfish();
-            impl_->addEffects(effects);
+            if (!effects.empty())
+            {
+                selfish();
+                impl_->addEffects(effects);
+            }                
         }
 
         void setEffects(const FontEffects& effects)
         {
-            selfish();
-            impl_->effects()=effects;
+            if (impl_ || !effects.empty())
+            {
+                selfish();
+                impl_->effects()=effects;
+            }                
         }
         
         void setFontId(FontID fontId)
         {
-            selfish();
-            impl_->setFontId(fontId);
-        }
-        
-        FontEffects& effects() 
-        {
-            selfish();
-            return impl_->effects();
+            if (impl_ || stdFont!=fontId)
+            {
+                selfish();
+                impl_->setFontId(fontId);
+            }                
         }
         
         static PalmFont getSymbolFont();

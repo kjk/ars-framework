@@ -18,6 +18,8 @@ RenderingPreferences::RenderingPreferences()
         hyperlinkDecorations_[hyperlinkTerm].textColor=2; // Dark gray
         hyperlinkDecorations_[hyperlinkExternal].textColor=1; // Light gray
     }
-    for (uint_t i=0; i<hyperlinkTypesCount_; ++i)
-        hyperlinkDecorations_[i].font.effects().setUnderline(FontEffects::underlineDotted);    
+    FontEffects fx;
+    fx.setUnderline(FontEffects::underlineDotted);
+    for (uint_t i=0; i<hyperlinkTypesCount_; ++i) 
+        hyperlinkDecorations_[i].font.setEffects(fx);
 }
