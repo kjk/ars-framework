@@ -22,8 +22,15 @@ class PopupMenu;
 
 enum HyperlinkType
 {
+#ifdef INFOMAN
     hyperlinkUrl,
     hyperlinkCallback
+#else // iPedia
+    hyperlinkUrl,
+    hyperlinkTerm,
+    hyperlinkExternal,
+    hyperlinkBookmark
+#endif
 };   
 
 class HyperlinkHandlerBase
