@@ -309,17 +309,4 @@ namespace ArsLexis{
         assert(pos >= 0 && pos < countriesCount());
         return countries[pos].abbrev;
     }
-
-/*     
-    void getInternationalCountryName(int pos, String& out)
-    {   
-        out = getCountryName(pos);
-    }
-
-    void getInternationalCountryCode(int pos, String& out) 
-    {
-        out = getCountryCode(pos);
-    }
-*/
-    
 } 

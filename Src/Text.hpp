@@ -23,7 +23,6 @@ typedef std::list<ArsLexis::String> StringList_t;
 # if defined(_PALM_OS)    
     extern void printDouble(double x, char *s);
     extern void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit = -1, bool insertThousandSeparator = false);
-    extern bool strToDouble(const char* str, double* dbl);
 #endif
 
 namespace ArsLexis
@@ -182,6 +181,8 @@ namespace ArsLexis
     ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsigned int comma = 0, ArsLexis::char_t commaSymbol = _T('.'), ArsLexis::char_t kSeparator = _T(','));
     
     uint_t fuzzyTimeInterval(ulong_t seconds, char_t* buffer);
+
+    bool strToDouble(const char* str, double *dbl);
 
     int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo);
 

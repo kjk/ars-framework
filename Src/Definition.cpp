@@ -1146,6 +1146,10 @@ bool Definition::isLastLinkSelected() const
     return true;
 }
 
+// TODO: this is only used in InfoMan, it shouldn't be here because it breaks
+// ipedia/smartphone build. For now I'll do a Palm OS ifdef
+
+#ifdef _PALM_OS
 #define brTag       _T("<br>")
 #define bTagStart   _T("<b>")
 #define bTagEnd     _T("</b>")
@@ -1212,3 +1216,4 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
         }
     }
 }
+#endif

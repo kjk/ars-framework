@@ -7,8 +7,7 @@ namespace ArsLexis
     //const uint_t NetLibrary::defaultConfig=0;
     
     NetLibrary::NetLibrary():
-    closed_(true),
-        libraryOpened_(false)
+    closed_(true)
     {
     }
     
