@@ -27,7 +27,7 @@ protected:
     
 public:    
 
-    UniversalDataFormat universalData_;
+    UniversalDataFormat universalData;
 
     UniversalDataHandler();
 

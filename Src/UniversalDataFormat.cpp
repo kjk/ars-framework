@@ -77,3 +77,10 @@ long UniversalDataFormat::getItemTextAsPositiveLong(int itemNo, int elemNo) cons
         return -1;
     return result;
 }
+
+void UniversalDataFormat::swap(UniversalDataFormat& udf)
+{
+    std::swap(headerSize_, udf.headerSize_);
+    std::swap(fNormalized_, udf.fNormalized_);
+    header_.swap(udf.header_);    data_.swap(udf.data_);
+}

@@ -115,7 +115,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
 status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
 {
     writeLineToDataStore(writer_, line);
-    return parseUniversalDataFormatTextLine(line, universalData_,lineNo);
+    return parseUniversalDataFormatTextLine(line, universalData, lineNo);
 }
 
 UniversalDataHandler::~UniversalDataHandler() {}

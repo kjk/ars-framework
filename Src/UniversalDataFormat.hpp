@@ -4,8 +4,9 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 #include <vector>
+#include <Utility.hpp>
 
-struct UniversalDataFormat
+struct UniversalDataFormat //: private ArsLexis::NonCopyable
 {
     typedef unsigned int VectorRange;
     typedef std::vector<VectorRange> Vector_t;
@@ -47,7 +48,13 @@ public:
      */
     long getItemTextAsPositiveLong(int itemNo, int elemNo) const;
     
+    void swap(UniversalDataFormat& udf);
+    
     friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo);
 };
+
+template<> 
+inline void std::swap(UniversalDataFormat& udf0, UniversalDataFormat& udf1)
+{udf0.swap(udf1);}
 
 #endif
