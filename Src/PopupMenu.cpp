@@ -175,9 +175,10 @@ void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, cons
 {
     assert(index < count);
     const Item& item = items[index];
+    int y;
     if (item.separator)
     {
-        int y = itemBounds.y() + itemBounds.height() / 2;
+        y = itemBounds.y() + itemBounds.height() / 2;
         graphics.drawLine(itemBounds.x() - 2, y, itemBounds.x() + itemBounds.width(), y);
         return;
     }
@@ -195,12 +196,20 @@ void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, cons
     uint_t length = StrLen(text);
     graphics.charsInWidth(text, length, width);
     
-    RGBColorType oldTextColor;
+    RGBColorType oldColor;
     if (!item.active)
-        WinSetTextColorRGB(&inactiveTextColor, &oldTextColor);
+        WinSetTextColorRGB(&inactiveTextColor, &oldColor);
     graphics.drawText(text, length, p);
     if (!item.active)
-        WinSetTextColorRGB(&oldTextColor, NULL);
+        WinSetTextColorRGB(&oldColor, NULL);
+        
+    if (!item.underlined)
+        return;
+    
+    WinSetForeColorRGB(&inactiveTextColor, &oldColor);
+    y = itemBounds.y() + itemBounds.height() - 1;
+    graphics.drawLine(itemBounds.x() - 2, y, itemBounds.x() + itemBounds.width(), y);            
+    WinSetForeColorRGB(&oldColor, NULL);
 }
 
 static bool extractLong(const char_t*& data, long& length, long& val)

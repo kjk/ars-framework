@@ -13,21 +13,46 @@ status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& 
 }
 */
 
-status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel& model, void*)
+status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel& model, void* userData)
 {
     uint_t count = cache.entriesCount();
+    const char_t* homeUrl = static_cast<const char_t*>(userData);
+    uint_t start = 0;
+    if (NULL != homeUrl)
+    {
+        ++count;
+        start = 1;
+    }
+    
     PopupMenuModel::Item* items = new_nt PopupMenuModel::Item[count];
     if (NULL == items)
         return memErrNotEnoughSpace;
         
-    for (uint_t i = 0; i < count; ++i)
+    PopupMenuModel::Item* item;
+    if (NULL != homeUrl)
     {
-        PopupMenuModel::Item& item = items[i];
-        item.active = true;
-        if (NULL == (item.text = StringCopy2(cache.entryTitle(i))))
+        item = &items[0];
+        item->text = StringCopy2("Home");
+        if (NULL == item->text)
+            goto OutOfMem;
+        
+        item->hyperlink = StringCopy2(homeUrl);
+        if (NULL == item->hyperlink)
+            goto OutOfMem;
+        
+        item->active = true;
+        item->bold = true;
+        if (1 != count)
+            item->underlined = true;
+    }
+    for (uint_t i = start; i < count; ++i)
+    {
+        item = &items[i];
+        item->active = true;
+        if (NULL == (item->text = StringCopy2(cache.entryTitle(i - start))))
             goto OutOfMem;
             
-        if (NULL == (item.hyperlink = StringCopy2(cache.entryUrl(i))))
+        if (NULL == (item->hyperlink = StringCopy2(cache.entryUrl(i - start))))
             goto OutOfMem;
     }
     model.setItems(items, count);
@@ -83,12 +108,17 @@ bool HistorySupport::handleEventInForm(EventType& event)
     HistoryCache cache;
     status_t err = cache.open(cacheName_);
     if (errNone != err)
-        return false;
+        return true;
+    
+    if (0 == cache.entriesCount())
+        return true;
         
     if (errNone != (err = popupMenuFillHandler(cache, *popupMenu_.model(), popupMenuFillHandlerData)))
-        return false;
-        
+        return true;
+
     popupMenu_.initialSelection = currentHistoryIndex_;
+    if (NULL != popupMenuFillHandlerData)
+        ++popupMenu_.initialSelection;
         
     RectangleType rect;
     FrmGetObjectBounds(form_, FrmGetObjectIndex(form_, historyButtonId_), &rect);
@@ -101,8 +131,22 @@ bool HistorySupport::handleEventInForm(EventType& event)
         lastAction_ = actionNewSearch;
         return true;
     }   
+    const char_t* url = static_cast<const char_t*>(popupMenuFillHandlerData);
     currentHistoryIndex_ = sel;
-    const char_t* url = cache.entryUrl(currentHistoryIndex_);
+    if (NULL != url)
+    {
+        if (0 == sel)
+        {
+            cache.close();
+            if (NULL == hyperlinkHandler)
+                return true;
+            hyperlinkHandler->handleHyperlink(url, NULL);
+            return true;
+        }
+        else
+            --currentHistoryIndex_;
+    }
+    url = cache.entryUrl(currentHistoryIndex_);
     followUrl(cache, url);
     return true;
 }

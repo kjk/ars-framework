@@ -17,7 +17,8 @@ public:
         bool active;
         bool bold;
         bool separator;
-        
+        bool underlined;
+                
         Item();
         
         ~Item();
