@@ -96,12 +96,13 @@ bool GotoURL(const ArsLexis::char_t *url)
 #define SPECIAL_FOLDER_PATH CSIDL_APPDATA
 #endif
 
-#ifdef CSIDL_PROGRAMS
+
+//#ifdef CSIDL_PROGRAMS
 // this is "\Windows\Start Menu\Programs" on sm 2002 emu
- #ifndef SPECIAL_FOLDER_PATH
-  #define SPECIAL_FOLDER_PATH CSIDL_PROGRAMS
- #endif
-#endif
+// #ifndef SPECIAL_FOLDER_PATH
+//  #define SPECIAL_FOLDER_PATH CSIDL_PROGRAMS
+// #endif
+//#endif
 
 #ifdef CSIDL_PERSONAL
 // this is defined on sm 2002 and goes to "\My Documents".

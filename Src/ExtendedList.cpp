@@ -122,10 +122,10 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     setRgbColor(selectedItemBackground_, 0, 107, 215);
     setRgbColor(foreground_, 255, 255, 255);*/
 
-    setRgbColor(listBackground_, 156, 207, 206);
+    setRgbColor(listBackground_, 255, 255, 255);
     setRgbColor(itemBackground_, 156, 207, 206);
     setRgbColor(selectedItemBackground_, 99, 154, 206);
-    setRgbColor(foreground_, 255, 255, 255);
+    setRgbColor(foreground_, 0, 0, 0);
     
 }
 
@@ -634,11 +634,24 @@ void BasicStringItemRenderer::drawItem(Graphics& graphics, ExtendedList& list, u
     String text;
     getItem(text, item);
     uint_t length=text.length();
-    uint_t width=itemBounds.width()-2;
-    graphics.charsInWidth(text.c_str(), length, width);
+    uint_t boundsDx = itemBounds.dx()-2;
+    graphics.charsInWidth(text.c_str(), length, boundsDx);
     Point p=itemBounds.topLeft;
-    p.x+=2;
-    p.y=itemBounds.y()+(itemBounds.height()-graphics.fontHeight())/2;
+    p.x += 2;
+
+    uint_t boundsDy = itemBounds.dy();
+    uint_t fontDy = graphics.fontHeight();
+
+    p.y = itemBounds.y();
+
+    if (boundsDy>fontDy)
+    {
+        p.y += (boundsDy-fontDy)/2;
+    }
+    else
+    {
+        p.y -= (fontDy-boundsDy)/2;
+    }
     graphics.drawText(text.c_str(), length, p);
 }
 
