@@ -26,12 +26,13 @@ namespace ArsLexis {
         RichApplication& app=static_cast<RichApplication&>(application());
         Err error=Form::initialize();
         if (errNone==error && app.diaSupport())
-            app.diaSupport().configureForm(*this, 160, pinMaxConstraintSize, pinMaxConstraintSize, 160, pinMaxConstraintSize, pinMaxConstraintSize);
+            app.diaSupport().configureForm(*this, 160, pinMaxConstraintSize, pinMaxConstraintSize, 160, pinMaxConstraintSize, pinMaxConstraintSize, disableDiaTrigger_);
         return error;
     }
 
-    RichForm::RichForm(RichApplication& app, uint_t formId):
-        Form(app, formId)
+    RichForm::RichForm(RichApplication& app, uint_t formId, bool disableDiaTrigger):
+        Form(app, formId),
+        disableDiaTrigger_(disableDiaTrigger)
     {}
     
     RichForm::~RichForm()

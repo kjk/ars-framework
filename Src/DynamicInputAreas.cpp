@@ -91,7 +91,7 @@ namespace ArsLexis
         EvtAddUniqueEventToQueue(&event, 0, true);
     }
     
-    Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const throw()
+    Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger) const throw()
     {
         FormType* formPtr=form;
         assert(formPtr);
@@ -103,7 +103,10 @@ namespace ArsLexis
             error=FrmSetDIAPolicyAttr(formPtr, frmDIAPolicyCustom);
             if (!error)
             {
-                PINSetInputTriggerState(pinInputTriggerEnabled);
+                if (disableTrigger)
+                    PINSetInputTriggerState(pinInputTriggerDisabled);
+                else
+                    PINSetInputTriggerState(pinInputTriggerEnabled);
                 WinHandle wh=FrmGetWindowHandle(formPtr);
                 assert(wh);
                 WinSetConstraintsSize(wh, minH, prefH, maxH, minW, prefW, maxW);

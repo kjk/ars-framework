@@ -9,9 +9,11 @@ namespace ArsLexis {
 
     class RichForm: public Form {
     
+        bool disableDiaTrigger_;
+    
     public:    
     
-        RichForm(RichApplication& app, uint_t formId);
+        RichForm(RichApplication& app, uint_t formId, bool disableDiaTrigger=false);
         
         ~RichForm();
         

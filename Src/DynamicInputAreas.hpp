@@ -61,7 +61,7 @@ namespace ArsLexis
        
         void handleNotify() const throw();
         
-        Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const throw();
+        Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger=false) const throw();
         
     };
     
