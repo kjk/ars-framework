@@ -80,6 +80,8 @@ namespace ArsLexis
         
         void draw() {drawProxy();}
         
+        bool handleScrollRepeat(const EventType& event);
+        
     protected:
     
         void drawProxy();
@@ -89,11 +91,27 @@ namespace ArsLexis
         bool handleEvent(EventType& event);
         
         bool handleEnter(const EventType& event);
-        
+
+        void notifyHide();
+       
     private:
+    
+        void disposeOffscreenWindow();
         
         RenderingErrorListener* renderingErrorListener_;
 	
+        UInt32 scheduledNilEventTicks_;
+        
+        enum ScheduledScrollDirection {
+            scheduledScrollAbandoned,
+            scheduledScrollUp,
+            scheduledScrollDown
+        };
+        
+        ScheduledScrollDirection scheduledScrollDirection_;
+        
+        void handleNilEvent();
+        
     };
     
 }

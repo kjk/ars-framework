@@ -12,7 +12,8 @@ TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* s
     drawingWindow_(NULL),
     drawingWindowIsOffscreen_(false),
     lastRenderingError_(errNone),
-    renderingErrorListener_(NULL)
+    renderingErrorListener_(NULL),
+    scheduledScrollDirection_(scheduledScrollAbandoned)
 {
     definition_.setInteractionBehavior(  
         Definition::behavMouseSelection 
@@ -23,8 +24,8 @@ TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* s
 }
 
 TextRenderer::~TextRenderer() {
-    if (NULL != drawingWindow_ && drawingWindowIsOffscreen_)
-        WinDeleteWindow(drawingWindow_, false);
+    if (drawingWindowIsOffscreen_)
+        disposeOffscreenWindow();
 }
 
 void TextRenderer::checkDrawingWindow()
@@ -32,15 +33,10 @@ void TextRenderer::checkDrawingWindow()
     Form* form = this->form();
     Rectangle bounds;
     form->bounds(bounds);
-    if (drawingWindowBounds_ == bounds)
+    if (NULL != drawingWindow_ && drawingWindowBounds_ == bounds)
         return;
     if (drawingWindowIsOffscreen_)
-    {
-        assert(NULL != drawingWindow_);
-        WinDeleteWindow(drawingWindow_, false);
-        drawingWindowIsOffscreen_ = false;
-        drawingWindow_ = NULL;
-    }
+        disposeOffscreenWindow();
     if (NULL == drawingWindow_)
     {
         assert(!drawingWindowIsOffscreen_);
@@ -146,6 +142,10 @@ bool TextRenderer::handleEvent(EventType& event)
         case penUpEvent:
             handled = handleMouseEvent(event);
             break;
+        
+        case nilEvent:
+            handleNilEvent();
+            break;
             
         default:
             handled = FormGadget::handleEvent(event);
@@ -162,15 +162,97 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
 {
     UInt16 tapCount = 0;
     Point p(event.screenX, event.screenY);
+    Rectangle bounds;
+    this->bounds(bounds);
     if (penUpEvent == event.eType)
         tapCount = event.tapCount;
+    if (p && bounds)
+        scheduledScrollDirection_ = scheduledScrollAbandoned;
+    else if (p.x >= bounds.x() && p.x < bounds.x() + bounds.width())
+    {
+        UInt32 time = TimGetTicks();
+        if (scheduledScrollAbandoned == scheduledScrollDirection_)
+        {
+            if (p.y < bounds.y())
+                scheduledScrollDirection_ = scheduledScrollUp;
+            else
+                scheduledScrollDirection_ = scheduledScrollDown;
+            scheduledNilEventTicks_ = time + form()->application().ticksPerSecond()/7;
+            EvtSetNullEventTick(scheduledNilEventTicks_);
+        }
+    }
+    else
+        scheduledScrollDirection_ = scheduledScrollAbandoned;
     checkDrawingWindow();
     Graphics graphics(drawingWindow_);
     ActivateGraphics activate(graphics);
-    bool handled = definition_.extendSelection(graphics, renderingPreferences_, p, tapCount);
+    definition_.extendSelection(graphics, renderingPreferences_, p, tapCount);
     updateForm(graphics);
-    if (NULL != scrollBar_)
-        doUpdateScrollbar();
-    return handled;
+    return true;
 }
 
+bool TextRenderer::handleScrollRepeat(const EventType& event)
+{
+    if (NULL == scrollBar_ || event.data.sclRepeat.scrollBarID != scrollBar_->id())
+        return false;
+    int items = event.data.sclRepeat.newValue - event.data.sclRepeat.value;
+    WinDirectionType dir = winDown;
+    if (0 > items)
+    {
+        items = -items;
+        dir = winUp;
+    }
+    scroll(dir, items, updateScrollbarNot);
+    return true;
+}
+
+void TextRenderer::disposeOffscreenWindow()
+{
+    assert(drawingWindowIsOffscreen_);
+    assert(NULL != drawingWindow_);
+    WinDeleteWindow(drawingWindow_, false);
+    drawingWindowIsOffscreen_ = false;
+    drawingWindow_ = NULL;
+}
+
+void TextRenderer::notifyHide() 
+{
+    if (drawingWindowIsOffscreen_)
+        disposeOffscreenWindow();
+}
+
+void TextRenderer::handleNilEvent()
+{
+    if (scheduledScrollAbandoned == scheduledScrollDirection_)
+        return;
+    UInt32 time = TimGetTicks();
+    if (time < scheduledNilEventTicks_)
+    {
+        EvtSetNullEventTick(scheduledNilEventTicks_);
+        return;
+    }
+    WinDirectionType dir = winUp;
+    int i = -1;
+    if (scheduledScrollDown == scheduledScrollDirection_)
+    {
+        dir = winDown;
+        i = 1;
+    }
+    scheduledNilEventTicks_ = time + form()->application().ticksPerSecond()/7;
+    EvtSetNullEventTick(scheduledNilEventTicks_);
+    checkDrawingWindow();
+    Graphics graphics(drawingWindow_);
+    {
+        ActivateGraphics activate(graphics);
+        definition_.scroll(graphics, renderingPreferences_, i);
+        Rectangle bounds;
+        this->bounds(bounds);
+        Point p(bounds.topLeft);
+        if (winDown == dir)
+            p += bounds.extent;
+        definition_.extendSelection(graphics, renderingPreferences_, p, 0);
+        updateForm(graphics);
+    }
+    if (NULL != scrollBar_)
+        doUpdateScrollbar();
+}

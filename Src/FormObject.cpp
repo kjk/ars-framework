@@ -78,20 +78,22 @@ namespace ArsLexis
             FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(*form_, index_));
             assert(NULL != gadget);
             gadget->usable_ = false;
-            gadget->visible_ = false;            
+            gadget->visible_ = false;
+            gadget->notifyHide();      
         }
     }
 
     void FormObject::show()
     {
-        FrmShowObject(*form_, index_);
         if (frmGadgetObj == type())
         {
             FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(*form_, index_));
             assert(NULL != gadget);
             gadget->usable_ = true;
             gadget->visible_ = true;            
+            gadget->notifyShow();
         }
+        FrmShowObject(*form_, index_);
     }
     
     bool FormObject::hasFocus() const

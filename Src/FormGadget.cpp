@@ -128,3 +128,8 @@ void FormGadget::handleFocusChange(FocusChange change)
             removeFocusRing();
     }
 }
+
+void FormGadget::notifyHide() {}
+
+void FormGadget::notifyShow() {}
+

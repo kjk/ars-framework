@@ -594,7 +594,7 @@ void ExtendedList::handlePenUp(const EventType& event)
     this->bounds(bounds);
     int visW=visibleScrollBarWidth();
     Rectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
-    if (trackingScrollbar_)
+    if (trackingScrollbar_ || (penPos && scrollBounds))
         handlePenInScrollBar(bounds, penPos, true, false);
     else
     {

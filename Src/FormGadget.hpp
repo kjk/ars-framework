@@ -34,6 +34,10 @@ namespace ArsLexis {
         virtual bool handleEnter(const EventType& event); 
         
         virtual bool handleMiscEvent(const EventType& event);
+        
+        virtual void notifyHide();
+        
+        virtual void notifyShow();
 
         void setDoubleBuffer(bool val)
         {doubleBuffer_=val;}

@@ -278,6 +278,21 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
     layoutContext.renderingProgress = line->renderingProgress;
     elem = line->firstElement;
     progress = line->renderingProgress;
+    if (width < 0 || line == lines_.begin() + lastLine_)
+        return;
+    if (width >= bounds_.width())
+    {
+        if (lines_.end() == nextLine)
+        {
+            elem = end;
+            --elem;
+            progress = DefinitionElement::offsetOutsideElement;
+            return;
+        }
+        elem = nextLine->firstElement;
+        progress = nextLine->renderingProgress;
+        return;
+    }
     while (end != elem) 
     {
         if (elem == nextLine->firstElement && progress == nextLine->renderingProgress)
@@ -654,8 +669,8 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
 
 Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
 {
-    assert(height >= 0);
-    assert(height < bounds_.height());
+    if (height < 0)
+        return lines_.begin() + firstLine_;
     LinePosition_t end = lines_.begin() + lastLine_;
     Coord_t actHeight = 0;
     for (LinePosition_t line = lines_.begin() + firstLine_; line != end; ++line)
@@ -663,7 +678,7 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
             return line;
         else
             actHeight += line->height;
-    return lines_.end();
+    return end;
 }
 
 void Definition::removeSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs)
@@ -681,6 +696,8 @@ void Definition::removeSelection(ArsLexis::Graphics& graphics, const RenderingPr
 bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount) 
 {
     Point p(point.x - bounds_.x(), point.y - bounds_.y());
+    if (p.y < 0)
+        p.x = 0;
     ElementPosition_t elem;
     uint_t progress;
     LinePosition_t line = lineAtHeight(p.y);
