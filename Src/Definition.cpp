@@ -299,6 +299,15 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
         ++nextElem;
         if (end != nextElem && (*nextElem)->isTextElement())
             layoutContext.nextTextElement = static_cast<GenericTextElement*>(*nextElem);
+
+        if (DefinitionElement::justifyRightLastElementInLine == (*elem)->justification()) 
+        {
+            //move last element to right
+            LayoutContext lc = layoutContext;
+            (*elem)->calculateLayout(lc);
+            layoutContext.usedWidth += lc.availableWidth();
+        }
+     
         LayoutContext after = layoutContext;
         progress = (*elem)->charIndexAtOffset(after, width);
         if (DefinitionElement::offsetOutsideElement != progress)

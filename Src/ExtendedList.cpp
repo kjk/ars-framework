@@ -753,8 +753,8 @@ void BasicStringItemRenderer::drawItem(Graphics& graphics, ExtendedList& list, u
 
 void ExtendedList::notifyItemsChanged()
 {
-    uint_t itemsCount=0;
-    if (0 != (itemsCount = this->itemsCount()))
+    uint_t itemsCount = this->itemsCount();
+    if (0 != itemsCount)
     {
         if (noListSelection == topItem_ || topItem_ >= itemsCount)
             topItem_=0;

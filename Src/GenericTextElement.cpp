@@ -124,7 +124,8 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         layoutContext.nextTextElement && 
         !layoutContext.nextTextElement->breakBefore(layoutContext.preferences) &&
         !layoutContext.nextTextElement->text().empty() &&
-        !isSpace(layoutContext.nextTextElement->text()[0]))
+        !isSpace(layoutContext.nextTextElement->text()[0]) &&
+        justifyRightLastElementInLine != justification())
     {
         LayoutContext copy(layoutContext.graphics, layoutContext.preferences, layoutContext.screenWidth);
         copy.baseLine=layoutContext.baseLine;
@@ -254,7 +255,8 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
         NULL != lc.nextTextElement && 
         !lc.nextTextElement->breakBefore(lc.preferences) &&
         !lc.nextTextElement->text().empty() &&
-        !isSpace(lc.nextTextElement->text()[0]))
+        !isSpace(lc.nextTextElement->text()[0]) &&
+        justifyRightLastElementInLine != justification())
     {
         LayoutContext copy(lc.graphics, lc.preferences, lc.screenWidth);
         copy.usedWidth = lc.usedWidth + txtDx;
