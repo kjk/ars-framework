@@ -25,7 +25,8 @@
 
 #endif // __MWERKS__ && __MC68K__
 
-#include <new>
+#include <new>          // I include <new> & <memory> here so that definitions from there are included before I redefine new
+#include <memory>
 #include <cassert>
 
 #if defined(_PALM_OS)
@@ -38,7 +39,7 @@ namespace ArsLexis
      */
     void handleBadAlloc();
     
-    void logAllocation(void* ptr, bool free);
+    void logAllocation(void* ptr, bool free, const char* file, int line);
     
 }
 
@@ -47,7 +48,7 @@ namespace ArsLexis
  * to MSL new (nothrow) that simply catches exception
  * thrown by new.
  */
-inline void * operator new(unsigned long size)
+inline void* operator new(unsigned long size)
 {
     void* ptr=0;
     if (size) 
@@ -56,10 +57,13 @@ inline void * operator new(unsigned long size)
         ptr=MemPtrNew(1);
     if (!ptr)
         ArsLexis::handleBadAlloc();
-#ifndef NDEBUG
-    else
-        ArsLexis::logAllocation(ptr, false);
-#endif                
+    return ptr;
+}
+
+inline void* operator new(unsigned long size, const char* file, int line)
+{
+    void* ptr=::operator new(size);
+    ArsLexis::logAllocation(ptr, false, file, line);
     return ptr;
 }
 
@@ -69,20 +73,31 @@ inline void operator delete(void *ptr)
     {
         MemPtrFree(ptr);
 #ifndef NDEBUG
-        ArsLexis::logAllocation(ptr, true);
+        ArsLexis::logAllocation(ptr, true, 0, 0);
 #endif            
     }        
 }
 
-inline void * operator new[](unsigned long size)
+inline void* operator new[](unsigned long size)
 {
     return ::operator new(size);
+}
+
+inline void* operator new[](unsigned long size, const char* file, int line)
+{
+    void* ptr=::operator new[](size);
+    ArsLexis::logAllocation(ptr, false, file, line);
+    return ptr;
 }
 
 inline void operator delete[](void *ptr)
 {
     ::operator delete(ptr);
 }
+
+#ifndef NDEBUG
+#define new new (__FILE__, __LINE__)
+#endif
 
 #endif
 

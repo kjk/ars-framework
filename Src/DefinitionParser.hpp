@@ -35,6 +35,8 @@ class DefinitionParser
     uint_t openStrikeout_;
     uint_t openUnderline_;
     uint_t openNowiki_;
+    uint_t openSuperscript_;
+    uint_t openSubscript_;
     
     void reset();
     

@@ -115,20 +115,19 @@ Err iPediaApplication::getNetLibrary(NetLibrary*& netLib)
     Err error=errNone;
     if (!netLib_)
     {
-        NetLibrary* tmp=new NetLibrary;
+        std::auto_ptr<NetLibrary> tmp(new NetLibrary);
         UInt16 ifError=0;
         error=tmp->initialize(ifError);
         if (errNone==error && 0==ifError)
         {
-            netLib_=tmp;
+            netLib_=tmp.release();
             connectionManager_=new SocketConnectionManager(*netLib_);
             resolver_=new Resolver(*netLib_);
         }
         else {
             if (errNone==error)
                 error=netErrDeviceInitFail;
-            delete tmp;
-        }                
+        }
     }
     if (!error)
         netLib=netLib_;

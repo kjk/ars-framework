@@ -68,7 +68,7 @@ namespace ArsLexis
         }
         else
         {
-            ResolverConnection* resolverConnection=new ResolverConnection(*this, connection, name, port, choice);
+            ResolverConnection* resolverConnection(new ResolverConnection(*this, connection, name, port, choice));
             INetSocketAddress addr(dnsAddr, 53);
             resolverConnection->setAddress(addr);
             resolverConnection->open();
@@ -77,9 +77,9 @@ namespace ArsLexis
     
     void Resolver::blockingResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port)
     {
-        NetHostInfoBufType* buffer=new NetHostInfoBufType;
-        MemSet(buffer, sizeof(*buffer), 0);
-        Err error=netLib_.getHostByName(name.c_str(), buffer, connection->transferTimeout());
+        std::auto_ptr<NetHostInfoBufType> buffer(new NetHostInfoBufType);
+        MemSet(buffer.get(), sizeof(NetHostInfoBufType), 0);
+        Err error=netLib_.getHostByName(name.c_str(), buffer.get(), connection->transferTimeout());
         if (!error)
         {
             NetIPAddr resAddr=buffer->address[0];
@@ -90,7 +90,6 @@ namespace ArsLexis
         }
         else
             connection->handleError(error);
-        delete buffer;
     }
    
     Err Resolver::resolveAndConnect(SocketConnection* connection, const String& address, UInt16 port)

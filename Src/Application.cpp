@@ -1,5 +1,7 @@
 #include "Application.hpp"
 #include "Form.hpp"
+#include "Utility.hpp"
+#include <memory>
 
 namespace ArsLexis
 {
@@ -64,7 +66,7 @@ namespace ArsLexis
     {
         Err error=FtrUnregister(creatorId_, featureInstancePointer);
         assert(!error);
-        assert(forms_.empty());
+        std::for_each(forms_.begin(), forms_.end(), ObjectDeleter<Form>());
     }
 
 #define kPalmOS20Version sysMakeROMVersion(2,0,0,sysROMStageDevelopment,0)
@@ -119,18 +121,14 @@ namespace ArsLexis
     void Application::loadForm(UInt16 formId)
     {
         Err error=errNone;
-        // No, that isn't a leak. Form will delete itself when it receives frmCloseEvent or user dismisses it (popup).
-        Form* form=createForm(formId);
+        Form* form(createForm(formId));
         if (form)
         {
             error=form->initialize();
             if (!error)
                 form->activate();
-            else 
-                delete form;
+                // No, that isn't a leak. Form will delete itself when it receives frmCloseEvent or user dismisses it (popup).
         }            
-        else
-            error=memErrNotEnoughSpace;
     }
     
     Boolean Application::handleApplicationEvent(EventType& event)

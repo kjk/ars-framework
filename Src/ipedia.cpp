@@ -5,19 +5,16 @@
 void std::__msl_error(const char* str)
 {
 	ErrFatalDisplay(str);
-	abort();
+	ErrThrow(sysErrParamErr);
 }
 
 void ArsLexis::handleBadAlloc()
 {
     FrmAlert(notEnoughMemoryAlert);
-    Application* app=Application::getInstance(appFileCreator);
-    if (app)
-        app->abort();
-    std::abort();
+    ErrThrow(memErrNotEnoughSpace);    
 }
 
-void ArsLexis::logAllocation(void*, bool )
+void ArsLexis::logAllocation(void* ptr, bool free, const char* file, int line)
 {
 }
 

@@ -287,7 +287,7 @@ namespace ArsLexis
     Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     {
         Err error=errNone;
-        AppClass* app=static_cast<AppClass*>(getInstance(creatorId));
+        AppClass* volatile app=static_cast<AppClass*>(getInstance(creatorId));
         if (app)
             error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
         else
@@ -296,15 +296,15 @@ namespace ArsLexis
                 error=_CW_SetupExpandedMode();
             if (!error)
             {
-                app=new AppClass;
-                if (app)
-                {
+                ErrTry {
+                    app=new AppClass;
                     error=app->initialize();
                     if (!error)
                         error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
                 }
-                else
-                    error=memErrNotEnoughSpace;
+                ErrCatch (ex) {
+                    error=ex;
+                } ErrEndCatch
                 delete app;
             }
         }

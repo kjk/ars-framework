@@ -1,10 +1,10 @@
 #include "GenericTextElement.hpp"
-#include "Utility.hpp"
+#include <cctype>
+#include <memory>
 
 using ArsLexis::String;
 using ArsLexis::char_t;
 using ArsLexis::Rectangle;
-using ArsLexis::isWhitespace;
 using ArsLexis::Graphics;
 using ArsLexis::Point;
 
@@ -73,7 +73,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     if (render)
     {
         uint_t charsToDraw=length;
-        while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
+        while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
             --charsToDraw;
         graphics.drawText(text, charsToDraw, Point(left, top));
         if (isHyperlink())
@@ -98,7 +98,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
             if (render)
             {
                 uint_t charsToDraw=length;
-                while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
+                while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
                     --charsToDraw;
                 graphics.drawText(text, length, Point(left, top));
                 if (isHyperlink())

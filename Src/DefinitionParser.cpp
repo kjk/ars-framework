@@ -9,8 +9,9 @@
 #include "Utility.hpp"
 
 using ArsLexis::String;
-using ArsLexis::isWhitespace;
 using ArsLexis::FontEffects;
+using ArsLexis::startsWith;
+using ArsLexis::startsWithIgnoreCase;
 
 DefinitionParser::DefinitionParser(const String& text, uint_t initialOffset):
     openEmphasize_(false),
@@ -21,6 +22,8 @@ DefinitionParser::DefinitionParser(const String& text, uint_t initialOffset):
     openStrikeout_(0),
     openUnderline_(0),
     openNowiki_(0),
+    openSuperscript_(0),
+    openSubscript_(0),
     text_(text),
     parsePosition_(initialOffset),
     lineEnd_(0),
@@ -61,10 +64,10 @@ void DefinitionParser::popAvailableParent()
 }
 
 
-bool DefinitionParser::isPlainText() const
+inline bool DefinitionParser::isPlainText() const
 {
     return !(openEmphasize_ || openStrong_ || openVeryStrong_ || openTypewriter_ ||
-        openSmall_ || openStrikeout_ || openUnderline_);
+        openSmall_ || openStrikeout_ || openUnderline_ || openSubscript_ || openSuperscript_);
 }
 
 void DefinitionParser::applyCurrentFormatting(FormattedTextElement* element)
@@ -77,16 +80,16 @@ void DefinitionParser::applyCurrentFormatting(FormattedTextElement* element)
         fontEffects.setWeight(FontEffects::weightBold);
     if (openVeryStrong_)
         fontEffects.setWeight(FontEffects::weightBlack);
-        
-//    if (openTypewriter_)
-//        fontEffects.setTypewriterFont(true);
-
     if (openSmall_)
         fontEffects.setSmall(true);
     if (openStrikeout_)
         fontEffects.setStrikeOut(true);
     if (openUnderline_)
         fontEffects.setUnderline(FontEffects::underlineSolid);
+    if (openSubscript_)
+        fontEffects.setSubscript(true);
+    if (openSuperscript_)
+        fontEffects.setSuperscript(true);
 }
 
 static const char entityReferenceStart='&';
@@ -142,6 +145,8 @@ static const char numberedListChar='#';
 static const char headerChar='=';
 static const char strongChar='\'';
 static const char htmlTagStart='<';
+static const char htmlTagEnd='>';
+static const char htmlClosingTagChar='/';
 static const char horizontalLineChar='-';
 static const char definitionListChar=';';
 static const char linkOpenChar='[';
@@ -160,13 +165,13 @@ static const char linkCloseChar=']';
 bool DefinitionParser::detectStrongTag(uint_t end)
 {
     bool isStrongTag=false;
-    if (text_.find(emphasizeText, parsePosition_)==parsePosition_)
+    if (startsWith(text_, emphasizeText, parsePosition_))
     {
         createTextElement();
-        if (text_.find(strongText, parsePosition_)==parsePosition_)
+        if (startsWith(text_, strongText, parsePosition_))
         {
             isStrongTag=true;
-            if (text_.find(veryStrongText, parsePosition_)==parsePosition_)
+            if (startsWith(text_, veryStrongText, parsePosition_))
             {
                 parsePosition_+=StrLen(veryStrongText);
                 openVeryStrong_=!openVeryStrong_;
@@ -199,7 +204,74 @@ bool DefinitionParser::detectStrongTag(uint_t end)
 //! @todo Implement DefinitionParser::detectHTMLTag()
 bool DefinitionParser::detectHTMLTag(uint_t end)
 {
-    return false;
+    bool result=false;
+    uint_t tagStart=parsePosition_+1;
+    bool isClosing=false;
+    if (tagStart<end && htmlClosingTagChar==text_[tagStart])
+    {
+        ++tagStart;
+        isClosing=true;
+    }
+    if (tagStart<end)
+    {
+        String::size_type tagEndPos=text_.find(htmlTagEnd, tagStart);
+        uint_t tagEnd=(tagEndPos==text_.npos)?end:tagEndPos;
+        if (tagEnd<end)
+        {
+            if (startsWithIgnoreCase(text_, nowikiText, tagStart))
+            {
+                createTextElement();
+                openNowiki_+=(isClosing?-1:1);
+                result=true;
+            }
+            else if (startsWithIgnoreCase(text_, teleTypeText, tagStart))
+            {
+                createTextElement();
+                openTypewriter_+=(isClosing?-1:1);
+                result=true;
+            }
+            else if (startsWithIgnoreCase(text_, lineBreakText, tagStart))
+            {
+                createTextElement();
+                appendElement(new LineBreakElement());
+                result=true;
+            }
+            else if (startsWithIgnoreCase(text_, smallText, tagStart))
+            {
+                createTextElement();
+                openSmall_+=(isClosing?-1:1);
+                result=true;
+            }
+            else if (startsWithIgnoreCase(text_, strikeOutText, tagStart))
+            {
+                createTextElement();
+                openStrikeout_+=(isClosing?-1:1);
+                result=true;
+            }
+            else if (startsWithIgnoreCase(text_, underlineText, tagStart))
+            {
+                createTextElement();
+                openUnderline_+=(isClosing?-1:1);
+                result=true;
+            }
+            else if (startsWithIgnoreCase(text_, superscriptText, tagStart))
+            {
+                createTextElement();
+                openSuperscript_+=(isClosing?-1:1);
+                result=true;
+            }
+            else if (startsWithIgnoreCase(text_, subscriptText, tagStart))
+            {
+                createTextElement();
+                openSubscript_+=(isClosing?-1:1);
+                result=true;
+            }
+        
+            if (result)
+                parsePosition_=tagEnd+1;
+        }
+    }
+    return result;
 }
 
 #define imagePrefix "image:"
@@ -244,7 +316,7 @@ bool DefinitionParser::detectHyperlink(uint_t end)
                         textElement->setHyperlink(String(text_, parsePosition_, separatorPos-parsePosition_), hyperlinkTerm);
                 }
                 uint_t afterLinkTextEnd=pastLinkEnd;
-                while (afterLinkTextEnd<end && (std::isalpha(text_[afterLinkTextEnd]) || '-'==text_[afterLinkTextEnd] /* || '\''==text_[afterLinkTextEnd] */))
+                while (afterLinkTextEnd<end && (std::isalpha(text_[afterLinkTextEnd]) || '-'==text_[afterLinkTextEnd]))
                     ++afterLinkTextEnd;
                 if (afterLinkTextEnd>pastLinkEnd && textElement)
                 {
@@ -325,7 +397,7 @@ GenericTextElement* DefinitionParser::createTextElement()
             textElement=new GenericTextElement(text);
         else
         {
-            FormattedTextElement* element=new FormattedTextElement(text);
+            FormattedTextElement* element(new FormattedTextElement(text));
             applyCurrentFormatting(element);
             textElement=element;
         } 
@@ -451,10 +523,6 @@ bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
             else {
                 switch (text_[parsePosition_])
                 {
-//                    case indentLineChar:
-//                        lineType_=indentedLine;
-//                        break;
-                        
                     case indentLineChar:
                     case bulletChar:
                     case numberedListChar:
@@ -466,12 +534,12 @@ bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
                         break;
                     
                     case headerChar:
-                        if (text_.find(sectionString, parsePosition_)==parsePosition_)
+                        if (startsWith(text_, sectionString, parsePosition_))
                             lineType_=headerLine;
                         break;
                         
                     case horizontalLineChar:
-                        if (text_.find(horizontalLineString, parsePosition_)==parsePosition_)
+                        if (startsWith(text_, horizontalLineString, parsePosition_))
                             lineType_=horizontalBreakLine;
                         break;
                 }       
@@ -529,10 +597,6 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
                     parseListElementLine();
                     break;
                     
-//                case indentedLine:
-//                    parseIndentedLine();
-//                    break;
-                    
                 case definitionListLine:
                     parseDefinitionListLine();
                     break;
@@ -566,10 +630,10 @@ void DefinitionParser::updateDefinition(Definition& definition)
 //! @todo Add header indexing
 void DefinitionParser::parseHeaderLine()
 {
-    while (parsePosition_<lineEnd_ && headerChar==text_[parsePosition_] || isWhitespace(text_[parsePosition_]))
+    while (parsePosition_<lineEnd_ && headerChar==text_[parsePosition_] || std::isspace(text_[parsePosition_]))
         ++parsePosition_;
     uint_t lineEnd=lineEnd_;
-    while (lineEnd>parsePosition_ && headerChar==text_[lineEnd-1] || isWhitespace(text_[lineEnd-1]))
+    while (lineEnd>parsePosition_ && headerChar==text_[lineEnd-1] || std::isspace(text_[lineEnd-1]))
         --lineEnd;
     ParagraphElement* para=new ParagraphElement();
     appendElement(para);
@@ -588,31 +652,10 @@ void DefinitionParser::parseListElementLine()
     String elementDesc(text_, parsePosition_, start-parsePosition_);
     manageListNesting(elementDesc);
     parsePosition_=start;
-    while (parsePosition_<lineEnd_ && isWhitespace(text_[parsePosition_]))
+    while (parsePosition_<lineEnd_ && std::isspace(text_[parsePosition_]))
         ++parsePosition_;
     parseText(lineEnd_, styleDefault);
 }
-
-/*
-void DefinitionParser::parseIndentedLine()
-{
-    assert(indentLineChar==text_[parsePosition_]);
-    ++parsePosition_;
-    while (parsePosition_<lineEnd_ && (isWhitespace(text_[parsePosition_]) || indentLineChar==text_[parsePosition_]))
-        ++parsePosition_;
-        
-    uint_t lineEnd=lineEnd_;
-    while (lineEnd>parsePosition_ && isWhitespace(text_[lineEnd-1]))
-        --lineEnd;
-        
-    IndentedParagraphElement* para=new IndentedParagraphElement();
-    appendElement(para);
-    pushParent(para);
-    parseText(lineEnd, styleDefault);
-    if (!lineAllowsContinuation(indentedLine))
-        popParent();
-}
-*/
 
 //! @todo Implement DefinitionParser::parseDefinitionListLine()
 void DefinitionParser::parseDefinitionListLine()
