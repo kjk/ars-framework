@@ -3,12 +3,17 @@
 
 #include <FormGadget.hpp>
 #include <Logging.hpp>
+#include <Application.hpp>
 
 namespace ArsLexis {
 
     class ExtendedList: public FormGadget {
         
     public:
+    
+        enum {
+            selChangedEvent = Application::extListSelectionChangedEvent
+        };
     
         explicit ExtendedList(Form& form, UInt16 id=frmInvalidObjectId);
     

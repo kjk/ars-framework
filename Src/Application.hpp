@@ -321,7 +321,8 @@ namespace ArsLexis
         
         enum Event
         {
-            appFirstAvailableEvent = firstUserEvent
+            extListSelectionChangedEvent = firstUserEvent,
+            appFirstAvailableEvent 
         };
         
         bool runningOnTreo600() const {return runningOnTreo600_;}
