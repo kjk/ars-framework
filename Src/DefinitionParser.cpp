@@ -13,6 +13,12 @@ using ArsLexis::FontEffects;
 using ArsLexis::startsWith;
 using ArsLexis::startsWithIgnoreCase;
 
+namespace {
+    typedef std::auto_ptr<ParagraphElement> ParagraphPtr;
+    typedef std::auto_ptr<GenericTextElement> TextPtr;
+    typedef std::auto_ptr<DefinitionElement> ElementPtr;
+}
+
 DefinitionParser::DefinitionParser():
     openEmphasize_(false),
     openStrong_(false),
@@ -244,7 +250,9 @@ bool DefinitionParser::detectHTMLTag(uint_t end)
             else if (startsWithIgnoreCase(textLine_, lineBreakText, tagStart))
             {
                 createTextElement();
-                appendElement(new LineBreakElement());
+                std::auto_ptr<LineBreakElement> p(new LineBreakElement());
+                appendElement(p.get());
+                p.release();
                 result=true;
             }
             else if (startsWithIgnoreCase(textLine_, smallText, tagStart))
@@ -437,18 +445,18 @@ GenericTextElement* DefinitionParser::createTextElement(const String& text, Stri
 {
     String copy(text, start, length);
     decodeHTMLCharacterEntityRefs(copy);
-    GenericTextElement* textElement=0;
+    TextPtr textElement;
     if (isPlainText())
-        textElement=new GenericTextElement(copy);
+        textElement=TextPtr(new GenericTextElement(copy));
     else
-    {
-        FormattedTextElement* element(new FormattedTextElement(copy));
-        applyCurrentFormatting(element);
+    {   
+        std::auto_ptr<FormattedTextElement> element(new FormattedTextElement(copy));
+        applyCurrentFormatting(element.get());
         textElement=element;
     } 
-    appendElement(textElement);
+    appendElement(textElement.get());
     textElement->setStyle(currentStyle_);
-    return textElement;    
+    return textElement.release();    
 }
 
 GenericTextElement* DefinitionParser::createTextElement()
@@ -523,29 +531,29 @@ void DefinitionParser::manageListNesting(const String& newNesting)
             for (uint_t i=firstDiff; i<newNestingDepth; ++i)
             {
                 char elementType=newNesting[i];
-                DefinitionElement* element=0;
+                ElementPtr element;
                 if (numberedListChar==elementType)
                 {
                     if (continueList)
                     {
                         assert(!currentNumberedList_.empty());
-                        ListNumberElement* listElement=new ListNumberElement(currentNumberedList_.back()->number()+1);
-                        currentNumberedList_.push_back(listElement);
+                        std::auto_ptr<ListNumberElement> listElement(new ListNumberElement(currentNumberedList_.back()->number()+1));
+                        currentNumberedList_.push_back(listElement.get());
                         element=listElement;
                     }
                     else
                     {
-                        ListNumberElement* listElement=new ListNumberElement(1);
-                        startNewNumberedList(listElement);
+                        std::auto_ptr<ListNumberElement> listElement(new ListNumberElement(1));
+                        startNewNumberedList(listElement.get());
                         element=listElement;
                     }                    
                 }
                 else if (bulletChar==elementType)
-                    element=new BulletElement();
+                    element=ElementPtr(new BulletElement());
                 else 
-                    element=new IndentedParagraphElement();
-                appendElement(element);
-                pushParent(element);
+                    element=ElementPtr(new IndentedParagraphElement());
+                appendElement(element.get());
+                pushParent(element.release());
                 continueList=false;
             }
         }
@@ -639,9 +647,9 @@ void DefinitionParser::parseTextLine()
 {
     if (!lineAllowsContinuation(previousLineType_) )
     {
-        ParagraphElement* para=new ParagraphElement();
-        appendElement(para);
-        pushParent(para);
+        ParagraphPtr para(new ParagraphElement());
+        appendElement(para.get());
+        pushParent(para.release());
     }
     parseText(lineEnd_, styleDefault);                
 }
@@ -713,7 +721,6 @@ Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool 
         }
         if (!finish)
             length=parsePosition_;
-//        error errNone; // Since in wikipedia anybody may enter anything he likes, complaining about definition formatting would be inappropriate.
     }
     ErrCatch (ex) {
         clear();
@@ -732,14 +739,14 @@ void DefinitionParser::updateDefinition(Definition& definition)
 //! @todo Add header indexing
 void DefinitionParser::parseHeaderLine()
 {
-    while (parsePosition_<lineEnd_ && headerChar==(*text_)[parsePosition_] || std::isspace((*text_)[parsePosition_]))
+    while (parsePosition_<lineEnd_ && (headerChar==(*text_)[parsePosition_] || std::isspace((*text_)[parsePosition_])))
         ++parsePosition_;
     uint_t lineEnd=lineEnd_;
-    while (lineEnd>parsePosition_ && headerChar==(*text_)[lineEnd-1] || std::isspace((*text_)[lineEnd-1]))
+    while (lineEnd>parsePosition_ && (headerChar==(*text_)[lineEnd-1] || std::isspace((*text_)[lineEnd-1])))
         --lineEnd;
-    ParagraphElement* para=new ParagraphElement();
-    appendElement(para);
-    pushParent(para);
+    ParagraphPtr para(new ParagraphElement());
+    appendElement(para.get());
+    pushParent(para.release());
     parseText(lineEnd, styleHeader);
     if (!lineAllowsContinuation(headerLine))
         popParent();
@@ -762,4 +769,15 @@ void DefinitionParser::parseListElementLine()
 //! @todo Implement DefinitionParser::parseDefinitionListLine()
 void DefinitionParser::parseDefinitionListLine()
 {
+    while (parsePosition_<lineEnd_ && (definitionListChar==(*text_)[parsePosition_] || std::isspace((*text_)[parsePosition_])))
+        ++parsePosition_;
+    uint_t lineEnd=lineEnd_;
+    while (lineEnd>parsePosition_ && std::isspace((*text_)[lineEnd-1]))
+        --lineEnd;
+    ParagraphPtr para(new ParagraphElement());
+    appendElement(para.get());
+    pushParent(para.release());
+    parseText(lineEnd, styleDefault);
+    if (!lineAllowsContinuation(definitionListLine))
+        popParent();
 }
