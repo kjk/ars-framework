@@ -1,0 +1,123 @@
+#include "SocketConnection.hpp"
+
+namespace ArsLexis 
+{
+
+    void SocketConnectionManager::addConnection(SocketConnection& connection)
+    {
+        NetSocketRef ref=connection.socket_;
+        assert(ref>=connections_.size() || 0==connections_[ref]);
+        if (ref>=connections_.size())
+            connections_.resize(ref+1);
+        connections_[ref]=&connection;
+    }
+
+    void SocketConnectionManager::registerEvent(SocketConnection& connection, SocketSelector::EventType event)
+    {
+        NetSocketRef ref=connection.socket_;
+        assert(connections_.size()>ref && &connection==connections_[ref]);
+        selector_.registerSocket(connection.socket_, event);
+    }
+    
+    void SocketConnectionManager::unregisterEvent(SocketConnection& connection, SocketSelector::EventType event)
+    {
+        NetSocketRef ref=connection.socket_;
+        assert(connections_.size()>ref && &connection==connections_[ref]);
+        selector_.unregisterSocket(connection.socket_, event);
+    }
+    
+    void SocketConnectionManager::removeConnection(SocketConnection& connection)
+    {
+        NetSocketRef ref=connection.socket_;
+        assert(connections_.size()>ref && &connection==connections_[ref]);
+        connections_[ref]=0;
+    }
+    
+    SocketConnectionManager::SocketConnectionManager(NetLibrary& netLib):
+        netLib_(netLib),
+        selector_(netLib)
+    {}
+    
+    SocketConnectionManager::~SocketConnectionManager()
+    {
+        UInt16 connCount=connections_.size();
+        for (UInt16 i=0; i<connCount; ++i)
+            if (connections_[i])
+                connections_[i]->abortConnection();
+    }
+
+
+    Err SocketConnectionManager::runUntilEvent()
+    {
+        Err error=errNone;
+        while (!error)
+        {
+            error=selector_.select();
+            if (!error)
+            {
+                assert(selector_.eventsCount()>0);
+                UInt16 connCount=connections_.size();
+                for (UInt16 i=0; i<connCount; ++i)
+                {
+                    SocketConnection* conn=connections_[i];
+                    if (conn)
+                    {
+                        if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
+                        {
+                            unregisterEvent(*conn, SocketSelector::eventRead);
+                            conn->notifyReadable();
+                        }
+                        if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
+                        {
+                            unregisterEvent(*conn, SocketSelector::eventWrite);
+                            conn->notifyWritable();
+                        } 
+                        // There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
+                        // Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
+                        if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventException))
+                        {
+                            unregisterEvent(*conn, SocketSelector::eventException);
+                            conn->notifyException();
+                        }                        
+                    }
+                }
+                if (selector_.checkStandardEvent())
+                    break;
+            }
+        }
+        return error;
+    }
+    
+    
+    SocketConnection::SocketConnection(SocketConnectionManager& manager):
+        manager_(manager),
+        socket_(manager.netLib_)
+    {
+    }
+    
+    SocketConnection::~SocketConnection()
+    {
+        manager_.removeConnection(*this);
+    }
+    
+    Err SocketConnection::open(const SocketAddress& address, Int32 timeout)
+    {
+        Err error=socket_.open();
+        if (!error)
+        {
+            manager_.addConnection(*this);
+            Boolean flag=true;
+            error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
+            if (!error)
+                error=socket_.connect(address, timeout);
+        }
+        return error;
+    }
+
+    void SocketConnection::notifyException()
+    {
+        
+        abortConnection();
+    }
+
+}

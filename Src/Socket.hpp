@@ -80,6 +80,10 @@ namespace ArsLexis
         operator NetSocketRef() const
         {return socket_;}
         
+        Err setOption(UInt16 level, UInt16 option, void* optionValue, UInt16 valueLength, Int32 timeout=evtWaitForever);
+        
+        Err getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout=evtWaitForever);
+                
     };
 
     /**
@@ -113,6 +117,64 @@ namespace ArsLexis
          * @see NetLibSocketConnect()
          */
         Err connect(const SocketAddress& address, Int32 timeout=evtWaitForever);
+        
+    };
+    
+    class SocketSelector
+    {
+        enum {eventTypesCount_=3};
+        
+        NetLibrary& netLib_;
+        NetFDSetType inputFDs_[eventTypesCount_];
+        NetFDSetType outputFDs_[eventTypesCount_];
+        UInt16 width_;
+        UInt16 eventsCount_;
+        
+        void recalculateWidth();
+        
+    public:
+    
+        enum EventType
+        {
+            eventRead,
+            eventWrite,
+            eventException
+        };
+        
+        SocketSelector(NetLibrary& netLib, Boolean catchStandardEvents=true);
+        
+        ~SocketSelector()
+        {}
+        
+        void registerSocket(const SocketBase& socket, EventType event)
+        {
+            NetSocketRef ref=socket;
+            netFDSet(ref, &inputFDs_[event]);
+            recalculateWidth();
+        }
+        
+        void unregisterSocket(const SocketBase& socket, EventType event)
+        {
+            NetSocketRef ref=socket;
+            netFDClr(ref, &inputFDs_[event]);
+            recalculateWidth();
+        }
+        
+        Err select(Int32 timeout=evtWaitForever);
+        
+        Boolean checkSocketEvent(const SocketBase& socket, EventType event) const
+        {
+            NetSocketRef ref=socket;
+            return netFDIsSet(ref, &outputFDs_[event]);
+        }
+        
+        Boolean checkStandardEvent() const
+        {
+            return netFDIsSet(sysFileDescStdIn, &outputFDs_[eventRead]);
+        }
+
+        UInt16 eventsCount() const
+        {return eventsCount_;}
         
     };
     

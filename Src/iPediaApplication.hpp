@@ -5,6 +5,7 @@
 #include "Application.hpp"
 #include "DynamicInputAreas.hpp"
 #include "NetLibrary.hpp"
+#include "SocketConnection.hpp"
 
 class iPediaApplication: public ArsLexis::Application 
 {
@@ -13,6 +14,8 @@ class iPediaApplication: public ArsLexis::Application
     
     typedef std::auto_ptr<ArsLexis::NetLibrary> NetLibPtr;
     NetLibPtr netLib_;
+    typedef std::auto_ptr<ArsLexis::SocketConnectionManager> ConnectionManagerPtr;
+    ConnectionManagerPtr connectionManager_;
     
     Err getNetLib(ArsLexis::NetLibrary*& netLib);
 

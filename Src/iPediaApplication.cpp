@@ -2,6 +2,7 @@
 #include "iPediaApplication.hpp"
 #include "SysUtils.hpp"
 #include "MainForm.hpp"
+#include "SocketAddress.hpp"
 
 
 IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
@@ -39,6 +40,23 @@ static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStage
 
 Err iPediaApplication::normalLaunch()
 {
+
+    NetLibrary* netLib;
+    getNetLib(netLib);
+    if (netLib)
+    {
+        SocketConnection* connection=new SocketConnection(*connectionManager_);
+        Err error=connection->open(INetSocketAddress(0x7f000001, 80));
+//        Err error=connection->open(INetSocketAddress(0x12345678, 80));
+        if (!error || netErrWouldBlock==error)
+        {
+            connection->registerEvent(SocketSelector::eventWrite);
+            connection->registerEvent(SocketSelector::eventException);
+        }
+        else
+            delete connection;
+    }
+
     gotoForm(mainForm);
     runEventLoop();
     return errNone;
@@ -74,6 +92,7 @@ Err iPediaApplication::getNetLib(NetLibrary*& netLib)
             {
                 assert(!ifError);
                 netLib_=tmp;
+                connectionManager_=ConnectionManagerPtr(new SocketConnectionManager(*netLib_));
             }
         }
         else
@@ -86,7 +105,8 @@ Err iPediaApplication::getNetLib(NetLibrary*& netLib)
 
 void iPediaApplication::waitForEvent(EventType& event)
 {
-    //! @todo use netLib's select to implement non-blocking network io.
+    if (connectionManager_.get() && connectionManager_->connectionsAvailable())
+        connectionManager_->runUntilEvent();
     Application::waitForEvent(event);
 }
 

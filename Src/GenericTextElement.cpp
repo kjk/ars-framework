@@ -70,7 +70,8 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
     if (render)
     {
         Int16 charsToDraw=length;
-        while (isWhitespace(*(text+charsToDraw-1)))            --charsToDraw;
+        while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
+            --charsToDraw;
         WinDrawChars(text, charsToDraw, left, top);
         if (isHyperlink())
             defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
@@ -98,7 +99,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
                 if (render)
                 {
                     Int16 charsToDraw=length;
-                    while (isWhitespace(*(text+charsToDraw-1)))
+                    while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
                         --charsToDraw;
                     WinDrawChars(text, length, left, top);
                     if (isHyperlink())
