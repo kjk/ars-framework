@@ -67,14 +67,13 @@ ArsLexis::String UniversalDataFormat::getItemTextAsString(int itemNo, int elemNo
     return getItemText(itemNo, elemNo);
 }
 
-// -1 means error
-long UniversalDataFormat::getItemTextAsPositiveLong(int itemNo, int elemNo) const
+long UniversalDataFormat::getItemTextAsLong(int itemNo, int elemNo) const
 {
     const ArsLexis::char_t* text = getItemText(itemNo, elemNo);
     long result;
     ArsLexis::status_t error = ArsLexis::numericValue(text, text+tstrlen(text), result);
     if (errNone != error)
-        return -1;
+        return 0;
     return result;
 }
 

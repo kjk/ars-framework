@@ -54,18 +54,22 @@ OnError:
 
 
 UniversalDataHandler::UniversalDataHandler():
-    lineNo(0), 
+    lineNo_(0), 
+    delimiter_(_T('\n')),
+    controlDataLength_(0),
     writerStreamName_(NULL)
 {}
 
 UniversalDataHandler::UniversalDataHandler(const ArsLexis::char_t* streamName):
-    lineNo(0),
+    lineNo_(0),
+    delimiter_(_T('\n')),
+    controlDataLength_(0),
     writerStreamName_(streamName)
 {
     openDataStoreWriter(writerStreamName_, writer_);
 }
 
-status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo)
+status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, long& controlDataLength)
 {
     volatile status_t error=errNone;
     using namespace std;
@@ -93,6 +97,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
                 if (errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
                     return SocketConnection::errResponseMalformed;
                 vec.push_back(resultLong);
+                controlDataLength += resultLong + 1;
                 dataOffset = dataOffsetEnd + 1;
             }
             out.header_.push_back(vec);
@@ -104,7 +109,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
             else
                 out.data_.append(line);
         }
-         lineNo++;
+        lineNo++;
     }
     ErrCatch (ex) {
         error=ex;
@@ -115,7 +120,36 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
 status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
 {
     writeLineToDataStore(writer_, line);
-    return parseUniversalDataFormatTextLine(line, universalData, lineNo);
+    return parseUniversalDataFormatTextLine(line, universalData, lineNo_, controlDataLength_);
+}
+
+inline status_t UniversalDataHandler::handlePayloadFinish()
+{
+    if (controlDataLength_ != universalData.dataLength())
+        return SocketConnection::errResponseMalformed;
+    return errNone;
+}
+
+status_t UniversalDataHandler::handleIncrement(const ArsLexis::String& payload, ulong_t& length, bool finish)
+{
+    lineBuffer_.append(payload, 0, length);
+    String::size_type pos=lineBuffer_.find(delimiter_);
+    while (true) 
+    {
+        if (lineBuffer_.npos==pos && !finish)
+            break;
+        String line(lineBuffer_, 0, pos);
+        status_t error=handleLine(line);
+        if (errNone!=error)
+            return error;
+        if (lineBuffer_.npos==pos)
+            break;
+        lineBuffer_.erase(0, pos+1);
+        pos=lineBuffer_.find(delimiter_);
+    }
+    if (finish)
+        return handlePayloadFinish();
+    return errNone;
 }
 
 UniversalDataHandler::~UniversalDataHandler() {}
@@ -123,6 +157,7 @@ UniversalDataHandler::~UniversalDataHandler() {}
 static status_t readUniversalDataFromReader(ArsLexis::Reader& reader, UniversalDataFormat& out)
 {
     int lineNo = 0;
+    long controlDataLength = 0;
     bool eof = false;
     while (!eof)
     {
@@ -130,10 +165,12 @@ static status_t readUniversalDataFromReader(ArsLexis::Reader& reader, UniversalD
         ArsLexis::status_t error=reader.readLine(eof, line);
         if (errNone!=error)
             return error;
-        error = parseUniversalDataFormatTextLine(line, out, lineNo);
+        error = parseUniversalDataFormatTextLine(line, out, lineNo, controlDataLength);
         if (errNone!=error)
             return error;
     }
+    if (controlDataLength != out.dataLength())
+        return SocketConnection::errResponseMalformed;
     return errNone;
 }
 
@@ -144,5 +181,6 @@ void readUniversalDataFromStream(const char_t* streamName, UniversalDataFormat& 
     if (errNone != error)
         return;
     out.reset();
-    readUniversalDataFromReader(*reader, out);
+    if (errNone != readUniversalDataFromReader(*reader, out))
+        out.reset(); //any errors - return empty UDF
 }

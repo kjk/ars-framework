@@ -42,19 +42,23 @@ public:
     ArsLexis::String getItemTextAsString(int intemNo, int elemNo) const;
   
     /**
-     * @return -1 if element doesn't represent valid positive number.
-     * @warning It's broken. It may return also -1 because the number is really -1 but nobody cares about it. 
-     * It may return a whole range of negative numbers, although the name states result is positive.
+     * without error check
+     * @return 0 if element doesn't represent valid number.
+     * @return 0 if element is equal 0 too
      */
-    long getItemTextAsPositiveLong(int itemNo, int elemNo) const;
+    long getItemTextAsLong(int itemNo, int elemNo) const;
     
     void swap(UniversalDataFormat& udf);
     
     void reset();
     
-    friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo);
+    friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, long& controlDataLength);
+
+    friend class UniversalDataHandler;
     
     bool empty() const {return header_.empty();}
+    
+    uint_t dataLength() {return data_.length();}
 };
 
 template<> 
