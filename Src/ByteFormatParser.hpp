@@ -49,7 +49,7 @@ class ByteFormatParser
         
     public:
 
-        Definition::Elements_t  elems_;
+        Definition::Elements_t  elems;
 
         ByteFormatParser();
 

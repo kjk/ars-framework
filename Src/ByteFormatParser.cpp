@@ -62,13 +62,13 @@ ByteFormatParser::ByteFormatParser():
 
 ByteFormatParser::~ByteFormatParser()
 {
-    std::for_each(elems_.begin(), elems_.end(), ObjectDeleter<DefinitionElement>());
+    std::for_each(elems.begin(), elems.end(), ObjectDeleter<DefinitionElement>());
 }
 
 void ByteFormatParser::reset()
 {
-    std::for_each(elems_.begin(), elems_.end(), ObjectDeleter<DefinitionElement>());
-    elems_.clear();
+    std::for_each(elems.begin(), elems.end(), ObjectDeleter<DefinitionElement>());
+    elems.clear();
     stack_.clear();
     start_ = 0;
     inLength_ = 0;
@@ -87,7 +87,7 @@ void ByteFormatParser::reset()
 
 void ByteFormatParser::replaceElements(Definition::Elements_t& el)
 {
-    el.swap(elems_);
+    el.swap(elems);
 }
 
 bool ByteFormatParser::parseParam()
@@ -240,35 +240,35 @@ void ByteFormatParser::parseElementParams()
     switch(currentElementType_)
     {
         case typeLineBreakElement:
-            elems_.push_back(currentElement_ = new LineBreakElement());
+            elems.push_back(currentElement_ = new LineBreakElement());
             break;
 
         case typeHorizontalLineElement:
-            elems_.push_back(currentElement_ = new HorizontalLineElement());
+            elems.push_back(currentElement_ = new HorizontalLineElement());
             break;
 
         case typeGenericTextElement:
-            elems_.push_back(currentElement_ = new GenericTextElement());
+            elems.push_back(currentElement_ = new GenericTextElement());
             break;
 
         case typeBulletElement:
-            elems_.push_back(currentElement_ = new BulletElement());
+            elems.push_back(currentElement_ = new BulletElement());
             break;
 
         case typeFormattedTextElement:
-            elems_.push_back(currentElement_ = new FormattedTextElement());
+            elems.push_back(currentElement_ = new FormattedTextElement());
             break;
 
         case typeListNumberElement:
-            elems_.push_back(currentElement_ = new ListNumberElement());
+            elems.push_back(currentElement_ = new ListNumberElement());
             break;
 
         case typeParagraphElement:
-            elems_.push_back(currentElement_ = new ParagraphElement());
+            elems.push_back(currentElement_ = new ParagraphElement());
             break;
 
         case typeIndentedParagraphElement:
-            elems_.push_back(currentElement_ = new ParagraphElement(true));
+            elems.push_back(currentElement_ = new ParagraphElement(true));
             break;
             
         default:
