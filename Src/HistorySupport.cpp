@@ -110,7 +110,7 @@ bool HistorySupport::handleEventInForm(EventType& event)
     if (errNone != err)
         return true;
     
-    if (0 == cache.entriesCount())
+    if (0 == cache.entriesCount() && NULL == popupMenuFillHandlerData)
         return true;
         
     if (errNone != (err = popupMenuFillHandler(cache, *popupMenu_.model(), popupMenuFillHandlerData)))
