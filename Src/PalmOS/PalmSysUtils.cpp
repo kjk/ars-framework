@@ -215,3 +215,18 @@ void ArsLexis::processReadyUiEvents()
         EvtAddEventToQueue(&event);
 }
 
+void ArsLexis::localizeNumber(char_t* begin, char_t* end)
+{
+    NumberFormatType numFormat=static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
+    char th, dec;
+    LocGetNumberSeparators(numFormat, &th, &dec);
+    while (begin!=end)
+    {
+        if (','==*begin)
+            *begin=th;
+        else if ('.'==*begin)
+            *begin=dec;
+        ++begin;            
+    }
+}
+

@@ -86,5 +86,42 @@ namespace ArsLexis
         }
     }
 
+    void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
+    {
+        Int16 w=width;
+        Int16 len=length;
+        Boolean dontMind;
+        FntCharsInWidth(text, &w, &len, &dontMind);
+        length=len;
+        width=w;
+    }	        
+
+    void Graphics::erase(const Rectangle& rect)
+    {
+        RectangleType nr=toNative(rect);
+        WinEraseRectangle(&nr, 0);
+    }
+    
+    void Graphics::copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
+    {
+        RectangleType nr=toNative(sourceArea);
+        WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
+    }
+
+    Graphics::Graphics(const Handle_t& handle):
+        handle_(handle),
+        lineHeight_(0),
+        effectiveLineHeight_(0),
+        baseline_(0),
+        effectiveBaseline_(0)
+    {
+        setFont(FntGetFont());
+    }
+ 
+    void Graphics::setClipping(const Rectangle& rect)
+    {
+        RectangleType nr=toNative(rect);
+        WinSetClip(&nr);        
+    }
  
 }

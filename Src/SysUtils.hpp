@@ -21,6 +21,8 @@ namespace ArsLexis
 
 	void processReadyUiEvents();
 	
+	void localizeNumber(char_t* begin, char_t* end);
+	
 }
 
 #endif

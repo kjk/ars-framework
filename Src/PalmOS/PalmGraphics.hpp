@@ -25,41 +25,25 @@ namespace ArsLexis {
         typedef PalmFont Font_t;
         typedef PalmFont State_t;
 
-        explicit Graphics(const Handle_t& handle=0):
-	        handle_(handle),
-	        lineHeight_(0),
-	        effectiveLineHeight_(0),
-	        baseline_(0),
-	        effectiveBaseline_(0)
-	    {
-	        setFont(FntGetFont());
-	    }
+        explicit Graphics(const Handle_t& handle=0);
         
         /**
          * Fills specified rectangle with current background color.
          * @param rect @c Rectangle to erase.
          */        
-        void erase(const Rectangle& rect)
-        {
-	        RectangleType nr=toNative(rect);
-	        WinEraseRectangle(&nr, 0);
-		}
+        void erase(const Rectangle& rect);
 	        
         /**
          * Copies specified rectangular area (bitmap) from this @c Graphics system into @c targetSystem.
          * @param sourceArea bounds of source bitmap in this @c Graphics system.
          */         
-        void copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
-	    {
-	        RectangleType nr=toNative(sourceArea);
-	        WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
-	    }
+        void copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft);
         
         void copyArea(const Rectangle& sourceArea, const Point& targetTopLeft)
         {copyArea(sourceArea, *this, targetTopLeft);}
 
         void drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1)
-	    {WinDrawLine(x0, y0, x1, y1);}
+        {WinDrawLine(x0, y0, x1, y1);}
 
         void drawLine(const Point& start, const Point& end)
         {drawLine(start.x, start.y, end.x, end.y);}
@@ -130,15 +114,15 @@ namespace ArsLexis {
         
         State_t pushState()
         {
-	        WinPushDrawState();
-	        return font_;
-	    }
+            WinPushDrawState();
+            return font_;
+        }
 
         void popState(const State_t& state)
-	    {
-	        setFont(state);
-	        WinPopDrawState();
-	    }
+        {
+            setFont(state);
+            WinPopDrawState();
+        }
         
         class StateSaver: private NonCopyable
         {
@@ -155,10 +139,10 @@ namespace ArsLexis {
         };      
         
         uint_t fontHeight() const
-	    {return effectiveLineHeight_;}
+        {return effectiveLineHeight_;}
         
         uint_t fontBaseline() const
-	    {return effectiveBaseline_;}
+        {return effectiveBaseline_;}
         
         void drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted=false);
         
@@ -170,18 +154,15 @@ namespace ArsLexis {
         uint_t textWidth(const char_t* text, uint_t length)
         {return FntCharsWidth(text, length);}
         
-        void charsInWidth(const char_t* text, uint_t& length, uint_t& width)
-        {
-	        Int16 w=width;
-	        Int16 len=length;
-	        Boolean dontMind;
-	        FntCharsInWidth(text, &w, &len, &dontMind);
-	        length=len;
-	        width=w;
-		}	        
+        void charsInWidth(const char_t* text, uint_t& length, uint_t& width);
         
         Handle_t handle() 
         {return handle_;}
+        
+        void resetClipping()
+        {WinResetClip();}
+        
+        void setClipping(const Rectangle& rect);
 
     };
 

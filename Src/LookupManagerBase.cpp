@@ -1,6 +1,7 @@
 #include <LookupManagerBase.hpp>
 #include <Graphics.hpp>
 #include <BaseTypes.hpp>
+#include <SysUtils.hpp>
 
 namespace ArsLexis {
     
@@ -42,6 +43,7 @@ namespace ArsLexis {
                     brf=0;
                 }
                 length=tprintf(buffer, format, bri, brf);
+                localizeNumber(buffer, buffer+length);
             }
         }
         if (drawMore)
