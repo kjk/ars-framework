@@ -80,7 +80,7 @@ namespace ArsLexis
 
 #endif
 
-    inline void TextToByteStream(String& inTxt, Narrow& outStream)
+    inline void TextToByteStream(String& inTxt, NarrowString& outStream)
     {
 #if defined(_WIN32)
         
@@ -97,7 +97,7 @@ namespace ArsLexis
 #endif
     }
 
-    inline void ByteStreamToText(Narrow& inStream, String& outTxt)
+    inline void ByteStreamToTxt(NarrowString& inStream, String& outTxt)
     {
 #if defined(_WIN32)
         

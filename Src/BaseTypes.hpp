@@ -86,7 +86,7 @@ namespace ArsLexis
 #endif
 
     typedef std::basic_string<char_t> String;
-    typedef std::basic_string<char>   Narrow;
+    typedef std::basic_string<char>   NarrowString;
 }  
 
 #if !defined(chrNull)
