@@ -155,7 +155,20 @@ namespace ArsLexis
         void setGraphics(DmResID bitmapId, DmResID selBitmapId=NULL)
         {CtlSetGraphics(object(), bitmapId, selBitmapId);}
                 
-    };        
+    };
+    
+    class List: public FormObjectWrapper<ListType>
+    {
+    public:
+
+        explicit List(Form& form, UInt16 id=frmInvalidObjectId):
+            FormObjectWrapper(form, id)
+        {}
+        
+        void setChoices(const char** choices, Int16 choicesCount)
+        {LstSetListChoices(object(), const_cast<char**>(choices), choicesCount);}
+        
+    };
     
 }
 

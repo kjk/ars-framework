@@ -34,9 +34,11 @@ protected:
     
     Err initialize();
     
-    bool handleEvent(EventType& event);
+    bool handleWindowEnter(const struct _WinEnterEventType& data);
     
-    bool handleOpen();
+    bool handleWindowExit(const struct _WinExitEventType& data);
+
+    bool handleEvent(EventType& event);
     
     bool handleMenuCommand(UInt16 itemId);
 

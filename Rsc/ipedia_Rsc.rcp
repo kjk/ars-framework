@@ -26,7 +26,8 @@ BEGIN
 	PULLDOWN "Options"
 	BEGIN
         	MENUITEM "Register" ID registerMenuItem  "R"
-       END
+       	MENUITEM "Search Results" ID searchResultsMenuItem  "S"
+END
 END	
 
 ALERT ID romIncompatibleAlert
@@ -198,7 +199,7 @@ FORM ID searchResultsForm   AT ( 2 2 156 156 )
 NOFRAME  MODAL
 BEGIN
         TITLE "Search results"
-	LIST ""   ID searchResultsList  AT (1 14 154 123) VISIBLEITEMS 11
+	LIST ""   ID searchResultsList  AT (2 14 152 123) VISIBLEITEMS 11
 	
 	
 	

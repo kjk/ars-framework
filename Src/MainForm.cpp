@@ -21,13 +21,6 @@ MainForm::~MainForm()
 {
 }
 
-bool MainForm::handleOpen()
-{
-    FormObject object(*this, termInputField);
-    object.focus();
-    return iPediaForm::handleOpen();
-}
-
 
 void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
 {
@@ -391,6 +384,11 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             handled=true;
             break;
             
+        case searchResultsMenuItem:
+            Application::popupForm(searchResultsForm);
+            handled=true;
+            break;
+            
         default:
             handled=iPediaForm::handleMenuCommand(itemId);
     }
@@ -407,3 +405,21 @@ void MainForm::copySelectionToClipboard()
     }
 }
 
+bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
+{
+    const FormType* form=*this;
+    if (data.enterWindow==static_cast<const void*>(form))
+    {
+        FormObject object(*this, termInputField);
+        object.focus();
+    }
+    return iPediaForm::handleWindowEnter(data);
+}
+
+bool MainForm::handleWindowExit(const struct _WinExitEventType& data)
+{
+    const FormType* form=*this;
+    if (data.exitWindow==static_cast<const void*>(form))
+        releaseFocus();
+    return iPediaForm::handleWindowExit(data);
+}

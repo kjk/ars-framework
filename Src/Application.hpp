@@ -221,8 +221,24 @@ namespace ArsLexis
              */
             featureFirstAvailable
         };
-    
+        
+/*
+        template<class Predicate>
+        Form* getOpenForm(const Predicate& pred) const
+        {
+            Form* result=0;
+            Forms_t::const_iterator it=std::find_if(forms_.begin(), forms_.end(), pred);
+            if (it!=forms_.end())
+                result=*it;
+            return result;
+        }
+*/
+
         Form* getOpenForm(UInt16 id) const;
+        Form* getOpenForm(WinHandle winHandle) const;
+
+        Form* getOpenForm(FormType* form) const
+        {return getOpenForm(FrmGetWindowHandle(form));}
         
         virtual Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
 

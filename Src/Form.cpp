@@ -6,22 +6,33 @@ namespace ArsLexis
 
     Boolean Form::routeEventToForm(EventType* event)
     {
-        UInt16 formId;
+        Form* form=0;
+        Application& app=Application::instance();
         eventsEnum eventType=event->eType;
         if ((frmLoadEvent<=eventType && frmTitleSelectEvent>=eventType) && frmSaveEvent!=eventType)
-            formId=event->data.frmLoad.formID;  // All of these events take formID as their first data member.
+            form=app.getOpenForm(event->data.frmLoad.formID);  // All of these events take formID as their first data member.
         else
-            formId=FrmGetActiveFormID();
-        Application& app=Application::instance();
-        Form* form=app.getOpenForm(formId);
+        {
+            switch (eventType)
+            {
+                case winExitEvent:
+                    form=app.getOpenForm(event->data.winExit.exitWindow);
+                    if (0==form)
+                        form=app.getOpenForm(FrmGetActiveFormID());
+                    break;
+                    
+                case winEnterEvent:
+                    form=app.getOpenForm(event->data.winEnter.enterWindow);
+                    if (0!=form)
+                        break;
+                    
+                default:
+                    form=app.getOpenForm(FrmGetActiveFormID());
+            }
+            
+        }
         assert(form!=0);
         return form->handleEvent(*event);
-    }
-    
-    void Form::activate() 
-    {
-        assert(form_!=0);
-        FrmSetActiveForm(form_);
     }
     
     Form::Form(Application& app, UInt16 id):
@@ -58,6 +69,14 @@ namespace ArsLexis
         bool handled=false;
         switch (event.eType)
         {
+            case winEnterEvent:
+                handled=handleWindowEnter(event.data.winEnter);
+                break;
+
+            case winExitEvent:
+                handled=handleWindowExit(event.data.winExit);
+                break;
+                
             case frmOpenEvent:
                 handled=handleOpen();
                 break;

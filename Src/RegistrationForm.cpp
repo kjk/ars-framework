@@ -65,7 +65,6 @@ void RegistrationForm::handleControlSelect(const ctlSelect& data)
     closePopup();
 }
 
-
 bool RegistrationForm::handleEvent(EventType& event)
 {
     bool handled=false;

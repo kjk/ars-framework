@@ -4,6 +4,7 @@
 #include "MainForm.hpp"
 #include "NetLibrary.hpp"
 #include "RegistrationForm.hpp"
+#include "SearchResultsForm.hpp"
 
 IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 
@@ -147,6 +148,10 @@ Form* iPediaApplication::createForm(UInt16 formId)
             
         case registrationForm:
             form=new RegistrationForm(*this);
+            break;
+            
+        case searchResultsForm:
+            form=new SearchResultsForm(*this);
             break;
         
         default:

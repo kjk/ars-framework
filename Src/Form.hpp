@@ -49,10 +49,13 @@ namespace ArsLexis
         virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
         {FrmDrawForm(form_);}
         
-        virtual bool handleEvent(EventType& event);
+        virtual bool handleWindowEnter(const struct _WinEnterEventType& data)
+        {return false;}
         
-        WinHandle windowHandle() const
-        {return FrmGetWindowHandle(form_);}
+        virtual bool handleWindowExit(const struct _WinExitEventType& data)
+        {return false;}
+        
+        virtual bool handleEvent(EventType& event);
         
         virtual bool handleMenuCommand(UInt16 itemId)
         {return false;}
@@ -65,13 +68,17 @@ namespace ArsLexis
         
         virtual ~Form();
         
+        WinHandle windowHandle() const
+        {return FrmGetWindowHandle(form_);}
+        
         Application& application()
         {return application_;}
         
         const Application& application() const
         {return application_;}
         
-        void activate();
+        void activate()
+        {FrmSetActiveForm(form_);}
         
         UInt16 id() const 
         {return id_;}
@@ -124,6 +131,9 @@ namespace ArsLexis
 
         UInt16 focusedObject() const
         {return FrmGetFocus(form_);}
+        
+        void releaseFocus()
+        {FrmSetFocus(form_, noFocus);}
 
         friend class Application;
     };

@@ -26,7 +26,7 @@ class iPediaApplication: public ArsLexis::Application
     iPediaHyperlinkHandler hyperlinkHandler_;
     ArsLexis::Resolver* resolver_;
     
-    ArsLexis::String termList_;
+    ArsLexis::String searchResults_;
         
     void detectViewer();
     
@@ -105,11 +105,11 @@ public:
         UInt16 alertId;
     };
     
-    void setTermList(const ArsLexis::String& termList)
-    {termList_=termList;}
+    void setSearchResults(const ArsLexis::String& searchResults)
+    {searchResults_=searchResults;}
     
-    const ArsLexis::String& termList() const
-    {return termList_;}
+    const ArsLexis::String& searchResults() const
+    {return searchResults_;}
     
     void sendDisplayAlertEvent(UInt16 alertId);
     

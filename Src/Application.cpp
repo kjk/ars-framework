@@ -95,10 +95,10 @@ namespace ArsLexis
         return error;
     }
     
-    struct FormComparator
+    struct FormIdComparator
     {
         UInt16 id;
-        FormComparator(UInt16 anId):
+        FormIdComparator(UInt16 anId):
             id(anId)
         {}
         
@@ -112,11 +112,35 @@ namespace ArsLexis
     Form* Application::getOpenForm(UInt16 id) const
     {
         Form* result=0;
-        Forms_t::const_iterator it=std::find_if(forms_.begin(), forms_.end(), FormComparator(id));
+        Forms_t::const_iterator it=std::find_if(forms_.begin(), forms_.end(), FormIdComparator(id));
         if (it!=forms_.end())
             result=*it;
         return result;
     }
+    
+    struct WinHandleComparator
+    {
+        WinHandle winHandle;
+        WinHandleComparator(WinHandle wh):
+            winHandle(wh)
+        {}
+        
+        bool operator()(const Form* form) const
+        {
+            return form->windowHandle()==winHandle;
+        }
+        
+    };
+   
+    Form* Application::getOpenForm(WinHandle winHandle) const
+    {
+        Form* result=0;
+        Forms_t::const_iterator it=std::find_if(forms_.begin(), forms_.end(), WinHandleComparator(winHandle));
+        if (it!=forms_.end())
+            result=*it;
+        return result;
+    }
+    
     
     Form* Application::createForm(UInt16 formId)
     {
