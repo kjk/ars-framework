@@ -300,7 +300,7 @@ bool TextRenderer::handleNavigatorKey(Definition::NavigatorKey navKey)
         updateForm(graphics);
     }
     fireDrawCompleted();
-    if (handled)
+    if (handled && NULL != scrollBar_)
         doUpdateScrollbar();
     return handled;
 }

@@ -1,7 +1,6 @@
 #ifndef ARSLEXIS_POPUP_MENU_HPP__
 #define ARSLEXIS_POPUP_MENU_HPP__
 
-#include <Window.hpp>
 #include <TextRenderer.hpp>
 #include <RenderingPreferences.hpp>
 
@@ -10,12 +9,13 @@ namespace ArsLexis
 
 class Form;
 
-class PopupMenu /*: public Window */
+class PopupMenu
 {
 
     RenderingPreferences prefs_;
     bool running_;
     Rectangle bounds_;
+    UInt16 prevFocusIndex_;
     
 public:
 
