@@ -26,9 +26,9 @@ namespace ArsLexis
     inline bool equalsIgnoreCase(const String& s1, const String& s2)
     {return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2.data(), s2.data()+s2.length());}
 
-    Err numericValue(const char* begin, const char* end, long& result, uint_t base=10);
+    status_t numericValue(const char* begin, const char* end, long& result, uint_t base=10);
     
-    inline Err numericValue(const String& text, long& result, uint_t base=10)
+    inline status_t numericValue(const String& text, long& result, uint_t base=10)
     {
         return numericValue(text.data(), text.data()+text.length(), result, base);
     }

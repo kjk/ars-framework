@@ -49,7 +49,7 @@ namespace ArsLexis
         }
         return 0==*start;
     }
-    
+
     bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end)
     {
         while (s1start!=s1end && s2start!=s2end)
@@ -68,13 +68,14 @@ namespace ArsLexis
     
 }
 
-Err ArsLexis::numericValue(const char* begin, const char* end, long& result, uint_t base)
+ArsLexis::status_t ArsLexis::numericValue(const char* begin, const char* end, long& result, uint_t base)
 {
-    Err error=errNone;
-    bool negative=false;
-    Int32 res=0;
-    String numbers("0123456789abcdefghijklmnopqrstuvwxyz");
-    char buffer[2];
+    ArsLexis::status_t error=errNone;
+    bool     negative=false;
+    long     res=0;
+    String   numbers("0123456789abcdefghijklmnopqrstuvwxyz");
+    char_t   buffer[2];
+
     if (begin>=end || base>numbers.length())
     {    
         error=sysErrParamErr;
@@ -92,8 +93,8 @@ Err ArsLexis::numericValue(const char* begin, const char* end, long& result, uin
     buffer[1]=chrNull;
     while (begin!=end) 
     {
-        buffer[0]=*(begin++);
-        StrToLower(buffer, buffer); 
+        // TODO: will it work with unicode on WINCE?
+        buffer[0]=(char_t)_totlower(*(begin++));
         String::size_type num=numbers.find(buffer);
         if (num>=base)
         {   
@@ -122,9 +123,9 @@ ArsLexis::String ArsLexis::hexBinEncode(const String& in)
     String::const_iterator end=in.end();
     while (it!=end)
     {
-        UInt8 b=*(it++);
-        out.append(1, HEX_DIGITS[b/16]);
-        out.append(1, HEX_DIGITS[b%16]);
+        char_t b=*(it++);
+        out.append(1, HEX_DIGITS[(int)b/16]);
+        out.append(1, HEX_DIGITS[(int)b%16]);
     }
     return out;
 }

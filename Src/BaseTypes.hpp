@@ -23,10 +23,18 @@ namespace ArsLexis
 
 # define tstrlen _tcslen
 # define tprintf _stprintf
-# define ticks	GetTickCount
+# define ticks   GetTickCount
+
+// ugly hack to make Text.cpp compile under VC++ 7
+// define various Palm-isms unavialble under WIN
+#define errNone 0
+#define sysErrParamErr 1
+#define chrNull 0x0000
 
 #else
-    
+
+# define _totlower tolower
+
 namespace ArsLexis
 {
     
@@ -35,7 +43,7 @@ namespace ArsLexis
 # define _T(a) a
 
 # if defined(_PALM_OS)    
-		
+
     typedef UInt32 tick_t;
     
     typedef Err status_t;
