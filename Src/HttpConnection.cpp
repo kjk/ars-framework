@@ -49,6 +49,7 @@ namespace ArsLexis {
         contentLength_(contentLengthUnavailable),
         readContentLength_(0)
     {
+        log().setThreshold(Logger::logEverything);
     }        
 
     HttpConnection::~HttpConnection() 
