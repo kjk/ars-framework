@@ -36,7 +36,7 @@ def convertDefinition(text):
 	text+='\n'
 	return text
 
-query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 and cur_title='Computer_science' """
+query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0  """
 
 if len(sys.argv)>1:
 	query+=""" and cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
