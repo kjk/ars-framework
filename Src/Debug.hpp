@@ -66,6 +66,8 @@ inline void operator delete[](void *ptr)
     ::operator delete(ptr);
 }
 
+#include <string>
+
 namespace ArsLexis 
 {
 
@@ -128,6 +130,7 @@ namespace ArsLexis
         
     };
 
+    typedef std::basic_string<char, std::char_traits<char>, Allocator<char> > String;
 }
 
 #endif

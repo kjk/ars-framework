@@ -15,6 +15,24 @@ namespace ArsLexis
         }
     };
 
+
+    class FontSaver 
+    {
+        FontID originalFontId_;
+        FontSaver(const FontSaver&);
+        FontSaver& operator=(const FontSaver&);
+    public:
+    
+        FontSaver():
+            originalFontId_(FntGetFont())
+        {}
+        
+        ~FontSaver()
+        {
+            FntSetFont(originalFontId_);
+        }
+    };
+
 }
 
 #endif

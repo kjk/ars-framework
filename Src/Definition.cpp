@@ -64,142 +64,101 @@ void Definition::scroll(Int16 delta)
     
 }
 
-Boolean Definition::renderSingleElement(RenderingContext& context, const ElementPosition_t& currentElement, Boolean firstInLine)
-{
-    (*currentElement)->render(context);
-    if (context.requestNewLine)
-    {
-        context.requestNewLine=false;
-        if (!firstInLine) // If it's not the sole element in the line, check if it fits if it gets a new line.
-        {
-            UInt16 backupRenderingProgress=context.renderingProgress;
-            Coord backupAvailableWidth=context.availableWidth;
-            context.availableWidth=lastBounds_.width();
-            Boolean backupCalculateOnly=context.calculateOnly; 
-            context.calculateOnly=true;
-            (*currentElement)->render(context);
-            context.calculateOnly=backupCalculateOnly;
-            context.renderingProgress=backupRenderingProgress;
-            if (!context.requestNewLine) // It will fit if it gets a new line - finish with this one, so that element won't be splitted in ugly way.
-            {
-                context.renderingProgress=backupRenderingProgress; // Restore element's rendering progress, so it will start in place we finished.
-                return true;
-            }
-            else // Restore available width to previous setting and prepare for splitting.
-            {
-                assert(context.renderingProgress==backupRenderingProgress);
-                context.availableWidth=backupAvailableWidth;
-                context.requestNewLine=false;
-            }
-        }            
-        context.force=true; // It won't fit other way, so force splitting.
-        (*currentElement)->render(context);
-        context.force=false;
-        return true; 
-    }
-    context.availableWidth-=context.width;
-    return false;
-}
-
-void Definition::calculateLine(RenderingContext& context, ElementPosition_t& currentElement, const ElementPosition_t& firstElement, UInt16 renderingProgress)
-{
-    LineHeader lineHeader;
-    lineHeader.firstElement=currentElement;
-    lineHeader.renderingProgress=context.renderingProgress;
-    context.availableWidth=lastBounds_.width();
-    context.height=0;
-    context.baseLine=0;
-    context.width=0;
-    Boolean firstInLine=true;
-    while (currentElement!=elements_.end())
-    {
-        if (!firstInLine && (*currentElement)->requiresNewLine() && 0==context.renderingProgress)  // If we have new-line element, and it's not a first element in line, we must finish this line.
-            break;
-            
-        UInt16 progressBefore=context.renderingProgress; // Save element's current progress so that we can detect where should be our new firstLine_
-        Boolean forceNewLine=renderSingleElement(context, currentElement, firstInLine);
-        firstInLine=false;
-        if ((*currentElement==*firstElement) && (renderingProgress>=progressBefore) && (renderingProgress<context.renderingProgress))
-            firstLine_=lines_.size();
-
-        if (context.elementCompleted)
-        {
-            ++currentElement;
-            context.renderingProgress=0;
-            context.elementCompleted=false;
-        }
-        
-        if (0==context.availableWidth || forceNewLine)
-            break;
-    }
-    lineHeader.height=context.height;
-    lineHeader.baseLine=context.baseLine;
-    context.y+=context.height;
-    lines_.push_back(lineHeader);
-}
-
-void Definition::renderLine(RenderingContext& context, const Lines_t::iterator& line)
-{
-    ElementPosition_t currentElement=line->firstElement;
-    context.renderingProgress=line->renderingProgress;
-    context.availableWidth=lastBounds_.width();
-    context.height=line->height;
-    context.baseLine=line->baseLine;
-    context.width=0;
-    Boolean firstInLine=true;
-    while (currentElement!=elements_.end())
-    {
-        Boolean forceNewLine=renderSingleElement(context, currentElement, firstInLine);
-        firstInLine=false;
-
-        if (context.elementCompleted)
-        {
-            ++currentElement;
-            context.renderingProgress=0;
-            context.elementCompleted=false;
-        }
-        
-        if (0==context.availableWidth || forceNewLine)
-            break;
-    }
-    context.y+=context.height;
-}
-
 void Definition::calculateLastLine()
 {
     UInt16 height=0;
+    lastLine_=0;
     Lines_t::iterator end=lines_.end();
     for (Lines_t::iterator line=lines_.begin()+firstLine_; line!=end; ++line)
     {
         height+=line->height;
         if (height>lastBounds_.height())
+        {
             lastLine_=line-lines_.begin();
+            break;
+        }
     }
+    if (!lastLine_)
+        lastLine_=lines_.size();
 }
 
-void Definition::calculate(const ElementPosition_t& firstElement, UInt16 renderingProgress)
+void Definition::renderLayout()
 {
-    RenderingContext context(*this, lastBounds_);
-    ElementPosition_t end=elements_.end();
-    ElementPosition_t currentElement=elements_.begin();
-    while (currentElement!=end)
-        calculateLine(context, currentElement, firstElement, renderingProgress);
-    calculateLastLine();        
+    ElementPosition_t last=elements_.end();
+    Lines_t::iterator lastLine=lines_.begin()+lastLine_;
+    DefinitionElement::RenderContext renderContext(*this, lastBounds_.x(), lastBounds_.y(), topOffset_, lastBounds_.width());
+    for (Lines_t::iterator line=lines_.begin()+firstLine_; line!=lastLine; ++line)
+    {
+        renderContext.usedWidth=0;
+        renderContext.usedHeight=line->height;
+        renderContext.baseLine=line->baseLine;
+        renderContext.renderingProgress=line->renderingProgress;
+        ElementPosition_t current=line->firstElement;
+        Boolean lineFinished=false;    
+        while (!lineFinished && current!=last)
+        {
+            (*current)->render(renderContext);
+            if (renderContext.isElementCompleted())
+            {
+                ++current;
+                renderContext.renderingProgress=0;
+                if (renderContext.availableWidth()==0 || current==last || (*current)->requiresNewLine())
+                    lineFinished=true;
+            }
+            else
+                lineFinished=true;
+        }
+        renderContext.top+=renderContext.usedHeight;
+    }    
 }
 
-void Definition::renderCalculated()
+void Definition::calculateLayout(const ElementPosition_t& firstElement, UInt16 renderingProgress)
 {
-    RenderingContext context(*this, lastBounds_);
-    context.calculateOnly=false;
-    Lines_t::iterator end=lines_.begin()+lastLine_;
-    for (Lines_t::iterator line=lines_.begin()+firstLine_; line!=end; ++line)
-        renderLine(context, line);
+    Coord topOffset=0;
+    ElementPosition_t last=elements_.end();
+    ElementPosition_t current=elements_.begin();
+    DefinitionElement::LayoutContext layoutContext(lastBounds_.width());
+    LineHeader lastLine;
+    lastLine.firstElement=current;
+    while (current!=last)
+    {
+        UInt16 progressBefore=layoutContext.renderingProgress;
+        (*current)->calculateLayout(layoutContext);
+        
+        if (current==firstElement && progressBefore<=renderingProgress && layoutContext.renderingProgress>renderingProgress)
+        {
+            topOffset_=topOffset;
+            firstLine_=lines_.size();
+        }
+        
+        Boolean startNewLine=false;    
+        if (layoutContext.isElementCompleted())
+        {
+            ++current;
+            layoutContext.renderingProgress=0;
+            if (layoutContext.availableWidth()==0 || current==last || (*current)->requiresNewLine())
+                startNewLine=true;
+        }
+        else
+            startNewLine=true;
+            
+        if (startNewLine)
+        {
+            lastLine.height=layoutContext.usedHeight;
+            lastLine.baseLine=layoutContext.baseLine;
+            topOffset+=lastLine.height;
+            lines_.push_back(lastLine);
+            layoutContext.startNewLine();
+            lastLine.firstElement=current;
+            lastLine.renderingProgress=layoutContext.renderingProgress;
+        }
+    }
+    calculateLastLine();
 }
 
-
-void Definition::render(const ArsLexis::Rectangle& bounds)
+void Definition::render(const ArsLexis::Rectangle& bounds, const RenderingPreferences& preferences)
 {
-    if (bounds.width()!=lastBounds_.width())
+    if (bounds.width()!=lastBounds_.width() || lastPreferences_.synchronize(preferences))
     {
         ElementPosition_t firstElement=elements_.begin(); // This will be used in calculating first line we should show.
         UInt16 renderingProgress=0;
@@ -211,16 +170,30 @@ void Definition::render(const ArsLexis::Rectangle& bounds)
         clearHotSpots();
         clearLines();
         lastBounds_=bounds;
-        calculate(firstElement, renderingProgress);
+        calculateLayout(firstElement, renderingProgress);
     }
-    renderCalculated();
+    else if (bounds.height()!=lastBounds_.height())
+    {
+        lastBounds_=bounds;
+        calculateLastLine();
+    }
+    else
+        lastBounds_=bounds;
+    renderLayout();
 }
-    
+   
+ 
 void Definition::swap(Definition& other)
 {
     elements_.swap(other.elements_);
     lines_.swap(other.lines_);
-    std::swap(firstLine_, other.firstLine_);    std::swap(lastLine_, other.lastLine_);
+    std::swap(firstLine_, other.firstLine_);
+    std::swap(lastLine_, other.lastLine_);
     std::swap(lastBounds_, other.lastBounds_);
     hotSpots_.swap(other.hotSpots_);
+}
+
+void Definition::appendElement(DefinitionElement* element)
+{
+    elements_.push_back(element);
 }
