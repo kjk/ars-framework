@@ -23,7 +23,7 @@ namespace ArsLexis
     typedef NetSocketLingerType NativeSocketLinger_t;
     typedef NetSocketAddrEnum NativeSockAddrFamily_t;
     typedef NetSocketTypeEnum NativeSocketType_t;
-    
+
     const NativeSocket_t invalidSocket = -1;
     const NetSocketAddrEnum socketAddrINET = netSocketAddrINET;
     const NetSocketTypeEnum socketTypeStream = netSocketTypeStream;
@@ -33,7 +33,7 @@ namespace ArsLexis
     const NetSocketOptEnum socketOptSockLinger=netSocketOptSockLinger;
     const NetSocketOptEnum socketOptSockErrorStatus=netSocketOptSockErrorStatus;
     const NetSocketOptEnum socketOptTCPMaxSeg=netSocketOptTCPMaxSeg;
-    
+
     #define netToHostS(x) NetNToHS(x)
     #define hostToNetS(x) NetHToNS(x)
 
@@ -56,6 +56,18 @@ namespace ArsLexis
     const int socketOptLevelTCP = IPPROTO_TCP;
     const int  socketOptSockErrorStatus= SO_ERROR ;
     const int socketOptTCPMaxSeg=netFeatureUnimplemented;
+
+// on CE 3.0 (Smartphone 2002/Pocket PC 2002) SD_SEND, SD_RECEIVE and SD_BOTH
+// don't seem to be defined and docs don't say what they are
+// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcesdkr/html/wcesdkrshutdown_function.asp
+// C:\Program Files\Windows CE Tools\wce300\Pocket PC 2002\include\WINSOCK.H
+// this might be not correct, defined after http://cryptopp.sourceforge.net/docs/ref5/socketft_8h-source.html
+
+#ifndef SD_RECEIVE
+#define SD_RECEIVE 0
+#define SD_SEND 1
+#define SD_BOTH 2
+#endif
     const int netSocketDirOutput = SD_SEND;
     const int netSocketDirInput = SD_RECEIVE;
     const int netSocketDirBoth = SD_BOTH;
