@@ -9,7 +9,7 @@ namespace ArsLexis
 {
     class NetLibrary;
 
-    status_t resolve(SocketAddress& out, NetLibrary& netLib, const String& address, ushort_t port=0, ulong_t timeout=evtWaitForever);
+    status_t resolve(SocketAddress& out, NetLibrary& netLib, char_t *address, ushort_t port=0, ulong_t timeout=evtWaitForever);
 }
 
 #endif    

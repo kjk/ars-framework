@@ -19,7 +19,7 @@ namespace ArsLexis
         if (portLength>0)
         {
             long value=0;
-            status_t error=numericValue(origAddress.data()+pos+1, origAddress.data()+pos+1+portLength, value);
+            status_t error=numericValue(origAddress.c_str()+pos+1, origAddress.c_str()+pos+1+portLength, value);
             if ((errNone!=error) || (value>(ushort_t)-1))
                 return netErrParamErr;
 
@@ -50,13 +50,18 @@ namespace ArsLexis
         return errNone;
     }
    
-    status_t resolve(SocketAddress& out, NetLibrary& netLib, const String& address, ushort_t port, ulong_t timeout)
+    status_t resolve(SocketAddress& out, NetLibrary& netLib, char_t *address, ushort_t port, ulong_t timeout)
     {
-        String validAddress;                
+        String validAddress;
+        String addressStr(address);
         status_t error=validateAddress(address, validAddress, port);
         if (error)
             return error;
         INetSocketAddress addr;
+        // TODO: the assumption that the ip address is numeric if the first
+        // letter is a digit is incorrect. A symbolic name can also start
+        // with a digit. Better test would be to check if the whole name
+        // consists of digits or "."
         if (!validAddress.empty() && isDigit(validAddress[0]))
         {
             error=netLib.addrAToIN(validAddress.c_str(), addr);

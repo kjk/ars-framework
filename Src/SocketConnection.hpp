@@ -76,7 +76,6 @@ namespace ArsLexis
         SocketConnectionManager& manager_;
         State                    state_;
         long                     transferTimeout_;
-        ArsLexis::String         addressString_;
         SocketAddress            address_;
         mutable ChildLogger      log_;
         Socket                   socket_;
@@ -114,6 +113,7 @@ namespace ArsLexis
         SocketConnection(SocketConnectionManager& manager);
 
     public:
+        char_t *  serverAddress;
 
         State state() const
         {return state_;}
@@ -130,9 +130,6 @@ namespace ArsLexis
         };
 
         virtual status_t enqueue();
-
-        void setAddress(const String& address)
-        {addressString_=address;}
 
         void setTransferTimeout(long timeout)
         {
