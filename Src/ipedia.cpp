@@ -9,7 +9,6 @@ void std::__msl_error(const char* str)
 
 void ArsLexis::handleBadAlloc()
 {
-    FrmAlert(notEnoughMemoryAlert);
     ErrThrow(memErrNotEnoughSpace);    
 }
 

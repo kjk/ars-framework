@@ -5,7 +5,7 @@
 namespace ArsLexis 
 {
 
-    Boolean DIA_Support::tryInitSonySilkLib()
+    Boolean DIA_Support::tryInitSonySilkLib()  throw()
     {
         Err error=sonySilkLib_.initialize(sonySysLibNameSilk, sonySysFileCSilkLib);
         if (!error) {
@@ -37,7 +37,7 @@ namespace ArsLexis
         return hasSonySilkLib();
     }
 
-    DIA_Support::DIA_Support():
+    DIA_Support::DIA_Support() throw():
         hasPenInputMgr_(false),
         hasSonySilkLib_(false),
         sonyLibIsVsk_(false)
@@ -51,7 +51,7 @@ namespace ArsLexis
         }
     }
 
-    void DIA_Support::sonySilkLibDispose()
+    void DIA_Support::sonySilkLibDispose() throw()
     {
         assert(hasSonySilkLib());
         if (sonyLibIsVsk_)
@@ -71,13 +71,13 @@ namespace ArsLexis
         }
     }
     
-    DIA_Support::~DIA_Support()
+    DIA_Support::~DIA_Support() throw()
     {
         if (hasSonySilkLib())
             sonySilkLibDispose();
     }
 
-    void DIA_Support::handleNotify() const
+    void DIA_Support::handleNotify() const throw()
     {
         EventType event;
         MemSet(&event, sizeof(event), 0);
@@ -90,7 +90,7 @@ namespace ArsLexis
         EvtAddUniqueEventToQueue(&event, 0, true);
     }
     
-    Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const
+    Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const throw()
     {
         FormType* formPtr=form;
         assert(formPtr);

@@ -80,6 +80,7 @@ void Definition::clear()
     clearHotSpots();
     clearLines();
     std::for_each(elements_.begin(), elements_.end(), ObjectDeleter<DefinitionElement>());
+    elements_.clear();
     bounds_.clear();
 }
 

@@ -35,6 +35,16 @@ DefinitionParser::DefinitionParser():
     textPosition_(0)
 {
 }    
+
+void DefinitionParser::clear()
+{
+    textLine_.clear();
+    parentsStack_.clear();
+    currentNumberedList_.clear();
+    numListsStack_.clear();
+    lastListNesting_.clear();
+    definition_.clear();
+}
     
 DefinitionParser::~DefinitionParser()
 {}
@@ -638,70 +648,78 @@ void DefinitionParser::parseTextLine()
 
 Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool finish)
 {
-    text_=&text;
-    parsePosition_=0;
-    lineEnd_=0;
-    bool goOn=false;
-    do 
-    {
-#ifndef NDEBUG    
-        const char* text=text_->data()+parsePosition_;
-#endif        
-        goOn=detectNextLine(length, finish);
-        if (goOn || finish)
+    Err error=errNone;
+    ErrTry {
+        text_=&text;
+        parsePosition_=0;
+        lineEnd_=0;
+        bool goOn=false;
+        do 
         {
-            if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_)
+#ifndef NDEBUG    
+            const char* text=text_->data()+parsePosition_;
+#endif        
+            goOn=detectNextLine(length, finish);
+            if (goOn || finish)
+            {
+                if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_)
+                    popParent(); 
+                    
+                if (listElementLine==previousLineType_ && listElementLine!=lineType_)
+                    manageListNesting(String());
+                    
+                switch (lineType_)
+                {
+                    case headerLine:
+                        parseHeaderLine();
+                        break;
+                        
+                    case textLine:
+                        parseTextLine();
+                        break;                    
+                    
+                    case horizontalBreakLine:
+                        appendElement(new HorizontalLineElement());
+                        break;
+                        
+                    case emptyLine:
+                        appendElement(new LineBreakElement());
+                        break;
+                        
+                    case listElementLine:
+                        parseListElementLine();
+                        break;
+                        
+                    case definitionListLine:
+                        parseDefinitionListLine();
+                        break;
+                        
+                    default:
+                        assert(false);        
+                }
+                parsePosition_=lineEnd_+1;
+            }
+        } while (goOn);
+        if (finish && emptyLine!=lineType_)
+        {
+            if (lineAllowsContinuation(previousLineType_))
                 popParent(); 
                 
-            if (listElementLine==previousLineType_ && listElementLine!=lineType_)
+            if (listElementLine==previousLineType_)
                 manageListNesting(String());
-                
-            switch (lineType_)
-            {
-                case headerLine:
-                    parseHeaderLine();
-                    break;
-                    
-                case textLine:
-                    parseTextLine();
-                    break;                    
-                
-                case horizontalBreakLine:
-                    appendElement(new HorizontalLineElement());
-                    break;
-                    
-                case emptyLine:
-                    appendElement(new LineBreakElement());
-                    break;
-                    
-                case listElementLine:
-                    parseListElementLine();
-                    break;
-                    
-                case definitionListLine:
-                    parseDefinitionListLine();
-                    break;
-                    
-                default:
-                    assert(false);        
-            }
-            parsePosition_=lineEnd_+1;
-        }
-    } while (goOn);
-    if (finish && emptyLine!=lineType_)
-    {
-        if (lineAllowsContinuation(previousLineType_))
-            popParent(); 
             
-        if (listElementLine==previousLineType_)
-            manageListNesting(String());
-        
-        assert(numListsStack_.empty());
-        assert(currentNumberedList_.empty());            
+            assert(numListsStack_.empty());
+            assert(currentNumberedList_.empty());            
+        }
+        if (!finish)
+            length=parsePosition_;
+//        error errNone; // Since in wikipedia anybody may enter anything he likes, complaining about definition formatting would be inappropriate.
     }
-    if (!finish)
-        length=parsePosition_;
-    return errNone; // Since in wikipedia anybody may enter anything he likes, complaining about definition formatting would be inappropriate.
+    ErrCatch (ex) {
+        clear();
+        error=ex;
+    } ErrEndCatch        
+    return error;
 }
 
 void DefinitionParser::updateDefinition(Definition& definition)

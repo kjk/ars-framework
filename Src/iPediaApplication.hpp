@@ -42,6 +42,7 @@ public:
 
     static const UInt32 requiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStageDevelopment,0);
     static const UInt32 creatorId=appFileCreator;
+    static const UInt16 notEnoughMemoryAlertId=notEnoughMemoryAlert;
     
     const ArsLexis::DIA_Support& getDIASupport() const
     {return diaSupport_;}

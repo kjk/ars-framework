@@ -34,32 +34,32 @@ namespace ArsLexis
 
         Library sonySilkLib_;
                         
-        DIA_Support(const DIA_Support&);
-        DIA_Support& operator=(const DIA_Support&);
+        DIA_Support(const DIA_Support&) throw();
+        DIA_Support& operator=(const DIA_Support&) throw();
         
-        Boolean tryInitSonySilkLib();
-        void sonySilkLibDispose();
+        Boolean tryInitSonySilkLib() throw();
+        void sonySilkLibDispose() throw();
         
     public:
         
-        DIA_Support();
-        ~DIA_Support();
+        DIA_Support() throw();
+        ~DIA_Support() throw();
 
-        Boolean hasPenInputManager() const 
+        Boolean hasPenInputManager() const  throw()
         {return hasPenInputMgr_;}
         
-        Boolean hasSonySilkLib() const 
+        Boolean hasSonySilkLib() const  throw()
         {return hasSonySilkLib_;}
         
-        Boolean available() const 
+        Boolean available() const  throw()
         {return hasPenInputManager()||hasSonySilkLib();}
 
-        UInt32 notifyType() const 
+        UInt32 notifyType() const  throw()
         {return hasPenInputManager()?sysNotifyDisplayResizedEvent:sysNotifyDisplayChangeEvent;}        
        
-        void handleNotify() const;
+        void handleNotify() const throw();
         
-        Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const;
+        Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const throw();
         
     };
     

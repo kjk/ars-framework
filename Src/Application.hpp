@@ -34,6 +34,11 @@ namespace ArsLexis
      * Should be used only by subclassing. To ensure proper application control flow 
      * the proper way to use @c Application class should be through call to 
      * @c Application::main(), passing actual subclass as template argument.
+     * Each subclass should declare the following static variables: 
+     *  * static const UInt32 requiredRomVersion
+     *  * static const UInt32 creatorId=appFileCreator;
+     *  * static const UInt16 notEnoughMemoryAlertId;
+     * They are required for proper working of @c Appliation::main().
      */
     class Application
     {
@@ -77,13 +82,13 @@ namespace ArsLexis
          * @internal 
          * Called internally by @c Application(UInt32).
          */
-        static Err setInstance(UInt32 creatorId, Application* app);
+        static Err setInstance(UInt32 creatorId, Application* app) throw();
         
         /**
          * @internal
          * Called internally by @c instance().
          */
-        static Application* getInstance(UInt32 creatorId);
+        static Application* getInstance(UInt32 creatorId) throw();
         
         /**
          * @internal 
@@ -117,7 +122,7 @@ namespace ArsLexis
         
         UInt32 romVersion_;
         
-        static void sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength);
+        static void sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength) throw();
         
     protected:
     
@@ -317,7 +322,8 @@ namespace ArsLexis
         
         static void sendEvent(UInt16 eventId)
         {sendEvent(eventId, 0, 0);}
-
+        
+        friend void handleBadAlloc();
     };
     
     template<class AppClass, UInt16 alertId> 
@@ -345,6 +351,8 @@ namespace ArsLexis
                         error=ex;
                     } ErrEndCatch
                     delete app;
+                    if (memErrNotEnoughSpace==error)
+                        FrmAlert(AppClass::notEnoughMemoryAlertId);
                 }
             }
         }

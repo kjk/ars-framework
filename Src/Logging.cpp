@@ -44,13 +44,13 @@ namespace ArsLexis
             (*this)<<"Unable to set RootLogger instance pointer, error: "<<error;
     }
         
-    RootLogger::~RootLogger()
+    RootLogger::~RootLogger() throw()
     {
         FtrUnregister(Application::creator(), Application::featureRootLoggerPointer);
         delete sink_;
     }
 
-    RootLogger* RootLogger::instance()
+    RootLogger* RootLogger::instance() throw()
     {
         RootLogger* logger=0;
         Err error=FtrGet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32*>(&logger));
@@ -72,19 +72,23 @@ namespace ArsLexis
         log(">>> Enter");
     }
     
-    FunctionLogger::~FunctionLogger()
+    FunctionLogger::~FunctionLogger() throw()
     {
-        log("<<< Exit");
+//        try {
+            log("<<< Exit");
+//        }
+//        catch (...) {
+//        }
     }
 
 #pragma mark -
 #pragma mark HostFileLogSink    
 
-    HostFileLogSink::HostFileLogSink(const char* fileName):
+    HostFileLogSink::HostFileLogSink(const char* fileName) throw():
         file_(HostFOpen(fileName, "w"))
     {}
     
-    HostFileLogSink::~HostFileLogSink()
+    HostFileLogSink::~HostFileLogSink() throw()
     {
         if (file_)
         {
@@ -105,7 +109,7 @@ namespace ArsLexis
 #pragma mark -
 #pragma mark MemoLogSink
 
-    MemoLogSink::MemoLogSink():
+    MemoLogSink::MemoLogSink() throw():
         db_(NULL)
     {
         db_=DmOpenDatabaseByTypeCreator('DATA', 'memo', dmModeReadWrite);
@@ -115,13 +119,13 @@ namespace ArsLexis
         }
     }
     
-    void MemoLogSink::closeDatabase()
+    void MemoLogSink::closeDatabase() throw()
     {
         DmCloseDatabase(db_);
         db_=NULL;
     }
     
-    MemoLogSink::~MemoLogSink()
+    MemoLogSink::~MemoLogSink() throw()
     {
         if (db_)
             closeDatabase();

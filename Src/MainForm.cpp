@@ -138,8 +138,22 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
         rect.explode(0, 15, 0, -33);
         graphics.erase(rect);
         rect.explode(2, 2, -12, -4);
-        definition->render(graphics, rect, renderingPreferences(), false);
-        updateScrollBar(*definition);    
+        Err error=errNone;
+        ErrTry {
+            definition->render(graphics, rect, renderingPreferences(), false);
+        }
+        ErrCatch (ex) {
+            error=ex;
+        } ErrEndCatch
+        if (error) 
+        {
+            definition->clear();
+            setDisplayMode(showSplashScreen);
+            update();
+            iPediaApplication::sendDisplayAlertEvent(notEnoughMemoryAlert);
+        }
+        else            
+            updateScrollBar(*definition);    
     }
 }
 
@@ -296,6 +310,8 @@ bool MainForm::handleEvent(EventType& event)
                     updateAfterLookup();
                 else if (data.outcomeList==data.outcome)
                     Application::popupForm(searchResultsForm);
+                else
+                    update(redrawProgressIndicator);
             }
             break;     
             

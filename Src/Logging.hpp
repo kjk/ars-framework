@@ -12,7 +12,7 @@ namespace ArsLexis
     class LogSink
     {
     public:
-        virtual ~LogSink()
+        virtual ~LogSink() throw()
         {}
         
         virtual void output(const String& str)=0;
@@ -27,9 +27,9 @@ namespace ArsLexis
         
     public:        
         
-        explicit HostFileLogSink(const char* fileName);
+        explicit HostFileLogSink(const char* fileName) throw();
         
-        ~HostFileLogSink();
+        ~HostFileLogSink() throw();
         
         void output(const String& str);
         
@@ -42,13 +42,13 @@ namespace ArsLexis
     {
         DmOpenRef db_;
         
-        void closeDatabase();
+        void closeDatabase() throw();
         
     public:        
         
-        MemoLogSink();
+        MemoLogSink() throw();
         
-        ~MemoLogSink();
+        ~MemoLogSink() throw();
         
         void output(const String& str);
         
@@ -61,10 +61,10 @@ namespace ArsLexis
     {
     public:        
         
-        DebuggerLogSink()
+        DebuggerLogSink() throw()
         {}
         
-        ~DebuggerLogSink()
+        ~DebuggerLogSink() throw()
         {}
         
         void output(const String& str)
@@ -84,15 +84,15 @@ namespace ArsLexis
         
     public:
     
-        explicit Logger(const char* context):
+        explicit Logger(const char* context) throw():
             context_(context),
             contextLength_(StrLen(context_))
         {}
         
-        virtual ~Logger()
+        virtual ~Logger() throw()
         {}
         
-        const char* context() const
+        const char* context() const throw()
         {return context_;}
         
         void log(const char* text, uint_t length);
@@ -189,26 +189,26 @@ namespace ArsLexis
     
         RootLogger(const char* context, LogSink* sink=0);
         
-        LogSink* setSink(LogSink* newSink)
+        LogSink* setSink(LogSink* newSink) throw()
         {
             LogSink* prev=sink_;
             sink_=newSink;
             return prev;
         }
         
-        void replaceSink(LogSink* newSink)
+        void replaceSink(LogSink* newSink) throw()
         {
             delete setSink(newSink);
         }
         
-        LogSink* releaseSink()
+        LogSink* releaseSink() throw()
         {
             return setSink(0);
         }
         
-        ~RootLogger();
+        ~RootLogger() throw();
         
-        static RootLogger* instance();
+        static RootLogger* instance() throw();
         
     protected:
         
@@ -229,12 +229,12 @@ namespace ArsLexis
         
     public:
         
-        explicit ChildLogger(const char* context):
+        explicit ChildLogger(const char* context) throw():
             Logger(context),
             parent_(RootLogger::instance())
         {}
         
-        ChildLogger(const char* context, Logger& parent):
+        ChildLogger(const char* context, Logger& parent) throw():
             Logger(context),
             parent_(&parent)
         {}
@@ -260,7 +260,7 @@ namespace ArsLexis
 
         explicit FunctionLogger(const char* context);
         
-        ~FunctionLogger();
+        ~FunctionLogger() throw();
         
     };
     

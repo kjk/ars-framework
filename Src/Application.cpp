@@ -27,7 +27,7 @@ namespace ArsLexis
         forms_.erase(it);
     }
     
-    Err Application::setInstance(UInt32 creatorId, Application* app)
+    Err Application::setInstance(UInt32 creatorId, Application* app) throw()
     {
         assert(app!=0);
         Err error=errNone;
@@ -40,7 +40,7 @@ namespace ArsLexis
         return error;
     }
     
-    Application* Application::getInstance(UInt32 creatorId)
+    Application* Application::getInstance(UInt32 creatorId) throw()
     {
         Application* app=0;
         assert(sizeof(app)<=sizeof(UInt32));
@@ -221,7 +221,7 @@ namespace ArsLexis
         EvtGetEvent(&event, eventTimeout_);
     }
     
-    void Application::sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength)
+    void Application::sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength) throw()
     {
         EventType event;
         MemSet(&event, sizeof(event), 0);

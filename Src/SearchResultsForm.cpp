@@ -176,6 +176,8 @@ bool SearchResultsForm::handleEvent(EventType& event)
                 }
                 else if (data.outcomeList==data.outcome)
                     updateSearchResults();
+                else
+                    update(redrawProgressIndicator);
             }
             break;     
             

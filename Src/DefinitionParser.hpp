@@ -38,7 +38,7 @@ class DefinitionParser: public ArsLexis::FieldPayloadProtocolConnection::Payload
     uint_t openSuperscript_;
     uint_t openSubscript_;
     
-    void reset();
+    void clear();
     
     bool isPlainText() const;
     
