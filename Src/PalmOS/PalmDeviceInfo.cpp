@@ -12,9 +12,7 @@
 #include <Text.hpp>
 #include <DeviceInfo.hpp>
 
-using ArsLexis::status_t;
-using ArsLexis::String;
-using ArsLexis::hexBinEncode;
+using namespace ArsLexis;
 
 // "PL" tag
 static status_t getPlatform(String& out)
@@ -218,7 +216,7 @@ static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGe
     out.append(hexBinEncode(token));
 }
 
-ArsLexis::String deviceInfoToken()
+ArsLexis::String ArsLexis::deviceInfoToken()
 {
     ArsLexis::String out;
     renderDeviceIdentifierToken(out, "SN", getDeviceSerialNumber);
@@ -236,7 +234,7 @@ ArsLexis::String deviceInfoToken()
 
 // return true if running on Treo 600 device
 // TODO: should be renamed to isTreo()
-bool isTreo600()
+bool ArsLexis::isTreo600()
 {
     UInt32 id;
 
@@ -255,7 +253,7 @@ bool isTreo600()
     return false;
 }
 
-bool underSimulator() 
+bool ArsLexis::underSimulator() 
 {
     UInt32 processorId;
     FtrGet(sysFtrCreator, sysFtrNumProcessorID, &processorId);

@@ -195,6 +195,7 @@ void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool uniqu
         EvtAddEventToQueue(&event);
 }
 
+/*
 void ArsLexis::processReadyUiEvents()
 {
     EventType event;
@@ -214,6 +215,7 @@ void ArsLexis::processReadyUiEvents()
     if (appStopEvent==event.eType)
         EvtAddEventToQueue(&event);
 }
+*/
 
 void ArsLexis::localizeNumber(char_t* begin, char_t* end)
 {

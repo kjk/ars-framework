@@ -3,6 +3,8 @@
 
 #include <BaseTypes.hpp>
 
+namespace ArsLexis {
+
 #if defined(_PALM_OS)
 bool isTreo600();
 #endif
@@ -10,5 +12,7 @@ bool isTreo600();
 bool underSimulator();
 
 ArsLexis::String deviceInfoToken();
+
+}
 
 #endif

@@ -209,13 +209,15 @@ namespace ArsLexis
     
     status_t SocketSelector::select(long timeout)
     {
+        recalculateWidth();
+        
         for (ushort_t i=0; i<eventTypesCount_; ++i)
-            outputFDs_[i]=inputFDs_[i];
+            outputFDs_[i] = inputFDs_[i];
 
         status_t error=errNone;
         // Seems NetLibSelect() is really badly screwed in PalmOS - see strange error behaviour in the following if-else...
         short eventsCount=netLib_.select( width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, error);
-        if (-1==eventsCount)
+        if (-1 == eventsCount)
         {
             if (!error)
                 error=netErrTimeout;
@@ -224,22 +226,51 @@ namespace ArsLexis
         else
         {
             assert(!error);
-            eventsCount_=eventsCount;
+            eventsCount_ = eventsCount;
             if (0==eventsCount_)
                 error=netErrTimeout;
         }            
         return error;
     }
-    
+
+#ifdef _PALM_OS    
+    status_t SocketSelector::selectWithInputEvents(long timeout)
+    {
+        netFDSet(sysFileDescStdIn, &inputFDs_[eventRead]);
+        recalculateWidth();
+        
+        for (ushort_t i=0; i<eventTypesCount_; ++i)
+            outputFDs_[i] = inputFDs_[i];
+
+        status_t error=errNone;
+        // Seems NetLibSelect() is really badly screwed in PalmOS - see strange error behaviour in the following if-else...
+        short eventsCount=netLib_.select( width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, error);
+        if (-1 == eventsCount)
+        {
+            if (!error)
+                error=netErrTimeout;
+            eventsCount_=0;
+        }
+        else
+        {
+            assert(!error);
+            eventsCount_ = eventsCount;
+            if (0==eventsCount_)
+                error=netErrTimeout;
+        }            
+        return error;
+    }
+#endif
+
     void SocketSelector::recalculateWidth()
     {
         width_=1;
-        for (ushort_t i=sizeof(NativeFDSet_t)*8-1; i>0; --i)
+        for (ushort_t i = sizeof(NativeFDSet_t) * 8-1; i>0; --i)
             if (netFDIsSet(i, &inputFDs_[eventRead]) ||
                 netFDIsSet(i, &inputFDs_[eventWrite]) ||
                 netFDIsSet(i, &inputFDs_[eventException]))
             {
-                width_=i+1;
+                width_ = i+1;
                 break;
             }                
     }

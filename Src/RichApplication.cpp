@@ -1,7 +1,13 @@
 #include <RichApplication.hpp>
 #include <SysUtils.hpp>
 
+
+
 namespace ArsLexis {
+
+#ifndef NDEBUG
+#pragma inline_depth 0
+#endif
 
     RichApplication::RichApplication():
         log_(_T("root")),
@@ -10,11 +16,16 @@ namespace ArsLexis {
         showAlerts_(true)
     {}
 
+#ifndef NDEBUG
+#pragma inline_depth 2
+#endif
+
     RichApplication::~RichApplication() 
     {
         if (diaNotifyRegistered_) 
             unregisterNotify(diaSupport_.notifyType());
     }
+    
     
     Err RichApplication::initialize()
     {

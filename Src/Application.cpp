@@ -5,6 +5,14 @@
 #include <DeviceInfo.hpp>
 #include <ExtendedEvent.hpp>
 
+#ifdef ARSLEXIS_USE_MEM_GLUE
+# include <MemGlue.h>
+# ifdef malloc
+#  undef malloc
+# endif
+# define malloc MemGluePtrNew
+#endif
+
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
 template class std::basic_string<ArsLexis::char_t>;
 
@@ -71,6 +79,10 @@ namespace ArsLexis
         return app;
     }
     
+#ifndef NDEBUG
+#pragma inline_depth 0
+#endif
+
     Application::Application():
         eventTimeout_(evtWaitForever),
 #ifdef __MWERKS__        
@@ -82,6 +94,7 @@ namespace ArsLexis
         creatorId_(creator()),
         romVersion_(0),
         runningOnTreo600_(isTreo600()),
+        underSimulator_(ArsLexis::underSimulator()),
         ticksPerSecond_(SysTicksPerSecond())
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);
@@ -89,6 +102,10 @@ namespace ArsLexis
         error=FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion_);
         assert(!error);        
     }
+
+#ifndef NDEBUG
+#pragma inline_depth 2
+#endif
     
     Err Application::initialize()
     {
@@ -316,9 +333,9 @@ void* ArsLexis::allocate(size_t size)
 {
     void* ptr=0;
     if (size) 
-        ptr=malloc(size);
+        ptr = malloc(size);
     else
-        ptr=malloc(1);
+        ptr = malloc(1);
     if (!ptr)
         handleBadAlloc();
     return ptr;

@@ -36,6 +36,7 @@ namespace ArsLexis
         bool manageUnresolvedConnections();
         bool manageUnopenedConnections();
 
+
     public:
 
         SocketConnectionManager();
@@ -45,11 +46,19 @@ namespace ArsLexis
         bool active() const
         {return 0!=connectionsCount_;}
 
-        status_t manageConnectionEvents(long timeout=evtWaitForever);
-
+        status_t manageConnectionEvents(long timeout = evtWaitForever);
+        
+#ifdef _PALM_OS        
+        status_t waitForEvent(EventType& event, long timeout = evtWaitForever);
+#endif
+        
         void abortConnections();
 
         friend class SocketConnection;
+#ifdef _PALM_OS        
+    private:
+        static bool checkEvent(EventType& event);
+#endif        
     };
 
     class SocketConnection: private NonCopyable

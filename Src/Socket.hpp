@@ -163,17 +163,16 @@ namespace ArsLexis
         {
             NativeSocket_t ref=socket;
             netFDSet(ref, &inputFDs_[event]);
-            recalculateWidth();
         }
         
         void unregisterSocket(const SocketBase& socket, EventType event)
         {
             NativeSocket_t ref=socket;
             netFDClr(ref, &inputFDs_[event]);
-            recalculateWidth();
         }
         
-        status_t select(long timeout=evtWaitForever);
+        status_t select(long timeout = evtWaitForever);
+
         
         bool checkSocketEvent(const SocketBase& socket, EventType event) const
         {
@@ -183,14 +182,18 @@ namespace ArsLexis
         
         bool isRegistered(const SocketBase& socket, EventType event) const
         {
-            NativeSocket_t ref=socket;
+            NativeSocket_t ref = socket;
             return netFDIsSet(ref, &inputFDs_[event]);
         }
         
-        /*bool checkStandardEvent() const
+#ifdef _PALM_OS        
+        status_t selectWithInputEvents(long timeout = evtWaitForever);
+        
+        bool isInputEvent() const
         {
             return netFDIsSet(sysFileDescStdIn, &outputFDs_[eventRead]);
-        }*/
+        }
+#endif        
 
         ushort_t eventsCount() const
         {return eventsCount_;}

@@ -173,6 +173,8 @@ namespace ArsLexis
         FormObjectKind kind = FrmGetObjectType(form_, index);
         if (taking && frmFieldObj == kind && application().runningOnTreo600())
         {
+            if (!visible())
+                draw();
             FocusField(form_, index, data.objectID);
             return true;
         }
