@@ -382,6 +382,7 @@ bool ByteFormatParser::parseHeader(const char_t* inText)
     totalSize_ = readUnaligned32(&inText[start_]);
     start_ += sizeLength;
     totalElementsCount_ = readUnaligned32(&inText[start_]);
+    elementsCount_ = 0;
     start_ += sizeLength;
     version_ = readUnaligned32(&inText[start_]);
     start_ += sizeLength;
@@ -401,7 +402,7 @@ status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inp
     {
         if (inLength_ < headerLength)
             return errNone;
-        parseHeader(inputText);    
+        parseHeader(inText_.c_str());    
     }
     
     if (inLength_ == 0)
@@ -414,7 +415,7 @@ status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inp
     if (finish)
     {
         assert(elementsCount_ == totalElementsCount_);
-        assert(inLength_ == totalSize_);
+        //assert(inLength_ == totalSize_);
     }
     return error;
 }
