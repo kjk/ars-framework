@@ -767,5 +767,22 @@ int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
     return -1;
 }
 
+
+ulong_t readUnaligned32(const char_t* addr)
+{
+	return
+	(
+	(((ulong_t)((unsigned char)addr[0])) << 24) | 
+	(((ulong_t)((unsigned char)addr[1])) << 16) | 
+	(((ulong_t)((unsigned char)addr[2])) <<  8) | 
+	((ulong_t)((unsigned char)addr[3])) );
+}    
+void writeUnaligned32(char_t* addr, ulong_t value)
+{
+    addr[0] = (char_t)((ulong_t)(value) >> 24);
+	addr[1] = (char_t)((ulong_t)(value) >> 16);
+	addr[2] = (char_t)((ulong_t)(value) >>  8);
+	addr[3] = (char_t)((ulong_t)(value));
+}    
 } // namespace ArsLexis
 

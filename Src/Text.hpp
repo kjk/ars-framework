@@ -185,5 +185,9 @@ namespace ArsLexis
 
     int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo);
 
+    ulong_t readUnaligned32(const char_t* addr);
+    
+    void writeUnaligned32(char_t* addr, ulong_t value);
+    
 }
 #endif
