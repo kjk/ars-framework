@@ -8,8 +8,8 @@ namespace ArsLexis {
     status_t StringListPayloadHandler::handleIncrement(const char_t* payload, ulong_t& length, bool finish)
     {
         status_t error=LineBufferedPayloadHandler::handleIncrement(payload, length, finish);
-        if (finish && errNone==error)
-            error=listReady(strings_);
+        if (finish && errNone == error)
+            error = notifyFinished();
         return error;
     }
     
@@ -17,7 +17,7 @@ namespace ArsLexis {
     {
         volatile status_t error=errNone;
         ErrTry {
-            strings_.push_back(line);
+            strings.push_back(line);
         }
         ErrCatch (ex) {
             error=ex;
@@ -28,4 +28,9 @@ namespace ArsLexis {
     StringListPayloadHandler::StringListPayloadHandler()
     {}
 
+    status_t StringListPayloadHandler::notifyFinished()
+    {
+        return errNone;
+    }
+    
 }

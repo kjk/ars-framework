@@ -110,9 +110,23 @@ ulong_t HistorySupport::setEntryTitleForUrl(const char_t* title, const char_t* u
     if (HistoryCache::entryNotFound == index)
         return HistoryCache::entryNotFound;
         
-    cache.setEntryTitle(index,title);
+    cache.setEntryTitle(index, title);
     cache.close();
     return index;
+}
+
+ulong_t HistorySupport::setLastEntryTitle(const char_t* title)
+{
+    HistoryCache cache;
+    status_t err = cache.open(cacheName_);
+    if (errNone != err)
+        return HistoryCache::entryNotFound;        
+
+    if (0 == cache.entriesCount())
+        return HistoryCache::entryNotFound;
+        
+    cache.setEntryTitle(cache.entriesCount() - 1, title);
+    return cache.entriesCount() - 1;
 }
 
 bool HistorySupport::fetchHistoryEntry(ulong_t index)

@@ -14,19 +14,17 @@ namespace ArsLexis {
     
         ~StringListPayloadHandler();
         
+        typedef std::vector<String> Strings_t;
+
+        Strings_t strings;    
+        
+        virtual status_t notifyFinished();
+
+        status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
+        
     protected:
         
         status_t handleLine(const String& line);
-        
-        typedef std::vector<String> Strings_t;
-
-        virtual status_t listReady(Strings_t& strings)=0;
-        
-        status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
-        
-    private:
-        
-        Strings_t strings_;    
         
     };
     

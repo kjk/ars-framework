@@ -84,6 +84,9 @@ public:
     CDynStr *Append(DynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }
 };
 
+void ReplaceCDynStrP(CDynStr** target, CDynStr* newValue);
+void ReplaceCharP(char_t** target, char_t* newValue);
+
 #ifdef DEBUG
 void test_DynStrAll();
 #endif

@@ -394,6 +394,47 @@ void DynStrReplace(DynStr *dstr, char_t orig, char_t replace)
     }
 }
 
+
+/*
+DynStr* DynStrResize(DynStr* dstr, UInt32 newLen)
+{
+    
+    if (newLen + 1 > dstr->bufSize)
+    {
+        UInt32 l = newLen + 1;
+        if (dstr->bufSize + dstr->reallocIncrement > l)
+            l = dstr->bufSize + dstr->reallocIncrement;
+            
+        using namespace std;
+        char_t* d = (char_t*)realloc(dstr->str, l * sizeof(char_t));
+        if (NULL == d)
+            return NULL;
+
+        dstr->bufSize = l;
+        dstr->str = d;
+    }
+    dstr->strLen = newLen;
+    dstr->str[newLen] = _T('\0');
+    return dstr;
+}
+ */
+
+void ReplaceCDynStrP(CDynStr** target, CDynStr* newValue)
+{   
+    assert(NULL != target);
+    delete *target;
+    *target = newValue;
+}
+
+void ReplaceCharP(char_t** target, char_t* newValue)
+{
+    assert(NULL != target);
+    if (NULL != *target)
+        free(*target);
+    *target = newValue;
+}
+
+
 #ifdef DEBUG
 static void test_DynStrReplace()
 {

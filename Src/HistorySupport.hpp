@@ -39,6 +39,8 @@ public:
      */
     ulong_t setEntryTitleForUrl(const char_t* title, const char_t* url);
     
+    ulong_t setLastEntryTitle(const char_t* title);
+    
     /**
      * fetch hyperlinkHandle with url under given index
      * return false if index not found
