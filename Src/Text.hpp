@@ -127,6 +127,8 @@ namespace ArsLexis
 
     int formatNumber(long num, char_t *buf, int bufSize);
 
+    void HexBinEncodeBlob(unsigned char *blob, int blobSize, String& out);
+
 }
 
 #endif

@@ -206,6 +206,24 @@ static ArsLexis::char_t numToHex(int num)
     return c;
 }
 
+// encode binary blob of blobSize size and put the result in the out string
+void ArsLexis::HexBinEncodeBlob(unsigned char *blob, int blobSize, ArsLexis::String& out)
+{
+    out.clear();
+    out.reserve(blobSize*2); // 2 chars per each byte
+
+    unsigned char b;
+    char_t        hexChar;
+    for (int i=0; i<blobSize; i++)
+    {
+        b = blob[i];
+        hexChar = numToHex(b / 16);
+        out.append(1,hexChar);
+        hexChar = numToHex(b % 16);
+        out.append(1,hexChar);
+    }
+}
+
 ArsLexis::String ArsLexis::hexBinEncode(const String& in)
 {
     String out;
@@ -215,7 +233,7 @@ ArsLexis::String ArsLexis::hexBinEncode(const String& in)
     char_t hexChar;
     while (it!=end)
     {
-        // at some point this was char_t (i.e. unsigned char on Palm)
+        // at some point this was char_t (i.e. signed char on Palm)
         // and it caused bugs due to b being promoted to unsigned int, which
         // was negative for b values > 127
         unsigned char b=*(it++);

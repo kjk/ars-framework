@@ -75,60 +75,85 @@ status_t getPhoneNumber(String& out)
     return sysErrParamErr;
 }
 
-/*status_t binStringEncode(const char *src, String &out, int len)
+#if 0
+status_t getUUID_broken(String& out)
 {
-    char_t* tmp = new char_t[len+1];
-    return errNone;
-}*/
+    GUID         guid;
+    BOOL         fRes;
+    DWORD        dwBytesReturned = 0;
+    DEVICE_ID *  pDevID;
+    int          wSize;
 
-status_t getUUID(String& out)
-{
-	GUID guid;
-    BOOL fRes;
-    DWORD dwBytesReturned =0;
-	DEVICE_ID* pDevID;
-	int wSize;
-	memset(&guid, 0, sizeof(GUID));
-
+    memset(&guid, 0, sizeof(GUID));
     pDevID = (DEVICE_ID*)malloc(sizeof(DEVICE_ID));
-	memset(pDevID, 0, sizeof(DEVICE_ID));
-	pDevID->dwSize = sizeof(DEVICE_ID);
+    memset(pDevID, 0, sizeof(DEVICE_ID));
+    pDevID->dwSize = sizeof(DEVICE_ID);
 
     fRes = KernelIoControl( IOCTL_HAL_GET_DEVICEID, NULL, 0,
             pDevID, sizeof( DEVICE_ID ), &dwBytesReturned );
 
-	wSize = pDevID->dwSize;
-	free(pDevID);
-	if( (FALSE != fRes) || (ERROR_INSUFFICIENT_BUFFER != GetLastError()))
-    	return sysErrParamErr;
+    wSize = pDevID->dwSize;
+    free(pDevID);
 
-	pDevID = (DEVICE_ID*)malloc(sizeof(wSize));
-	memset(pDevID, 0, sizeof(wSize));
-	pDevID->dwSize = wSize;
+    if ( (FALSE != fRes) || (ERROR_INSUFFICIENT_BUFFER != GetLastError()))
+        return sysErrParamErr;
+
+    pDevID = (DEVICE_ID*)malloc(sizeof(wSize));
+    memset(pDevID, 0, sizeof(wSize));
+    pDevID->dwSize = wSize;
     fRes = KernelIoControl( IOCTL_HAL_GET_DEVICEID, NULL, 0,
             pDevID, wSize, &dwBytesReturned );
 
-	if((FALSE == fRes) || (ERROR_INSUFFICIENT_BUFFER == GetLastError()) )
-    	return sysErrParamErr;  
+    if ((FALSE == fRes) || (ERROR_INSUFFICIENT_BUFFER == GetLastError()) )
+        return sysErrParamErr;  
     
-    int totalLen = pDevID->dwPresetIDBytes + pDevID->dwPlatformIDBytes;
-    char* sDevID = new char[totalLen+1];
-    memcpy(sDevID, (char*)pDevID+pDevID->dwPresetIDOffset, pDevID->dwPresetIDBytes);
-    memcpy(sDevID + pDevID->dwPresetIDBytes, 
-           (char*)pDevID+pDevID->dwPlatformIDOffset, pDevID->dwPlatformIDBytes);
-    sDevID[totalLen]=0;
+    int    totalLen = pDevID->dwPresetIDBytes + pDevID->dwPlatformIDBytes;
 
-    char_t* lDevID = new char_t[totalLen+1];
-    char* src = sDevID;
-    char_t* tmp = lDevID;
-    for(int len = totalLen; len>0; len --)
+    //char * sDevID = new char[totalLen+1];
+    // this malloc causes crash, probably because code between beginning of the
+    // function and here trashed stack
+    char * sDevID = (char*) malloc(totalLen+1);
+
+    memcpy(sDevID, (char*)pDevID+pDevID->dwPresetIDOffset, pDevID->dwPresetIDBytes);
+    memcpy(sDevID + pDevID->dwPresetIDBytes, pDevID+pDevID->dwPlatformIDOffset,
+        pDevID->dwPlatformIDBytes);
+    sDevID[totalLen] = 0;
+
+    char_t * lDevID = new char_t[totalLen+1];
+    char *   src = sDevID;
+    char_t * tmp = lDevID;
+    for (int len = totalLen; len>0; len --)
         *tmp++=*src++;
     out.append(lDevID,totalLen);
-    delete [] sDevID;
+    //delete [] sDevID;
+    free(sDevID);
     delete [] lDevID;
     return errNone;
 }
+#endif
 
+#define DEVID_BUF_SIZE 512
+status_t getUUID(String& out)
+{ 
+    DWORD dwOutBytes; 
+    char  devIdBuf[DEVID_BUF_SIZE]; 
+
+    BOOL fOk = ::KernelIoControl(IOCTL_HAL_GET_DEVICEID, 0, 0, devIdBuf, DEVID_BUF_SIZE, &dwOutBytes); 
+    if (!fOk)
+    {
+        // TODO: check if ERROR_INSUFFICIENT_BUFFER == GetLastError() and retry
+        // with a bigger buffer. But it really shouldn't be necessary -
+        // DEVID_BUF_SIZE should be more than enough
+        return sysErrParamErr;
+    }
+
+    // TODO: we really ignore the format of DEVICE_ID struct and treat it as a blob.
+    // Good enough since it's going to be unique anyway
+    String blobEncoded;
+    HexBinEncodeBlob( (unsigned char*)devIdBuf, dwOutBytes, blobEncoded);
+    out.append(blobEncoded);
+    return errNone;
+}
 
 // this returns platform e.g. "PocketPC", "Smartphone" etc. plus OS
 // version on the format "major.minor" e.g. "4.2". This fully identifies
