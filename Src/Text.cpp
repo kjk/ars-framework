@@ -168,50 +168,18 @@ void ArsLexis::urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
     }
 }
 
-void ArsLexis::removeNonDigits(const ArsLexis::String& in, ArsLexis::String& out)
+void ArsLexis::removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& out)
 {
-    const char_t* curPos=in.data();
-    int len = (int)in.length();
-
-    out.resize(0);
-    out.reserve(len);
-
-    while (len>0)
-    {
-        if (isDigit(*curPos))
-            out.append(*curPos,1);
-        ++curPos;
-        --len;
-    }
-}
-
-void ArsLexis::removeNonDigits(const char_t *in, ArsLexis::String& out)
-{
-    int len = tstrlen(in);
-
     out.resize(0);
     out.reserve(len);
 
     while (len>0)
     {
         if (isDigit(*in))
-            out.append(*in,1);
+            out.append(1, *in);
         ++in;
         --len;
     }
-}
-
-void ArsLexis::eraseStart(ArsLexis::String& str, String::size_type length)
-{
-#if defined(_PALM_OS)
-    if (str.npos==length)
-        length=str.length();
-    String::size_type newLength=str.length()-length;
-    MemMove(&str[0], &str[length], newLength);
-    str.resize(newLength);
-#else
-    str.erase(0, length);
-#endif    
 }
 
 #if defined(_PALM_OS)
@@ -219,7 +187,7 @@ void ArsLexis::eraseStart(ArsLexis::String& str, String::size_type length)
 // i.e. insert (locale-dependent) thousand separator in apropriate places
 // put the result in buffer buf of length bufSize. Buffer must be big enough
 // for the result.
-int ArsLexis::formatNumber(long num, char *buf, int bufSize)
+int ArsLexis::formatNumber(long num, char* buf, int bufSize)
 {
     char dontMind;
     char thousand=',';

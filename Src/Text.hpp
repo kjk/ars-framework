@@ -158,11 +158,13 @@ namespace ArsLexis
     
     void urlEncode(const String& in, String& out);
 
-    void removeNonDigits(const String& in, String& out);
+    void removeNonDigits(const char_t* in, uint_t inLength, String& out);
 
-    void removeNonDigits(const char_t *in, String& out);
-
-    void eraseStart(String& str, String::size_type length);
+    inline void removeNonDigits(const String& in, String& out)
+    {removeNonDigits(in.data(), in.length(), out);}
+    
+    inline void removeNonDigits(const char_t* in, String& out)
+    {removeNonDigits(in, tstrlen(in), out);}
 
 #if defined(_PALM_OS)
     int formatNumber(long num, char *buf, int bufSize);
