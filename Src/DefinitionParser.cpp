@@ -345,7 +345,7 @@ bool DefinitionParser::detectHyperlink(uint_t end)
                         textElement->setHyperlink(String(textLine_, textPosition_, separatorPos-textPosition_), hyperlinkTerm);
                 }
                 uint_t afterLinkTextEnd=pastLinkEnd;
-                while (afterLinkTextEnd<end && (std::isalpha(textLine_[afterLinkTextEnd]) || '-'==textLine_[afterLinkTextEnd]))
+                while (afterLinkTextEnd<end && (std::isalpha(textLine_[afterLinkTextEnd]) /* || '-'==textLine_[afterLinkTextEnd] */))
                     ++afterLinkTextEnd;
                 if (afterLinkTextEnd>pastLinkEnd && textElement)
                 {
