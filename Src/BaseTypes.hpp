@@ -7,11 +7,13 @@ typedef unsigned int uint_t;
 typedef unsigned short ushort_t;
 typedef unsigned long ulong_t;
 
+#if defined(_WIN32_WCE) || defined(_WIN32)
+
+#include <windows.h>
+
 namespace ArsLexis
 {
     
-#if defined(_WIN32_WCE) || defined(_WIN32)
-
     typedef DWORD tick_t;
 
     typedef TCHAR char_t;
@@ -23,6 +25,9 @@ namespace ArsLexis
 # define ticks	GetTickCount
     
 #else
+    
+namespace ArsLexis
+{
     
     typedef char char_t;
 
