@@ -74,34 +74,55 @@ bool GotoURL(const ArsLexis::char_t *url)
     return false;
 }
 
+// On windows those are defined as:
+//#define CSIDL_PROGRAMS           0x0002
+//#define CSIDL_PERSONAL           0x0005
+//#define CSIDL_APPDATA              0x001a
+// see shlobj.h for more
+
+#ifdef CSIDL_APPDATA
+// this doesn't seem to be defined on sm 2002
+#define SPECIAL_FOLDER_PATH CSIDL_APPDATA
+#endif
+
+#ifdef CSIDL_PROGRAMS
+// this is "\Windows\Start Menu\Programs" on sm 2002 emu
+ #ifndef SPECIAL_FOLDER_PATH
+  #define SPECIAL_FOLDER_PATH CSIDL_PROGRAMS
+ #endif
+#endif
+
+#ifdef CSIDL_PERSONAL
+// this is defined on sm 2002 and goes to "\My Documents".
+// Not sure if I should use it
+ #ifndef SPECIAL_FOLDER_PATH
+  #define SPECIAL_FOLDER_PATH CSIDL_PERSONAL
+ #endif
+#endif
+
 // see http://www.opennetcf.org/Forums/post.asp?method=TopicQuote&TOPIC_ID=95&FORUM_ID=12 for
 // more possibilities
-// return false on failure, true if ok
-bool GetSpecialFolderPath(String& pathOut)
+// return false on failure, true if ok. Even if returns false, it'll return root ("\")
+// directory so that clients can ignore failures from this function
+bool GetSpecialFolderPath(String& pathOut, BOOL fCreate)
 {
-#ifdef CSIDL_APPDATA
-    // this doesn't seem to be defined on sm 2002
+#ifdef SPECIAL_FOLDER_PATH
     TCHAR szPath[MAX_PATH];
-    BOOL  fOk = SHGetSpecialFolderPath(NULL, szPath, CSIDL_APPDATA, FALSE);
-    if (!fOk)
-        return false;
-    pathOut.assign(szPath);
-    return true;
+    int nFolder = SPECIAL_FOLDER_PATH;
+    BOOL  fOk = SHGetSpecialFolderPath(NULL, szPath, nFolder, fCreate);
+    if (fOk)
+    {
+        pathOut.assign(szPath);
+    }
+    else
+    {
+        pathOut.assign(_T(""));
+    }
+	return fOk ? true : false;
 #else
-  #ifdef CSIDL_PERSONAL
-      // this is defined on sm 2002 and goes to "\My Documents".
-      // Not sure if I should use it
-      TCHAR szPath[MAX_PATH];
-      BOOL  fOk = SHGetSpecialFolderPath(NULL, szPath, CSIDL_PERSONAL, FALSE);
-      if (!fOk)
-          return false;
-      pathOut.assign(szPath);
-      return true;
- #else
-    // if all else fails, just put it in root "\"
+    // if all else fails, just use root ("\") directory
     pathOut.assign(_T(""));
     return true;
- #endif
 #endif
 }
 
