@@ -2,8 +2,6 @@
 #include <LangNames.hpp>
 #include <Text.hpp>
 
-using namespace ArsLexis;
-
 struct LangCodeEntry 
 {
     char_t code[3];

@@ -115,7 +115,7 @@ DynStr * DynStrInit(DynStr* dstr, UInt32 bufSize)
 
 DynStr * DynStrNew__(UInt32 bufSize, const char_t* file, int line)
 {
-    return DynStrFromCharP__("", bufSize, file, line);
+    return DynStrFromCharP__(_T(""), bufSize, file, line);
 }
 
 void   DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment)
@@ -158,8 +158,8 @@ DynStr *DynStrFromCharP2(const char_t *strOne, const char_t *strTwo)
     assert(NULL != strOne);
     assert(NULL != strTwo);
 
-    strOneLen = StrLen(strOne);
-    strTwoLen = StrLen(strTwo);
+    strOneLen = tstrlen(strOne);
+    strTwoLen = tstrlen(strTwo);
     bufSize  = strOneLen + strTwoLen + 1;
 
     dstr = DynStrFromCharP(strOne, bufSize);
