@@ -15,7 +15,7 @@ MainForm::~MainForm()
 {
 }
 
-/* inline */ Definition* MainForm::getDefinition()
+Definition* MainForm::getDefinition()
 {
     Definition* def=0;
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
@@ -25,7 +25,7 @@ MainForm::~MainForm()
     return def;
 }        
 
-/* inline */ const LookupHistory* MainForm::getLookupHistory() const
+const LookupHistory* MainForm::getLookupHistory() const
 {
     const LookupHistory* hist=0;
     const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
@@ -154,8 +154,8 @@ void MainForm::draw(UInt16 updateCode)
             drawDefinition(graphics, rect);
     }
 
-    iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    LookupManager* lookupManager=app.getLookupManager();
+    const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+    const LookupManager* lookupManager=app.getLookupManager();
     if (lookupManager && lookupManager->lookupInProgress())
         lookupManager->showProgress(graphics, Rectangle(rect.x(), rect.height()-16, rect.width(), 16));
 }
@@ -217,7 +217,11 @@ void MainForm::handleControlSelect(const EventType& event)
                 {
                     LookupManager* lookupManager=app.getLookupManager(true);
                     if (lookupManager && !lookupManager->lookupInProgress())
-                        lookupManager->lookupIfDifferent(textPtr);
+                        if (!lookupManager->lookupIfDifferent(textPtr) && showDefinition!=displayMode())
+                        {
+                            updateAfterLookup();
+                            update();
+                        }
                 }
             }
             break;

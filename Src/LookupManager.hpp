@@ -110,7 +110,8 @@ public:
     
     void lookupTerm(const ArsLexis::String& term);
     
-    void lookupIfDifferent(const ArsLexis::String& term);
+    //! @return @c true if lookup is started, @c false otherwise.
+    bool lookupIfDifferent(const ArsLexis::String& term);
     
     void moveHistory(bool forward=false);
     

@@ -50,5 +50,21 @@ namespace ArsLexis
         return 0==*start;
     }
     
+    bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end)
+    {
+        while (s1start!=s1end && s2start!=s2end)
+        {
+            if (std::tolower(*s1start)==std::tolower(*s2start))
+            {
+                ++s1start;
+                ++s2start;
+            }
+            else 
+                return false;
+        }
+        return (s1start==s1end && s2start==s2end);
+    }
+    
+    
 }
 

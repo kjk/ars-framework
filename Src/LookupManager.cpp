@@ -2,6 +2,7 @@
 #include "iPediaApplication.hpp"
 #include "iPediaConnection.hpp"
 #include "Graphics.hpp"
+#include "Utility.hpp"
 
 Err LookupManager::initialize()
 {
@@ -112,10 +113,16 @@ void LookupManager::handleLookupEvent(const EventType& event)
     }
 }
 
-void LookupManager::lookupIfDifferent(const ArsLexis::String& term)
+bool LookupManager::lookupIfDifferent(const ArsLexis::String& term)
 {
-    if (history_.empty() || history_.currentTerm()!=term)
+    using ArsLexis::equalsIgnoreCase;
+    bool result=false;
+    if (!equalsIgnoreCase(lastInputTerm(), term))
+    {
         lookupTerm(term);
+        result=true;
+    }
+    return result;
 }
 
 void LookupManager::lookupTerm(const ArsLexis::String& term)
