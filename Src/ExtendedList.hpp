@@ -81,9 +81,7 @@ namespace ArsLexis {
         
         void setTopItem(uint_t item, RedrawOption ro=redrawNot);
 
-        //! @todo Check if it's really needed.
-        void updateItemsCount(const CustomDrawHandler&)
-        {}
+        void notifyItemsChanged();
         
         void setItemHeight(uint_t height, RedrawOption ro=redrawNot);
         
@@ -148,6 +146,20 @@ namespace ArsLexis {
         RGBColorType foreground_;
     };
     
+    class BasicStringItemRenderer: public ExtendedList::ItemRenderer {
+    public:
+    
+        BasicStringItemRenderer();
+        
+        ~BasicStringItemRenderer();
+        
+        void drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const Rectangle& itemBounds);
+         
+    protected:
+    
+        virtual void getItem(String& out, uint_t item)=0;
+        
+    };
 }
 
 #endif

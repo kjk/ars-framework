@@ -357,9 +357,7 @@ void ExtendedList::setSelectionDelta(int delta, RedrawOption ro)
     int sel=(noListSelection==selection_)?0:selection_;
     sel+=delta;
     sel=std::max(0, std::min<int>(sel, itemsCount-1));
-    selection_=sel;
-    if (redraw==ro)
-        draw();
+    setSelection(sel, ro);
 }
 
 bool ExtendedList::handleEvent(EventType& event)
@@ -475,7 +473,34 @@ bool ExtendedList::scrollBarVisible() const
     return itemsCount>viewCapacity;
 }
 
+BasicStringItemRenderer::BasicStringItemRenderer()
+{}
 
+BasicStringItemRenderer::~BasicStringItemRenderer()
+{}
 
+void BasicStringItemRenderer::drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const Rectangle& itemBounds)
+{
+    assert(item<itemsCount());
+    String text;
+    getItem(text, item);
+    uint_t length=text.length();
+    uint_t width=itemBounds.width()-2;
+    graphics.charsInWidth(text.c_str(), length, width);
+    Point p=itemBounds.topLeft;
+    p.x+=2;
+    p.y=itemBounds.y()+(itemBounds.height()-graphics.fontHeight())/2;
+    graphics.drawText(text.c_str(), length, p);
+}
+
+void ExtendedList::notifyItemsChanged()
+{
+    uint_t itemsCount=0;
+    if (0!=(itemsCount=this->itemsCount()))
+        topItem_=0;
+    else 
+        topItem_=noListSelection;
+    selection_=noListSelection;    
+}
 
 
