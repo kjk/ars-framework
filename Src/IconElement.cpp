@@ -30,7 +30,7 @@ void IconElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
         layoutContext.usedWidth = layoutContext.screenWidth;
         return;
     }
-        
+
     layoutContext.markElementCompleted(totalWidth);
    
     if (render && frmInvalidObjectId != bitmapId_)
@@ -41,10 +41,21 @@ void IconElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
             BitmapType* bmp = static_cast<BitmapType*>(MemHandleLock(handle));
             if (bmp) 
             {
-                WinDrawBitmap(bmp, left + margin_, top + margin_);
                 if (isHyperlink())
-                    defineHotSpot(*definition, ArsRectangle(left, top, totalWidth, totalHeight));
-                
+                {
+                    ArsRectangle rect(left, top, totalWidth, totalHeight);
+                    defineHotSpot(*definition, rect);
+                    if (layoutContext.selectionIsHyperlink)
+                    {
+                        if (0 == layoutContext.selectionStart
+                            && layoutContext.progressCompleted == layoutContext.selectionEnd)
+                            layoutContext.graphics.invertRectangle(rect);
+                        else
+                            layoutContext.graphics.erase(rect);
+                        
+                    }
+                }
+                WinDrawBitmap(bmp, left + margin_, top + margin_);
                 MemHandleUnlock(handle);
             }
             DmReleaseResource(handle);

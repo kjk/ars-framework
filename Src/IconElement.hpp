@@ -24,7 +24,7 @@ protected:
     void calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render);
 
 public:
-
+    
     IconElement(uint_t bitmapId);
 
     bool breakBefore() const
