@@ -58,7 +58,6 @@ Err PopupRenderer::run(UInt16 id, const Rectangle& rect)
     running_ = true;
     show();
     focus();
-//    draw();
      
     return errNone;
 }

@@ -496,5 +496,17 @@ namespace ArsLexis
         return index;
     }
     
+    UInt16 Form::createList(UInt16 id, const Rectangle& rect, FontID font, Int16 visibleItems, Int16 triggerId)
+    {
+        void* f = form_;
+        Err error = LstNewList(&f, id, rect.x(), rect.y(), rect.width(), rect.height(), font, visibleItems, triggerId);
+        if (errNone != error)
+            return frmInvalidObjectId;
+        form_ = static_cast<FormType*>(f);
+        UInt16 index = FrmGetObjectIndex(form_, id);
+        assert(frmInvalidObjectId != index);
+        return index;
+    }
+    
 }
 

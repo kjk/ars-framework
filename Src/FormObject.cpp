@@ -34,6 +34,13 @@ namespace ArsLexis
         assert(NULL != object_);
     }
     
+    void FormObject::detach()
+    {   
+        index_ = frmInvalidObjectId;
+        id_ = frmInvalidObjectId;
+        object_ = NULL;
+    }
+    
     void FormObject::bounds(Rectangle& out) const
     {
         RectangleType rect;

@@ -193,6 +193,8 @@ namespace ArsLexis
         // @return index of new gadget or frmInvalidObjectId on failure.
         UInt16 createGadget(UInt16 id, const Rectangle& rect);
         
+        UInt16 createList(UInt16 id, const Rectangle& rect, FontID font, Int16 visibleItems, Int16 triggerId = 0);
+        
         void removeObject(UInt16 index) {FrmRemoveObject(&form_, index);}
         
     };

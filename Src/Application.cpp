@@ -6,14 +6,6 @@
 #include <ExtendedEvent.hpp>
 #include <PalmSysUtils.hpp>
 
-#ifdef ARSLEXIS_USE_MEM_GLUE
-# include <MemGlue.h>
-# ifdef malloc
-#  undef malloc
-# endif
-# define malloc MemGluePtrNew
-#endif
-
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
 template class std::basic_string<ArsLexis::char_t>;
 
@@ -338,16 +330,4 @@ namespace ArsLexis
         return false;
     }
     
-}
-
-void* ArsLexis::allocate(size_t size)
-{
-    void* ptr=0;
-    if (size) 
-        ptr = malloc(size);
-    else
-        ptr = malloc(1);
-    if (!ptr)
-        handleBadAlloc();
-    return ptr;
 }

@@ -99,8 +99,6 @@ namespace ArsLexis
 #  define tstrlen StrLen
 #  define tstrcmp StrCompare
 #  define tstrncmp StrNCompare
-#  define malloc MemPtrNew        
-#  define free MemPtrFree
     
 # else
 

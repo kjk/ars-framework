@@ -47,86 +47,48 @@ namespace ArsLexis
  * to MSL new (nothrow) that simply catches exception
  * thrown by new.
  */
-inline void* operator new(size_t size)
-{
-    void* ptr=ArsLexis::allocate(size);
-#ifndef NDEBUG
-    ArsLexis::logAllocation(ptr, size, false, 0, 0);
-#endif            
-    return ptr;
-}
+void* operator new(size_t size);
 
-inline void* operator new(size_t size, const char* file, int line)
-{
-    void* ptr=ArsLexis::allocate(size);
-#ifndef NDEBUG
-    ArsLexis::logAllocation(ptr, size, false, file, line);
-#endif            
-    return ptr;
-}
+void* operator new(size_t size, const char* file, int line);
 
-inline void operator delete(void *ptr)
-{
-    if (ptr) 
-        free(ptr);
-#ifndef NDEBUG
-        ArsLexis::logAllocation(ptr, 0, true, 0, 0);
-#endif            
-}
+void operator delete(void *ptr);
 
-inline void operator delete(void* ptr, const char*, int)
-{
-    ::operator delete(ptr);
-}
+void* operator new[](size_t size);
 
-inline void* operator new[](size_t size)
-{
-    void* ptr=ArsLexis::allocate(size);
-#ifndef NDEBUG
-    ArsLexis::logAllocation(ptr, size, false, 0, 0);
-#endif            
-    return ptr;
-}
-
-inline void* operator new[](size_t size, const char* file, int line)
-{
-    void* ptr=ArsLexis::allocate(size);
-#ifndef NDEBUG
-    ArsLexis::logAllocation(ptr, size, false, file, line);
-#endif            
-    return ptr;
-}
+void* operator new[](size_t size, const char* file, int line);
 
 inline void operator delete[](void *ptr)
 {
     ::operator delete(ptr);
 }
 
-inline void operator delete[](void *ptr, const char*, int line)
-{
-    ::operator delete(ptr);
-}
+void* malloc__(size_t size, const char* file, int line);
 
-inline void* malloc__(size_t size, const char* file, int line)
-{
-#ifdef _PALM_OS
-    if (0 == size)
-        size = 1;
-    void* ptr = MemGluePtrNew(size);
-#else
-    void* ptr = malloc(size);
-#endif
-    if (NULL == ptr)
-        return NULL;
-#ifndef NDEBUG
-    ArsLexis::logAllocation(ptr, size, false, file, line);
-#endif            
-    return ptr;
-}
+void* malloc__(size_t size);
 
 inline void free__(void* p)
 {
     ::operator delete(p);
+}
+
+inline void* operator new(size_t size, bool)
+{
+    return malloc__(size);
+}
+
+inline void* operator new(size_t size, bool, const char* file, int line)
+{
+    return malloc__(size, file, line);
+}
+
+inline void* operator new[](size_t size, bool)
+{
+    return malloc__(size);
+}
+
+inline void* operator new[](size_t size, bool, const char* file, int line)
+{
+    return malloc__(size, file, line);
 }
 
 #ifdef malloc
@@ -136,12 +98,16 @@ inline void free__(void* p)
 # undef free
 #endif
 
-#define malloc(a) malloc__((a), __FILE__, __LINE__)
 #define free(a) free__(a)
 
 #if !defined(NDEBUG) && !defined(_MSC_VER)
 // MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
+# define malloc(a) malloc__((a), __FILE__, __LINE__)
 # define new new (__FILE__, __LINE__)
+# define new_nt new (false, __FILE__, __LINE__)
+#else
+# define new_nt new (false)
+# define malloc(a) malloc__(a)
 #endif
 
 #endif

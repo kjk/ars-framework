@@ -47,6 +47,8 @@ namespace ArsLexis
         void attach(UInt16 id);
 
         void attachByIndex(UInt16 index);
+        
+        void detach();
 
         explicit FormObject(Form& form, UInt16 id=frmInvalidObjectId);
 
