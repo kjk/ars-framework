@@ -33,7 +33,7 @@ public:
     
     const_iterator end() const
     {return elements_.end();}
-
+    
 private:
     
     /**
@@ -181,8 +181,6 @@ public:
      */
     ArsLexis::status_t render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate = false);
     
-    void renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element);
-    
     uint_t totalLinesCount() const
     {return lines_.size();}
     
@@ -214,13 +212,11 @@ public:
     
     void bounds(ArsLexis::Rectangle& out) const {out = bounds_;}
     
-    bool doubleClick(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point);
-    
     bool mouseDown(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point);
     
     bool mouseUp(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, uint_t clickCount);
     
-    bool mouseMove(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point);
+    bool mouseDrag(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point);
     
     enum NavigatorKey {
         navKeyLeft,
@@ -253,7 +249,7 @@ public:
     
     bool usesHyperlinkNavigation() const { return usesInteractionBehavior(behavHyperlinkNavigation);}
     
-    bool extendSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking=false);
+    bool extendSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, uint_t clickCount = 0);
     
     /**
      * Resets this definition to its default state (without any elements, hot spots etc.).
@@ -286,17 +282,21 @@ public:
     void setRenderingProgressReporter(RenderingProgressReporter* reporter)
     {renderingProgressReporter_=reporter;}
     
-    const ElementPosition_t firstElementPosition()
+    ElementPosition_t firstElementPosition()
     { return elements_.begin();}
 
-    const ElementPosition_t lastElementPosition()
+    ElementPosition_t lastElementPosition()
     { return elements_.end();}
 
 private:
 
-    bool trackHyperlinkHighlight(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking=false);
+    void renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t element);
+
+    void renderElementRange(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end);
     
-    bool trackTextSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking);
+    bool trackHyperlinkHighlight(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, uint_t clickCount);
+    
+    bool trackTextSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, uint_t clickCount);
 
     void doRender(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
 
@@ -316,16 +316,15 @@ private:
      */
     void clearLines();
 
-    void calculateLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress);
+    void calculateLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t firstElement, uint_t renderingProgress);
     
     void calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int delta=0);
     
-    //! @return @c true if @c elementToRepaint!=0 and it was completed with this line, @c false otherwise.
-    bool renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint=0);
+    void renderLine(RenderingContext& renderContext, LinePosition_t line, ElementPosition_t begin, ElementPosition_t end);
     
-    void renderLineRange(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& begin, const LinePosition_t& end, uint_t topOffset, DefinitionElement* elementToRepaint=0);
+    void renderLineRange(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, LinePosition_t begin, LinePosition_t end, uint_t topOffset, ElementPosition_t startElem, ElementPosition_t endElem);
 
-    void renderLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement* elementToRepaint=0);
+    void renderLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end);
     
     void moveHotSpots(const ArsLexis::Point& delta);
     
@@ -333,6 +332,8 @@ private:
     ElementPosition_t selectionEndElement_;
     ElementPosition_t mouseDownElement_;
     uint_t mouseDownProgress_;
+    Lines_t::iterator lastLineUnderMouse_;
+    bool selectionIsHyperlink_;
     
     ElementPosition_t inactiveSelectionStartElement_;
     ElementPosition_t inactiveSelectionEndElement_;

@@ -39,6 +39,8 @@ public:
         GenericTextElement::toText(appendTo, from, to);
     }
     
+    void wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd);
+
     ~ListNumberElement();
     
     void render(RenderingContext& rc);

@@ -25,6 +25,8 @@ public:
     
     uint_t charIndexAtOffset(LayoutContext& lc, uint_t offset);
     
+    void wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd);
+
     ~HorizontalLineElement();
     
 };

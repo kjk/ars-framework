@@ -30,6 +30,8 @@ public:
     
     void render(RenderingContext& rc);
     
+    void wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd);
+
     ~BulletElement();
 
 };

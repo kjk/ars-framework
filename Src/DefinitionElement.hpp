@@ -63,6 +63,8 @@ public:
     enum {offsetOutsideElement = uint_t(-1)};
     virtual uint_t charIndexAtOffset(LayoutContext& lc, uint_t offset) = 0;
     
+    virtual void wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd) = 0;
+    
     friend class Definition::HotSpot;    
     
     void setJustification(Justification j)

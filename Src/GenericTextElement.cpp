@@ -204,7 +204,25 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         layoutContext.markElementCompleted(txtDx);    
 }
 
-uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
+void GenericTextElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd)
+{
+    wordStart = wordEnd = index;
+    assert(offsetOutsideElement != index);
+    uint_t length = text_.length();
+    assert(index < length);
+    if (!isAlNum(text_[index]))
+        return;
+    
+    while (wordStart != 0 && isAlNum(text_[wordStart - 1]))
+        --wordStart;
+
+    while (wordEnd != length && isAlNum(text_[wordEnd]))
+        ++wordEnd;
+}
+
+
+uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
+{
     Graphics& graphics=lc.graphics;
     Graphics::StateSaver saveState(graphics);
     applyFormatting(graphics, lc.preferences);

@@ -33,3 +33,9 @@ LineBreakElement::~LineBreakElement()
 uint_t LineBreakElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
     return offsetOutsideElement;
 }
+
+void LineBreakElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd)
+{
+    wordStart = wordEnd = offsetOutsideElement;
+}
+

@@ -71,11 +71,13 @@ struct RenderingContext: public LayoutContext
     Definition& definition;
     uint_t left;
     uint_t top;
+    bool selectionIsHyperlink;
     
     RenderingContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, Definition& def, uint_t x, uint_t y, uint_t width):
         LayoutContext(graph, prefs, width),
         definition(def),
         left(x),
-        top(y)
+        top(y),
+        selectionIsHyperlink(false)
     {}
 };

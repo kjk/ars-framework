@@ -49,3 +49,8 @@ void ListNumberElement::render(RenderingContext& rc)
     rc.selectionStart = selStart;
     rc.selectionEnd = selEnd;
 }
+
+void ListNumberElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd)
+{
+    wordStart = wordEnd = offsetOutsideElement;
+}

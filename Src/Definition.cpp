@@ -84,7 +84,8 @@ Definition::Definition():
     trackingSelection_(false),
     selectedHotSpot_(0),
     renderingProgressReporter_(0),
-    interactionBehavior_(0)
+    interactionBehavior_(0),
+    selectionIsHyperlink_(false)
 {}
 
 namespace {
@@ -227,11 +228,11 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         
         if (delta>0) 
         {
-            pointDelta.y =- (int)unionTop;
+            pointDelta.y =- int(unionTop);
             graphics.copyArea(unionRect, bounds_.topLeft);
-            graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
+            graphics.erase(Rectangle(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
             moveHotSpots(pointDelta);
-            renderLineRange(graphics, prefs, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight);
+            renderLineRange(graphics, prefs, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight, elements_.end(), elements_.end());
         }
         else
         {
@@ -245,7 +246,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
-            renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);
+            renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
         }
         firstLine_ = newFirstLine;
         lastLine_ = newLastLine;
@@ -255,7 +256,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         clearHotSpots();
         firstLine_ = newFirstLine;
         lastLine_ = newLastLine;
-        renderLayout(graphics, prefs);
+        renderLayout(graphics, prefs, elements_.end(), elements_.end());
     }
 }
 
@@ -298,114 +299,107 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
     }
 }
 
-bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint)
+void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line, ElementPosition_t begin, ElementPosition_t end)
 {
     bool finished=false;
-    renderContext.usedWidth=0;
-    renderContext.usedHeight=line->height;
-    
-    bool doRender=false;
-    if (0==elementToRepaint)
-    {
+    renderContext.usedWidth = 0;
+    renderContext.usedHeight = line->height;
+    renderContext.baseLine = line->baseLine;
+    renderContext.renderingProgress = line->renderingProgress;
+    renderContext.left = bounds_.x() + line->leftMargin;
+    ElementPosition_t last = elements_.end();
+    ElementPosition_t current = line->firstElement;
+    bool lineFinished = false;  
+    DefinitionElement::Justification justify = (last!=current?(*current)->justification():DefinitionElement::justifyLeft);
+    if (elements_.end() == begin)
         renderContext.graphics.erase(Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
-        doRender=true;
-    }
-    else
+    while (!lineFinished && current != last)
     {
-        LinePosition_t nextLine=line;
-        ++nextLine;
-        ElementPosition_t lastElement=elements_.end();
-        if (nextLine!=lines_.end())
+        if (current>=selectionStartElement_ && current<=selectionEndElement_)
         {
-            lastElement=nextLine->firstElement;
-            if (nextLine->renderingProgress!=0)
-                ++lastElement;
-        }                
-        ElementPosition_t found=std::find(line->firstElement, lastElement, elementToRepaint);
-        if (found!=lastElement)
-            doRender=true;
-    }
-    
-    if (doRender)
-    {
-        renderContext.baseLine=line->baseLine;
-        renderContext.renderingProgress=line->renderingProgress;
-        renderContext.left=bounds_.x()+line->leftMargin;
-        ElementPosition_t last=elements_.end();
-        ElementPosition_t current=line->firstElement;
-        bool lineFinished=false;  
-        DefinitionElement::Justification justify=(last!=current?(*current)->justification():DefinitionElement::justifyLeft);  
-        while (!lineFinished && current!=last)
-        {
-            if (current>=selectionStartElement_ && current<=selectionEndElement_)
-            {
-                if (current!=selectionStartElement_)
-                    renderContext.selectionStart=0;
-                else
-                    renderContext.selectionStart=selectionStartProgress_;
-                if (current!=selectionEndElement_)
-                    renderContext.selectionEnd=LayoutContext::progressCompleted;
-                else
-                    renderContext.selectionEnd=selectionEndProgress_;
-            }
+            if (current != selectionStartElement_)
+                renderContext.selectionStart = 0;
             else
-                renderContext.selectionStart=renderContext.selectionEnd=LayoutContext::progressCompleted;
-            if (current!=last)
-            {
-                ElementPosition_t next=current;
-                ++next;
-                if (last!=next && (*next)->isTextElement())
-                    renderContext.nextTextElement=static_cast<GenericTextElement*>(*next);
-                else
-                    renderContext.nextTextElement=0;
-            }
-            
-            if (DefinitionElement::justifyRightLastElementInLine == (*current)->justification() && line->firstElement != current)
-            {
-                //move last element to right
-                LayoutContext lc(renderContext);
-                (*current)->calculateLayout(lc);
-                renderContext.left += lc.availableWidth();
-            }
-            
-            (*current)->render(renderContext);
-            if (renderContext.isElementCompleted())
-            {
-                if (*current==elementToRepaint)
-                {
-                    finished=true;
-                    break;
-                }
-                ++current;
-                renderContext.renderingProgress=0;
-                if (renderContext.availableWidth()==0 || current==last || (*current)->breakBefore(renderContext.preferences) || (justify!=(*current)->justification() && DefinitionElement::justifyRightLastElementInLine != (*current)->justification()))
-                    lineFinished=true;
-            }
+                renderContext.selectionStart = selectionStartProgress_;
+            if (current != selectionEndElement_)
+                renderContext.selectionEnd = LayoutContext::progressCompleted;
             else
-                lineFinished=true;
+                renderContext.selectionEnd = selectionEndProgress_;
         }
-    }        
-    renderContext.top+=renderContext.usedHeight;
-    return finished;
+        else
+            renderContext.selectionStart = renderContext.selectionEnd = LayoutContext::progressCompleted;
+        if (current != last)
+        {
+            ElementPosition_t next = current;
+            ++next;
+            if (last != next && (*next)->isTextElement())
+                renderContext.nextTextElement = static_cast<GenericTextElement*>(*next);
+            else
+                renderContext.nextTextElement = 0;
+        }
+        
+        if (DefinitionElement::justifyRightLastElementInLine == (*current)->justification() && line->firstElement != current)
+        {
+            //move last element to right
+            LayoutContext lc(renderContext);
+            (*current)->calculateLayout(lc);
+            renderContext.left += lc.availableWidth();
+        }
+        
+        (*current)->render(renderContext);
+        if (renderContext.isElementCompleted())
+        {
+            ++current;
+            renderContext.renderingProgress = 0;
+            if (renderContext.availableWidth() == 0 || current == last || 
+                (*current)->breakBefore(renderContext.preferences) || 
+                (justify != (*current)->justification() && DefinitionElement::justifyRightLastElementInLine != (*current)->justification()))
+                lineFinished = true;
+        }
+        else
+            lineFinished = true;
+    }
+    renderContext.top += renderContext.usedHeight;
 }
 
-void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, const Definition::LinePosition_t& begin, const Definition::LinePosition_t& end, uint_t topOffset, DefinitionElement* elementToRepaint)
+void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, LinePosition_t begin, LinePosition_t end, uint_t topOffset, ElementPosition_t startElem, ElementPosition_t endElem)
 {
-    RenderingContext renderContext(graphics, prefs, *this, bounds_.x(), bounds_.y()+topOffset, bounds_.width());
-    for (Lines_t::iterator line=begin; line!=end; ++line)
+    RenderingContext renderContext(graphics, prefs, *this, bounds_.x(), bounds_.y() + topOffset, bounds_.width());
+    renderContext.selectionIsHyperlink = selectionIsHyperlink_;
+    Lines_t::iterator line = begin;
+    while (line != end)
     {
-        if (renderLine(renderContext, line, elementToRepaint))
+        Lines_t::iterator nextLine = line;
+        ++nextLine;
+        ElementPosition_t lastElem = elements_.end();
+        if (lines_.end() != nextLine)
+            lastElem = nextLine->firstElement;
+        bool renderThisLine = false;
+        if (elements_.end() == startElem)
+            renderThisLine = true;
+        else if (startElem <= line->firstElement && endElem >= line->firstElement)
+            renderThisLine = true;
+        else if (startElem <= lastElem && endElem >= lastElem)
+            renderThisLine = true;
+        else if (startElem >= line->firstElement && endElem <= lastElem)
+            renderThisLine = true;
+        if (renderThisLine)
+            renderLine(renderContext, line, startElem, endElem);
+        else
+            renderContext.top += line->height;
+        line = nextLine;
+        if (line->firstElement > endElem)
             break;
     }
 }
 
-void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress)
+void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t firstElement, uint_t renderingProgress)
 {
     ElementPosition_t end(elements_.end());
     ElementPosition_t element(elements_.begin());
     LayoutContext layoutContext(graphics, prefs, bounds_.width());
     LineHeader lastLine;
-    lastLine.firstElement=element;
+    lastLine.firstElement = element;
     DefinitionElement::Justification justify = DefinitionElement::justifyLeft;
     if (element!=end)
         justify = (*element)->justification();
@@ -479,9 +473,9 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
 
 void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
-    if (bounds.width()!=bounds_.width() || forceRecalculate)
+    if (bounds.width() != bounds_.width() || forceRecalculate)
     {
-        ElementPosition_t firstElement=elements_.begin(); // This will be used in calculating first line we should show.
+        ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
         uint_t renderingProgress=0;
         if (firstLine_!=0) // If there's actually some first line set, use it - it's position won't change if window width remains the same.
         {
@@ -502,7 +496,7 @@ void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const Ren
         if (heightChanged)
             calculateVisibleRange(firstLine_, lastLine_);
     }
-    renderLayout(graphics, prefs);
+    renderLayout(graphics, prefs, elements_.end(), elements_.end());
 }
 
 status_t Definition::render(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
@@ -517,16 +511,15 @@ status_t Definition::render(Graphics& graphics, const Rectangle& bounds, const R
     return error;
 }
  
-void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement* elementToRepaint)
+void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end)
 {
     Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
-    renderLineRange(graphics, prefs, lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0, elementToRepaint);
-    uint_t rangeHeight=0;
+    renderLineRange(graphics, prefs, lines_.begin() + firstLine_, lines_.begin() + lastLine_, 0, begin, end);
+    uint_t rangeHeight = 0;
     for (uint_t i=firstLine_; i<lastLine_; ++i)
-    {
         rangeHeight+=lines_[i].height;
-    }
-    graphics.erase(Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
+    if (elements_.end() == begin)
+        graphics.erase(Rectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
 }
 
 void Definition::selectionToText(String& out) const
@@ -538,10 +531,18 @@ void Definition::selectionToText(String& out) const
     }
 }
 
-void Definition::renderSingleElement(Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element)
+void Definition::renderSingleElement(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t element)
 {
-    renderLayout(graphics, prefs, &element);
+    assert(elements_.end() != element);
+    ElementPosition_t next = element;
+    renderLayout(graphics, prefs, element, ++next);
 }
+
+void Definition::renderElementRange(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end)
+{
+    renderLayout(graphics, prefs, begin, end);
+}
+
 
 static bool hyperlinksEqual(const DefinitionElement* e1, const DefinitionElement* e2) 
 {
@@ -558,7 +559,7 @@ static bool hyperlinksEqual(const DefinitionElement* e1, const DefinitionElement
     return true;
 }
 
-bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking) 
+bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount) 
 {
     if (trackingSelection_ && NULL == selectedHotSpot_)
         return false;
@@ -567,25 +568,27 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
         assert(trackingSelection_);
         assert(selectionEndProgress_ == LayoutContext::progressCompleted);
         bool insideHyperlink = selectedHotSpot_->hitTest(point);
-        if (!endTracking) 
+        if (0 == clickCount) 
         {
             if (!insideHyperlink && selectionStartProgress_ != selectionEndProgress_)
             {
                 selectionStartProgress_ = LayoutContext::progressCompleted;
-                renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+                renderSingleElement(graphics, prefs, selectionStartElement_);
             }
             else if (insideHyperlink && selectionStartProgress_ == selectionEndProgress_)
             {
                 selectionStartProgress_ =  0;
-                renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+                renderSingleElement(graphics, prefs, selectionStartElement_);
             }
         }
         else 
         {
             selectionStartProgress_ = LayoutContext::progressCompleted;
+            ElementPosition_t elem = selectionStartElement_;
             selectionStartElement_  = selectionEndElement_ = elements_.end();
             trackingSelection_ = false;
-            renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+            selectionIsHyperlink_ = false;
+            renderSingleElement(graphics, prefs, elem);
             if (insideHyperlink)
                 selectedHotSpot_->element().performAction(*this);
             selectedHotSpot_ = NULL;
@@ -606,10 +609,11 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
         if (NULL != selectedHotSpot_)
         {
             trackingSelection_ = true;
+            selectionIsHyperlink_ = true;
             selectionStartProgress_ = 0;
             selectionEndProgress_ = LayoutContext::progressCompleted;
             selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &selectedHotSpot_->element());
-            renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+            renderSingleElement(graphics, prefs, selectionStartElement_);
 /*            
             ElementPosition_t pos = selectionStartElement_;
             while (true)
@@ -663,23 +667,38 @@ void Definition::removeSelection(ArsLexis::Graphics& graphics, const RenderingPr
         ++end;
     selectionStartElement_ = selectionEndElement_ = elements_.end();
     selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
-    while (start != end)
-        renderSingleElement(graphics, prefs, *(*start++));
+    renderElementRange(graphics, prefs, start, end);
 }
 
 
-bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking) 
+bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount) 
 {
     Point p(point.x - bounds_.x(), point.y - bounds_.y());
     ElementPosition_t elem;
     uint_t progress;
     LinePosition_t line = lineAtHeight(p.y);
     elementAtWidth(graphics, prefs, line, p.x, elem, progress);
+    if (2 == clickCount && usesDoubleClickSelection())
+    {
+        trackingSelection_ = false;
+        if (elements_.end() == elem || DefinitionElement::offsetOutsideElement == progress)
+            return false;
+        selectionStartElement_ = selectionEndElement_ = elem;
+        selectionStartProgress_ = 0;
+        selectionEndProgress_ = LayoutContext::progressCompleted;
+/*        
+        (*elem)->wordAtIndex(graphics, prefs, 
+   */     
+        ++elem;
+        renderElementRange(graphics, prefs, selectionStartElement_, selectionEndElement_);
+        return true;
+    }
     if (!trackingSelection_) 
     {
         mouseDownElement_ = selectionStartElement_ = selectionEndElement_ = elem;
         mouseDownProgress_ = selectionStartProgress_ = selectionEndProgress_ = progress;
         trackingSelection_ = true;
+        selectionIsHyperlink_ = false;
     }
     else 
     {
@@ -712,24 +731,23 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
             start = std::min(selectionStartElement_, prevStart);
             end = std::max(selectionStartElement_, prevStart);
             ++end;
-            while (start != end)
-                renderSingleElement(graphics, prefs, *(*start++));
+            renderElementRange(graphics, prefs, start, end);
         }
         if (prevEnd != selectionEndElement_ || prevEndProg != selectionEndProgress_)
         {
             start = std::min(selectionEndElement_, prevEnd);
             end = std::max(selectionEndElement_, prevEnd);
             ++end;
-            while (start != end)
-                renderSingleElement(graphics, prefs, *(*start++));
+            renderElementRange(graphics, prefs, start, end);
         }
     }
-    if (endTracking) 
+    if (0 != clickCount) 
         trackingSelection_ = false;
+    lastLineUnderMouse_ = line;
     return true;
 }
 
-bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking)
+bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount)
 {
     if (elements_.empty())
         return false;
@@ -737,10 +755,10 @@ bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences&
         return false;
     if (!trackingSelection_ && elements_.end() != selectionStartElement_)
         removeSelection(graphics, prefs);
-    if (trackHyperlinkHighlight(graphics, prefs, point, endTracking))
+    if (trackHyperlinkHighlight(graphics, prefs, point, clickCount))
         return true;
     if (usesMouseSelection())
-        return trackTextSelection(graphics, prefs, point, endTracking);
+        return trackTextSelection(graphics, prefs, point, clickCount);
     return false;
 }
 
@@ -760,6 +778,21 @@ void Definition::replaceElements(Elements_t& elements)
     selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
     trackingSelection_ = false;
     selectedHotSpot_ = NULL;
+}
+
+bool Definition::mouseDown(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point)
+{
+    return extendSelection(graphics, prefs, point, 0);
+}
+
+bool Definition::mouseUp(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, uint_t clickCount)
+{
+    return extendSelection(graphics, prefs, point, clickCount);
+}
+
+bool Definition::mouseDrag(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point)
+{
+    return extendSelection(graphics, prefs, point, 0);
 }
 
 

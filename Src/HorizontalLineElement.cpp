@@ -29,3 +29,8 @@ HorizontalLineElement::~HorizontalLineElement()
 uint_t HorizontalLineElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
     return 0;
 }
+
+void HorizontalLineElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd)
+{
+    wordStart = wordEnd = offsetOutsideElement;
+}
