@@ -28,6 +28,8 @@ public:
             appendTo.append(_T("\n• "));
     }
     
+    void render(RenderingContext& rc);
+    
     ~BulletElement();
 
 };

@@ -60,6 +60,9 @@ public:
     
     virtual void toText(ArsLexis::String& appendTo, uint_t from=0, uint_t to=LayoutContext::progressCompleted) const=0;
     
+    enum {offsetOutsideElement = uint_t(-1)};
+    virtual uint_t charIndexAtOffset(LayoutContext& lc, uint_t offset) = 0;
+    
     friend class Definition::HotSpot;    
     
     void setJustification(Justification j)

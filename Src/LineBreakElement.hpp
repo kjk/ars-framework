@@ -38,6 +38,8 @@ public:
             appendTo.append(1, _T('\n'));
     }
 
+    uint_t charIndexAtOffset(LayoutContext& lc, uint_t offset);
+
     ~LineBreakElement();
     
 };

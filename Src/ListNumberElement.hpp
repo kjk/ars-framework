@@ -41,6 +41,7 @@ public:
     
     ~ListNumberElement();
     
+    void render(RenderingContext& rc);
 };
 
 #endif

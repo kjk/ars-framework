@@ -22,12 +22,6 @@ class DefinitionElement;
  */
 class Definition: private ArsLexis::NonCopyable
 {
-    /**
-     * @internal
-     * Type used to store @c DefinitonElement objects that represent various parts of definition.
-     */
-//    typedef std::list<DefinitionElement*> Elements_t;
-
 public:
 
     typedef std::vector<DefinitionElement*> Elements_t;
@@ -116,6 +110,10 @@ private:
      */
     ArsLexis::Rectangle bounds_;
     
+    LinePosition_t lineAtHeight(ArsLexis::Coord_t height);
+    
+    void elementAtWidth(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, ArsLexis::Coord_t width, ElementPosition_t& elem, uint_t& progress);
+    
 public:
 
     class HyperlinkHandler
@@ -136,7 +134,6 @@ public:
     class HotSpot: private ArsLexis::NonCopyable
     {
         typedef std::list<ArsLexis::Rectangle> Rectangles_t;
-//        typedef std::vector<ArsLexis::Rectangle> Rectangles_t;
         
         /**
          * @internal 
@@ -211,16 +208,50 @@ public:
      */
     void addHotSpot(HotSpot* hotSpot);
     
-    const ArsLexis::Rectangle& bounds() const
-    {return bounds_;}
+    const ArsLexis::Rectangle& bounds() const {return bounds_;}
     
-    /**
-     * Checks if @c point falls within bounds of any currently displayed @c HotSpot. If so,
-     * calls @c DefinitionElement::performAction() of element associated with @c HotSpot.
-     */
-    void click(const ArsLexis::Point& point);
+    void bounds(ArsLexis::Rectangle& out) const {out = bounds_;}
     
-    void extendSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking=false);
+    bool doubleClick(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point);
+    
+    bool mouseDown(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point);
+    
+    bool mouseUp(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, uint_t clickCount);
+    
+    bool mouseMove(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point);
+    
+    enum NavigatorKey {
+        navKeyLeft,
+        navKeyRight,
+        navKeyUp,
+        navKeyDown,
+        navKeyCenter
+    };
+    
+    bool navigatorKey(NavigatorKey navKey);
+    
+    enum InteractionBehaviorOption {
+        behavDoubleClickSelection = 1,
+        behavMouseSelection = 2,
+        behavUpDownScroll = 4,
+        behavHyperlinkNavigation = 8
+    };
+    
+    void setInteractionBehavior(uint_t ib) { interactionBehavior_ = ib;}
+    
+    uint_t interactionBehavior() const { return interactionBehavior_;}
+    
+    bool usesInteractionBehavior(InteractionBehaviorOption ibo) const {return 0 != (interactionBehavior_ & ibo);}
+    
+    bool usesDoubleClickSelection() const { return usesInteractionBehavior(behavDoubleClickSelection);}
+    
+    bool usesMouseSelection() const { return usesInteractionBehavior(behavMouseSelection);}
+    
+    bool usesUpDownScroll() const { return usesInteractionBehavior(behavUpDownScroll);}
+    
+    bool usesHyperlinkNavigation() const { return usesInteractionBehavior(behavHyperlinkNavigation);}
+    
+    bool extendSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking=false);
     
     /**
      * Resets this definition to its default state (without any elements, hot spots etc.).
@@ -261,6 +292,10 @@ public:
 
 private:
 
+    bool trackHyperlinkHighlight(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking=false);
+    
+    bool trackTextSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking);
+
     void doRender(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
 
 
@@ -292,8 +327,6 @@ private:
     
     void moveHotSpots(const ArsLexis::Point& delta);
     
-    ArsLexis::Point selectionStart_;
-    ArsLexis::Point selectionEnd_;
     ElementPosition_t selectionStartElement_;
     ElementPosition_t selectionEndElement_;
     uint_t selectionStartProgress_;
@@ -301,6 +334,8 @@ private:
     bool trackingSelection_;
     HotSpot* selectedHotSpot_;
     RenderingProgressReporter* renderingProgressReporter_; 
+    uint_t interactionBehavior_;
+    
 };
 
 #endif

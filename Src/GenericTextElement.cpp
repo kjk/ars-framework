@@ -130,7 +130,6 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         if (0==copy.renderingProgress && !layoutContext.isFirstInLine()) 
         {
             uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
-            assert(rangeLength<((uint_t)-1)/2);
             length=rangeLength;
             txtDx=graphics.textWidth(text, length);
         }
@@ -198,6 +197,82 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     }
     else
         layoutContext.markElementCompleted(txtDx);    
+}
+
+uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
+    Graphics& graphics=lc.graphics;
+    Graphics::StateSaver saveState(graphics);
+    applyFormatting(graphics, lc.preferences);
+    uint_t indent=indentation();
+    lc.usedWidth=std::max(lc.usedWidth, indent);
+    if (offset < lc.usedWidth)
+        return lc.renderingProgress;
+    const char_t* text=text_.c_str()+lc.renderingProgress;
+    uint_t left = lc.usedWidth;
+    if (lc.isFirstInLine())
+    {
+        while (ArsLexis::isSpace(*text))
+        {
+            ++text;
+            ++lc.renderingProgress;
+        }
+    }
+    uint_t nextWhitespace=findNextWhitespace(text_, lc.renderingProgress)-lc.renderingProgress;
+    uint_t txtDx;
+    uint_t length=graphics.wordWrap(text, lc.availableWidth(), txtDx);
+    if (0 == lc.renderingProgress && !lc.isFirstInLine() && length < nextWhitespace)
+    {
+        uint_t newLineLength = graphics.wordWrap(text, lc.screenWidth - indent);
+        if (nextWhitespace <= newLineLength)
+            return lc.renderingProgress;
+    }
+    if (text_.length() == lc.renderingProgress + length &&
+        !ArsLexis::isSpace(text_[text_.length()-1]) &&
+        NULL != lc.nextTextElement && 
+        !lc.nextTextElement->breakBefore(lc.preferences) &&
+        !lc.nextTextElement->text().empty() &&
+        !ArsLexis::isSpace(lc.nextTextElement->text()[0]))
+    {
+        LayoutContext copy(lc.graphics, lc.preferences, lc.screenWidth);
+        copy.usedWidth = lc.usedWidth + txtDx;
+        lc.nextTextElement->calculateLayout(copy);
+        if (0 == copy.renderingProgress && !lc.isFirstInLine()) 
+        {
+            uint_t rangeLength = whitespaceRangeLength(text_, lc.renderingProgress, length);
+            length = rangeLength;
+            txtDx = graphics.textWidth(text, length);
+        }
+    }
+    
+    uint_t charsToDraw = length;
+    uint_t curTxtDx = txtDx;
+    while ( (charsToDraw>0) && 
+        ArsLexis::isSpace(*(text  +charsToDraw - 1)) && 
+        (lc.availableWidth() < curTxtDx))
+    {
+        --charsToDraw;
+        curTxtDx = graphics.textWidth(text, charsToDraw);
+    }
+
+    uint_t dispWidth = curTxtDx;
+    if (dispWidth > lc.availableWidth())
+        return lc.renderingProgress;
+    
+    offset -= left;
+    uint_t charIndex = charsToDraw;
+    graphics.charsInWidth(text, charIndex, offset);
+    
+    text += length;
+    if (*text) 
+    {
+        lc.renderingProgress += length;
+        lc.usedWidth += txtDx;
+    }
+    else
+        lc.markElementCompleted(txtDx);
+    if (charIndex == charsToDraw)
+        return offsetOutsideElement;
+    return lc.renderingProgress + charsToDraw;
 }
 
 void GenericTextElement::calculateLayout(LayoutContext& layoutContext)

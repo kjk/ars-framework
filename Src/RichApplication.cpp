@@ -5,7 +5,6 @@ namespace ArsLexis {
 
     RichApplication::RichApplication():
         log_(_T("root")),
-        ticksPerSecond_(SysTicksPerSecond()),
         diaNotifyRegistered_(false),
         hasHighDensityFeatures_(highDensityFeaturesPresent()),
         showAlerts_(true)

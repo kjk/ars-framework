@@ -12,7 +12,6 @@ namespace ArsLexis {
 
         mutable ArsLexis::RootLogger log_;
         ArsLexis::DIA_Support diaSupport_;
-        uint_t ticksPerSecond_;
         
         typedef std::list<ArsLexis::String> CustomAlerts_t;
         CustomAlerts_t customAlerts_;
@@ -32,9 +31,6 @@ namespace ArsLexis {
     public:
     
         ~RichApplication();
-        
-        uint_t ticksPerSecond() const
-        {return ticksPerSecond_;}
         
         const ArsLexis::DIA_Support& diaSupport() const
         {return diaSupport_;}

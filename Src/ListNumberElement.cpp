@@ -38,3 +38,14 @@ void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
 
 ListNumberElement::~ListNumberElement()
 {}
+
+void ListNumberElement::render(RenderingContext& rc) 
+{
+    // Prevent number from being displayed in reverse video while selected.
+    uint_t selStart = rc.selectionStart;
+    uint_t selEnd = rc.selectionEnd;
+    rc.selectionStart = rc.selectionEnd = LayoutContext::progressCompleted;
+    GenericTextElement::render(rc);
+    rc.selectionStart = selStart;
+    rc.selectionEnd = selEnd;
+}

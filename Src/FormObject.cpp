@@ -153,10 +153,13 @@ namespace ArsLexis
         form_->releaseFocus();          // To make sure event focus lost is sent before event focus taken on Treo 600
         FormObjectKind kind = type();
         bool isTreo = form_->application().runningOnTreo600();
+        bool isPastCobalt61 = (form_->application().romVersionMajor() > 6 || (form_->application().romVersionMajor() == 6 && form_->application().romVersionMinor() >= 1));
         if (isTreo && frmInvalidObjectId != id_)
             HsNavObjectTakeFocus(*form_, id_);
         else if (!isTreo && (frmFieldObj == kind || frmTableObj == kind))
             FrmSetFocus(*form_, index_);
+        else if (isPastCobalt61 && frmInvalidObjectId != id_)
+            FrmSetFocus(*form_, index_);            
         form_->focusedControlIndex_ = index_;
 //        form_->entryFocusControlId_ = id_;
 /*        

@@ -53,8 +53,8 @@ void FormGadget::drawProxy()
         Rectangle formBounds;
         form()->bounds(formBounds);
         Err error;
-        WinHandle wh=WinCreateOffscreenWindow(formBounds.width(), formBounds.height(), nativeFormat, &error);
-        if (errNone==error)
+        WinHandle wh = WinCreateOffscreenWindow(formBounds.width(), formBounds.height(), nativeFormat, &error);
+        if (errNone == error)
         {
             {
                 Graphics offscreen(wh);

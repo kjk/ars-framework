@@ -206,7 +206,7 @@ void ExtendedList::handleDraw(Graphics& graphics)
     assert(itemsCount>topItem_);
     uint_t viewCapacity=listBounds.height()/itemHeight_;
     uint_t itemsToDisplay=viewCapacity;
-    if (0 != listBounds.height()%itemHeight_)
+    if (0 != listBounds.height() % itemHeight_)
         ++itemsToDisplay;
     uint_t itemsBelow=itemsCount-topItem_;
     bool showScrollbar=(itemsCount>viewCapacity);
@@ -241,10 +241,10 @@ uint_t ExtendedList::visibleItemsCount() const
         return 0;
     }
     uint_t itemsCount=this->itemsCount();
-    uint_t itemsBelow=itemsCount-topItem_;
+    uint_t itemsBelow=itemsCount - topItem_;
     uint_t listHeight=height();
     uint_t visibleCount=listHeight/itemHeight_;
-    if (0 !=listHeight%itemHeight_)
+    if (0 != listHeight  %itemHeight_)
         ++visibleCount;
     visibleCount=std::min(visibleCount, itemsBelow);
     return visibleCount;

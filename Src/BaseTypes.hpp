@@ -34,7 +34,7 @@ typedef unsigned long ulong_t;
 # pragma warning (disable : 4786)
 #endif
 
-#if defined(_WIN32_WCE) || defined(_WIN32)
+#if defined(_WIN32)
 
 # include <windows.h>
 # include <tchar.h>
@@ -65,6 +65,8 @@ namespace ArsLexis
 # define tprintf _stprintf
 # define ticks   GetTickCount
 
+    static inline tick_t ticksPerSecond() { return 1000; } // Win32 uses fixed 1-millisecond ticks.
+
     
 // Using xtoi functions is dangerous as they don't have any way to inform on invalid format. Use ArsLexis::numericValue() instead.
 //# define tatoi _wtoi
@@ -88,13 +90,14 @@ namespace ArsLexis
     typedef std::basic_string<char>   NarrowString;
 
 #  define ticks TimGetTicks
+
+    static inline tick_t ticksPerSecond() {return SysTicksPerSecond();}
     
 #  define tprintf StrPrintF
 #  define tstrlen StrLen
 #  define tstrcmp StrCompare
 #  define malloc MemPtrNew        
 #  define free MemPtrFree
-
     
 # else
         

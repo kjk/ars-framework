@@ -80,7 +80,8 @@ namespace ArsLexis
         databaseId_(0),
         creatorId_(creator()),
         romVersion_(0),
-        runningOnTreo600_(isTreo600())
+        runningOnTreo600_(isTreo600()),
+        ticksPerSecond_(SysTicksPerSecond())
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);
         assert(!error);
@@ -203,6 +204,7 @@ namespace ArsLexis
     
     bool Application::handleApplicationEvent(EventType& event)
     {
+        UInt32 time = TimGetTicks();
         bool handled=false;
         if (frmLoadEvent==event.eType)
         {

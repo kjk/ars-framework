@@ -29,3 +29,7 @@ void LineBreakElement::calculateOrRender(LayoutContext& layoutContext, bool rend
 
 LineBreakElement::~LineBreakElement()
 {}
+
+uint_t LineBreakElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
+    return offsetOutsideElement;
+}

@@ -46,6 +46,7 @@ protected:
     
     void applyHyperlinkDecorations(ArsLexis::Graphics& graphics, const RenderingPreferences& preferences);
     
+ 
 public:
 
     GenericTextElement(const ArsLexis::String& text=ArsLexis::String());
@@ -93,6 +94,8 @@ public:
         actionCallback_ = actionCb;
         actionCallbackData_ = data;
     }
+
+    uint_t charIndexAtOffset(LayoutContext& lc, uint_t offset);
 
 };
 

@@ -22,3 +22,13 @@ void BulletElement::calculateLayout(LayoutContext& mc)
 BulletElement::~BulletElement()
 {}
 
+void BulletElement::render(RenderingContext& rc) 
+{
+    // Prevent bullets from being displayed in reverse video while selected.
+    uint_t selStart = rc.selectionStart;
+    uint_t selEnd = rc.selectionEnd;
+    rc.selectionStart = rc.selectionEnd = LayoutContext::progressCompleted;
+    GenericTextElement::render(rc);
+    rc.selectionStart = selStart;
+    rc.selectionEnd = selEnd;
+}

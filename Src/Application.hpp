@@ -100,7 +100,7 @@ namespace ArsLexis
         _CW_EventHandlerThunk formEventHandlerThunk_;
 
         _CW_CallbackThunk gadgetHandlerThunk_;
-
+        
 #endif
         
         /**
@@ -125,7 +125,9 @@ namespace ArsLexis
         
         bool runningOnTreo600_;
         
-    protected:
+        UInt32 ticksPerSecond_;
+
+ protected:
         
         /**
          * Constructor. 
@@ -202,6 +204,9 @@ namespace ArsLexis
         
     public:
     
+        UInt32 ticksPerSecond() const
+        {return ticksPerSecond_;}
+        
         /**
          * Enumerates used feature indexes.
          * Subclasses should not assume that next available feature index is some fixed number,
@@ -316,7 +321,7 @@ namespace ArsLexis
         
         enum Event
         {
-            appFirstAvailableEvent=firstUserEvent
+            appFirstAvailableEvent = firstUserEvent
         };
         
         bool runningOnTreo600() const {return runningOnTreo600_;}

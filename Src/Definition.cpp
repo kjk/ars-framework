@@ -10,11 +10,9 @@
 #include "GenericTextElement.hpp"
 #include <algorithm>
 
-using ArsLexis::Point;
-using ArsLexis::ObjectDeleter;
-using ArsLexis::Graphics;
+using namespace ArsLexis;
 
-Definition::HotSpot::HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement& element):
+Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     element_(element)
 {
     rectangles_.push_back(rect);
@@ -22,7 +20,7 @@ Definition::HotSpot::HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement&
 
 bool Definition::HotSpot::hitTest(const Point& point) const
 {
-    return rectangles_.end()!=std::find_if(rectangles_.begin(), rectangles_.end(), ArsLexis::Rectangle::HitTest(point));
+    return rectangles_.end()!=std::find_if(rectangles_.begin(), rectangles_.end(), Rectangle::HitTest(point));
 }
 
 Definition::HotSpot::~HotSpot()
@@ -30,13 +28,13 @@ Definition::HotSpot::~HotSpot()
     element_.invalidateHotSpot();
 }
 
-void Definition::HotSpot::move(const Point& delta, const ArsLexis::Rectangle& validArea)
+void Definition::HotSpot::move(const Point& delta, const Rectangle& validArea)
 {
     Rectangles_t::iterator end=rectangles_.end();
     Rectangles_t::iterator it=rectangles_.begin();
     while (it!=end)
     {
-        ArsLexis::Rectangle& rect=*it;
+        Rectangle& rect=*it;
         rect+=delta;
         Rectangles_t::iterator next=it;
         ++next;
@@ -49,7 +47,7 @@ void Definition::HotSpot::move(const Point& delta, const ArsLexis::Rectangle& va
 namespace {
 
     inline 
-    static bool operator<(const ArsLexis::Rectangle& rect1, const ArsLexis::Rectangle& rect2) {
+    static bool operator<(const Rectangle& rect1, const Rectangle& rect2) {
          if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
             return true;
         else
@@ -58,7 +56,7 @@ namespace {
     
 }
 
-void Definition::HotSpot::addRectangle(const ArsLexis::Rectangle& rect)
+void Definition::HotSpot::addRectangle(const Rectangle& rect)
 {
     rectangles_.insert(std::lower_bound(rectangles_.begin(), rectangles_.end(), rect), rect);
 }
@@ -81,7 +79,8 @@ Definition::Definition():
     selectionEndProgress_(LayoutContext::progressCompleted),
     trackingSelection_(false),
     selectedHotSpot_(0),
-    renderingProgressReporter_(0)
+    renderingProgressReporter_(0),
+    interactionBehavior_(0)
 {}
 
 namespace {
@@ -217,7 +216,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             unionHeight += lines_[index].height;
         }
 
-        ArsLexis::Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
+        Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
         
         Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
@@ -226,7 +225,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         {
             pointDelta.y =- (int)unionTop;
             graphics.copyArea(unionRect, bounds_.topLeft);
-            graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
+            graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight);
         }
@@ -239,7 +238,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             }
                 
             graphics.copyArea(unionRect, bounds_.topLeft + pointDelta);
-            graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
+            graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);
@@ -256,6 +255,28 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
     }
 }
 
+void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress) 
+{
+    ElementPosition_t end = elements_.end();
+    if (lines_.end() == line)
+    {
+        elem = end;
+        --elem;
+        progress = DefinitionElement::offsetOutsideElement;
+        return;
+    }
+    LinePosition_t nextLine = line;
+    ++nextLine;
+    elem = line->firstElement;
+    progress = line->renderingProgress;
+    LayoutContext layoutContext(graphics, prefs, bounds_.width());
+    layoutContext.usedWidth=0;
+    layoutContext.usedHeight=line->height;
+    while (true) 
+    {
+    }
+}
+
 bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint)
 {
     bool finished=false;
@@ -265,7 +286,7 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
     bool doRender=false;
     if (0==elementToRepaint)
     {
-        renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+        renderContext.graphics.erase(Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
         doRender=true;
     }
     else
@@ -435,7 +456,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::doRender(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+void Definition::doRender(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
     if (bounds.width()!=bounds_.width() || forceRecalculate)
     {
@@ -463,9 +484,9 @@ void Definition::doRender(Graphics& graphics, const ArsLexis::Rectangle& bounds,
     renderLayout(graphics, prefs);
 }
 
-ArsLexis::status_t Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
+status_t Definition::render(Graphics& graphics, const Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
-    volatile ArsLexis::status_t error=errNone;
+    volatile status_t error=errNone;
     ErrTry {
         doRender(graphics, bounds, prefs, forceRecalculate);
     }
@@ -475,19 +496,6 @@ ArsLexis::status_t Definition::render(Graphics& graphics, const ArsLexis::Rectan
     return error;
 }
  
-void Definition::click(const Point& point)
-{
-    HotSpots_t::iterator end=hotSpots_.end();
-    for (HotSpots_t::iterator it=hotSpots_.begin(); it!=end; ++it)
-    {
-        if ((*it)->hitTest(point))
-        {
-            (*it)->element().performAction(*this);
-            break;
-        }
-    }
-}
-
 void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement* elementToRepaint)
 {
     Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
@@ -497,10 +505,10 @@ void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& pr
     {
         rangeHeight+=lines_[i].height;
     }
-    graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
+    graphics.erase(Rectangle(bounds_.x(), bounds_.y()+rangeHeight, bounds_.width(), bounds_.height()-rangeHeight));        
 }
 
-void Definition::selectionToText(ArsLexis::String& out) const
+void Definition::selectionToText(String& out) const
 {
     Elements_t::const_iterator end=elements_.end();
     for (Elements_t::const_iterator it=elements_.begin(); it!=end; ++it)
@@ -509,59 +517,107 @@ void Definition::selectionToText(ArsLexis::String& out) const
     }
 }
 
-void Definition::renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element)
+void Definition::renderSingleElement(Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element)
 {
-    //! @todo Optimize renderSingleElement() do that it really renders single element not all of them.
     renderLayout(graphics, prefs, &element);
 }
 
-void Definition::extendSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking)
+bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking) 
 {
-    if (!trackingSelection_)
+    if (trackingSelection_ && NULL == selectedHotSpot_)
+        return false;
+    if (NULL != selectedHotSpot_) 
     {
-        selectionStart_=point;
-        trackingSelection_=true;
-    }
-    selectionEnd_=point;
-    if (selectedHotSpot_)
-    {
-        if (!selectedHotSpot_->hitTest(point))
+        assert(trackingSelection_);
+        assert(selectionEndProgress_ == LayoutContext::progressCompleted);
+        assert(selectionStartElement_ != elements_.end());
+        bool insideHyperlink = selectedHotSpot_->hitTest(point);
+        if (!endTracking) 
         {
-            selectionStartProgress_=selectionEndProgress_=LayoutContext::progressCompleted;
-            selectionStartElement_=selectionEndElement_=elements_.end();
-            renderSingleElement(graphics, prefs, selectedHotSpot_->element());
-            selectedHotSpot_=0;
+            if (!insideHyperlink && selectionStartProgress_ != selectionEndProgress_)
+            {
+                selectionStartProgress_ = LayoutContext::progressCompleted;
+                renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+            }
+            else if (insideHyperlink && selectionStartProgress_ == selectionEndProgress_)
+            {
+                selectionStartProgress_ =  0;
+                renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+            }
         }
+        else 
+        {
+            selectionStartProgress_ = LayoutContext::progressCompleted;
+            selectionStartElement_  = selectionEndElement_ = elements_.end();
+            trackingSelection_ = false;
+            renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+            if (insideHyperlink)
+                selectedHotSpot_->element().performAction(*this);
+            selectedHotSpot_ = NULL;
+        }
+        return true;
     }
-    else
+    else 
     {
+        assert(!endTracking);
         HotSpots_t::const_iterator end=hotSpots_.end();
         for (HotSpots_t::const_iterator it=hotSpots_.begin(); it!=end; ++it)
         {
             if ((*it)->hitTest(point))
             {
-                selectedHotSpot_=(*it);
+                selectedHotSpot_ = (*it);
                 break;
             }
         }
-        if (selectedHotSpot_)
+        if (NULL != selectedHotSpot_)
         {
-            selectionStartProgress_=0;
-            selectionEndProgress_=LayoutContext::progressCompleted;
-            selectionStartElement_=selectionEndElement_=std::find(elements_.begin(), elements_.end(), &selectedHotSpot_->element());
+            trackingSelection_ = true;
+            selectionStartProgress_ = 0;
+            selectionEndProgress_ = LayoutContext::progressCompleted;
+            selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &selectedHotSpot_->element());
             renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+            return true;
         }
+        return false;
     }
-    if (selectedHotSpot_ && endTracking)
+}
+
+Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
+{
+    assert(height >= 0);
+    assert(height < bounds_.height());
+    LinePosition_t end = lines_.begin() + lastLine_;
+    Coord_t actHeight = 0;
+    for (LinePosition_t line = lines_.begin() + firstLine_; line != end; ++line)
+        if (height >= actHeight && height < actHeight + line->height)
+            return line;
+        else
+            actHeight += line->height;
+    return lines_.end();
+}
+
+bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking) 
+{
+    Point p(point.x - bounds_.x(), point.y - bounds_.y());
+    if (!trackingSelection_) 
     {
-        HotSpot* hs = selectedHotSpot_;
-        //hs->element().performAction(*this);
-        selectionStartProgress_=selectionEndProgress_=LayoutContext::progressCompleted;
-        selectionStartElement_=selectionEndElement_=elements_.end();
-        renderSingleElement(graphics, prefs, hs->element());
-        hs->element().performAction(*this);
-        selectedHotSpot_ = NULL;
-    }        
+        assert(!endTracking);
+        LinePosition_t line = lineAtHeight(p.y);
+        
+        trackingSelection_ = true;
+    }
+    else if (endTracking) 
+        trackingSelection_ = false;
+    return true;
+}
+
+bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking)
+{
+    if (elements_.empty())
+        return false;
+    if (trackHyperlinkHighlight(graphics, prefs, point, endTracking))
+        return true;
+    return trackTextSelection(graphics, prefs, point, endTracking);
 }
 
 Definition::LineHeader::LineHeader():

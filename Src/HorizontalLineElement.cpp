@@ -25,3 +25,7 @@ void HorizontalLineElement::render(RenderingContext& renderingContext)
     
 HorizontalLineElement::~HorizontalLineElement()
 {}
+
+uint_t HorizontalLineElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
+    return 0;
+}
