@@ -11,7 +11,9 @@
 #include <Text.hpp>
 
 #include <aygshell.h>
+#ifndef PPC
 #include <tpcshell.h>
+#endif
 #include <winuser.h>
 #include <winbase.h>
 #include <sms.h>
