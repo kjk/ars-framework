@@ -1,6 +1,7 @@
 #include <Serializer.hpp>
 #include <Writer.hpp>
 #include <BufferedReader.hpp>
+#include <DynStr.hpp>
 
 using namespace std;
 
@@ -180,11 +181,35 @@ Serializer& Serializer::operator()(String& value, uint_t id)
     String::size_type length = value.length();
     serializeSimpleType<String::size_type, dtString>(length, id);
     if (directionOutput == direction_)
-        serializeChunk(&value[0], sizeof(char_t)*value.length());
+        serializeChunk(&value[0], sizeof(char_t) * length);
     else if (!skipLastRecord_)
     {
-        value.resize(length/sizeof(char_t));
-        serializeChunk(&value[0], length);
+        value.resize(length);
+        serializeChunk(&value[0], sizeof(char_t) * length);
+    }
+    return *this;
+}
+
+Serializer& Serializer::operator()(DynStr& value, uint_t id)
+{
+    ulong_t len = DynStrLen(&value);
+    serializeSimpleType<ulong_t, dtString>(len, id);
+    char_t* data;
+    if (directionOutput == direction_)
+    {
+        data = DynStrGetData(&value);
+        serializeChunk(data, sizeof(char_t) * len);
+    }
+    else if (!skipLastRecord_)
+    {
+        data = (char_t*)malloc((len + 1) * sizeof(char_t));
+        if (NULL == data)
+            ErrThrow(memErrNotEnoughSpace);
+        
+        memzero(data, (len + 1) * sizeof(char_t));
+        serializeChunk(data, len * sizeof(char_t));
+        
+        DynStrAttachCharPBuf(&value, data, len, len + 1);
     }
     return *this;
 }
@@ -196,12 +221,12 @@ Serializer& Serializer::operator()(char_t array[], uint_t arraySize, uint_t id)
         length = tstrlen(array);
     serializeSimpleType<String::size_type, dtString>(length, id);
     if (directionOutput == direction_)
-        serializeChunk(array, length*sizeof(*array));
+        serializeChunk(array, length * sizeof(*array));
     else if (!skipLastRecord_)
     {
         if (arraySize < length + 1)
             ErrThrow(errBufferTooSmall);
-        serializeChunk(array, length*sizeof(*array));
+        serializeChunk(array, length * sizeof(*array));
         array[length] = _T('\0');
     }
     return *this;

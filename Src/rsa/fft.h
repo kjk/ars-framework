@@ -24,6 +24,10 @@
 
 #include "ptypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void fft_makelut(double * LUT,uint32 size);
 extern void fft_makeraclut(double * LUT,uint32 size);
 extern void fft_racw(double * DAT,uint32 size,uint32 stride,double * LUT);
@@ -32,4 +36,9 @@ extern void fft_mulpw(double * A,double * B,double * C,uint32 size);
 extern void fft_ifft(double * DAT,uint32 size,double * LUT);
 extern void fft_iracw(double * DAT,uint32 size,uint32 stride,double * LUT);
 extern void fft_normalize(double * DAT,uint32 size);
+
+#ifdef __cplusplus
+}
+#endif
+
 

@@ -30,6 +30,10 @@
 #define aes_keyexpsize128 (aes_128+1)*16
 #define aes_keyexpsize256 (aes_256+1)*16
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void aes_keyexpand128(uint8 * key,uint8 * keyexp);
 extern void aes_keyexpand256(uint8 * key,uint8 * keyexp);
 extern void aes_key2dec(uint8 * src,uint8 *dest,uint8 rounds);
@@ -41,4 +45,9 @@ extern void aes_cbcenc(uint8 * src,uint8 * dest,
                         uint8 * keyexp,uint8 rounds,uint32 blocks);
 extern void aes_cbcdec(uint8 * src,uint8 * dest,
                         uint8 * keyexp,uint8 rounds,uint32 blocks);
+
+#ifdef __cplusplus
+}
+#endif
+
 

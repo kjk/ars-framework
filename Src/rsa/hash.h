@@ -24,5 +24,14 @@
 
 #include "ptypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void hash_data(uint8 * data,uint32 len,uint8 * digest);
+
+#ifdef __cplusplus
+}
+#endif
+
 

@@ -25,6 +25,22 @@ char_t *DynStrReleaseStr(DynStr *dstr)
     return toReturn;
 }
 
+void DynStrAttachCharPBuf(DynStr* dstr, char_t* str, UInt32 len, UInt32 bufSize)
+{
+    if (dstr->str == str)
+        return;
+    
+    free(DynStrReleaseStr(dstr));
+    dstr->str = str;
+    dstr->strLen = len;
+    dstr->bufSize = bufSize;
+}
+
+void DynStrAttachStr(DynStr* dstr, char_t* str)
+{
+    ulong_t len = tstrlen(str);
+    DynStrAttachCharPBuf(dstr, str, len, len + 1);
+}
 
 // same as DynStrGetCStr but reinforces the notion that DynStr can handle
 // arbitrary binary data
@@ -434,6 +450,21 @@ void DynStrReplace(DynStr *dstr, char_t orig, char_t replace)
             txt[i] = replace;
     }
 }
+
+void DynStrSwap(DynStr* s1, DynStr* s2)
+{
+    assert(NULL != s1);
+    assert(NULL != s2);
+
+    if (s1 == s2)
+        return;
+        
+    DynStr tmp;
+    memmove(&tmp, s1, sizeof(tmp));
+    memmove(s1, s2, sizeof(tmp));
+    memmove(s2, &tmp, sizeof(tmp));
+}
+
 
 void ReplaceCDynStrP(CDynStr** target, CDynStr* newValue)
 {   

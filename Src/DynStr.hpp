@@ -64,6 +64,9 @@ void       DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len);
 DynStr *   DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend);
 DynStr *   DynStrUrlEncode(DynStr *srcUrl);
 void       DynStrReplace(DynStr *dstr, char_t orig, char_t replace);
+void        DynStrAttachCharPBuf(DynStr* dstr, char_t* str, UInt32 len, UInt32 bufSize);
+void        DynStrAttachStr(DynStr* dstr, char_t* str);
+void        DynStrSwap(DynStr* s1, DynStr* s2);
 
 class CDynStr : public DynStr
 {
@@ -84,7 +87,11 @@ public:
     CDynStr *AppendChar(const char_t c) { return (CDynStr*)DynStrAppendChar(this, c); }
     CDynStr *Append(DynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }
     char_t* ReleaseStr() {return DynStrReleaseStr(this);}
+    void AttachStr(char_t* str) {DynStrAttachStr(this, str);}
+    void AttachCharPBuf(char_t* buf, UInt32 len, UInt32 bufLen) {DynStrAttachCharPBuf(this, buf, len, bufLen);}
 };
+
+template<> inline void std::swap(DynStr& s1, DynStr& s2) {DynStrSwap(&s1, &s2);}
 
 void ReplaceCDynStrP(CDynStr** target, CDynStr* newValue);
 void ReplaceCharP(char_t** target, char_t* newValue);

@@ -10,6 +10,8 @@ class Writer;
 class Serializer;
 class BufferedReader;
 
+struct DynStrTag;
+
 class Serializable {
 
 public:
@@ -92,6 +94,8 @@ public:
     
     Serializer& operator()(char_t array[], uint_t arraySize, uint_t id = unusedId);
     
+    Serializer& operator()(DynStrTag& value, uint_t id = unusedId);
+    
     Serializer& operator()(Serializable& value, uint_t id = unusedId);
     
 private:
@@ -152,7 +156,8 @@ private:
     }
     
     Direction direction_;
-    
+
+/*    
     void serializeValue(bool& value);
     
     void serializeValue(signed char& value);
@@ -174,7 +179,10 @@ private:
     void serializeValue(String& value);
     
     void serializeValue(Serializable& value);
+    
+    void serializeValue(DynStr& value);
 
+*/
 };
 
 #endif

@@ -24,6 +24,10 @@
 
 #include "ptypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void smpa_init(double * LUT,uint32 len);
 extern void smpa_in(uint8 * A,double * A1,uint32 len);
 extern void smpa_add(double * A1,double * B1,double * C1,uint32 len);
@@ -44,4 +48,9 @@ extern void smpa_gcd(double * X1,double * Y1,
                         double * T1,uint32 len);
 extern void smpa_out(double * A1,uint8 * A,uint32 len);
 extern void smpa_doubleout(double * A1,uint8 * A,uint32 len);
+
+#ifdef __cplusplus
+}
+#endif
+
 

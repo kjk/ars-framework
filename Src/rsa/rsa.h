@@ -24,6 +24,10 @@
 
 #include "ptypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int rsa_encrypt(uint8 * ptext,uint32 datalen,uint8 * ctext,
                         uint8 * pub,uint32 len,uint8 * T1);
 extern int rsa_decrypt(uint8 * ctext,uint8 * ptext,
@@ -33,4 +37,9 @@ extern int rsa_sign(uint8 * ptext,uint32 datalen,uint8 * ctext,
 extern uint32 rsa_verify(uint8 * ctext,uint8 * ptext,
                         uint8 * pub,uint32 len,uint8 * T1);
 extern void rsa_keygen(uint8 * r,uint8 * pub,uint8 * priv,uint32 len,uint8 * T1);
+
+#ifdef __cplusplus
+}
+#endif
+
 

@@ -24,8 +24,17 @@
 
 #include "ptypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void numt_powmod(uint8 * x,uint8 * n,uint8 * m,uint8 * y,
                         double * T1,uint32 len,uint32 hibit,uint32 lobit);
 extern void numt_prim(uint8 * r,uint8 * p,double * T1,uint8 * T2,uint32 len);
 extern void numt_sprim(uint8 * r,uint8 * p,double * T1,uint8 * T2,uint32 len);
+
+#ifdef __cplusplus
+}
+#endif
+
 
