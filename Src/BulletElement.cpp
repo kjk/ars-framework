@@ -4,9 +4,10 @@ using ArsLexis::Graphics;
 using ArsLexis::String;
 
 #if defined(_WIN32_WCE)
-#define symbolShiftPunc TCHAR('*')
-#define symbolDiamondChr TCHAR('#')
-#define symbolShiftNone TCHAR(' ')
+namespace {
+    const TCHAR symbolShiftPunc=_T('*');
+    const TCHAR symbolDiamondChr=_T('#');
+}
 #endif
 
 BulletElement::BulletElement():
@@ -36,14 +37,13 @@ void BulletElement::calculateLayout(LayoutContext& mc)
     if (text()[0]!=bullet)
     {
         String newBullet;
-        newBullet.reserve(3); // Why not 2? Because c_str() will require space for null-terminator anyway.
+        newBullet.reserve(2); // Why not 1? Because c_str() will require space for null-terminator anyway.
         newBullet+=bullet;
-        newBullet+=symbolShiftNone;
         swapText(newBullet);
     }
     uint_t widthBefore=indentation()+mc.usedWidth;
     GenericTextElement::calculateLayout(mc);
-    childIndentation_=mc.usedWidth-widthBefore;
+    childIndentation_=(mc.usedWidth-widthBefore)+mc.preferences.bulletIndentation();
 }
 
 

@@ -8,6 +8,7 @@ using ArsLexis::Font;
 RenderingPreferences::RenderingPreferences():
     standardIndentation_(16),
     bulletType_(bulletCircle),
+    bulletIndentation_(2),
     backgroundColor_(0)
 {
     styles_[styleHeader].font=largeFont;
@@ -39,13 +40,12 @@ RenderingPreferences::RenderingPreferences():
 void RenderingPreferences::calculateIndentation()
 {
     Font font(symbolFont);
-    char bullet[3];
+    char bullet[2];
     bullet[0]=(bulletType()==bulletCircle)?symbolShiftPunc:symbolDiamondChr;
-    bullet[1]=symbolShiftNone;
-    bullet[2]=chrNull;
+    bullet[1]=chrNull;
     Graphics graphics;
     Graphics::FontSetter setFont(graphics, font);
-    standardIndentation_=graphics.textWidth(bullet, 2);
+    standardIndentation_=graphics.textWidth(bullet, 1)+bulletIndentation_;
 }
 
 void RenderingPreferences::setBulletType(BulletType type)
@@ -63,6 +63,8 @@ Err RenderingPreferences::serializeOut(ArsLexis::PrefsStoreWriter& writer, int u
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, bulletType_)))
         goto OnError;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, backgroundColor_)))
+        goto OnError;
+    if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, bulletIndentation_)))
         goto OnError;
     for (uint_t i=0; i<hyperlinkTypesCount_; ++i)
     {
@@ -91,6 +93,9 @@ Err RenderingPreferences::serializeIn(ArsLexis::PrefsStoreReader& reader, int un
     if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
         goto OnError;
     tmp.setBackgroundColor(val);        
+    if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
+        goto OnError;
+    bulletIndentation_=val;
     for (uint_t i=0; i<hyperlinkTypesCount_; ++i)
     {
         if (errNone!=(error=tmp.hyperlinkDecorations_[i].serializeIn(reader, uniqueId)))

@@ -32,6 +32,7 @@ class RenderingPreferences
     };        
     
     uint_t standardIndentation_;
+    uint_t bulletIndentation_;
     
     void calculateIndentation();
     
@@ -91,6 +92,9 @@ public:
     uint_t standardIndentation() const
     {return standardIndentation_;}
     
+    uint_t bulletIndentation() const
+    {return bulletIndentation_;}
+    
     ArsLexis::Color backgroundColor() const
     {return backgroundColor_;}
     
@@ -99,7 +103,7 @@ public:
     void setBackgroundColor(ArsLexis::Color color)
     {backgroundColor_=color;}
     
-    enum {reservedPrefIdCount=20};
+    enum {reservedPrefIdCount=3+(hyperlinkTypesCount_+stylesCount_)*StyleFormatting::reservedPrefIdCount};
     Err serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const;
     Err serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId);
 
