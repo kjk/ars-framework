@@ -21,41 +21,57 @@ void PopupMenu::close()
         
     Form& form = *renderer.form();
     form.removeObject(renderer.index());
+/*    
     WinSetDrawWindow(form.windowHandle());
     WinSetActiveWindow(form.windowHandle());
     dispose();
+ */
     form.update();
     running_ = false;
+}
+
+void PopupMenu::draw()
+{
+    if (!running_)
+        return;
+    RectangleType rr = toNative(bounds_);
+    WinEraseRectangle(&rr, 0);
+    WinDrawGrayRectangleFrame(simpleFrame, &rr);
+
+    Rectangle r = bounds_;
+    r.explode(1, 1, -2, -2);
+    renderer.draw();
 }
 
 Err PopupMenu::run(UInt16 id, const Rectangle& rect)
 {
     assert(!running_);
     Form& form = *renderer.form();
+/*    
     Err error = create(rect, simpleFrame, true, true);
     if (errNone != error)
         return error;
     WinSetActiveWindow(handle());
     WinSetDrawWindow(handle());
     WinDrawWindowFrame();
-    
-    Rectangle r(2, 2, rect.width() - 4, rect.height() - 4);
+ */
+    bounds_ = rect;
+    Err error;
+ 
+ 
+    Rectangle r = rect;
+    r.explode(1, 1, -2, -2);
     UInt16 index = form.createGadget(id, r);
     if (frmInvalidObjectId == index)
     {
         error = memErrNotEnoughSpace;
-        goto Cleanup;
+        return error;
     }
     renderer.attachByIndex(index);
-    running_ = true;
     renderer.show();
+    running_ = true;
+    draw();
     return errNone;
-Cleanup:
-    WinSetDrawWindow(form.windowHandle());
-    WinSetActiveWindow(form.windowHandle());
-    dispose();
-    form.update();
-    return error;
 }
 
 bool PopupMenu::handleEventInForm(EventType& event)
@@ -65,9 +81,13 @@ bool PopupMenu::handleEventInForm(EventType& event)
         
     if (renderer.handleEventInForm(event))
         return true;
-        
+    
     if (penDownEvent == event.eType)
-        close();
+    {
+        Point p(event.screenX, event.screenY);
+        if (!bounds_.hitTest(p))
+            close();
+    }
 /*
     switch (event.eType)
     {

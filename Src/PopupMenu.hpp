@@ -10,11 +10,12 @@ namespace ArsLexis
 
 class Form;
 
-class PopupMenu: public Window
+class PopupMenu /*: public Window */
 {
 
     RenderingPreferences prefs_;
     bool running_;
+    Rectangle bounds_;
     
 public:
 
@@ -29,6 +30,8 @@ public:
     Err run(UInt16 id, const Rectangle& rect);
     
     bool handleEventInForm(EventType& event);
+    
+    void draw();
 
 };
 
