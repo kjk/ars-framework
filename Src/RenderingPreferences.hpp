@@ -28,13 +28,20 @@ public:
     };
     
     RenderingPreferences();
+    
+    enum SynchronizationResult 
+    {
+        noChange,
+        repaint,
+        recalculateLayout
+    };
+        
 
     /**
-     * @return @c true if layout changed and we need to recalculate it.
      * @todo Implement RenderingPreferences::synchronize()
      */
-    Boolean synchronize(const RenderingPreferences& preferences)
-    {return false;}
+    SynchronizationResult synchronize(const RenderingPreferences& preferences)
+    {return noChange;}
     
     BulletType bulletType() const
     {return bulletCircle;}
@@ -84,6 +91,9 @@ public:
     
     UnderlineModeType standardUnderline() const
     {return solidUnderline;}
+    
+    IndexedColorType backgroundColor() const
+    {return 0;}
 
 private:
     

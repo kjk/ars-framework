@@ -10,6 +10,7 @@
 
 using ArsLexis::Rectangle;
 using ArsLexis::ObjectDeleter;
+using ArsLexis::BackgroundColorSetter;
 
 Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     element_(element)
@@ -166,6 +167,7 @@ void Definition::scroll(Int16 delta)
         
         PointType pointDelta;
         pointDelta.x=0;
+        BackgroundColorSetter setBackground(preferences_.backgroundColor());
         if (delta>0) 
         {
             pointDelta.y=-unionTop;
@@ -278,7 +280,8 @@ void Definition::calculateLayout(const ElementPosition_t& firstElement, UInt16 r
 
 void Definition::render(const ArsLexis::Rectangle& bounds, const RenderingPreferences& preferences)
 {
-    if (bounds.width()!=bounds_.width() || preferences_.synchronize(preferences))
+    RenderingPreferences::SynchronizationResult result=preferences_.synchronize(preferences);
+    if (bounds.width()!=bounds_.width() || RenderingPreferences::recalculateLayout==result)
     {
         ElementPosition_t firstElement=elements_.begin(); // This will be used in calculating first line we should show.
         UInt16 renderingProgress=0;
@@ -329,4 +332,11 @@ void Definition::hitTest(const PointType& point)
             break;
         }
     }
+}
+
+void Definition::renderLayout()
+{
+    BackgroundColorSetter setBackground(preferences_.backgroundColor());
+    WinEraseRectangle(bounds_, 0);
+    renderLineRange(lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0);
 }

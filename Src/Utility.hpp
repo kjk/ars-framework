@@ -66,6 +66,23 @@ namespace ArsLexis
             WinSetForeColor(originalColor_);
         }
     };
+
+    class BackgroundColorSetter
+    {
+        IndexedColorType originalColor_;
+        BackgroundColorSetter(const BackgroundColorSetter&);
+        BackgroundColorSetter& operator=(const BackgroundColorSetter&);
+    public:
+    
+        BackgroundColorSetter(IndexedColorType color):
+            originalColor_(WinSetBackColor(color))
+        {}
+        
+        BackgroundColorSetter()
+        {
+            WinSetBackColor(originalColor_);
+        }
+    };
     
     FontID getBoldFont(FontID normal);
     

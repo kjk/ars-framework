@@ -232,12 +232,7 @@ private:
     
     void renderLineRange(const LinePosition_t& begin, const LinePosition_t& end, Coord topOffset);
 
-    //! @todo Apply background according to RenderingPreferences.
-    void renderLayout()
-    {
-        WinEraseRectangle(bounds_, 0);
-        renderLineRange(lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0);
-    }
+    void renderLayout();
     
     void moveHotSpots(const PointType& delta);
     
