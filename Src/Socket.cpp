@@ -146,6 +146,16 @@ namespace ArsLexis
         return error;
     }
     
+    status_t SocketBase::getMaxTcpSegmentSize(uint_t& size)
+    {
+        assert(socket_!=0);
+        uint_t len=sizeof(size);
+        status_t error=getOption(socketOptLevelTCP, socketOptTCPMaxSeg, &size, len);
+        assert(sizeof(size)==len);
+        return error;
+    }
+    
+    
 /*    
     status_t SocketBase::getLinger(CommonSocketLinger_t& linger) const
     {
@@ -210,5 +220,4 @@ namespace ArsLexis
             }                
     }
     
-                
 }

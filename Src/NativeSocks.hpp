@@ -26,9 +26,12 @@ namespace ArsLexis
     const NetSocketAddrEnum socketAddrINET = netSocketAddrINET;
     const NetSocketTypeEnum socketTypeStream = netSocketTypeStream;
     const NetSocketOptLevelEnum socketOptLevelSocket  = netSocketOptLevelSocket;
+    const NetSocketOptLevelEnum socketOptLevelTCP = netSocketOptLevelTCP;
     const NetSocketOptEnum socketOptSockNonBlocking = netSocketOptSockNonBlocking;
     const NetSocketOptEnum socketOptSockLinger=netSocketOptSockLinger;
     const NetSocketOptEnum socketOptSockErrorStatus=netSocketOptSockErrorStatus;
+    const NetSocketOptEnum socketOptTCPMaxSeg=netSocketOptTCPMaxSeg;
+    
     #define netToHostS(x) NetNToHS(x)
     #define hostToNetS(x) NetHToNS(x)
 
@@ -48,7 +51,9 @@ namespace ArsLexis
     const short socketAddrINET = AF_INET;
     const int socketOptSockLinger = SO_LINGER;
     const int socketOptLevelSocket = SOL_SOCKET;
+//    const int socketOptLevelTCP = 
     const int  socketOptSockErrorStatus= SO_ERROR ;
+//    const int socketOptTCPMaxSeg=
     const int netSocketDirOutput = 1;
     //TODO: Move errors to ErrBase.h and correct return values returned 
     //in WinNetLibrary

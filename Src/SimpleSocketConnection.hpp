@@ -25,6 +25,8 @@ namespace ArsLexis
         status_t resizeResponse(NarrowString::size_type size);
         
     protected:
+    
+        status_t open();
         
         status_t notifyWritable();
         

@@ -148,7 +148,8 @@ namespace ArsLexis {
                 stateAfterBodyCr,
                 stateAfterBodyLf,
                 stateAfterLastChunkCr,
-                stateAfterLastChunkLf
+                stateAfterLastChunkLf,
+                stateFinished
             } state_;
             ulong_t chunkPosition_;
             ulong_t chunkLength_;

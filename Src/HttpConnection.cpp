@@ -19,17 +19,17 @@ namespace ArsLexis {
         typedef RequestMethodStorage_t RequestMethodsArray_t[requestMethodsCount];
         RequestMethodsArray_t requestMethods=
         {
-            "OPTIONS",
-            "GET",
-            "HEAD",
-            "POST",
-            "PUT",
-            "DELETE",
-            "TRACE",
-            "CONNECT"
+            _T("OPTIONS"),
+            _T("GET"),
+            _T("HEAD"),
+            _T("POST"),
+            _T("PUT"),
+            _T("DELETE"),
+            _T("TRACE"),
+            _T("CONNECT")
         };
         
-        const char_t* crLf="\r\n";
+        const char_t* crLf=_T("\r\n");
 
     }
 
@@ -38,7 +38,7 @@ namespace ArsLexis {
         protocolVersionMajor_(1),
         protocolVersionMinor_(1),
         requestMethod_(methodGet),
-        uri_("/"),
+        uri_(_T("/")),
         insideResponseHeaders_(false),
         insideResponseBody_(false),
         chunkedEncoding_(false),
@@ -65,13 +65,13 @@ namespace ArsLexis {
         char_t versionBuffer[versionBufferLength];
         uint_t major=protocolVersionMajor_;
         uint_t minor=protocolVersionMinor_;
-        int verLen=StrPrintF(versionBuffer, "%hu.%hu", major, minor);
-        out.append(method).append(1, _T(' ')).append(uri_).append(" HTTP/", 6).append(versionBuffer, verLen).append(crLf);
+        int verLen=StrPrintF(versionBuffer, _T("%hu.%hu"), major, minor);
+        out.append(method).append(1, _T(' ')).append(uri_).append(_T(" HTTP/"), 6).append(versionBuffer, verLen).append(crLf);
     }
 
     void HttpConnection::renderHeaderField(String& out, const RequestField_t& field)
     {
-        out.append(field.first).append(": ", 2).append(field.second).append(crLf);
+        out.append(field.first).append(_T(": "), 2).append(field.second).append(crLf);
     }
 
     status_t HttpConnection::commitRequest() 
@@ -143,12 +143,12 @@ namespace ArsLexis {
     {
         uri_=uri;
         static const int prefixLength=7;
-        if (uri.find("http://")==0)
+        if (uri.find(_T("http://"))==0)
         {
-            String::size_type end=uri.find("/", prefixLength);
+            String::size_type end=uri.find(_T("/"), prefixLength);
             String address(uri, prefixLength, end-prefixLength);
             if (address.npos==address.find(_T(':')))
-                address.append(":80", 3);
+                address.append(_T(":80"), 3);
             setAddress(address);            
         }
     }
@@ -210,7 +210,7 @@ namespace ArsLexis {
     
     status_t HttpConnection::processStatusLine(const String& line)
     {
-        if (line.find("HTTP/")!=0)
+        if (line.find(_T("HTTP/"))!=0)
             return errResponseMalformed;
         String::size_type pos0=line.find(_T('.'), 6);
         if (line.npos==pos0)
@@ -220,24 +220,24 @@ namespace ArsLexis {
         if (error)
             return errResponseMalformed;
         uint_t major=value;
-        String::size_type pos1=line.find_first_of(" \t", pos0+1);
+        String::size_type pos1=line.find_first_of(_T(" \t"), pos0+1);
         if (line.npos==pos1)
             return errResponseMalformed;
         error=numericValue(&line[pos0+1],&line[pos1], value);
         if (error)
             return errResponseMalformed;
         uint_t minor=value;
-        pos0=line.find_first_not_of(" \t", pos1);
+        pos0=line.find_first_not_of(_T(" \t"), pos1);
         if (line.npos==pos0)
             return errResponseMalformed;
-        pos1=line.find_first_of(" \t", pos0);
+        pos1=line.find_first_of(_T(" \t"), pos0);
         if (line.npos==pos1)
             return errResponseMalformed;
         error=numericValue(&line[pos0], &line[pos1], value);
         if (error)
             return errResponseMalformed;
         uint_t statusCode=value;
-        pos0=line.find_first_not_of(" \t", pos1);
+        pos0=line.find_first_not_of(_T(" \t"), pos1);
         if (line.npos==pos0)
             return errResponseMalformed;
         String reason(line, pos0);
@@ -251,7 +251,7 @@ namespace ArsLexis {
             return errResponseMalformed;
         String field(line, 0, pos);
         String value;
-        pos=line.find_first_not_of(" \t", pos+1);
+        pos=line.find_first_not_of(_T(" \t"), pos+1);
         if (line.npos!=pos)
             value.assign(line, pos, line.npos);
         return handleResponseField(field, value);
@@ -278,7 +278,7 @@ namespace ArsLexis {
         status_t error=connection_.SimpleSocketConnection::notifyReadable();
         connection_.finished_=(sizeBefore==connection_.response().length());
         if (eof())
-            log().debug()<<"BodyReader::readNextChunk(): last read didn't change data length, setting eof flag";
+            log().debug()<<_T("BodyReader::readNextChunk(): last read didn't change data length, setting eof flag");
         return error;
     }
     
@@ -294,7 +294,7 @@ namespace ArsLexis {
         {
             if (eof())
             {
-                log().debug()<<"BodyReader::read(): server shut socket down and buffer is empty, returning npos";
+                log().debug()<<_T("BodyReader::read(): server shut socket down and buffer is empty, returning npos");
                 chr=npos;
                 flush();
                 return errNone;
@@ -304,7 +304,7 @@ namespace ArsLexis {
                 return error;
             if (body().length()==charsRead_)
             {
-                log().debug()<<"BodyReader::read(): body().length() didn't change, returning npos";
+                log().debug()<<_T("BodyReader::read(): body().length() didn't change, returning npos");
                 chr=npos;
                 flush();
                 return errNone;
@@ -327,7 +327,7 @@ charAvailable:
     {
         if (body().empty() && eof())
         {
-            log().debug()<<"BodyReader::read(): body().empty() and eof(), returning npos";
+            log().debug()<<_T("BodyReader::read(): body().empty() and eof(), returning npos");
             num=npos;
             return errNone;
         }
@@ -342,7 +342,7 @@ charAvailable:
             else
             {
                 num=pos;
-                log().debug()<<"BodyReader::read(): encountered npos, last part of data: "<<String(dst, offset, num);
+                log().debug()<<_T("BodyReader::read(): encountered npos, last part of data: ")<<String(dst, offset, num);
                 return errNone;
             }
         }
@@ -394,26 +394,26 @@ charAvailable:
         if (stateAfterBodyCr==state_ || stateAfterLastChunkCr==state_)
         {
             if (stateAfterBodyCr==state_)
-                log().debug()<<"ChunkedBodyReader::read(): stateAfterBodyCr";
+                log().debug()<<_T("ChunkedBodyReader::read(): stateAfterBodyCr");
             else 
-                log().debug()<<"ChunkedBodyReader::read(): stateAfterLastChunkCr";
+                log().debug()<<_T("ChunkedBodyReader::read(): stateAfterLastChunkCr");
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
-            if ('\r'!=c)
+            if (_T('\r')!=c)
                 return SocketConnection::errResponseMalformed;
             state_=stateAfterBodyCr==state_?stateAfterBodyLf:stateAfterLastChunkLf;
         }
         if (stateAfterBodyLf==state_ || stateAfterLastChunkLf==state_)
         {
-            if (stateAfterBodyCr==state_)
-                log().debug()<<"ChunkedBodyReader::read(): stateAfterBodyCr";
+            if (stateAfterBodyLf==state_)
+                log().debug()<<_T("ChunkedBodyReader::read(): stateAfterBodyLf");
             else 
-                log().debug()<<"ChunkedBodyReader::read(): stateAfterLastChunkLf";
+                log().debug()<<_T("ChunkedBodyReader::read(): stateAfterLastChunkLf");
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
-            if ('\n'!=c && npos!=c) // The 2nd option is added to workaround bug in Yahoo Movies server, which terminates connection prematurely.
+            if (_T('\n')!=c)
                 return SocketConnection::errResponseMalformed;
             if (stateAfterBodyLf==state_)
             {
@@ -422,6 +422,7 @@ charAvailable:
             }
             else
             {
+                state_=stateFinished;
                 flush();
                 connection_.insideResponseBody_=false;
                 connection_.chunkedBodyFinished_=true;
@@ -434,7 +435,7 @@ charAvailable:
         }
         if (stateInHeader==state_)
         {
-            log().debug()<<"ChunkedBodyReader::read(): stateInHeader";
+            log().debug()<<_T("ChunkedBodyReader::read(): stateInHeader");
             while (stateInHeader==state_)
             {
                 error=BodyReader::read(c);
@@ -442,13 +443,13 @@ charAvailable:
                     return error;
                 if (npos==c)
                     return SocketConnection::errResponseMalformed;
-                if ('\r'==c)
+                if (_T('\r')==c)
                 {
                     state_=stateAfterHeader;
                     error=parseChunkHeader();
                     if (errNone!=error)
                         return error;
-                    log().debug()<<"ChunkedBodyReader::read(): chunkLength_: "<<chunkLength_;
+                    log().debug()<<_T("ChunkedBodyReader::read(): chunkLength_: ")<<chunkLength_;
                     chunkPosition_=0;
                 }
                 else
@@ -457,11 +458,11 @@ charAvailable:
         }
         if (stateAfterHeader==state_)
         {
-            log().debug()<<"ChunkedBodyReader::read(): stateAfterHeader";
+            log().debug()<<_T("ChunkedBodyReader::read(): stateAfterHeader");
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
-            if ('\n'!=c)
+            if (_T('\n')!=c)
                 return SocketConnection::errResponseMalformed;
             if (0!=chunkLength_)                
                 state_=stateInBody;
@@ -470,6 +471,12 @@ charAvailable:
                 state_=stateAfterLastChunkCr;
                 goto start;
             }
+        }
+        if (stateFinished==state_)
+        {
+            log().debug()<<_T("ChunkedBodyReader::read(): stateFinished");
+            chr=npos;
+            return errNone;
         }
         assert(stateInBody==state_);
         assert(chunkPosition_<chunkLength_);
@@ -485,7 +492,7 @@ charAvailable:
     
     status_t HttpConnection::ChunkedBodyReader::parseChunkHeader()
     {
-        String::size_type end=chunkHeader_.find_first_of("; \t");
+        String::size_type end=chunkHeader_.find_first_of(_T("; \t"));
         if (chunkHeader_.npos==end)
             end=chunkHeader_.length();
         long val;

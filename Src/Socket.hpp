@@ -88,6 +88,8 @@ namespace ArsLexis
         
         status_t setLinger(const SocketLinger& linger);
         
+        status_t getMaxTcpSegmentSize(uint_t& size);
+        
         //status_t getLinger(CommonSocketLinger_t& linger) const;
                 
     };

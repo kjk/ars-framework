@@ -8,7 +8,7 @@ namespace ArsLexis
         SocketConnection(manager),
         maxResponseSize_(32768),
         sending_(true),
-        chunkSize_(536),
+        chunkSize_(512),
         requestBytesSent_(0),
         totalReceived_(0)
     {}
@@ -75,7 +75,8 @@ namespace ArsLexis
             if (errNone!=error)
                 goto Exit;
             totalReceived_+=dataSize;
-            log().debug()<<"notifyReadable(): totalReceived: "<<totalReceived_<<"; dataSize: "<<dataSize;
+            if (dataSize!=chunkSize_)
+                log().debug()<<"notifyReadable(): dataSize!=chunkSize_; totalReceived: "<<totalReceived_<<"; dataSize: "<<dataSize;
             assert(dataSize<=chunkSize_);
             resizeResponse(responseSize+dataSize);
             if (0==dataSize)
@@ -107,5 +108,26 @@ Exit:
 
     SimpleSocketConnection::~SimpleSocketConnection()
     {}
+ 
+    status_t SimpleSocketConnection::open()
+    {
+        status_t error=SocketConnection::open();
+        if (!error)
+        {
+            uint_t size;
+            status_t ignore=socket().getMaxTcpSegmentSize(size);
+            if (errNone==ignore)
+            {
+                if (size<=2048)
+                {
+                    log().debug()<<_T("SimpleSocketConnection::open(): setting chunkSize to ")<<size;
+                    setChunkSize(size);
+                }
+            }
+            else
+                log().debug()<<_T("SimpleSocketConnection::open(): error (ignored) while querying maxTcpSegmentSize: ")<<ignore;
+        }
+        return error;
+    }
         
 }
