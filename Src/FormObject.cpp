@@ -94,7 +94,7 @@ namespace ArsLexis
     // the caller doesn't have to worry about this stuff)
     void List::setSelectionDelta(int delta)
     {
-        if (0==delta)
+        if (0==delta || 0==itemsCount())
             return;
         // Why? If some calculations lead to delta==0, let it be.
         // assert(0!=delta);
@@ -183,12 +183,14 @@ namespace ArsLexis
         {
             EventType e;
             MemSet(&e, sizeof(e), 0);
-            e.eType=lstSelectEvent;
-            e.data.lstSelect.listID=id();
-            e.data.lstSelect.pList=object();
-            e.data.lstSelect.selection=selection();
-            EvtAddEventToQueue(&e);
-            handled = true;
+            if (noListSelection!=(e.data.lstSelect.selection=selection()))
+            {
+                e.eType=lstSelectEvent;
+                e.data.lstSelect.listID=id();
+                e.data.lstSelect.pList=object();
+                EvtAddEventToQueue(&e);
+                handled = true;
+            }
         }
         else {
             switch (event.data.keyDown.chr)
