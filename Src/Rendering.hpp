@@ -2,7 +2,7 @@
 #include <BaseTypes.hpp>
 #include <Graphics.hpp>
 
-class GenericTextElement;
+class TextElement;
 
 /**
  * Used to exchange data during layout calculation stage.
@@ -19,7 +19,7 @@ struct LayoutContext
     uint_t usedWidth;
     uint_t usedHeight;
     uint_t baseLine;
-    GenericTextElement* nextTextElement;
+    TextElement* nextTextElement;
     uint_t selectionStart;
     uint_t selectionEnd;
     bool selectionIsHyperlink;

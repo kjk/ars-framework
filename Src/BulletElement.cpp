@@ -7,14 +7,14 @@ namespace {
 }    
 
 BulletElement::BulletElement():
-    GenericTextElement(ArsLexis::String(1, chrBullet)),
+    TextElement(ArsLexis::String(1, chrBullet)),
     childIndentation_(0)
 {}
 
 void BulletElement::calculateLayout(LayoutContext& mc)
 {
     uint_t widthBefore=indentation()+mc.usedWidth;
-    GenericTextElement::calculateLayout(mc);
+    TextElement::calculateLayout(mc);
     childIndentation_=(mc.usedWidth - widthBefore) + 2;
 }
 
@@ -27,7 +27,7 @@ void BulletElement::render(RenderingContext& rc)
     uint_t selStart = rc.selectionStart;
     uint_t selEnd = rc.selectionEnd;
     rc.selectionStart = rc.selectionEnd = LayoutContext::progressCompleted;
-    GenericTextElement::render(rc);
+    TextElement::render(rc);
     rc.selectionStart = selStart;
     rc.selectionEnd = selEnd;
 }

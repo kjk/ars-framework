@@ -12,7 +12,7 @@
 //elements
 #define typeLineBreakElement                'lbrk'
 #define typeHorizontalLineElement           'hrzl'
-#define typeGenericTextElement              'gtxt'
+#define typeTextElement              'gtxt'
 #define typeBulletElement                   'bull'
 #define typeListNumberElement               'linu'
 #define typeParagraphElement                'parg'
@@ -158,8 +158,8 @@ bool ByteFormatParser::parseParam()
         case paramTextValue:
             {
                 String str(inText_,start_,currentParamLength_);
-                if (typeGenericTextElement == currentElementType_)
-                    ((GenericTextElement*)currentElement_)->setText(str);
+                if (typeTextElement == currentElementType_)
+                    ((TextElement*)currentElement_)->setText(str);
             }
             break;
             
@@ -315,8 +315,8 @@ void ByteFormatParser::parseElementParams()
             model_->elements.push_back(currentElement_ = new HorizontalLineElement());
             break;
 
-        case typeGenericTextElement:
-            model_->elements.push_back(currentElement_ = new GenericTextElement());
+        case typeTextElement:
+            model_->elements.push_back(currentElement_ = new TextElement());
             break;
 
         case typeBulletElement:

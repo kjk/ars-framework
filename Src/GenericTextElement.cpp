@@ -3,23 +3,23 @@
 #include <Text.hpp>
 #include <memory>
 
-GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
+TextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
     resource(res),
     hotSpot(0),
     type(t)
 {}
 
-GenericTextElement::GenericTextElement(const String& text):
+TextElement::TextElement(const String& text):
     text_(text)//,
 //    style_(styleDefault)
 {}
 
-GenericTextElement::GenericTextElement(const char_t* text):
+TextElement::TextElement(const char_t* text):
     text_(text)//,
 //    style_(styleDefault)
 {}
 
-GenericTextElement::~GenericTextElement()
+TextElement::~TextElement()
 {
 }
 
@@ -38,7 +38,7 @@ static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t len
     return (text.rend()-std::find_if(it, it+length, isSpace))-start;
 }
 
-void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsRectangle& area, bool hyperlink)
+void TextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsRectangle& area, bool hyperlink)
 {
     uint_t intersectStart=std::max(start, selectionStart);
     uint_t intersectEnd=std::min(end, selectionEnd);
@@ -78,7 +78,7 @@ void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start,
         graphics.drawText(text=(text_.c_str()+start), length=(end-start), point);
 }
 
-void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
+void TextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
 {
     assert(!layoutContext.isElementCompleted());
     Graphics& graphics=layoutContext.graphics;
@@ -199,7 +199,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         layoutContext.markElementCompleted(txtDx);    
 }
 
-void GenericTextElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd)
+void TextElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd)
 {
     wordStart = wordEnd = index;
     assert(offsetOutsideElement != index);
@@ -216,7 +216,7 @@ void GenericTextElement::wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wo
 }
 
 
-uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
+uint_t TextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
 {
     Graphics& graphics=lc.graphics;
     Graphics::StateSaver saveState(graphics);
@@ -295,24 +295,24 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
     return lastProgress + charIndex;
 }
 
-void GenericTextElement::calculateLayout(LayoutContext& layoutContext)
+void TextElement::calculateLayout(LayoutContext& layoutContext)
 {
     Graphics::StateSaver saveState(layoutContext.graphics);
     calculateOrRender(layoutContext, 0, 0);
 }
 
-void GenericTextElement::render(RenderingContext& renderContext)
+void TextElement::render(RenderingContext& renderContext)
 {
     Graphics::StateSaver saveState(renderContext.graphics);
     calculateOrRender(renderContext, renderContext.left, renderContext.top, &renderContext.definition, true);
 }
 
-void GenericTextElement::applyFormatting(Graphics& graphics)
+void TextElement::applyFormatting(Graphics& graphics)
 {
     graphics.applyStyle(getStyle(), isHyperlink());
 }
 
-void GenericTextElement::toText(String& appendTo, uint_t from, uint_t to) const
+void TextElement::toText(String& appendTo, uint_t from, uint_t to) const
 {
     if (LayoutContext::progressCompleted==to)
         to = String::npos;

@@ -382,7 +382,7 @@ void Definition::elementAtWidth(Graphics& graphics, const LinePosition_t& line, 
         ElementPosition_t nextElem = elem;
         ++nextElem;
         if (end != nextElem && (*nextElem)->isTextElement())
-            layoutContext.nextTextElement = static_cast<GenericTextElement*>(*nextElem);
+            layoutContext.nextTextElement = static_cast<TextElement*>(*nextElem);
 
         if (DefinitionElement::justifyRightLastElementInLine == (*elem)->justification()) 
         {
@@ -453,7 +453,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
             ElementPosition_t next = current;
             ++next;
             if (elements_.end() != next && (*next)->isTextElement())
-                renderContext.nextTextElement = static_cast<GenericTextElement*>(*next);
+                renderContext.nextTextElement = static_cast<TextElement*>(*next);
             else
                 renderContext.nextTextElement = 0;
         }
@@ -548,7 +548,7 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
                 ElementPosition_t next(element);
                 ++next;
                 if (next!=end && (*next)->isTextElement())
-                    layoutContext.nextTextElement=static_cast<GenericTextElement*>(*next);
+                    layoutContext.nextTextElement=static_cast<TextElement*>(*next);
                 else
                     layoutContext.nextTextElement=0;
             }
@@ -1306,36 +1306,36 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
         String::size_type next=text.find(_T('<'), pos);
         if (text.npos==next) 
         {
-            out.push_back(new GenericTextElement(String(text, start, next)));
+            out.push_back(new TextElement(String(text, start, next)));
             break;
         }
         if (startsWithIgnoreCase(text, brTag, next))
         {
-            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            out.push_back(new TextElement(String(text, start, next-pos)));
             out.push_back(new LineBreakElement());
             start=pos=next+tstrlen(brTag);
         }
         else if (startsWithIgnoreCase(text, bTagStart, next))
         {
-            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            out.push_back(new TextElement(String(text, start, next-pos)));
             bold++;
             start=pos=next+tstrlen(bTagStart);
         }
         else if (startsWithIgnoreCase(text, bTagEnd, next))
         {
-            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            out.push_back(new TextElement(String(text, start, next-pos)));
             bold--;
             start=pos=next+tstrlen(bTagEnd);
         }
         else if (startsWithIgnoreCase(text, aTagStart, next) && useHyperlink)
         {
-            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            out.push_back(new TextElement(String(text, start, next-pos)));
             start=pos=next+tstrlen(aTagStart);
         }
         else if (startsWithIgnoreCase(text, aTagEnd, next) && useHyperlink)
         {
-            GenericTextElement* gText;
-            out.push_back(gText = new GenericTextElement(String(text, start, next-pos)));
+            TextElement* gText;
+            out.push_back(gText = new TextElement(String(text, start, next-pos)));
             String href;
             if (NULL != hyperlinkSchema)
             {
@@ -1350,7 +1350,7 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
             pos=next+1;
         if (text.length()==pos)
         {
-            out.push_back(new GenericTextElement(String(text, start, pos)));
+            out.push_back(new TextElement(String(text, start, pos)));
             break;
         }
     }

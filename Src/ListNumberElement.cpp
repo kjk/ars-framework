@@ -30,7 +30,7 @@ void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
     swapText(str);
 
     uint_t widthBefore=indentation()+layoutContext.usedWidth;
-    GenericTextElement::calculateLayout(layoutContext);
+    TextElement::calculateLayout(layoutContext);
     childIndentation_=layoutContext.usedWidth-widthBefore;
 
     tprintf(buffer, _T("%hd. "), number_);
@@ -47,7 +47,7 @@ void ListNumberElement::render(RenderingContext& rc)
     uint_t selStart = rc.selectionStart;
     uint_t selEnd = rc.selectionEnd;
     rc.selectionStart = rc.selectionEnd = LayoutContext::progressCompleted;
-    GenericTextElement::render(rc);
+    TextElement::render(rc);
     rc.selectionStart = selStart;
     rc.selectionEnd = selEnd;
 }

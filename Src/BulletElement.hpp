@@ -3,7 +3,7 @@
 
 #include "GenericTextElement.hpp"
 
-class BulletElement: public GenericTextElement
+class BulletElement: public TextElement
 {
     uint_t childIndentation_;
     

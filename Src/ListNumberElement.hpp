@@ -3,7 +3,7 @@
 
 #include "GenericTextElement.hpp"
 
-class ListNumberElement: public GenericTextElement
+class ListNumberElement: public TextElement
 {
     uint_t number_;
     uint_t totalCount_;
@@ -39,7 +39,7 @@ public:
     {
         if (0==from)
             appendTo.append(1, _T('\n'));
-        GenericTextElement::toText(appendTo, from, to);
+        TextElement::toText(appendTo, from, to);
     }
     
     void wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd);

@@ -3,7 +3,7 @@
 
 #include "DefinitionElement.hpp"
 
-class GenericTextElement: public DefinitionElement
+class TextElement: public DefinitionElement
 {
 
     ArsLexis::String text_;
@@ -19,11 +19,11 @@ protected:
     
 public:
 
-    GenericTextElement(const ArsLexis::String& text=ArsLexis::String());
+    TextElement(const ArsLexis::String& text=ArsLexis::String());
     
-    GenericTextElement(const ArsLexis::char_t* text);
+    TextElement(const ArsLexis::char_t* text);
 
-    ~GenericTextElement();
+    ~TextElement();
     
     void calculateLayout(LayoutContext& mc);
     
@@ -55,6 +55,6 @@ public:
 
 };
 
-typedef GenericTextElement TextElement;
+typedef TextElement TextElement;
 
 #endif
