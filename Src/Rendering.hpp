@@ -21,11 +21,9 @@ struct LayoutContext
     uint_t usedWidth;
     uint_t usedHeight;
     uint_t baseLine;
-    const GenericTextElement* nextTextElement;
+    GenericTextElement* nextTextElement;
     uint_t selectionStart;
     uint_t selectionEnd;
-    
-    bool breakTextOnLastWhitespace;
     
     LayoutContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
         graphics(graph),
@@ -37,8 +35,7 @@ struct LayoutContext
         baseLine(0),
         nextTextElement(0),
         selectionStart(progressCompleted),
-        selectionEnd(progressCompleted),
-        breakTextOnLastWhitespace(false)
+        selectionEnd(progressCompleted)
     {}
     
     void markElementCompleted(uint_t width)

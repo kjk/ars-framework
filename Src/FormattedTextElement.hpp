@@ -16,12 +16,8 @@ public:
 
     FormattedTextElement(const ArsLexis::String& text=ArsLexis::String());
 
-    ArsLexis::FontEffects& fontEffects()
-    {return fontEffects_;}
-    
-    const ArsLexis::FontEffects& fontEffects() const
-    {return fontEffects_;}
-        
+    void setEffects(ArsLexis::FontEffects fx)
+    {fontEffects_=fx;}
 };
 
 #endif

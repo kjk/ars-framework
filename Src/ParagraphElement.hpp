@@ -13,15 +13,15 @@ protected:
     void setChildIndentation(uint_t indent)
     {childIndentation_=indent;}
 
+    uint_t childIndentation() const
+    {return childIndentation_;}
+    
 public:
     
     ParagraphElement():
         childIndentation_(0)
     {}
 
-    uint_t childIndentation() const
-    {return childIndentation_;}
-    
 };
 
 class IndentedParagraphElement: public ParagraphElement

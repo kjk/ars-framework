@@ -27,7 +27,7 @@ public:
     uint_t totalCount() const
     {return totalCount_;}
 
-    bool requiresNewLine(const RenderingPreferences& preferences) const
+    bool breakBefore(const RenderingPreferences& preferences) const
     {return true;}
 
     void calculateLayout(LayoutContext& mc);

@@ -89,7 +89,7 @@ inline bool DefinitionParser::isPlainText() const
 void DefinitionParser::applyCurrentFormatting(FormattedTextElement* element)
 {
     assert(element);
-    FontEffects& fontEffects=element->fontEffects();
+    FontEffects fontEffects;
     if (openEmphasize_)
         fontEffects.setItalic(true);
     if (openStrong_)
@@ -106,6 +106,7 @@ void DefinitionParser::applyCurrentFormatting(FormattedTextElement* element)
         fontEffects.setSubscript(true);
     if (openSuperscript_)
         fontEffects.setSuperscript(true);
+    element->setEffects(fontEffects);
 }
 
 namespace {

@@ -100,17 +100,29 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         if (nextWhitespace<=newLineLength)
             return;
     }
-    
-    bool tryPacking=true;
-    if (text_.length()==layoutContext.renderingProgress+length && layoutContext.breakTextOnLastWhitespace)
-    {
-        tryPacking=false;
-        uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
-        assert(rangeLength!=(uint_t)-1);
-        length=rangeLength;
-    }
 
     uint_t width=graphics.textWidth(text, length);
+
+    if (text_.length()==layoutContext.renderingProgress+length && 
+        !std::isspace(text_[text_.length()-1]) &&
+        layoutContext.nextTextElement && 
+        !layoutContext.nextTextElement->breakBefore(layoutContext.preferences) &&
+        !layoutContext.nextTextElement->text().empty() &&
+        !std::isspace(layoutContext.nextTextElement->text()[0]))
+    {
+        LayoutContext copy(layoutContext.graphics, layoutContext.preferences, layoutContext.screenWidth);
+        copy.baseLine=layoutContext.baseLine;
+        copy.usedHeight=layoutContext.usedHeight;
+        copy.usedWidth=layoutContext.usedWidth+width;
+        layoutContext.nextTextElement->calculateLayout(copy);
+        if (0==copy.renderingProgress) 
+        {
+            uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
+            assert(rangeLength!=(uint_t)-1);
+            length=rangeLength;
+            width=graphics.textWidth(text, length);
+        }
+    }
 
     uint_t charsToDraw=length;
     while (charsToDraw && 

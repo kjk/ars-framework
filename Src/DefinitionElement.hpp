@@ -16,18 +16,20 @@ protected:
     virtual uint_t childIndentation() const
     {return 0;}
     
+    uint_t indentation() const;
+    
+    virtual void invalidateHotSpot()
+    {}
+
 public:
     
-    virtual bool requiresNewLine(const RenderingPreferences&) const
+    virtual bool breakBefore(const RenderingPreferences&) const
     {return false;}
     
     virtual void calculateLayout(LayoutContext& mc)=0;
     
     virtual void render(RenderingContext& rc)=0;
     
-    virtual void invalidateHotSpot()
-    {}
-
     virtual ~DefinitionElement()
     {}
     
@@ -40,13 +42,12 @@ public:
         parent_=parent;
     }
     
-    uint_t indentation() const;
-    
     virtual bool isTextElement() const
     {return false;}
     
     virtual void toText(ArsLexis::String& appendTo, uint_t from=0, uint_t to=LayoutContext::progressCompleted) const=0;
     
+    friend class Definition::HotSpot;    
 };
 
 #endif

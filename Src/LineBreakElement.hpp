@@ -9,7 +9,7 @@ class LineBreakElement: public DefinitionElement
 
 public:
     
-    bool requiresNewLine(const RenderingPreferences& preferences) const
+    bool breakBefore(const RenderingPreferences& preferences) const
     {return true;}
 
     void calculateLayout(LayoutContext& mc)
@@ -20,7 +20,8 @@ public:
 
     void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
     {
-        appendTo.append(1, '\n');
+        if (from!=to)
+            appendTo.append(1, '\n');
     }
 
 };

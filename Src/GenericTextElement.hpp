@@ -29,6 +29,8 @@ private:
 
     void defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds);
     
+    void invalidateHotSpot();
+    
 protected:
 
     void calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition=0, bool render=false);
@@ -55,9 +57,6 @@ public:
     const HyperlinkProperties* hyperlinkProperties() const 
     {return hyperlink_;}
 
-    HyperlinkProperties* hyperlinkProperties()
-    {return hyperlink_;}
-    
     void setText(const ArsLexis::String& text)
     {text_=text;}
     
@@ -67,8 +66,6 @@ public:
     void swapText(ArsLexis::String& text)
     {text_.swap(text);}
 
-    void invalidateHotSpot();
-    
     void setStyle(ElementStyle style)
     {style_=style;}
     
@@ -81,7 +78,7 @@ public:
     {return true;}
 
     void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const;
-    
+
 };
 
 #endif

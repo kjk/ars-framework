@@ -17,14 +17,15 @@ public:
     
     BulletElement();
 
-    bool requiresNewLine(const RenderingPreferences& preferences) const
+    bool breakBefore(const RenderingPreferences& preferences) const
     {return true;}
     
     void calculateLayout(LayoutContext& mc);
     
     void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
     {
-        appendTo.append(_T("\n* "));
+        if (from!=to)
+            appendTo.append(_T("\n• "));
     }
     
 

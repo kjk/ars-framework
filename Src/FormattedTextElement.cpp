@@ -12,7 +12,7 @@ void FormattedTextElement::applyFormatting(Graphics& graphics, const RenderingPr
 {
     const RenderingPreferences::StyleFormatting& styleFormat=preferences.styleFormatting(style());
     Graphics::Font_t font=styleFormat.font;
-    font.addEffects(fontEffects());
+    font.addEffects(fontEffects_);
     graphics.setFont(font);
     graphics.setTextColor(styleFormat.textColor);
     applyHyperlinkDecorations(graphics, preferences);

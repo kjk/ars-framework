@@ -300,6 +300,13 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
             }
             else
                 renderContext.selectionStart=renderContext.selectionEnd=LayoutContext::progressCompleted;
+            if (current!=last)
+            {
+                ElementPosition_t next=current;
+                ++next;
+                if (last!=next && (*next)->isTextElement())
+                    renderContext.nextTextElement=static_cast<GenericTextElement*>(*next);
+            }
             (*current)->render(renderContext);
             if (renderContext.isElementCompleted())
             {
@@ -310,7 +317,7 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
                 }
                 ++current;
                 renderContext.renderingProgress=0;
-                if (renderContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(renderContext.preferences))
+                if (renderContext.availableWidth()==0 || current==last || (*current)->breakBefore(renderContext.preferences))
                     lineFinished=true;
             }
             else
@@ -358,7 +365,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
                 if (next!=end && (*next)->isTextElement())
                     layoutContext.nextTextElement=static_cast<GenericTextElement*>(*next);
             }
-            if (layoutContext.availableWidth()==0 || element==end || (*element)->requiresNewLine(prefs))
+            if (element==end || (*element)->breakBefore(prefs))
                 startNewLine=true;
         }
         else

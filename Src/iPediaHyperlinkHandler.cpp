@@ -56,7 +56,7 @@ void iPediaHyperlinkHandler::handleHyperlink(Definition& definition, DefinitionE
     assert(element.isTextElement());
     GenericTextElement& textElement=static_cast<GenericTextElement&>(element);
     assert(textElement.isHyperlink());
-    GenericTextElement::HyperlinkProperties* props=textElement.hyperlinkProperties();
+    const GenericTextElement::HyperlinkProperties* props=textElement.hyperlinkProperties();
     assert(props!=0);
     bool makeClicked=false;
     switch (props->type) 
