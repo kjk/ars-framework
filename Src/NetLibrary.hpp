@@ -14,11 +14,12 @@ namespace ArsLexis
         :private Library
 #endif        
     {
-        bool libraryOpened_:1;
-        
+        bool libraryLoaded_;
+        bool closed_;
+       
     public:
 
-        bool closed_:1;
+        bool closed() const {return closed_;}
         
         NetLibrary();
 

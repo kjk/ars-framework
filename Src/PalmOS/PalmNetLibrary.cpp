@@ -9,7 +9,7 @@ namespace ArsLexis
 
     NetLibrary::NetLibrary():
         closed_(true),
-        libraryOpened_(false)
+        libraryLoaded_(false)
     {
     }
     
@@ -17,11 +17,11 @@ namespace ArsLexis
     {
         assert(closed_);
         status_t error=errNone;
-        if (!libraryOpened_)
+        if (!libraryLoaded_)
             error=Library::initialize(netLibName, netCreator);
-        if (!error)
+        if (errNone == error)
         {
-            libraryOpened_=true;
+            libraryLoaded_ = true;
             //! @bug NetLibOpenConf() returns netErrUnimplemented on Cobalt Simulator.
             //! To workaround it we call implemented NetLibOpen() instead...
             if (romVersionMajor()>5)
@@ -29,19 +29,18 @@ namespace ArsLexis
             else
                 error=NetLibOpenConfig(refNum(), configIndex, openFlags, reinterpret_cast<UInt16*>(&ifError));
         }
-        if (netErrAlreadyOpen==error)
-            error=errNone;
-        if (!error)
-            closed_=false;
+        if (netErrAlreadyOpen == error)
+            error = errNone;
+        if (errNone == error)
+            closed_ = false;
         return error;      
     }
     
     status_t NetLibrary::close(bool immediate)
     {
         assert(!closed_);
-        status_t error=NetLibClose(refNum(), immediate);
-        if (!error)
-            closed_=true;
+        status_t error = NetLibClose(refNum(), immediate);
+        closed_ = true;
         return error;
     }
 

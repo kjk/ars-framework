@@ -33,7 +33,7 @@ namespace ArsLexis
     
     status_t SocketConnectionManager::openNetLib()
     {
-        assert(netLib_.closed_);
+        assert(netLib_.closed());
         uint_t ifError;
         status_t error=netLib_.initialize(ifError);
         if (error || ifError)
@@ -93,7 +93,7 @@ namespace ArsLexis
             if (SocketConnection::stateUnresolved==conn->state())
             {
                 status_t error=errNone;
-                if (netLib_.closed_)
+                if (netLib_.closed())
                     error=openNetLib();
                 if (!error)                
                     error=conn->resolve();

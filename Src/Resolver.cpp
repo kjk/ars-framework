@@ -38,7 +38,7 @@ namespace ArsLexis
         using namespace std;
         auto_ptr<HostInfoBuffer> buffer(new  HostInfoBuffer);
         memset(buffer.get(), sizeof(HostInfoBuffer), 0);
-        assert(!netLib.closed_);
+        assert(!netLib.closed());
         status_t error=netLib.getHostByName(name.c_str(), *buffer, timeout);
         if (error)
             return error;
