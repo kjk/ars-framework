@@ -102,7 +102,7 @@ namespace ArsLexis
     void Form::returnToForm(UInt16 formId)
     {
         deleteOnClose=false;
-        handleClose();
+        handleClose();        
         FrmReturnToForm(formId);
     }
     

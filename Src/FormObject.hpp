@@ -130,6 +130,9 @@ namespace ArsLexis
         void draw()
         {FldDrawField(object());}
         
+        void setText(MemHandle handle)
+        {FldSetTextHandle(object(), handle);}
+        
     };
     
     class Control: public FormObjectWrapper<ControlType>

@@ -47,7 +47,6 @@ class DefinitionParser
     void applyCurrentFormatting(FormattedTextElement* element);
     
     typedef std::list<DefinitionElement*> ParentsStack_t;
-//    typedef std::list<DefinitionElement*, ArsLexis::Allocator<DefinitionElement*> > ParentsStack_t;
     ParentsStack_t parentsStack_;
     
     DefinitionElement* currentParent();
@@ -73,9 +72,7 @@ class DefinitionParser
      * that has cheap size() implementation, and list typically doesn't. 
      */
     typedef std::vector<ListNumberElement*> NumberedList_t;
-//    typedef std::vector<ListNumberElement*, ArsLexis::Allocator<ListNumberElement*> > NumberedList_t;
     typedef std::list<NumberedList_t> NumberedListsStack_t;
-//    typedef std::list<NumberedList_t, ArsLexis::Allocator<NumberedList_t> > NumberedListsStack_t;
     
     /**
      * @internal
@@ -134,7 +131,6 @@ class DefinitionParser
         listElementLine,
         textLine,
         horizontalBreakLine,
-//        indentedLine,
         definitionListLine
     };
     
@@ -145,13 +141,10 @@ class DefinitionParser
     
     static bool lineAllowsContinuation(LineType lineType)
     {
-        return textLine==lineType; // || indentedLine==lineType;
+        return textLine==lineType;
     }
 
-
     void parseHeaderLine();
-    
-//    void parseIndentedLine();
     
     void parseDefinitionListLine();
     

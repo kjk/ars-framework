@@ -168,7 +168,7 @@ public:
     /**
      * Renders (paints) this @c Definition into bounds.
      */
-    void render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& preferences);
+    void render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
     
     uint_t totalLinesCount() const
     {return lines_.size();}
@@ -182,7 +182,7 @@ public:
     /**
      * Scrolls this @c Definition by @c delta lines, bounding it as neccessary.
      */
-    void scroll(ArsLexis::Graphics& graphics, int delta);
+    void scroll(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, int delta);
 
     Definition();
     
@@ -228,7 +228,6 @@ public:
 private:
 
     HyperlinkHandler* hyperlinkHandler_;
-    RenderingPreferences preferences_;
 
     typedef std::list<HotSpot*> HotSpots_t;
     HotSpots_t hotSpots_;
@@ -243,15 +242,15 @@ private:
      */
     void clearLines();
 
-    void calculateLayout(ArsLexis::Graphics& graphics, const ElementPosition_t& firstElement, uint_t renderingProgress);
+    void calculateLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress);
     
     void calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int delta=0);
     
     void renderLine(RenderingContext& renderContext, const LinePosition_t& line);
     
-    void renderLineRange(ArsLexis::Graphics& graphics, const LinePosition_t& begin, const LinePosition_t& end, uint_t topOffset);
+    void renderLineRange(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& begin, const LinePosition_t& end, uint_t topOffset);
 
-    void renderLayout(ArsLexis::Graphics& graphics);
+    void renderLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs);
     
     void moveHotSpots(const ArsLexis::Point& delta);
     

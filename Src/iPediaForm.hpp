@@ -19,6 +19,8 @@ public:
     iPediaForm(iPediaApplication& app, UInt16 formId):
         Form(app, formId)
     {}
+    
+    Err initialize();
 
 };
 

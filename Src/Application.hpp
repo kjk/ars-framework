@@ -165,8 +165,6 @@ namespace ArsLexis
         
         virtual Form* createForm(UInt16 formId);
         
-        virtual Err initializeForm(Form& form);
-        
         /**
          * Called from within @c runEventLoop() to handle application-level events.
          * Currently the only handled event is @c frmLoadEvent. Override to add support

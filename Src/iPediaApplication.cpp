@@ -3,6 +3,7 @@
 #include "SysUtils.hpp"
 #include "MainForm.hpp"
 #include "NetLibrary.hpp"
+#include "RegistrationForm.hpp"
 
 IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 
@@ -15,7 +16,6 @@ iPediaApplication::iPediaApplication():
     ticksPerSecond_(SysTicksPerSecond()),
     resolver_(0)
 {
-    StrCopy(preferences_.serialNumber, "TEST");
 }
 
 Err iPediaApplication::initialize()
@@ -153,14 +153,6 @@ void iPediaApplication::waitForEvent(EventType& event)
     }        
 }
 
-Err iPediaApplication::initializeForm(Form& form)
-{
-    Err error=Application::initializeForm(form);
-    if (!error && diaSupport_.available())
-        diaSupport_.configureForm(form, 160, pinMaxConstraintSize, pinMaxConstraintSize, 160, pinMaxConstraintSize, pinMaxConstraintSize);
-    return error;
-}
-
 Form* iPediaApplication::createForm(UInt16 formId)
 {
     Form* form=0;
@@ -168,6 +160,10 @@ Form* iPediaApplication::createForm(UInt16 formId)
     {
         case mainForm:
             form=new MainForm(*this);
+            break;
+            
+        case registrationForm:
+            form=new RegistrationForm(*this);
             break;
         
         default:

@@ -17,3 +17,12 @@ Boolean iPediaForm::handleEvent(EventType& event)
     }
     return handled;
 }
+
+Err iPediaForm::initialize()
+{
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    Err error=Form::initialize();
+    if (!error && app.diaSupport().available())
+        app.diaSupport().configureForm(*this, 160, pinMaxConstraintSize, pinMaxConstraintSize, 160, pinMaxConstraintSize, pinMaxConstraintSize);
+    return error;
+}

@@ -116,11 +116,6 @@ namespace ArsLexis
         return new Form(*this, formId); // Form constructor calls FrmInitForm(), and sets event handler.
     }
     
-    Err Application::initializeForm(Form& form)
-    {
-        return form.initialize();
-    }
-    
     void Application::loadForm(UInt16 formId)
     {
         Err error=errNone;
@@ -128,7 +123,7 @@ namespace ArsLexis
         Form* form=createForm(formId);
         if (form)
         {
-            error=initializeForm(*form);
+            error=form->initialize();
             if (!error)
                 form->activate();
             else 

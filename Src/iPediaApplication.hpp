@@ -36,8 +36,6 @@ protected:
     
     ArsLexis::Form* createForm(UInt16 formId);
     
-    Err initializeForm(ArsLexis::Form& form);
-    
 public:
 
     Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
@@ -78,7 +76,7 @@ public:
             MemSet(cookie, sizeof(cookie), 0);
             MemSet(serialNumber, sizeof(serialNumber), 0);
         }
-        
+
     };
     
     Preferences& preferences() 
@@ -95,6 +93,9 @@ public:
         errMalformedResponse=Application::errFirstAvailable,
         errFirstAvailable
     };
+    
+    const ArsLexis::DIA_Support& diaSupport() const
+    {return diaSupport_;}
     
 private:
     

@@ -130,7 +130,7 @@ void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
     bounds.explode(0, 15, 0, -33);
     graphics.erase(bounds);
     bounds.explode(2, 2, -12, -4);
-    definition_.render(graphics, bounds, app.renderingPreferences());
+    definition_.render(graphics, bounds, app.renderingPreferences(), false);
     updateScrollBar();    
 }
 
@@ -160,8 +160,9 @@ Err MainForm::initialize()
 
 inline void MainForm::handleScrollRepeat(const sclRepeat& data)
 {
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
     Graphics graphics(windowHandle());
-    definition_.scroll(graphics, data.newValue-data.value);
+    definition_.scroll(graphics, app.renderingPreferences(), data.newValue-data.value);
 }
 
 void MainForm::handlePenUp(const EventType& event)
@@ -225,7 +226,8 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
     Graphics graphics(windowHandle());
     if (scrollPage==unit)
         units*=(definition_.shownLinesCount()/2);
-    definition_.scroll(graphics, units);
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    definition_.scroll(graphics, app.renderingPreferences(), units);
     updateScrollBar();
 }
 
@@ -277,6 +279,7 @@ Boolean MainForm::handleEvent(EventType& event)
             
         case ctlSelectEvent:
             handleControlSelect(event.data.ctlSelect);
+            handled=true;
             break;
         
         case penUpEvent:
@@ -381,6 +384,11 @@ Boolean MainForm::handleMenuCommand(UInt16 itemId)
             
         case useLocalhostMenuItem:
             server_=serverLocalhost;
+            handled=true;
+            break;
+            
+        case registerMenuItem:
+            Application::popupForm(registrationForm);
             handled=true;
             break;
             

@@ -148,7 +148,7 @@ void Definition::moveHotSpots(const Point& delta)
 }
 
 
-void Definition::scroll(Graphics& graphics, int delta)
+void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, int delta)
 {
     uint_t newFirstLine=0;
     uint_t newLastLine=0;
@@ -168,7 +168,7 @@ void Definition::scroll(Graphics& graphics, int delta)
         Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
         
-        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, preferences_.backgroundColor());
+        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
         
         if (delta>0) 
         {
@@ -176,7 +176,7 @@ void Definition::scroll(Graphics& graphics, int delta)
             graphics.copyArea(unionRect, bounds_.topLeft);
             graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
             moveHotSpots(pointDelta);
-            renderLineRange(graphics, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight);
+            renderLineRange(graphics, prefs, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight);
         }
         else
         {
@@ -188,7 +188,7 @@ void Definition::scroll(Graphics& graphics, int delta)
             graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
-            renderLineRange(graphics, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);
+            renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);
         }
         firstLine_=newFirstLine;
         lastLine_=newLastLine;
@@ -198,7 +198,7 @@ void Definition::scroll(Graphics& graphics, int delta)
         clearHotSpots();
         firstLine_=newFirstLine;
         lastLine_=newLastLine;
-        renderLayout(graphics);
+        renderLayout(graphics, prefs);
     }
 }
 
@@ -221,7 +221,7 @@ void Definition::renderLine(RenderingContext& renderContext, const LinePosition_
         {
             ++current;
             renderContext.renderingProgress=0;
-            if (renderContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(preferences_))
+            if (renderContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(renderContext.preferences))
                 lineFinished=true;
         }
         else
@@ -230,19 +230,19 @@ void Definition::renderLine(RenderingContext& renderContext, const LinePosition_
     renderContext.top+=renderContext.usedHeight;
 }
 
-void Definition::renderLineRange(Graphics& graphics, const Definition::LinePosition_t& begin, const Definition::LinePosition_t& end, uint_t topOffset)
+void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, const Definition::LinePosition_t& begin, const Definition::LinePosition_t& end, uint_t topOffset)
 {
-    RenderingContext renderContext(graphics, preferences_, *this, bounds_.x(), bounds_.y()+topOffset, bounds_.width());
+    RenderingContext renderContext(graphics, prefs, *this, bounds_.x(), bounds_.y()+topOffset, bounds_.width());
     for (Lines_t::iterator line=begin; line!=end; ++line)
         renderLine(renderContext, line);
 }
 
-void Definition::calculateLayout(Graphics& graphics, const ElementPosition_t& firstElement, uint_t renderingProgress)
+void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress)
 {
     uint_t topOffset=0;
     ElementPosition_t last=elements_.end();
     ElementPosition_t current=elements_.begin();
-    LayoutContext layoutContext(graphics, preferences_, bounds_.width());
+    LayoutContext layoutContext(graphics, prefs, bounds_.width());
     LineHeader lastLine;
     lastLine.firstElement=current;
     while (current!=last)
@@ -258,7 +258,7 @@ void Definition::calculateLayout(Graphics& graphics, const ElementPosition_t& fi
         {
             ++current;
             layoutContext.renderingProgress=0;
-            if (layoutContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(preferences_))
+            if (layoutContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(prefs))
                 startNewLine=true;
         }
         else
@@ -278,10 +278,9 @@ void Definition::calculateLayout(Graphics& graphics, const ElementPosition_t& fi
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& preferences)
+void Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate)
 {
-    RenderingPreferences::SynchronizationResult result=preferences_.synchronize(preferences);
-    if (bounds.width()!=bounds_.width() || RenderingPreferences::recalculateLayout==result)
+    if (bounds.width()!=bounds_.width() || forceRecalculate)
     {
         ElementPosition_t firstElement=elements_.begin(); // This will be used in calculating first line we should show.
         uint_t renderingProgress=0;
@@ -293,7 +292,7 @@ void Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, c
         clearHotSpots();
         clearLines();
         bounds_=bounds;
-        calculateLayout(graphics, firstElement, renderingProgress);
+        calculateLayout(graphics, prefs, firstElement, renderingProgress);
     }
     else {
         clearHotSpots();
@@ -302,9 +301,8 @@ void Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, c
         if (heightChanged)
             calculateVisibleRange(firstLine_, lastLine_);
     }
-    renderLayout(graphics);
+    renderLayout(graphics, prefs);
 }
-   
  
 void Definition::swap(Definition& other)
 {
@@ -335,10 +333,10 @@ void Definition::hitTest(const Point& point)
     }
 }
 
-void Definition::renderLayout(Graphics& graphics)
+void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs)
 {
-    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, preferences_.backgroundColor());
-    renderLineRange(graphics, lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0);
+    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
+    renderLineRange(graphics, prefs, lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0);
     uint_t rangeHeight=0;
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;

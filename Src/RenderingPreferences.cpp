@@ -32,4 +32,5 @@ RenderingPreferences::RenderingPreferences():
     bullet[2]=chrNull;
     Graphics graphics;
     Graphics::FontSetter setFont(graphics, font);
-    standardIndentation_=graphics.textWidth(bullet, 2);}
+    standardIndentation_=graphics.textWidth(bullet, 2);
+}

@@ -26,8 +26,12 @@ BEGIN
 	BEGIN
         	MENUITEM "localhost" ID useLocalhostMenuItem  "L"
             MENUITEM "dict-pc.arslexis.com" ID useDictPcMenuItem   "D" 
-	
-END
+        END
+
+	PULLDOWN "Options"
+	BEGIN
+        	MENUITEM "Register" ID registerMenuItem  "R"
+       END
 END	
 
 ALERT ID romIncompatibleAlert
@@ -124,7 +128,7 @@ END
 
 FORM ID mainForm AT (0 0 160 160)
 	NOSAVEBEHIND NOFRAME
-	MENUID mainMenuBar DEFAULTBTNID goButton
+	MENUID mainMenuBar DEFAULTBTNID goButton 
 BEGIN
 	TITLE "iPedia"
        	SCROLLBAR ID definitionScrollBar  AT (152 16 7 124) USABLE VALUE 50 MIN 0 MAX 100 PAGESIZE 10
@@ -155,3 +159,26 @@ BEGIN
     BITMAP "icon-sm-2-d144.bmp" BPP 2 DENSITY 2
     BITMAP "icon-sm-8-d144.bmp" BPP 8 TRANSPARENTINDEX 210 COMPRESS DENSITY 2 
 END
+
+
+
+
+FORM ID preferencesForm  AT ( 2 2 156 156 )
+MODAL
+BEGIN
+        TITLE "Preferences"
+	BUTTON "OK" ID okButton  AT (2 142 40 AUTO)
+	BUTTON "Cancel" ID cancelButton  AT (45 142 40 AUTO)
+END
+
+
+FORM ID registrationForm AT ( 2 90 156 68 )
+MODAL DEFAULTBTNID okButton 
+BEGIN
+        TITLE "Registration"
+	LABEL "Enter your registration number:" AUTOID   AT (5 20)
+	FIELD ID serialNumberField   AT (5 PREVBOTTOM+5 146 AUTO) MAXCHARS 32 EDITABLE UNDERLINED 
+	BUTTON "Register" ID okButton   AT (5 PREVBOTTOM+5 40 AUTO)
+	BUTTON "Cancel" ID cancelButton AT (PREVRIGHT+5 PREVTOP 40 AUTO)
+END
+
