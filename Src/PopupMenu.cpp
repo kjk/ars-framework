@@ -1,5 +1,6 @@
 #include <PopupMenu.hpp>
 #include <Graphics.hpp>
+#include <Text.hpp>
 
 using namespace ArsLexis;
 
@@ -152,4 +153,96 @@ void PopupMenuItemDrawHandler::drawItem(Graphics& graphics, List& list, uint_t i
     graphics.drawText(text, length, p);
     if (!item.active)
         WinSetTextColorRGB(&oldTextColor, NULL);
+}
+
+static bool extractLong(const char_t*& data, long& length, long& val)
+{
+    if (length < 4)
+        return false;
+    union 
+    {
+        char b[4];
+        long l;
+    };
+    for (int i = 0; i < 4; ++i)
+    {
+        --length;
+        unsigned int chr = *data++;
+        if (255 < chr)
+            return false;
+#ifdef _PALM_OS
+        b[3 - i] = chr;
+#else
+        b[i] = chr;        
+#endif
+    }    
+    val = l;
+    return true;
+}
+
+static bool extractString(const char_t*& data, long& length, const char_t*& str, long& strLen)
+{
+    long len;
+    if (!extractLong(data, length, len))
+        return false;
+    ++len;
+    if (length < len)
+        return false;
+    strLen = len - 1;
+    str = data;
+    length -= len;
+    data += len;
+    return true;
+}
+
+enum PopupMenuItemFlag 
+{
+    flagItemInactive = 1,
+    flagItemBold = 2
+};
+
+bool PopupMenuItemDrawHandler::itemsFromString(const char_t* data, long length)
+{
+    long itemsCount;
+    long val;
+    const char_t* text;
+    Item* newItems = NULL;
+    if (!extractLong(data, length, itemsCount))
+        goto Fail;
+    
+    newItems = new_nt Item[itemsCount];
+    if (NULL == newItems)
+        goto Fail;
+        
+    for (long i = 0; i < itemsCount; ++i)
+    {
+        Item& item = newItems[i];
+        if (!extractString(data, length, text, val))
+            goto Fail;
+        
+        item.text = StringCopy2N(text, val);
+        if (NULL == item.text)
+            goto Fail;
+        
+        if (!extractString(data, length, text, val))
+            goto Fail;
+        
+        item.hyperlink = StringCopy2N(text, val);
+        if (NULL == item.text)
+            goto Fail;
+            
+        if (!extractLong(data, length, val))
+            goto Fail;
+        
+        item.active = (0 == (flagItemInactive & val));
+        item.bold = (0 == (flagItemBold & val));
+    }
+    delete [] items;
+    items = newItems;
+    count = itemsCount;
+    return true;
+    
+Fail:
+    delete newItems;
+    return false;        
 }

@@ -35,6 +35,8 @@ public:
     
     uint_t itemsCount() const;
     
+    bool itemsFromString(const ArsLexis::char_t* data, long length);
+    
 };
 
 class PopupMenu
@@ -55,5 +57,7 @@ public:
     Int16 popup(UInt16 id, const ArsLexis::Point& point);
     
 };
+
+
 
 #endif

@@ -39,8 +39,10 @@ namespace ArsLexis
     void cleanAllocationLogging();
     
     void* allocate(size_t size);
-
+    
 }
+
+enum NewDontThrowTag {newDontThrow};
 
 /**
  * Custom memory allocation function, that doesn't throw (contrary 
@@ -71,22 +73,22 @@ inline void free__(void* p)
     ::operator delete(p);
 }
 
-inline void* operator new(size_t size, bool)
+inline void* operator new(size_t size, NewDontThrowTag)
 {
     return malloc__(size);
 }
 
-inline void* operator new(size_t size, bool, const char* file, int line)
+inline void* operator new(size_t size, NewDontThrowTag, const char* file, int line)
 {
     return malloc__(size, file, line);
 }
 
-inline void* operator new[](size_t size, bool)
+inline void* operator new[](size_t size, NewDontThrowTag)
 {
     return malloc__(size);
 }
 
-inline void* operator new[](size_t size, bool, const char* file, int line)
+inline void* operator new[](size_t size, NewDontThrowTag, const char* file, int line)
 {
     return malloc__(size, file, line);
 }
@@ -103,10 +105,10 @@ inline void* operator new[](size_t size, bool, const char* file, int line)
 #if !defined(NDEBUG) && !defined(_MSC_VER)
 // MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
 # define malloc(a) malloc__((a), __FILE__, __LINE__)
+# define new_nt new  //(newDontThrow, __FILE__, __LINE__)
 # define new new (__FILE__, __LINE__)
-# define new_nt new (false, __FILE__, __LINE__)
 #else
-# define new_nt new (false)
+# define new_nt new (newDontThrow)
 # define malloc(a) malloc__(a)
 #endif
 
