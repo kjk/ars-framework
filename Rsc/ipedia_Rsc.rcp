@@ -29,6 +29,8 @@ END
 	BEGIN
         	MENUITEM "Register" ID registerMenuItem  "R"
        	MENUITEM "Search Results" ID searchResultsMenuItem  "S"
+	MENUITEM SEPARATOR
+	MENUITEM "About" ID aboutMenuItem  "A"
 END
 END	
 

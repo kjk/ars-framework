@@ -221,10 +221,7 @@ void MainForm::handleControlSelect(const EventType& event)
                     LookupManager* lookupManager=app.getLookupManager(true);
                     if (lookupManager && !lookupManager->lookupInProgress())
                         if (!lookupManager->lookupIfDifferent(textPtr) && showDefinition!=displayMode())
-                        {
                             updateAfterLookup();
-                            update();
-                        }
                 }
             }
             break;
@@ -436,6 +433,15 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             handled=true;
             break;
 
+        case aboutMenuItem:
+            if (showSplashScreen!=displayMode())
+            {
+                setDisplayMode(showSplashScreen);
+                update();
+            }                
+            handled=true;
+            break;
+            
         default:
             handled=iPediaForm::handleMenuCommand(itemId);
     }

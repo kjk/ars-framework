@@ -117,7 +117,7 @@ bool LookupManager::lookupIfDifferent(const ArsLexis::String& term)
 {
     using ArsLexis::equalsIgnoreCase;
     bool result=false;
-    if (!equalsIgnoreCase(lastInputTerm(), term))
+    if (lastDefinition_.empty() || !equalsIgnoreCase(lastInputTerm(), term))
     {
         lookupTerm(term);
         result=true;
