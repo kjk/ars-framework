@@ -10,6 +10,8 @@
 namespace ArsLexis
 {
 
+    class Graphics;
+
 #pragma mark FormObject
 
     class FormObject: private NonCopyable
@@ -28,6 +30,9 @@ namespace ArsLexis
         {return object_;}
         
         Form* form()
+        {return form_;}
+        
+        const Form* form() const
         {return form_;}
 
     public:
@@ -295,7 +300,7 @@ namespace ArsLexis
         
             CustomDrawHandler();
         
-            virtual void drawItem(List& list, uint_t item, const Rectangle& listBounds)=0;
+            virtual void drawItem(Graphics& graphics, List& list, uint_t item, const Rectangle& itemBounds)=0;
             
             virtual uint_t itemsCount() const=0;
             
@@ -313,7 +318,6 @@ namespace ArsLexis
         
         void updateItemsCount(const CustomDrawHandler& handler);
         
-        
         enum KeyHandlerOptions {
             optionScrollPagesWithLeftRight=1,
             optionFireListSelectOnCenter=2
@@ -325,7 +329,7 @@ namespace ArsLexis
          * @param scrollPagesWithLeftRight if set to @c true, will use left/right buttons to scroll page up/down.
          * @return @c true if list recognized event and handled it, @c false otherwise.
          */
-        bool handleKeyDownEvent(const Form& form, const EventType& event, uint_t options=0);
+        bool handleKeyDownEvent(const EventType& event, uint_t options=0);
         
         ~List();
 

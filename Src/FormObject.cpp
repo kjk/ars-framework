@@ -1,4 +1,5 @@
 #include <FormObject.hpp>
+#include <Graphics.hpp>
 
 namespace ArsLexis
 {
@@ -115,10 +116,10 @@ namespace ArsLexis
 #endif
     {}
 
-     void List::updateItemsCount(const CustomDrawHandler& handler)
-     {
+    void List::updateItemsCount(const CustomDrawHandler& handler)
+    {
         LstSetListChoices(object(), reinterpret_cast<Char**>(const_cast<CustomDrawHandler*>(&handler)), handler.itemsCount());
-     }
+    }
    
     void List::setCustomDrawHandler(List::CustomDrawHandler* handler)
     {
@@ -146,7 +147,8 @@ namespace ArsLexis
         assert(0!=handler);
         Rectangle bounds(*rect);
         List list(*handler->form_, handler->listId_);
-        handler->drawItem(list, itemNum, bounds);
+        Graphics graphics(handler->form_->windowHandle());
+        handler->drawItem(graphics, list, itemNum, bounds);
     }
 
     void List::adjustVisibleItems() 
@@ -165,8 +167,10 @@ namespace ArsLexis
     {}
 
 
-    bool List::handleKeyDownEvent(const Form& form, const EventType& event, uint_t options)
+    bool List::handleKeyDownEvent(const EventType& event, uint_t options)
     {
+        assert(valid());
+        Form& form=*this->form();
         assert(keyDownEvent==event.eType);
         bool handled=false;
         int delta=0;

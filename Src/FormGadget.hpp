@@ -17,13 +17,13 @@ namespace ArsLexis {
         
         void setupGadget(FormType* form, UInt16 index);
         
-        void drawProxy();
-        
         bool visible_;
         bool usable_;
 
     protected:        
-    
+
+        void drawProxy();
+        
         virtual void cleanup();
         
         virtual void draw(Graphics& graphics);
