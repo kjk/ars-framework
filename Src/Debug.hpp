@@ -20,6 +20,7 @@
 #include <memory>
 #include <cassert>
 #include <string>
+#include <BaseTypes.hpp>
 
 namespace ArsLexis 
 {
@@ -42,9 +43,9 @@ inline void* operator new(unsigned long size)
 {
     void* ptr=0;
     if (size) 
-        ptr=MemPtrNew(size);
+        ptr=tmalloc(size);
     else
-        ptr=MemPtrNew(1);
+        ptr=tmalloc(1);
     if (!ptr)
         ArsLexis::handleBadAlloc();
     return ptr;
@@ -61,7 +62,7 @@ inline void operator delete(void *ptr)
 {
     if (ptr) 
     {
-        MemPtrFree(ptr);
+        tfree(ptr);
 #ifndef NDEBUG
         ArsLexis::logAllocation(ptr, true, 0, 0);
 #endif            
@@ -89,6 +90,81 @@ inline void operator delete[](void *ptr)
 #define new new (__FILE__, __LINE__)
 #endif
 
-#endif // _PALM_OS
+#endif
+
+
+#if defined(_WIN32_WCE)
+
+#include <new>       
+#include <memory>
+#include <BaseTypes.hpp>
+
+namespace ArsLexis 
+{
+    /** 
+     * Placeholder for custom memory allocation failure handler.
+     * It should be defined somewher in application modules.
+     */
+    void handleBadAlloc();
+    
+    void logAllocation(void* ptr, bool free, const char* file, int line);
+    
+}
+
+/**
+ * Custom memory allocation function, that doesn't throw (contrary 
+ * to MSL new (nothrow) that simply catches exception
+ * thrown by new.
+ */
+inline void* operator new(unsigned int size)
+{
+    void* ptr=0;
+    if (size) 
+        ptr=tmalloc(size);
+    else
+        ptr=tmalloc(1);
+    if (!ptr)
+        ArsLexis::handleBadAlloc();
+    return ptr;
+}
+
+inline void* operator new(unsigned int size, const char* file, int line)
+{
+    void* ptr=::operator new(size);
+    ArsLexis::logAllocation(ptr, false, file, line);
+    return ptr;
+}
+
+inline void operator delete(void *ptr)
+{
+    if (ptr) 
+    {
+        tfree(ptr);
+#ifndef NDEBUG
+        ArsLexis::logAllocation(ptr, true, 0, 0);
+#endif            
+    }        
+}
+
+inline void* operator new[](unsigned int size)
+{
+    return ::operator new(size);
+}
+
+inline void* operator new[](unsigned int size, const char* file, int line)
+{
+    void* ptr=::operator new[](size);
+    ArsLexis::logAllocation(ptr, false, file, line);
+    return ptr;
+}
+
+inline void operator delete[](void *ptr)
+{
+    ::operator delete(ptr);
+}
+
+
+#endif
+
 
 #endif

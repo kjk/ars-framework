@@ -16,6 +16,9 @@ typedef unsigned long ulong_t;
 
 #include <windows.h>
 #include <tchar.h>
+#define ErrTryT __try
+#define ErrCatchT(theErr) __except (1) { DWORD theErr=GetExceptionCode();
+#define ErrEndCatchT
 
 namespace ArsLexis
 {
@@ -30,10 +33,14 @@ namespace ArsLexis
     
     typedef SCODE status_t;
 
+    typedef unsigned short LocalID;
+
 # define tstrlen _tcslen
 # define tprintf _stprintf
 # define ticks   GetTickCount
-
+# define tatoi _wtoi
+# define tmalloc malloc
+# define tfree free
 #else
 
 namespace ArsLexis
@@ -42,6 +49,9 @@ namespace ArsLexis
     typedef char char_t;
 
 # define _T(a) a
+# define ErrTryT ErrTry
+# define ErrCatchT(theErr) ErrCatch(theErr) {
+# define ErrEndCatchT ErrEndCatch
 
 # if defined(_PALM_OS)    
 
@@ -55,12 +65,15 @@ namespace ArsLexis
 #  define tprintf StrPrintF
 #  define tstrlen StrLen
 #  define tstrcmp StrCompare
-        
+#  define tatoi StrAToI
+#  define tmalloc MemPtrNew        
+#  define tfree MemPtrFree
 # else
         
 #  define tprintf sprintf
 #  define tstrlen strlen
 #  define tstrcmp strcmp
+#  define tatoi atoi
 
     typedef long tick_t;
     
