@@ -1,10 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-# This is only a stub...
+
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 import MySQLdb
 import random
+import _mysql_exceptions
 
 lineSeparator =     "\n"
 fieldSeparator =    ": "
@@ -29,13 +30,11 @@ termEndDelimiter = "]]"
 definitionFormatVersion = 1
 protocolVersion = 1
 
-# @todo Provide some more meaningful error messages
-serverFailureError =            "==Error==\n\nServer failure."
-fakeCookieError =           "==Error==\n\nFake cookie."
-unsupportedDeviceError =    "==Error==\n\nUnsupported device."
-fakeSerialNumberError =     "==Error==\n\nFake serial number."
-snAlreadyUsedError =        "==Error==\n\nSerial number already used on other device."
-malformedRequestError =     "==Error==\n\nRequest is malformed."
+class iPediaServerError:
+    serverFailure=1
+    unsupportedDevice=2
+    invalidAuthorization=3
+    malformedRequest=4
 
 def startsWithIgnoreCase(s1, substr):
     if len(s1)<len(substr):
@@ -51,18 +50,20 @@ class iPediaProtocol(basic.LineReceiver):
         self.transactionId=None
         self.deviceInfoToken=None
         self.db=None
-        self.error=None
+        self.error=0
         self.clientVersion=None
         self.protocolVersion=None
+        self.requestedTerm=None
         self.term=None
         self.cookie=None
         self.cookieId=None
         self.userId=None
         self.serialNumber=None
+        self.definitionId=None
         
     def getDatabase(self):
         if not self.db:
-            self.db=MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
+            self.db=self.factory.createConnection()
         return self.db
 
     def outputField(self, name, value=None):
@@ -78,18 +79,50 @@ class iPediaProtocol(basic.LineReceiver):
         self.transport.write(payload)
         self.transport.write(lineSeparator)
         print payload
+        
+    def logRequest(self):
+        cursor=None
+        try:
+            db=self.getDatabase()
+            trIdStr='0'
+            if self.transactionId:
+                trIdStr=str(int(self.transactionId, 16))
+            hasGetCookie=0
+            if self.deviceInfoToken:
+                hasGetCookie=1
+            cookieIdStr='NULL'
+            if self.cookieId:
+                cookieIdStr=str(self.cookieId)
+            hasRegister=0
+            if self.serialNumber:
+                hasRegister=1
+            reqTerm='NULL'
+            if self.requestedTerm:
+                reqTerm='\''+db.escape_string(self.requestedTerm)+'\''
+            defIdStr='NULL'
+            if self.definitionId:
+                defIdStr=str(self.definitionId)
+            cursor=db.cursor()
+            clientIp=0
+            query=("""insert into requests (client_ip, transaction_id, has_get_cookie_field, cookie_id, has_register_field, requested_term, error, definition_id) """
+                                        """values (%d, %s, %d, %s, %d, %s, %d, %s)""" % (clientIp, trIdStr, hasGetCookie, cookieIdStr, hasRegister, reqTerm, self.error, defIdStr))
+            cursor.execute(query)
+            cursor.close()
+        except _mysql_exceptions.Error, ex:
+            print ex
+            if cursor:
+                cursor.close()
+        
 
     def finish(self):
         if self.error:
-            self.outputField(formatVersionField, str(definitionFormatVersion))
-            self.outputPayloadField(errorField, self.error)
+            self.outputField(errorField, str(self.error))
         self.transport.loseConnection()
         if self.db:
-            try:
-                self.db.close()
-            except:
-                raise
-                
+            self.logRequest()
+            self.db.close()
+            self.db=None
+                                
         print ""
         print "--------------------------------------------------------------------------------"
         print ""
@@ -117,7 +150,7 @@ class iPediaProtocol(basic.LineReceiver):
     def handleGetCookieRequest(self):
 
         if not self.validateDeviceInfo():
-            self.error=unsupportedDeviceError
+            self.error=iPediaServerError.unsupportedDevice
             return False
             
         cursor=None
@@ -141,16 +174,16 @@ class iPediaProtocol(basic.LineReceiver):
             self.outputField(cookieField, str(self.cookie))
             return True
             
-        except:
-            raise
+        except _mysql_exceptions.Error, ex:
+            print inst
             if cursor:
                 cursor.close()
-            self.error=serverFailureError
+            self.error=iPediaServerError.serverFailure
             return False;
             
     def handleRegisterRequest(self):
-        if 0==self.cookieId:
-            self.error=malformedRequestError
+        if not self.cookieId:
+            self.error=iPediaServerError.malformedRequest
             return False
 
         cursor=None
@@ -165,22 +198,22 @@ class iPediaProtocol(basic.LineReceiver):
                     self.userId=row[0]
                     cursor.execute("""update registered_users set cookie_id=%d where id=%d""" % (self.cookieId, self.userId))
                 elif currentCookieId!=self.cookieId:
-                    self.error=snAlreadyUsedError
+                    self.error=iPediaServerError.invalidAuthorization
                     cursor.close()
                     return False
                 else:
                     self.userId=row[0]
             else:
-                self.error=fakeSerialNumberError
+                self.error=iPediaServerError.invalidAuthorization
                 cursor.close()
                 return False
             cursor.close()
             return True
-        except:
-            raise
+        except _mysql_exceptions.Error, ex:
+            print inst
             if cursor:
                 cursor.close()
-            self.error=serverFailureError
+            self.error=iPediaServerError.serverFailure
             return False;
     
     def handleCookieRequest(self):
@@ -196,14 +229,14 @@ class iPediaProtocol(basic.LineReceiver):
                     cursor.close()
                     return True
                 else:
-                    self.error=fakeCookieError
+                    self.error=iPediaServerError.invalidAuthorization
                     cursor.close()
                     return False
-            except:
-                raise
+            except _mysql_exceptions.Error, ex:
+                print inst
                 if cursor:
                     cursor.close()
-                self.error=serverFailureError
+                self.error=iPediaServerError.serverFailure
                 return False;
         else:
             return True
@@ -231,6 +264,7 @@ class iPediaProtocol(basic.LineReceiver):
                 else:
                     result=result.replace('\r', '')  
                     self.term=row[1].replace('_', ' ');
+                    self.definitionId=row[0]
                     finished=True
             else: 
                 result=None             
@@ -254,11 +288,11 @@ class iPediaProtocol(basic.LineReceiver):
             cursor=db.cursor()
             definition=self.findDefinition(db, cursor)
             cursor.close()
-        except:
-            raise
+        except _mysql_exceptions.Error, ex:
+            print inst
             if cursor:
                 cursor.close()
-            self.error=serverFailureError
+            self.error=iPediaServerError.serverFailure
             return False;
             
         if definition:
@@ -266,9 +300,9 @@ class iPediaProtocol(basic.LineReceiver):
         else:
             self.outputField(definitionNotFoundField)
         return True
-                        
+        
     def answer(self):
-    
+        
         print ""
         print "--------------------------------------------------------------------------------"
         print ""
@@ -281,14 +315,14 @@ class iPediaProtocol(basic.LineReceiver):
         if self.deviceInfoToken and not self.handleGetCookieRequest():
             return self.finish()
     
-        if self.serialNumber and not self.handleRegisterRequest():
-            return self.finish()
-            
         if self.cookie:
             if not self.handleCookieRequest():
                 return self.finish()
         else:
-            self.error=malformedRequestError
+            self.error=iPediaServerError.malformedRequest
+            return self.finish()
+            
+        if self.serialNumber and not self.handleRegisterRequest():
             return self.finish()
         
         if self.term and not self.handleDefinitionRequest():
@@ -326,13 +360,27 @@ class iPediaProtocol(basic.LineReceiver):
                 self.cookie=self.extractFieldValue(request)
         
             elif request.startswith(getDefinitionField):
-                self.term=self.extractFieldValue(request)
+                self.requestedTerm=self.term=self.extractFieldValue(request)
             
             elif request.startswith(registerField):
                 self.serialNumber=self.extractFieldValue(request)
 
         
 class iPediaFactory(protocol.ServerFactory):
+
+    def createConnection(self):
+        return MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
+        
+
+    def __init__(self):
+        db=self.createConnection()
+        cursor=db.cursor()
+        cursor.execute("""select count(*) from enwiki.cur""")
+        row=cursor.fetchone()
+        print "Number of Wikipedia articles: ", row[0]
+        cursor.close()
+        db.close()
+
     protocol = iPediaProtocol
     
 reactor.listenTCP(9000, iPediaFactory())
