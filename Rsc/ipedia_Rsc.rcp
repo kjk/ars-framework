@@ -48,6 +48,15 @@ BEGIN
     BUTTONS "OK"
 END
 
+ALERT ID cantConnectToServerAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Server unavailable"
+    MESSAGE "Can't connect to the server."
+    BUTTONS "OK"
+END
+
 ALERT ID definitionNotFoundAlert
     DEFAULTBUTTON 0
     ERROR
@@ -248,3 +257,9 @@ BEGIN
           MENUITEM "Cancel" ID cancelSearchMenuItem "C"
      END
 END
+
+
+
+
+
+

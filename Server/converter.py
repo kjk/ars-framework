@@ -55,6 +55,12 @@ scriptRe=re.compile("<script.*?</script>", re.I+re.S)
 badLinkRe=re.compile(r"\[\[((\w\w\w?(-\w\w)?)|(simple)|(image)|(media)):.*?\]\]", re.I+re.S)
 numEntityRe=re.compile(r'&#(\d+);')
 
+multipleLinesRe=re.compile("\n{2,100}")
+# replace multiple (1+) newlines with just one newline.
+def stripMultipleNewLines(txt):
+    txt=replaceRegExp(txt,multipleLinesRe,"\n")
+    return txt
+
 def convertEntities(text):
     matches=[]
     for iter in numEntityRe.finditer(text):
@@ -89,47 +95,53 @@ def convertDefinition(text):
     text=replaceTagList(text, ['dfn', 'code', 'samp', 'kbd', 'var', 'abbr', 'acronym', 'blockquote', 'q', 'p', 'pre', 'ins', 'del', 'dir', 'menu', 'img', 'object', 'big', 'span', 'applet', 'font', 'basefont', 'tr', 'td', 'table', 'center', 'div'], '')
     text=replaceRegExp(text, badLinkRe, '')
     text=convertEntities(text)
+    text=stripMultipleNewLines(text)
     text=text.strip()
     text+='\n'
     return text
 
-query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 """
+def main():
+    query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 """
 
-if len(sys.argv)>1:
-    query+=""" and cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
+    if len(sys.argv)>1:
+        query+=""" and cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
 
-srcCursor=db.cursor()
-targetCursor=db.cursor()
-srcCursor.execute(query)
-row=srcCursor.fetchone()
-rowCount = 0
-while row:
-    term=row[0].replace('_', ' ')
-    definition=row[1]
-    ts=row[2]
-    timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
-    #print "Converting term: ", term
-    
-    targetCursor.execute("""select id, last_modified from definitions where term='%s'""" % db.escape_string(term))
-    outRow=targetCursor.fetchone()
-    if outRow:
-        #print "Existing date: ", outRow[1],"; new date: ", timestamp
-        if str(outRow[1])<str(timestamp):
-            #print "Updating existing record id: ", outRow[0]
-            targetCursor.execute("""update definitions set definition='%s', last_modified='%s' where id=%d""" % (db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp)), outRow[0]))
-        else:
-            #print "Skipping record, newer version exists."
-            pass
-    else:
-        #print "Creating new record." 
-        targetCursor.execute("""insert into definitions (term, definition, last_modified) values ('%s', '%s', '%s')""" % (db.escape_string(term), db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp))))
-    
+    srcCursor=db.cursor()
+    targetCursor=db.cursor()
+    srcCursor.execute(query)
     row=srcCursor.fetchone()
-    rowCount += 1
-    if 0 == rowCount % 100:
-        print "processed %d rows" % rowCount
+    rowCount = 0
+    while row:
+        term=row[0].replace('_', ' ')
+        definition=row[1]
+        ts=row[2]
+        timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
+        #print "Converting term: ", term
+        
+        targetCursor.execute("""select id, last_modified from definitions where term='%s'""" % db.escape_string(term))
+        outRow=targetCursor.fetchone()
+        if outRow:
+            #print "Existing date: ", outRow[1],"; new date: ", timestamp
+            if str(outRow[1])<str(timestamp):
+                #print "Updating existing record id: ", outRow[0]
+                targetCursor.execute("""update definitions set definition='%s', last_modified='%s' where id=%d""" % (db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp)), outRow[0]))
+            else:
+                #print "Skipping record, newer version exists."
+                pass
+        else:
+            #print "Creating new record." 
+            targetCursor.execute("""insert into definitions (term, definition, last_modified) values ('%s', '%s', '%s')""" % (db.escape_string(term), db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp))))
+        
+        row=srcCursor.fetchone()
+        rowCount += 1
+        if 0 == rowCount % 100:
+            print "processed %d rows" % rowCount
 
-srcCursor.close()
-targetCursor.close()
+    srcCursor.close()
+    targetCursor.close()
 
-db.close()
+    db.close()
+
+if __name__=="__main__":
+    main()
+
