@@ -1,6 +1,6 @@
 # Connection: localhost
 # Host: localhost
-# Saved: 2004-03-22 16:42:49
+# Saved: 2004-03-30 17:40:32
 # 
 # Host: localhost
 # Database: ipedia
@@ -26,7 +26,8 @@ CREATE TABLE `definitions` (
   `last_modified` timestamp(14) NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `term_index` (`term`),
-  FULLTEXT KEY `full_text_index` (`term`,`definition`)
+  KEY `terms` (`term`),
+  FULLTEXT KEY `fti` (`term`,`definition`)
 ) TYPE=MyISAM; 
 
 # Host: localhost
@@ -55,6 +56,7 @@ CREATE TABLE `requests` (
   `has_register_field` tinyint(1) NOT NULL default '0',
   `requested_term` varchar(255) default '',
   `error` int(10) unsigned NOT NULL default '0',
+  `request_date` timestamp(14) NOT NULL,
   `definition_id` int(10) unsigned default '0',
   PRIMARY KEY  (`id`)
 ) TYPE=MyISAM; 

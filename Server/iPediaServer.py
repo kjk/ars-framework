@@ -14,12 +14,14 @@ cookieField =                   "Cookie"
 getDefinitionField =        "Get-Definition"
 formatVersionField =        "Format-Version"
 definitionField =           "Definition"
-definitionForField =        "Definition-For"
-definitionNotFoundField = "Definition-Not-Found"
+resultsForField =        "Results-For"
+notFoundField = "Not-Found"
 errorField =                    "Error"
 registerField =                 "Register"
 protocolVersionField =  "Protocol-Version"
 clientVersionField =        "Client-Version"
+searchField =               "Search"
+searchResultsField =        "Search-Results"
 
 redirectCommand = "#REDIRECT"
 termStartDelimiter = "[["
@@ -29,6 +31,8 @@ definitionFormatVersion = 1
 protocolVersion = 1
 
 listLengthLimit = 200
+
+requestLinesCountLimit = 20
 
 class iPediaServerError:
     serverFailure=1
@@ -60,6 +64,7 @@ class iPediaProtocol(basic.LineReceiver):
         self.userId=None
         self.serialNumber=None
         self.definitionId=None
+        self.linesCount=0
         
     def getDatabase(self):
         if not self.db:
@@ -104,8 +109,8 @@ class iPediaProtocol(basic.LineReceiver):
                 defIdStr=str(self.definitionId)
             cursor=db.cursor()
             clientIp=0
-            query=("""insert into requests (client_ip, transaction_id, has_get_cookie_field, cookie_id, has_register_field, requested_term, error, definition_id) """
-                                        """values (%d, %s, %d, %s, %d, %s, %d, %s)""" % (clientIp, trIdStr, hasGetCookie, cookieIdStr, hasRegister, reqTerm, self.error, defIdStr))
+            query=("""insert into requests (client_ip, transaction_id, has_get_cookie_field, cookie_id, has_register_field, requested_term, error, definition_id, request_date) """
+                                        """values (%d, %s, %d, %s, %d, %s, %d, %s, now())""" % (clientIp, trIdStr, hasGetCookie, cookieIdStr, hasRegister, reqTerm, self.error, defIdStr))
             cursor.execute(query)
             cursor.close()
         except _mysql_exceptions.Error, ex:
@@ -243,7 +248,7 @@ class iPediaProtocol(basic.LineReceiver):
             
     def outputDefinition(self, definition):
         self.outputField(formatVersionField, str(definitionFormatVersion))
-        self.outputField(definitionForField, self.term)
+        self.outputField(resultsForField, self.term)
         self.outputPayloadField(definitionField, definition)
         
     def findTarget(self, db, cursor, idTermDef):
@@ -325,10 +330,16 @@ class iPediaProtocol(basic.LineReceiver):
         queryStr=''
         for word in words:
             queryStr+=(' +'+word)
-        query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s' in boolean mode) having relevance>0.1 order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
+        query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s' in boolean mode) order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
         cursor.execute(query)
-        tupleList=[]
         row=cursor.fetchone()
+        if not row:
+            print "Performing non-boolean mode search..."
+            query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s') order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(reqTerm), listLengthLimit)
+            cursor.execute(query)
+
+        tupleList=[]
+                        
         while row:
             tupleList.append((row[0], row[1], row[2]))
             print row[1], row[3]
@@ -373,9 +384,13 @@ class iPediaProtocol(basic.LineReceiver):
             else:
                 self.termList=self.findFullTextMatches(db, cursor, self.requestedTerm)
                 if self.termList:
-                    self.outputField(definitionNotFoundField)
+                    self.outputField(resultsForField, self.requestedTerm)
+                    joinedList=""
+                    for term in self.termList:
+                        joinedList+=(term+'\n')
+                    self.outputPayloadField(searchResultsField, joinedList)
                 else:
-                    self.outputField(definitionNotFoundField)
+                    self.outputField(notFoundField)
             cursor.close()
         except _mysql_exceptions.Error, ex:
             print ex
@@ -422,7 +437,12 @@ class iPediaProtocol(basic.LineReceiver):
             return None
             
     def lineReceived(self, request):
-        if (request == ""):
+        ++self.linesCount
+        
+        if requestLinesCountLimit==self.linesCount:
+            self.error=iPediaServerError.malformedRequest
+            
+        if request == ""  or self.error:
             self.answer()
         else:
             print request
@@ -448,6 +468,8 @@ class iPediaProtocol(basic.LineReceiver):
             
             elif request.startswith(registerField):
                 self.serialNumber=self.extractFieldValue(request)
+            else:
+                self.error=iPediaServerError.malformedRequest
 
         
 class iPediaFactory(protocol.ServerFactory):
