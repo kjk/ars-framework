@@ -28,38 +28,13 @@ namespace ArsLexis
         NativeFont_t font_;
         HWND hwnd_;
         std::list<StackElement> fontStack_;
-        
+
         LOGFONT fontDescr_;
         HFONT newFont_;
         HGDIOBJ oldFont_;
 
-        void setEffects(FontEffects::Weight weight, bool italic)
-        {
-            oldFont_ = GetCurrentObject(handle_,OBJ_FONT);
-            GetObject(oldFont_, sizeof(fontDescr_), &fontDescr_);
-            switch(weight)
-            {
-                case FontEffects::weightPlain:
-                    fontDescr_.lfWeight = FW_NORMAL;
-                    break;
-                case FontEffects::weightBold: 
-                    fontDescr_.lfWeight = FW_BOLD;
-                    break;
-                case FontEffects::weightBlack:
-                    fontDescr_.lfWeight = FW_EXTRABOLD;
-                    break;
-            }    
-            if(italic&&(weight==FontEffects::weightPlain))
-                fontDescr_.lfWeight = FW_BOLD;
-            newFont_ = CreateFontIndirect(&fontDescr_);
-            SelectObject(handle_, newFont_);
-        }
-        
-        void resetEffects()
-        {
-            SelectObject(handle_, oldFont_);
-            DeleteObject(newFont_);
-        }
+        void setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall);
+        void resetEffects();
 
     public:
     

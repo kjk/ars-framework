@@ -52,28 +52,47 @@ namespace ArsLexis
     void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
     {
         FontEffects fx=font_.effects();
-        /*
-            PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
-        */
+
         uint_t len=length;
         uint_t width=0x7fffffff;
         charsInWidth(text, len, width);
-        
+
         uint_t height=fontHeight();
         uint_t top=topLeft.y;
 
-        /*
+        
         if (fx.subscript())
-            top+=(height*0.333);
-        WinDrawChars(text, length, topLeft.x, top);
-        */
-        
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
-            setEffects(fx.weight(), fx.italic());
+            top+=(uint_t)(height*0.4);
 
-        ExtTextOut(handle_, topLeft.x, topLeft.y, 0, NULL, text, length, NULL);
+        if (fx.isSmall())
+            top+=(uint_t)(height*0.1);
         
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+       
+        if (fx.mask()!=0)
+            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(),fx.isSmall());
+        
+
+        NativeColor_t back;
+        NativeColor_t fore;
+        if (inverted)
+        {
+            back = GetBkColor(handle_);
+            fore = this->setForegroundColor(back);
+            SetTextColor(handle_,back);
+            SetBkColor(handle_,fore);
+        }
+
+        ExtTextOut(handle_, topLeft.x, top, 0, NULL, text, length, NULL);
+        
+        if (inverted)
+        {
+            back = GetBkColor(handle_);
+            fore = this->setForegroundColor(back);
+            SetTextColor(handle_,fore);
+            SetBkColor(handle_,fore);
+        }
+
+        if (fx.mask()!=0)            
             resetEffects();
 
         if (fx.strikeOut())
@@ -83,6 +102,7 @@ namespace ArsLexis
             top = topLeft.y + ((baseline * 667) / 1000);
             drawLine(topLeft.x, top, topLeft.x+width, top);
         }
+
         int style;
         switch (fx.underline())
         {
@@ -176,9 +196,15 @@ namespace ArsLexis
         //FontEffects fx=support_.font.effects();
         //if (fx.superscript() || fx.subscript())
         //    height*=1.333;*/
+        
+        FontEffects fx=font_.effects();
+
         TEXTMETRIC ptm;
         GetTextMetrics(handle_, &ptm);
-        return ptm.tmHeight;
+        if(fx.isSmall())
+            return (uint_t)(ptm.tmHeight*0.9);
+        else
+            return ptm.tmHeight;
         //return -fnt.lfHeight;
     }
    
@@ -204,10 +230,10 @@ namespace ArsLexis
         int     textLen = tstrlen(text);
         FontEffects fx=font_.effects();
 
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
-            setEffects(fx.weight(), fx.italic());
+        if (fx.mask()!=0)
+            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
         GetTextExtentExPoint(handle_, text, textLen, width, &len, NULL, &size);
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+        if (fx.mask()!=0)
             resetEffects();
 
         if (len==textLen)
@@ -234,10 +260,10 @@ namespace ArsLexis
     {
         FontEffects fx=font_.effects();
         SIZE size;
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
-            setEffects(fx.weight(),fx.italic());
+        if (fx.mask()!=0)            
+            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
         GetTextExtentPoint(handle_, text, length, &size);
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+        if (fx.mask()!=0)
             resetEffects();
         return size.cx;
     }
@@ -247,10 +273,10 @@ namespace ArsLexis
         FontEffects fx=font_.effects();
         int   len;
         SIZE  size;
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
-            setEffects(fx.weight(),fx.italic());
+        if (fx.mask()!=0)
+            setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
         GetTextExtentExPoint(handle_, text, length, width, &len, NULL, &size ); 
-        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+        if (fx.mask()!=0)
             resetEffects();
 
         length = len;
@@ -259,4 +285,37 @@ namespace ArsLexis
 
     Graphics::Font_t Graphics::font() const
     {return font_;}
+    
+    void Graphics::setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall)
+    {
+        oldFont_ = GetCurrentObject(handle_,OBJ_FONT);
+        GetObject(oldFont_, sizeof(fontDescr_), &fontDescr_);
+        switch(weight)
+        {
+        case FontEffects::weightPlain:
+            fontDescr_.lfWeight = FW_NORMAL;
+            break;
+        case FontEffects::weightBold: 
+            fontDescr_.lfWeight = FW_BOLD;
+            break;
+        case FontEffects::weightBlack:
+            fontDescr_.lfWeight = FW_EXTRABOLD;
+            break;
+        }    
+        if (italic&&(weight==FontEffects::weightPlain))
+            fontDescr_.lfWeight = FW_BOLD;
+        if (index)
+            fontDescr_.lfHeight *= 0.75;
+        if (isSmall)
+            fontDescr_.lfHeight *= 0.9;
+        newFont_ = CreateFontIndirect(&fontDescr_);
+        SelectObject(handle_, newFont_);
+    }
+    
+    void Graphics::resetEffects()
+    {
+        SelectObject(handle_, oldFont_);
+        DeleteObject(newFont_);
+    }
+
 }
