@@ -392,15 +392,12 @@ status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t inpu
     return error;
 }
 
-// TODO: use inputTextLen
 status_t ByteFormatParser::parseAll(const char_t* inputText, UInt32 inputTextLen)
 {
     start_ = 0;
 
     parseHeader(inputText);
-    // TODO: can't do it yet because udf.getTextAndLen() is broken so inputTextLen
-    // can be broken too
-    // assert(totalSize_ == inputTextLen);
+    assert(totalSize_ == inputTextLen || (UInt32)(-1) == inputTextLen);
     inText_.assign(inputText, totalSize_);
     inLength_ = totalSize_;
     finish_ = true;

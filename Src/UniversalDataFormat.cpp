@@ -65,6 +65,7 @@ const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo)
 
 // TODO: BUG!!! this is broken, returns bogus lenOut if data contains 0
 // (is not binary safe)
+// DONE.
 const ArsLexis::char_t* UniversalDataFormat::getItemTextAndLen(int itemNo, int elemNo, uint_t *lenOut) const
 {
     assert(0 <= itemNo && itemNo < header_.size());
@@ -73,10 +74,20 @@ const ArsLexis::char_t* UniversalDataFormat::getItemTextAndLen(int itemNo, int e
     if (!fNormalized_)
         const_cast<UniversalDataFormat*>(this)->normalize();
     uint_t offset = header_[itemNo][elemNo];
+    uint_t nextOffset = 0;
+    if (header_[itemNo].size() > elemNo+1)
+        nextOffset = header_[itemNo][elemNo+1] - 1;
+    else if (header_.size() > itemNo+1)
+        nextOffset = header_[itemNo+1][0] - 1;
+    else
+        nextOffset = data_.length();
     const ArsLexis::char_t *txt = data_.data();
     txt += offset;
     if (NULL!=lenOut)
-        *lenOut = tstrlen(txt);
+    {
+        *lenOut = nextOffset - offset;
+     //   *lenOut = tstrlen(txt);
+    }
     return txt;
 }
     

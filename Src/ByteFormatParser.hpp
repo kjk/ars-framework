@@ -59,6 +59,9 @@ class ByteFormatParser
        
         ArsLexis::status_t handleIncrement(const ArsLexis::char_t* text, ulong_t length, bool finish=false);
 
+        /**
+         * ignore length if inputTextLen = (UInt32)(-1)
+         */
         ArsLexis::status_t parseAll(const ArsLexis::char_t*  inputText, UInt32 inputTextLen);
 
         void replaceElements(Definition::Elements_t& el);
