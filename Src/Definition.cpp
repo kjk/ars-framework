@@ -152,7 +152,13 @@ void Definition::addHotSpot(HotSpot* hotSpot)
 
 void Definition::clearHotSpots()
 {
-    std::for_each(hotSpots_.begin(), hotSpots_.end(), ObjectDeleter<HotSpot>());
+    HotSpots_t::iterator end = hotSpots_.end();
+    for (HotSpots_t::iterator it = hotSpots_.begin(); it != end; ++it)
+    {
+        HotSpot* hs = *it;
+        delete hs;
+        *it = NULL;
+    }
     hotSpots_.clear();
 }
 
@@ -1354,11 +1360,11 @@ void HyperlinkHandlerBase::handleHyperlink(Definition& definition, DefinitionEle
     assert(hyperlinkElement.isHyperlink());
     const DefinitionElement::HyperlinkProperties& props = *hyperlinkElement.hyperlinkProperties();
     const String& hyperlink = props.resource;
-    handleHyperlink(hyperlink, point);
+    handleHyperlink(hyperlink.data(), hyperlink.length(), point);
 }
 
 
-void Definition::HyperlinkHandler::handleHyperlink(const String&, const Point*)
+void Definition::HyperlinkHandler::handleHyperlink(const char_t* link, ulong_t len, const Point*)
 {
 }
 
