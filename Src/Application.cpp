@@ -2,6 +2,7 @@
 #include <Form.hpp>
 #include <memory>
 #include <FormGadget.hpp>
+#include <DeviceInfo.hpp>
 
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
 template class std::basic_string<ArsLexis::char_t>;
@@ -78,7 +79,8 @@ namespace ArsLexis
         cardNo_(0),
         databaseId_(0),
         creatorId_(creator()),
-        romVersion_(0)
+        romVersion_(0),
+        runningOnTreo600_(isTreo600())
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);
         assert(!error);

@@ -1,5 +1,8 @@
 #include <ExtendedList.hpp>
 #include <Graphics.hpp>
+#include <DeviceInfo.hpp>
+#include <68k/Hs.h>
+#include <Application.hpp>
 
 #ifdef __MWERKS__
 #pragma pcrelconstdata on
@@ -402,6 +405,8 @@ ExtendedList::ItemRenderer::~ItemRenderer()
 bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
 {
     assert(valid());
+    if (form()->application().runningOnTreo600() && !hasFocus())
+        return false;
     Form& form=*this->form();
     assert(keyDownEvent==event.eType);
     bool handled=false;
@@ -417,7 +422,7 @@ bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
         delta=page;
     else if ((optionFireListSelectOnCenter & options) && form.fiveWayCenterPressed(&event))
     {
-        if (noListSelection!=selection_)
+        if (noListSelection != selection_)
         {
             fireItemSelectEvent();
             handled = true;
@@ -453,7 +458,10 @@ bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
                 break;
         }
     }
-    if (0!=delta)
+    const int sel = selection();
+    if (noListSelection == sel || (0 > delta && 0 == sel) || (0 < delta && sel == itemsCount() - 1))
+        delta = 0;        
+    if (0 != delta)
     {
         setSelectionDelta(delta);
         handled=true;
@@ -496,6 +504,7 @@ bool ExtendedList::handleEvent(EventType& event)
 bool ExtendedList::handleEnter(const EventType& event)
 {
     assert(!trackingScrollbar_);
+    focus();
     Point penPos(event.screenX, event.screenY);
 //    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;

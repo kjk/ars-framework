@@ -75,14 +75,16 @@ namespace ArsLexis
         }
 
         void setBounds(const Rectangle& rect);
-
+        
         void focus();
+        
+        bool focusable() const;
 
-        void hide()
-        {FrmHideObject(*form_, index_);}
+        void hide();
 
-        void show()
-        {FrmShowObject(*form_, index_);}
+        void show();
+        
+        void draw();
 
         void anchor(const Rectangle& boundingBox, FormObjectAnchorStyle horizAnchor=anchorNot, Coord rightMargin=0, FormObjectAnchorStyle vertAnchor=anchorNot, Coord bottomMargin=0);
         
@@ -140,6 +142,9 @@ namespace ArsLexis
 
     class Field: public FormObjectWrapper<FieldType>
     {
+    
+        void getAttribs(FieldAttrType& attr) const;
+        
     public:
 
         explicit Field(Form& form, UInt16 id=frmInvalidObjectId):
@@ -189,6 +194,14 @@ namespace ArsLexis
         
         void replace(const String& text)
         {replace(text.data(), text.length());}
+        
+        bool usable() const;
+        
+        bool readOnly() const;
+        
+        bool numeric() const;
+        
+        
         
         ~Field();
         
@@ -261,7 +274,7 @@ namespace ArsLexis
     {
     public:
 
-        explicit List(Form& form, UInt16 id=frmInvalidObjectId):
+        explicit List(Form& form, UInt16 id = frmInvalidObjectId):
             FormObjectWrapper(form, id)
         {}
         

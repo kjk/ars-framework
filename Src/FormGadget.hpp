@@ -16,6 +16,7 @@ namespace ArsLexis {
         bool visible_;
         bool usable_;
         bool doubleBuffer_;
+        bool hasFocus_;
 
     protected:        
 
@@ -41,6 +42,10 @@ namespace ArsLexis {
         
         bool usable() const
         {return usable_;}
+        
+        bool hasFocus() const {return hasFocus_;}
+        
+        void setFocus(bool value = true) {hasFocus_ = value;}
     
         explicit FormGadget(Form& form, UInt16 id=frmInvalidObjectId);
         
@@ -56,6 +61,7 @@ namespace ArsLexis {
           
         friend class Form;
         friend class Application;
+        friend class FormObject;
     };   
 
 }

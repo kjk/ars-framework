@@ -49,6 +49,8 @@ namespace ArsLexis
                 if (!form->controlsAttached_)
                     form->attachControls();
                 result = form->handleEvent(*event);
+                if (!result && keyDownEvent == event->eType && app.runningOnTreo600())
+                    result = form->handleFocusTransfer(*event);
             }
             if (form->deleteAfterEvent_)
             {
@@ -67,7 +69,8 @@ namespace ArsLexis
         deleteAfterEvent_(false),
         controlsAttached_(false),
         trackingGadget_(0),
-        focusControlId_(frmInvalidObjectId)
+        entryFocusControlId_(frmInvalidObjectId),
+        focusedControlIndex_(frmInvalidObjectId)
     {
         getScreenBounds(screenBoundsBeforeWinExit_);
     }
@@ -173,9 +176,9 @@ namespace ArsLexis
                 event.data.winDisplayChanged.newBounds = newBounds;
                 EvtAddUniqueEventToQueue(&event, 0, true);
             }
-            if (frmInvalidObjectId != focusControlId_)
+            if (frmInvalidObjectId != entryFocusControlId_)
             {
-                FormObject object(*this, focusControlId_);
+                FormObject object(*this, entryFocusControlId_);
                 object.focus();
                 update();
             }
@@ -238,7 +241,7 @@ namespace ArsLexis
         {
             UInt16 index = FrmGetFocus(form);
             if (noFocus != index)
-                focusControlId_ = FrmGetObjectId(form, index);
+                entryFocusControlId_ = FrmGetObjectId(form, index);
             releaseFocus();
             getScreenBounds(screenBoundsBeforeWinExit_);
         }
@@ -275,5 +278,53 @@ namespace ArsLexis
         application().gotoForm(this);
     }
     
+    bool Form::handleFocusTransfer(EventType& event)
+    {
+        if (!application().runningOnTreo600())
+            return false;
+        if (frmInvalidObjectId == focusedControlIndex_)
+            return false;
+        bool left = false;
+        if (fiveWayLeftPressed(&event) || fiveWayUpPressed(&event))
+            left = true;
+        else if (!fiveWayRightPressed(&event) && !fiveWayDownPressed(&event))
+            return false;
+        FormObject object(*this);
+        UInt16 index;
+        if (left)
+        {
+            if (0 == focusedControlIndex_)
+                return false;
+            index = focusedControlIndex_;
+            while (true)
+            {
+                object.attachByIndex(--index);
+                if (object.focusable())
+                    break;
+                if (0 == index)
+                    return false;
+            }
+        }
+        else
+        {
+            const UInt16 objCount = FrmGetNumberOfObjects(form_);
+            if (objCount - 1 == focusedControlIndex_)
+                return false;
+            index = focusedControlIndex_;
+            while (true)
+            {
+                object.attachByIndex(++index);
+                if (object.focusable())
+                    break;
+                if (objCount - 1 == index)
+                    return false;
+            }
+        }
+        assert(object.valid());
+        assert(object.focusable());
+        object.focus();
+        return true;
+    }
+        
 }
 

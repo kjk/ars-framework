@@ -123,6 +123,8 @@ namespace ArsLexis
         
         UInt32 romVersion_;
         
+        bool runningOnTreo600_;
+        
     protected:
         
         /**
@@ -316,6 +318,8 @@ namespace ArsLexis
         {
             appFirstAvailableEvent=firstUserEvent
         };
+        
+        bool runningOnTreo600() const {return runningOnTreo600_;}
 
         friend void logAllocation(void*, size_t, bool, const char*, int);
         friend void processReadyUiEvents();

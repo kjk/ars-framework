@@ -171,7 +171,7 @@ namespace ArsLexis {
         int selection_;
         int topItem_;
         uint_t itemHeight_;
-        uint_t scrollBarWidth_;
+        uint_t scrollBarWidth_; 
         uint_t scrollButtonHeight_;
  
         RGBColorType itemBackground_;

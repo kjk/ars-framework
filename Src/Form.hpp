@@ -20,16 +20,21 @@ namespace ArsLexis
         FiveWay fiveWay_;
         UInt16 id_;
         FormType* form_;
+        
         bool deleteOnClose_:1;
         bool deleteAfterEvent_:1;
         bool controlsAttached_:1;
+        
         mutable String title_;
-        UInt16 focusControlId_;
+        UInt16 entryFocusControlId_;
+        UInt16 focusedControlIndex_;
         RectangleType screenBoundsBeforeWinExit_;
         
         FormGadget* trackingGadget_;
         
         static Boolean routeEventToForm(EventType* event);
+        
+        bool handleFocusTransfer(EventType& event);
         
     protected:
     
@@ -95,7 +100,7 @@ namespace ArsLexis
         
         UInt16 showModal();
         
-        void setFocusControlId(UInt16 focusControlId) {focusControlId_ = focusControlId;}
+        void setFocusControlId(UInt16 focusControlId) {entryFocusControlId_ = focusControlId;}
         
         /**
          * Queues @c frmUpdateEvent for this form.
@@ -173,6 +178,7 @@ namespace ArsLexis
         
         friend class Application;
         friend class FormGadget;
+        friend class FormObject;
     };
     
 }

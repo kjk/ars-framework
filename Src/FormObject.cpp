@@ -1,6 +1,8 @@
 #include <FormObject.hpp>
 #include <Graphics.hpp>
 #include <DeviceInfo.hpp>
+#include <FormGadget.hpp>
+#include <68k/Hs.h>
 
 namespace ArsLexis
 {
@@ -45,8 +47,6 @@ namespace ArsLexis
     {
         assert(frmInvalidObjectId!=index);
         id_=FrmGetObjectId(*form_, index_=index);
-        if (frmGraffitiStateObj != type())
-            assert(frmInvalidObjectId!=id_);
         object_=FrmGetObjectPtr(*form_, index_);
         assert(0!=object_);
     }
@@ -69,16 +69,137 @@ namespace ArsLexis
         setBounds(rect);
     }
     
+    bool FormObject::focusable() const
+    {
+        FormObjectKind kind = type();
+        if (frmFieldObj == kind)
+        {
+            FieldAttrType attr;
+            FldGetAttributes(static_cast<FieldType*>(object_), &attr);
+            return (attr.usable && attr.editable);
+        }
+        if (frmTableObj == kind)
+            return true;
+        bool isTreo = isTreo600();
+        if (isTreo)
+        {
+            if (frmControlObj == kind)
+                return CtlEnabled(static_cast<ControlType*>(object_));
+            if (frmPopupObj == kind)
+                return true;
+        }
+        if (frmGadgetObj == kind)
+        {
+            FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(*form_, index_));
+            assert(NULL != gadget);
+            return gadget->usable();
+        }
+        return false;
+    }
+    
+    void FormObject::hide()
+    {
+        FrmHideObject(*form_, index_);
+        if (frmGadgetObj == type())
+        {
+            FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(*form_, index_));
+            assert(NULL != gadget);
+            gadget->usable_ = false;
+            gadget->visible_ = false;            
+        }
+    }
+
+    void FormObject::show()
+    {
+        FrmShowObject(*form_, index_);
+        if (frmGadgetObj == type())
+        {
+            FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(*form_, index_));
+            assert(NULL != gadget);
+            gadget->usable_ = true;
+            gadget->visible_ = true;            
+        }
+    }
+        
+    
     void FormObject::focus()
     {
+        if (!focusable())
+            return;
         assert(valid());
         if (!valid())
             return;
         FormObjectKind kind = type();
-        if (frmFieldObj == kind || frmTableObj == kind || isTreo600())
-            FrmSetFocus(*form_, index_);
+        bool isTreo = isTreo600();
+        if (frmFieldObj == kind || frmTableObj == kind || frmGadgetObj == kind ||
+            (isTreo && (frmControlObj == kind || frmPopupObj == kind)))
+        {
+            FormGadget* gadget;
+            UInt16 prevIndex = form_->focusedControlIndex_;
+            if (frmInvalidObjectId != form_->focusedControlIndex_ && frmGadgetObj == FrmGetObjectType(form_->form_, form_->focusedControlIndex_))
+            {
+                gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_->form_, form_->focusedControlIndex_));
+                assert(NULL != gadget);
+                gadget->setFocus(false);
+            }
+            if (isTreo)
+            {
+                Err error = HsNavRemoveFocusRing(*form_);
+            }
+            form_->focusedControlIndex_ = index_;
+            if (frmGadgetObj != kind)
+                FrmSetFocus(*form_, index_);
+            else
+            {
+                FrmSetFocus(*form_, noFocus);
+                gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_->form_, index_));
+                assert(NULL != gadget);
+                gadget->setFocus(true);
+            }
+            if (isTreo && frmInvalidObjectId != id_)
+                HsNavObjectTakeFocus(*form_, id_);
+            if (form_->visible())
+                draw();
+        }
     }
-
+    
+    void FormObject::draw()
+    {
+        assert(valid());
+        FormObjectKind kind = type();
+        switch (kind)
+        {
+            case frmFieldObj:
+                FldDrawField(static_cast<FieldType*>(object_));
+                break;
+                
+            case frmControlObj:
+                CtlDrawControl(static_cast<ControlType*>(object_));
+                break;
+                
+            case frmListObj:
+                LstDrawList(static_cast<ListType*>(object_));
+                break;
+                
+            case frmTableObj:
+                TblDrawTable(static_cast<TableType*>(object_));
+                break;
+                
+            case frmGadgetObj: {
+                FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(*form_, index_));
+                assert(NULL != gadget);
+                gadget->drawProxy();
+                break;
+            }
+            
+            case frmScrollBarObj:
+                SclDrawScrollBar(static_cast<ScrollBarType*>(object_));
+                break;
+    
+            default:
+                form_->draw();
+        }        
+    }
     
 #pragma mark -
 
