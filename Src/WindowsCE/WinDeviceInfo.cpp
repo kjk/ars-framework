@@ -27,24 +27,35 @@ namespace ArsLexis
     status_t getSystemParameter(String& out, uint_t param)
     {
         status_t error=ERROR_INSUFFICIENT_BUFFER;
+        
         int buffSize=128;
         TCHAR *buffer= NULL;
 
-        while(error = ERROR_INSUFFICIENT_BUFFER)
+        while(error == ERROR_INSUFFICIENT_BUFFER)
         {
             buffSize*=2;
             delete buffer;
             buffer= new TCHAR[buffSize];
-            memset(&buffer,0,sizeof(buffSize));
-            error = SystemParametersInfo(param, buffSize, buffer, 0);
+            memset(buffer,0,sizeof(buffSize));
+            if (SystemParametersInfo(param, buffSize, buffer, 0))
+                error = errNone;
+            else
+                error = GetLastError();
         }
         
+        /*TCHAR            buffer[128];
+        memset(&buffer,0,sizeof(buffer));
+        if (SystemParametersInfo(SPI_GETOEMINFO, sizeof(buffer), buffer, 0))
+            error = errNone;
+        else
+            error = GetLastError();*/
+    
         if (!error)
             out.append(buffer);
         else
             error = sysErrParamErr;
         
-        delete buffer;
+        //delete buffer;
         return error;                
     }
 
@@ -101,8 +112,10 @@ namespace ArsLexis
         renderDeviceIdentifierToken(out, _T("HS"), getHotSyncName);
         renderDeviceIdentifierToken(out, _T("SN"), getDeviceSerialNumber);
         renderDeviceIdentifierToken(out, _T("PN"), getPhoneNumber);
-        renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
-        renderDeviceIdentifierToken(out, _T("OD"), getOEMDeviceId);
+        //renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
+        //renderDeviceIdentifierToken(out, _T("OD"), getOEMDeviceId);
+        out.append(_T("OC:1234"));
+        //out.append(_T("OD:3456"));
         return out;
     }
 
