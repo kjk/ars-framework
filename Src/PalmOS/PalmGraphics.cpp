@@ -1,6 +1,31 @@
 #include <PalmOS.h>
 #include <Graphics.hpp>
 
+namespace {
+
+static bool useFontScaling()
+{
+    static bool checked = false;
+    static bool useScaling = false;
+    if (!checked)
+    {
+        checked = true;
+        UInt32 val;
+        Err error = FtrGet(sysFtrCreator, sysFtrNumWinVersion, &val);
+        if (errNone != error || 4 > val)
+            return false;
+        
+        error = WinScreenGetAttribute(winScreenDensity, &val);
+        if (errNone != error || kDensityLow == val)
+            return false;
+        
+        useScaling = true;
+    }
+    return useScaling;
+}
+
+}
+
 namespace ArsLexis
 {
 
@@ -10,11 +35,11 @@ namespace ArsLexis
         
     public:
         
-        ScalingSetter(const Graphics& gr):
-            disable_(gr.disableFontScaling_)
+        ScalingSetter(const Graphics& gr)
+        : disable_(gr.disableFontScaling_)
         {
             if (disable_)
-                oldFlags_ = WinSetScalingMode(kTextScalingOff);
+                oldFlags_ = WinSetScalingMode(kTextScalingOff /* | kTextPaddingOff */);
         }
         
         ~ScalingSetter() 
@@ -30,7 +55,10 @@ namespace ArsLexis
         Font_t oldOne = font_;
         font_ = font;
         FontID id = font_.withEffects();
-        disableFontScaling_ = 0 != (id & fontScalingDisabled);
+        bool wantsScaling = 0 != (id & fontScalingDisabled);
+        disableFontScaling_ = useFontScaling() && wantsScaling;
+        if (wantsScaling && !disableFontScaling_)
+            id =stdFont;
         ScalingSetter setScaling(*this);
         FntSetFont(FontID(id & ~fontScalingDisabled));
         effectiveLineHeight_ = lineHeight_ = FntLineHeight();

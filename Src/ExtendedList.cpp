@@ -229,7 +229,9 @@ void ExtendedList::handleDraw(Graphics& graphics)
             Err error=WinScreenGetAttribute(winScreenDensity, &attr);
             if (errNone==error && kDensityDouble==attr)
                 screenIsDoubleDensity_=true;
+
             setDoubleBuffer(true);
+
         }
     }
     Rectangle listBounds;
