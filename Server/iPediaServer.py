@@ -253,11 +253,12 @@ class iPediaProtocol(basic.LineReceiver):
             if not startsWithIgnoreCase(definition, redirectCommand):
                 return defId, term, definition
             else:
-                history.append(term)
+                history.append(term.lower())
                 termStart=definition.find(termStartDelimiter)+2
                 termEnd=definition.find(termEndDelimiter)
                 term=definition[termStart:termEnd].replace('_', ' ')
-                if term in history:
+                print "Resolving term: ", term
+                if term.lower() in history:
                     print "--------------------------------------------------------------------------------"
                     print "WARNING! Circular reference: ", term
                     print "--------------------------------------------------------------------------------"
