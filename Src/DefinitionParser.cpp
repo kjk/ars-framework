@@ -312,84 +312,79 @@ bool DefinitionParser::detectHTMLTag(uint_t end)
 
 bool DefinitionParser::detectHyperlink(uint_t end)
 {
-
-    bool isHyperlink=false;
-    String::size_type linkEndPos=textLine_.find(linkCloseText, textPosition_+1);
-    uint_t linkEnd=(textLine_.npos==linkEndPos?end:linkEndPos);
-    if (linkEnd<end)
+    bool result=false;
+    assert(linkOpenChar==textLine_[textPosition_] || linkCloseChar==textLine_[textPosition_]);
+    if (!insideHyperlink_ && linkOpenChar==textLine_[textPosition_++])
     {
-        isHyperlink=true;
         createTextElement();
-        if (linkOpenChar==textLine_[textPosition_+1] && linkEnd+1<end && linkCloseChar==textLine_[linkEnd+1]) // Is it link to other wikipedia article?
+        insideHyperlink_=true;
+        String::size_type separatorPos;
+        if (linkOpenChar==textLine_[textPosition_])
         {
-            textPosition_+=2;
-            bool isOtherLanguage=(textPosition_<linkEnd-2 && ':'==textLine_[textPosition_+2]);
-            uint_t pastLinkEnd=linkEnd+2;
-            // We don't want other language links as we provide only English contents, and we can't render names in some languages.
-            if (!isOtherLanguage) 
-            {
-                String::size_type separatorPos=textLine_.find(linkPartSeparator, textPosition_);
-                GenericTextElement* textElement;
-                if (textLine_.npos==separatorPos || separatorPos>=linkEnd)
-                {
-                    lastElementStart_=textPosition_;
-                    lastElementEnd_=linkEnd;
-                    textElement=createTextElement();
-                    if (textElement)
-                        textElement->setHyperlink(textElement->text(), hyperlinkTerm);
-                }
-                else
-                {
-                    lastElementStart_=separatorPos+1;
-                    lastElementEnd_=linkEnd;
-                    textElement=createTextElement();
-                    if (textElement)
-                        textElement->setHyperlink(String(textLine_, textPosition_, separatorPos-textPosition_), hyperlinkTerm);
-                }
-                uint_t afterLinkTextEnd=pastLinkEnd;
-                while (afterLinkTextEnd<end && (std::isalpha(textLine_[afterLinkTextEnd]) /* || '-'==textLine_[afterLinkTextEnd] */))
-                    ++afterLinkTextEnd;
-                if (afterLinkTextEnd>pastLinkEnd && textElement)
-                {
-                    String textCopy=textElement->text();
-                    textCopy.append(textLine_, pastLinkEnd, afterLinkTextEnd-pastLinkEnd);
-                    textElement->swapText(textCopy);
-                    pastLinkEnd=afterLinkTextEnd;
-                }
-            }                
-            textPosition_=pastLinkEnd;
-        }
-        else // In case of external link...
-        {
+            hyperlinkType_=hyperlinkTerm;
             ++textPosition_;
-            String::size_type separatorPos=textLine_.find(" ", textPosition_);
-            if (textLine_.npos==separatorPos || separatorPos>=linkEnd)
-            {
+            separatorPos=textLine_.find_first_of("|]", textPosition_);
+        }
+        else
+        {
+            hyperlinkType_=hyperlinkExternal;
+            separatorPos=textLine_.find_first_of(" ]", textPosition_);
+        }
+        bool hasSeparator=true;
+        if (textLine_.npos==separatorPos)
+        {
+            separatorPos=end;
+            hasSeparator=false;
+        }
+        else if (linkCloseChar==textLine_[separatorPos])
+            hasSeparator=false;
+            
+        hyperlinkTarget_.assign(textLine_, textPosition_, separatorPos-textPosition_);
+        
+        if (hasSeparator)
+        {
+            textPosition_=separatorPos+1;
+            while (textPosition_<end && std::isspace(textLine_[textPosition_]))
+                ++textPosition_;
+        }
+        else
+        {
+            if (hyperlinkExternal==hyperlinkType_)             {
+                textPosition_=separatorPos;
                 ++unnamedLinksCount_;
                 char buffer[8];
                 StrPrintF(buffer, "[%hu]", unnamedLinksCount_);
-                lastElementStart_=textPosition_;
-                lastElementEnd_=linkEnd;
-                GenericTextElement* textElement=createTextElement();
-                if (textElement)
-                {
-                    textElement->setHyperlink(textElement->text(), hyperlinkExternal);
-                    String buffStr(buffer);
-                    textElement->swapText(buffStr);
-                }
+                ArsLexis:String hyperlinkTitle=buffer;
+                createTextElement(hyperlinkTitle, 0, hyperlinkTitle.length());
             }
-            else
-            {
-                lastElementStart_=separatorPos+1;
-                lastElementEnd_=linkEnd;
-                GenericTextElement* textElement=createTextElement();
-                if (textElement)
-                    textElement->setHyperlink(String(textLine_, textPosition_, separatorPos-textPosition_), hyperlinkExternal);
-            }
-            textPosition_=linkEnd+1;
         }
+        result=true;
     }
-    return isHyperlink;
+    else if (insideHyperlink_ && linkCloseChar==textLine_[textPosition_])
+    {
+        const uint_t linkEndPos=textPosition_;
+        while (textPosition_<end && linkCloseChar==textLine_[textPosition_])
+            ++textPosition_;
+        const uint_t pastLinkEnd=textPosition_;
+        while (textPosition_<end && std::isalnum(textLine_[textPosition_]))
+            ++textPosition_;
+        if (pastLinkEnd==textPosition_)
+        {
+            lastElementEnd_=linkEndPos;
+            while (lastElementEnd_>lastElementStart_ && std::isspace(lastElementEnd_))
+                --lastElementEnd_;
+            createTextElement();
+        }
+        else 
+        {
+            ArsLexis::String text(textLine_, lastElementStart_, lastElementEnd_-lastElementStart_);
+            text.append(textLine_, pastLinkEnd, textPosition_-pastLinkEnd);
+            createTextElement(text, 0, text.length());
+        }
+        insideHyperlink_=false;
+        result=true;
+    }
+    return result;
 }
 
 namespace {
@@ -413,6 +408,8 @@ void DefinitionParser::parseText(uint_t end, ElementStyle style)
     openSuperscript_=0;
     openSubscript_=0;
     currentStyle_=style;
+    hyperlinkTarget_.clear();
+    insideHyperlink_=false;
 
     if (end<parsePosition_)
         return;
@@ -422,29 +419,20 @@ void DefinitionParser::parseText(uint_t end, ElementStyle style)
         --length;
     textLine_.assign(*text_, parsePosition_, length);
     parsePosition_=end;
-    {   
-        String::iterator it=textLine_.begin();
-        String::iterator end=textLine_.end();
-        while (true)
-        {
-            it=std::find_if(it, end, isNewline);
-            if (it==end)
-                break;
-            else
-                *it=' ';
-        }
-    }        
-    
+
     lastElementStart_=textPosition_=0;
     while (textPosition_<length)
     {
         char chr=textLine_[textPosition_];
+        if (isNewline(chr))
+            chr=textLine_[textPosition_]=' ';
+            
         bool specialChar=false;
         lastElementEnd_=textPosition_;
         if ((htmlTagStart==chr && detectHTMLTag(length)) ||
             (0==openNowiki_ && 
                 ((strongChar==chr && detectStrongTag(length)) ||
-                (linkOpenChar==chr && detectHyperlink(length)))))
+                ((linkOpenChar==chr || linkCloseChar==chr) && detectHyperlink(length)))))
         {
             lastElementStart_=textPosition_;
             specialChar=true;
@@ -472,6 +460,8 @@ GenericTextElement* DefinitionParser::createTextElement(const String& text, Stri
     } 
     appendElement(textElement.get());
     textElement->setStyle(currentStyle_);
+    if (insideHyperlink_)
+        textElement->setHyperlink(hyperlinkTarget_, hyperlinkType_);
     return textElement.release();    
 }
 

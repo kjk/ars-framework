@@ -117,6 +117,10 @@ class DefinitionParser: public ArsLexis::FieldPayloadProtocolConnection::Payload
     ArsLexis::String textLine_;
     uint_t textPosition_;
     
+    ArsLexis::String hyperlinkTarget_;
+    bool insideHyperlink_;
+    HyperlinkType hyperlinkType_;
+    
     void parseText(uint_t end, ElementStyle style);
     
     void parse();

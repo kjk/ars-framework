@@ -9,19 +9,16 @@ namespace ArsLexis
         Font_t oldOne=support_.font;
         support_.font=font;
         FntSetFont(support_.font.withEffects());
-        if (oldOne.withEffects()!=font.withEffects() || 0==support_.effectiveLineHeight)
+        support_.effectiveLineHeight=support_.lineHeight=FntLineHeight();
+        FontEffects fx=support_.font.effects();
+        if (fx.superscript() || fx.subscript())
         {
-            support_.effectiveLineHeight=support_.lineHeight=FntLineHeight();
-            FontEffects fx=support_.font.effects();
-            if (fx.superscript() || fx.subscript())
-            {
-                support_.effectiveLineHeight*=4;
-                support_.effectiveLineHeight/=3;
-            }
-            support_.effectiveBaseline=support_.baseline=FntBaseLine();
-            if (support_.font.effects().superscript())
-                support_.effectiveBaseline+=(support_.lineHeight/3);
+            support_.effectiveLineHeight*=4;
+            support_.effectiveLineHeight/=3;
         }
+        support_.effectiveBaseline=support_.baseline=FntBaseLine();
+        if (support_.font.effects().superscript())
+            support_.effectiveBaseline+=(support_.lineHeight/3);
         return oldOne;
     }
 
