@@ -8,7 +8,7 @@
 #   The idea is that we can use this script to visually inspect how a given
 #   article is being converted by our conversion script.
 #
-#   Currently supports diffing using 
+#   Currently supports diffing using
 #    - windiff (Microsoft tool that can be freely downloaded and usually comes with VisualStudio)
 #    - AraxisMerge : commercial tool
 #    - WinMerge : free, http://winmerge.sourceforge.net/
@@ -49,8 +49,8 @@ g_reformatLongLines = True
 # diffs, not only line-level)
 (DIFF_WINDIFF,DIFF_ARAXIS, DIFF_WINMERGE) = range(3)
 
-#g_DiffTool = DIFF_WINDIFF
-g_DiffTool = DIFF_ARAXIS
+g_DiffTool = DIFF_WINDIFF
+#g_DiffTool = DIFF_ARAXIS
 #g_DiffTool = DIFF_WINMERGE
 
 if g_DiffTool == DIFF_ARAXIS:
@@ -281,7 +281,7 @@ def getRandomArticle(fileName):
     randomArticle = None
     for article in iterArticles(fileName):
         articleNum += 1
-        # How likely is it that this is the last line of the file ? 
+        # How likely is it that this is the last line of the file ?
         # kjk note: I don't get it
         if random.uniform(0,articleNum)<1:
             randomArticle = article
