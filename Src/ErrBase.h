@@ -53,6 +53,9 @@
 #  define appErrorClass 0xe0000000
 #  define errNone NO_ERROR
 #  define sysErrParamErr ERROR_INVALID_DATA
+// The next lines probably will have to be uncommented for portable SocketConnection to work
+// #  define netErrTimeout WSAETIMEDOUT
+// #  define netErrWouldBlock WSAEWOULDBLOCK
 # else
 #  error "Define appErrorClass for your build target."    
 # endif

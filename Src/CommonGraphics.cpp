@@ -9,12 +9,12 @@ namespace ArsLexis
 #pragma pcrelconstdata on
 #endif
     
-        typedef NativeColor_t (Graphics::* ColorSetterMethod_t)(NativeColor_t);
+        typedef Graphics::Color_t (Graphics::* ColorSetterMethod_t)(Graphics::Color_t);
         static ColorSetterMethod_t colorSetters[]={&Graphics::setTextColor, &Graphics::setForegroundColor, &Graphics::setBackgroundColor};
 
     }
     
-    NativeColor_t Graphics::setColor(Graphics::ColorChoice choice, NativeColor_t color)
+    Graphics::Color_t Graphics::setColor(Graphics::ColorChoice choice, Graphics::Color_t color)
     {
         assert(choice<3);
         ColorSetterMethod_t setter=colorSetters[choice];

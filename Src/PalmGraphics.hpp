@@ -1,0 +1,203 @@
+#ifndef __ARSLEXIS_PALM_GRAPHICS_HPP__
+#define __ARSLEXIS_PALM_GRAPHICS_HPP__
+
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
+#include <Geometry.hpp>
+#include <Utility.hpp>
+#include <PalmFont.hpp>
+
+namespace ArsLexis {
+
+    class Graphics: private NonCopyable
+    {
+        WinHandle handle_;        
+        PalmFont font_;
+        uint_t lineHeight_;
+        uint_t effectiveLineHeight_;
+        uint_t baseline_;
+        uint_t effectiveBaseline_;
+
+    public:
+    
+        typedef WinHandle Handle_t;
+        typedef IndexedColorType Color_t;
+        typedef PalmFont Font_t;
+        typedef PalmFont State_t;
+
+        explicit Graphics(const Handle_t& handle=0):
+	        handle_(handle),
+	        lineHeight_(0),
+	        effectiveLineHeight_(0),
+	        baseline_(0),
+	        effectiveBaseline_(0)
+	    {
+	        setFont(FntGetFont());
+	    }
+        
+        /**
+         * Fills specified rectangle with current background color.
+         * @param rect @c Rectangle to erase.
+         */        
+        void erase(const Rectangle& rect)
+        {
+	        RectangleType nr=toNative(rect);
+	        WinEraseRectangle(&nr, 0);
+		}
+	        
+        /**
+         * Copies specified rectangular area (bitmap) from this @c Graphics system into @c targetSystem.
+         * @param sourceArea bounds of source bitmap in this @c Graphics system.
+         */         
+        void copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
+	    {
+	        RectangleType nr=toNative(sourceArea);
+	        WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
+	    }
+        
+        void copyArea(const Rectangle& sourceArea, const Point& targetTopLeft)
+        {copyArea(sourceArea, *this, targetTopLeft);}
+
+        void drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1)
+	    {WinDrawLine(x0, y0, x1, y1);}
+
+        void drawLine(const Point& start, const Point& end)
+        {drawLine(start.x, start.y, end.x, end.y);}
+                
+        Color_t setForegroundColor(Color_t color)
+        {return WinSetForeColor(color);}
+        
+        Color_t setBackgroundColor(Color_t color)
+        {return WinSetBackColor(color);}
+        
+        Color_t setTextColor(Color_t color)
+        {return WinSetTextColor(color);}
+        
+        enum ColorChoice
+        {
+            colorText,
+            colorForeground,
+            colorBackground
+        };
+        
+        Color_t setColor(ColorChoice choice, Color_t color);
+        
+        class ColorSetter: private NonCopyable
+        {
+            Graphics& graphics_;
+            ColorChoice choice_;
+            Color_t originalColor_;
+        public:
+        
+            ColorSetter(Graphics& graphics, ColorChoice choice, Color_t newColor):
+                graphics_(graphics),
+                choice_(choice),
+                originalColor_(graphics_.setColor(choice_, newColor))
+            {}
+            
+            ~ColorSetter()
+            {graphics_.setColor(choice_, originalColor_);}
+            
+            void changeTo(Color_t color)
+            {graphics_.setColor(choice_, color);}
+            
+        };  
+        
+        Font_t setFont(const Font_t& font);
+        
+        Font_t font() const
+        {return font_;}
+        
+        class FontSetter: private NonCopyable
+        {
+            Graphics& graphics_;
+            Font_t originalFont_;
+
+        public:
+        
+            FontSetter(Graphics& graphics, const Font_t& font):
+                graphics_(graphics),
+                originalFont_(graphics_.setFont(font))
+            {}
+            
+            ~FontSetter()
+            {graphics_.setFont(originalFont_);}
+            
+            void changeTo(const Font_t& font)
+            {graphics_.setFont(font);}
+            
+        };
+        
+        State_t pushState()
+        {
+	        WinPushDrawState();
+	        return font_;
+	    }
+
+        void popState(const State_t& state)
+	    {
+	        setFont(state);
+	        WinPopDrawState();
+	    }
+        
+        class StateSaver: private NonCopyable
+        {
+            Graphics& graphics_;
+            State_t state_;
+        public:
+            explicit StateSaver(Graphics& graphics):
+                graphics_(graphics),
+                state_(graphics_.pushState())
+            {}
+            
+            ~StateSaver()
+            {graphics_.popState(state_);}
+        };      
+        
+        uint_t fontHeight() const
+	    {return effectiveLineHeight_;}
+        
+        uint_t fontBaseline() const
+	    {return effectiveBaseline_;}
+        
+        void drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted=false);
+        
+        void drawCenteredText(const char_t* str, const Point& topLeft, uint_t width);
+        
+        uint_t wordWrap(const char_t* text, uint_t width)
+        {return FntWordWrap(text, width);}
+        
+        uint_t textWidth(const char_t* text, uint_t length)
+        {return FntCharsWidth(text, length);}
+        
+        void charsInWidth(const char_t* text, uint_t& length, uint_t& width)
+        {
+	        Int16 w=width;
+	        Int16 len=length;
+	        Boolean dontMind;
+	        FntCharsInWidth(text, &w, &len, &dontMind);
+	        length=len;
+	        width=w;
+		}	        
+        
+        Handle_t handle() 
+        {return handle_;}
+
+    };
+
+    class ActivateGraphics: private NonCopyable
+    {
+        Graphics::Handle_t handle_;
+    public:
+        explicit ActivateGraphics(Graphics& g):
+            handle_(WinSetDrawWindow(g.handle()))
+        {}
+        
+        ~ActivateGraphics()
+        {WinSetDrawWindow(handle_);}
+        
+    };
+    
+}
+
+#endif

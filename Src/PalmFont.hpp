@@ -42,7 +42,7 @@ namespace ArsLexis
         {return symbolFont;}
 
     };
-
+    
 }
 
 #endif

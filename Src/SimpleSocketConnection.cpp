@@ -61,8 +61,7 @@ namespace ArsLexis
                 if (0==dataSize)
                 {   
                     error=notifyFinished();
-                    if (!error)
-                        abortConnection();                        
+                    abortConnection();
                 }
                 else
                 {

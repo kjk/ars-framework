@@ -6,19 +6,19 @@ namespace ArsLexis
 
     Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
     {
-        Font_t oldOne=support_.font;
-        support_.font=font;
-        FntSetFont(support_.font.withEffects());
-        support_.effectiveLineHeight=support_.lineHeight=FntLineHeight();
-        FontEffects fx=support_.font.effects();
+        Font_t oldOne=font_;
+        font_=font;
+        FntSetFont(font_.withEffects());
+        effectiveLineHeight_=lineHeight_=FntLineHeight();
+        FontEffects fx=font_.effects();
         if (fx.superscript() || fx.subscript())
         {
-            support_.effectiveLineHeight*=4;
-            support_.effectiveLineHeight/=3;
+            effectiveLineHeight_*=4;
+            effectiveLineHeight_/=3;
         }
-        support_.effectiveBaseline=support_.baseline=FntBaseLine();
-        if (support_.font.effects().superscript())
-            support_.effectiveBaseline+=(support_.lineHeight/3);
+        effectiveBaseline_=baseline_=FntBaseLine();
+        if (font_.effects().superscript())
+            effectiveBaseline_+=(lineHeight_/3);
         return oldOne;
     }
 
@@ -57,7 +57,7 @@ namespace ArsLexis
         
     void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
     {
-        FontEffects fx=support_.font.effects();    
+        FontEffects fx=font_.effects();    
         PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
         
         uint_t height=fontHeight();
@@ -85,5 +85,6 @@ namespace ArsLexis
             setForegroundColor(color);
         }
     }
+
  
 }

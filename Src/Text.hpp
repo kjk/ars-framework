@@ -88,6 +88,7 @@ namespace ArsLexis
     inline void hexBinEncodeInPlace(String& inOut)
     {inOut=hexBinEncode(inOut);}
     
+   
 }
 
 #endif

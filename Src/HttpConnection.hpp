@@ -98,7 +98,7 @@ namespace ArsLexis {
             uint_t charsRead_;
             
             //! Number of chars to read before we start removing them from start of body.
-            static const uint_t chunkLength=128;
+            static const uint_t chunkLength=256;
             
             String& body() 
             {return connection_.response();}
