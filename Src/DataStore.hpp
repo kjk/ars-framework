@@ -13,14 +13,14 @@ namespace ArsLexis {
 
     class DataStore: private NonCopyable {
     
+        explicit DataStore(const char_t* fileName);
+    
     public:
         
         enum {
             maxStreamNameLength=32,
             maxStreamsCount=32
         };
-        
-        explicit DataStore(File& f);
         
         ~DataStore();
         
@@ -38,6 +38,12 @@ namespace ArsLexis {
             errNameTooLong,
         };            
         
+        static DataStore* instance();
+        
+        static status_t initialize(const char_t* fileName);
+        
+        static void dispose();
+        
     private:
     
         status_t readIndex();
@@ -46,7 +52,8 @@ namespace ArsLexis {
         
         status_t readHeaders();
         
-        File& file_;
+        String fileName_;
+        File file_;
         
         struct StreamHeader {
             String name;

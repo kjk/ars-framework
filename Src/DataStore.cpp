@@ -54,7 +54,7 @@ DataStore::FragmentHeader::FragmentHeader(File::Position s, uint_t o, uint_t l, 
     nextFragment(n)
 {}    
   
-DataStore::DataStore(File& f): file_(f) {}
+DataStore::DataStore(const char_t* fileName): fileName_(fileName) {}
 
 DataStore::~DataStore()
 {
@@ -113,16 +113,32 @@ status_t DataStore::readIndex()
 
 status_t DataStore::open()
 {
-    status_t error = readIndex();
+    status_t error = file_.open(fileName_.c_str(), fileModeUpdate);
     if (errNone != error)
         return error;
+    error = readIndex();
+    if (errNone != error)
+        goto OnError;
     error = readHeaders();
+    if (errNone != error)
+        goto OnError;
+    return errNone;
+OnError:    
+    file_.close();
     return error;
 }
 
 status_t DataStore::create()
 {
-    status_t error = createIndex();
+    status_t error = file_.open(fileName_.c_str(), fileModeUpdate);
+    if (errNone != error)
+        return error;
+    error = createIndex();
+    if (errNone != error)
+        goto OnError;
+    return errNone;
+OnError:    
+    file_.close();
     return error;
 }
 
@@ -159,15 +175,17 @@ status_t DataStore::readHeadersForOwner(const DataStore::StreamHeader& streamHea
 }
 
 status_t DataStore::removeStream(const String& name)
-{
-    StreamHeaders_t::iterator it = streamHeaders_.find(&StreamHeader(name, 0, 0));
+{  
+    StreamHeader sh(name, 0, 0);
+    StreamHeaders_t::iterator it = streamHeaders_.find(&sh);
     if (streamHeaders_.end() == it)
         return errNotFound;
     File::Position pos = (*it)->index*sizeof(StreamIndexEntry);
     status_t error = file_.seek(pos, File::seekFromBeginning);
     if (errNone != error)
         return error;
-    error=file_.write(&StreamIndexEntry(), sizeof(StreamIndexEntry));
+    StreamIndexEntry sie;
+    error=file_.write(&sie, sizeof(sie));
     if (errNone != error)
         return error;
     removeFragments((*it)->firstFragment);
@@ -183,7 +201,8 @@ status_t DataStore::createStream(const String& name, StreamHeader*& header)
     if (maxStreamsCount == streamHeaders_.size())
         return errTooManyStreams;
     StreamHeaders_t::const_iterator end = streamHeaders_.end();
-    if (end != streamHeaders_.find(&StreamHeader(name, 0, 0)))
+    StreamHeader sh(name, 0, 0);
+    if (end != streamHeaders_.find(&sh))
     {
         status_t error = removeStream(name);
         if (errNone != error)
@@ -285,7 +304,8 @@ void DataStore::removeFragments(File::Position start)
 {
     while (invalidFragmentStart != start) 
     {
-        FragmentHeaders_t::iterator it = fragmentHeaders_.find(&FragmentHeader(start, 0, 0, 0));
+        FragmentHeader fh(start, 0, 0, 0);
+        FragmentHeaders_t::iterator it = fragmentHeaders_.find(&fh);
         assert(fragmentHeaders_.end() != it);
         start = (*it)->nextFragment;
         delete *it;
@@ -357,7 +377,8 @@ status_t DataStore::readStream(StreamPosition& position, void* buffer, uint_t& l
 
     if (NULL == position.fragment)
     {
-        FragmentHeaders_t::iterator it = fragmentHeaders_.find(&FragmentHeader(position.stream.firstFragment, 0, 0, 0));
+        FragmentHeader fh(position.stream.firstFragment, 0, 0, 0);
+        FragmentHeaders_t::iterator it = fragmentHeaders_.find(&fh);
         assert(fragmentHeaders_.end() != it);
         position.fragment = *it;
     }
@@ -378,7 +399,8 @@ status_t DataStore::readStream(StreamPosition& position, void* buffer, uint_t& l
             if (invalidFragmentStart == position.fragment->nextFragment)
                 break;
             position.position = 0;
-            FragmentHeaders_t::iterator it = fragmentHeaders_.find(&FragmentHeader(position.fragment->nextFragment, 0, 0, 0));
+            FragmentHeader fh(position.fragment->nextFragment, 0, 0, 0);
+            FragmentHeaders_t::iterator it = fragmentHeaders_.find(&fh);
             assert(fragmentHeaders_.end() != it);
             position.fragment = *it; 
         }
@@ -430,7 +452,8 @@ status_t DataStore::writeStream(StreamPosition& position, const void* buffer, ui
 
 status_t DataStore::findStream(const String& name, StreamHeader*& header)
 {
-    StreamHeaders_t::iterator it = streamHeaders_.find(&StreamHeader(name, 0, 0));
+    StreamHeader sh(name, 0, 0);
+    StreamHeaders_t::iterator it = streamHeaders_.find(&sh);
     if (streamHeaders_.end() == it)
         return errNotFound;
     header = *it;
@@ -542,3 +565,32 @@ status_t DataStoreWriter::flush()
 {
     return errNone;
 }
+
+namespace {
+    static DataStore* store = NULL;
+}
+
+DataStore* DataStore::instance()
+{
+    return store;
+}
+
+status_t DataStore::initialize(const char_t* fileName)
+{
+    assert(NULL == store);
+    std::auto_ptr<DataStore> ds(new DataStore(fileName));
+    status_t error = ds->open();
+    if (errNone != error)
+        error = ds->create();
+    if (errNone != error)
+        return error;
+    store = ds.release();
+    return errNone;
+}
+
+void DataStore::dispose()
+{
+    delete store;
+    store = NULL;
+}
+

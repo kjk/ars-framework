@@ -30,10 +30,10 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
         {
             UniversalDataFormat::Vector_t vec;
             //read values from vector
-            char_t* dataOffset = (char_t*) data;
+            const char_t* dataOffset = data;
             while (data + len > dataOffset)
             {
-                char_t* dataOffsetEnd = dataOffset;
+                const char_t* dataOffsetEnd = dataOffset;
                 while (dataOffsetEnd < data + len && dataOffsetEnd[0] != _T(' '))
                     dataOffsetEnd++;
                 if(errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
