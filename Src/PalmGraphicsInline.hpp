@@ -42,6 +42,17 @@ namespace ArsLexis
         return FntSetFont(font);
     }
 
+    inline Graphics::State_t Graphics::pushState()
+    {
+        WinPushDrawState();
+        return 0;
+    }
+
+    inline void Graphics::popState(Graphics::State_t)
+    {
+        WinPopDrawState();
+    }
+
 }
 
 #endif

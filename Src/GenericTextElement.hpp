@@ -27,9 +27,9 @@ protected:
 
     void calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition=0, bool render=false);
     
-    virtual void applyFormatting(const RenderingPreferences& preferences);
+    virtual void applyFormatting(ArsLexis::Graphics& graphics, const RenderingPreferences& preferences);
     
-    void applyHyperlinkDecorations(const RenderingPreferences& preferences);
+    void applyHyperlinkDecorations(ArsLexis::Graphics& graphics, const RenderingPreferences& preferences);
     
 public:
 

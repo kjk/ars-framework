@@ -27,7 +27,6 @@ class Definition
      * Type used to store @c DefinitonElement objects that represent various parts of definition.
      */
     typedef std::list<DefinitionElement*> Elements_t;
-//    typedef std::list<DefinitionElement*, ArsLexis::Allocator<DefinitionElement*> > Elements_t;
     
     /**
      * @internal
@@ -80,7 +79,6 @@ class Definition
     };
     
     typedef std::vector<LineHeader> Lines_t;
-//    typedef std::vector<LineHeader, ArsLexis::Allocator<LineHeader> > Lines_t;
     typedef Lines_t::iterator LinePosition_t;
     
     /**
@@ -128,7 +126,6 @@ public:
     class HotSpot 
     {
         typedef std::list<ArsLexis::Rectangle> Rectangles_t;
-//        typedef std::list<ArsLexis::Rectangle, ArsLexis::Allocator<ArsLexis::Rectangle> > Rectangles_t;
         
         /**
          * @internal 
@@ -234,7 +231,6 @@ private:
     RenderingPreferences preferences_;
 
     typedef std::list<HotSpot*> HotSpots_t;
-//    typedef std::list<HotSpot*, ArsLexis::Allocator<HotSpot*> > HotSpots_t;
     HotSpots_t hotSpots_;
     
     /**

@@ -10,7 +10,7 @@ class FormattedTextElement: public GenericTextElement
     
 protected:
 
-    void applyFormatting(const RenderingPreferences& preferences);
+    void applyFormatting(ArsLexis::Graphics& graphics, const RenderingPreferences& preferences);
     
 public:
 

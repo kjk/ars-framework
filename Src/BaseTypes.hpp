@@ -13,15 +13,15 @@ namespace ArsLexis
     
 #if defined(_WIN32_WCE)
 
-    typedef wchar_t Char;
+    typedef wchar_t char_t;
 
 #else
     
-    typedef char Char;
+    typedef char char_t;
     
 #endif
 
-    typedef std::basic_string<Char> String;
+    typedef std::basic_string<char_t> String;
 
 }  
 

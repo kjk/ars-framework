@@ -4,14 +4,15 @@
 using ArsLexis::String;
 using ArsLexis::Rectangle;
 using ArsLexis::isWhitespace;
+using ArsLexis::Graphics;
 
-GenericTextElement::HyperlinkProperties::HyperlinkProperties(const ArsLexis::String& res, HyperlinkType t):
+GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
     resource(res),
     hotSpot(0),
     type(t)
 {}
 
-GenericTextElement::GenericTextElement(const ArsLexis::String& text):
+GenericTextElement::GenericTextElement(const String& text):
     text_(text),
     hyperlink_(0),
     style_(styleDefault)
@@ -38,7 +39,7 @@ static uint_t findNextWhitespace(const String& text, uint_t fromPos)
 void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
 {
     assert(!layoutContext.isElementCompleted());
-    applyFormatting(layoutContext.preferences);
+    applyFormatting(layoutContext.graphics, layoutContext.preferences);
     
     uint_t indent=indentation();
     if (layoutContext.usedWidth<indent)
@@ -117,36 +118,34 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
 void GenericTextElement::calculateLayout(LayoutContext& layoutContext)
 {
-    WinPushDrawState();
+    Graphics::StateSaver saveState(layoutContext.graphics);
     calculateOrRender(layoutContext, 0, 0);
-    WinPopDrawState();
 }
 
 void GenericTextElement::render(RenderingContext& renderContext)
 {
-    WinPushDrawState();
+    Graphics::StateSaver saveState(renderContext.graphics);
     calculateOrRender(renderContext, renderContext.left, renderContext.top, &renderContext.definition, true);
-    WinPopDrawState();
 }
 
-void GenericTextElement::applyHyperlinkDecorations(const RenderingPreferences& preferences)
+void GenericTextElement::applyHyperlinkDecorations(Graphics& graphics, const RenderingPreferences& preferences)
 {
     if (isHyperlink())
     {
         const RenderingPreferences::HyperlinkDecoration& decor=preferences.hyperlinkDecoration(hyperlink_->type);
         WinSetUnderlineMode(decor.underlineMode);
-        WinSetTextColor(decor.textColor);
-        WinSetForeColor(decor.textColor);
+        graphics.setTextColor(decor.textColor);
+        graphics.setForegroundColor(decor.textColor);
     }
 }
 
-void GenericTextElement::applyFormatting(const RenderingPreferences& preferences)
+void GenericTextElement::applyFormatting(Graphics& graphics, const RenderingPreferences& preferences)
 {
     const RenderingPreferences::StyleFormatting& format=preferences.styleFormatting(style_);
-    FntSetFont(format.fontId);
-    WinSetTextColor(format.textColor);
-    WinSetForeColor(format.textColor);
-    applyHyperlinkDecorations(preferences);
+    graphics.setFont(format.font);
+    graphics.setTextColor(format.textColor);
+    graphics.setForegroundColor(format.textColor);
+    applyHyperlinkDecorations(graphics, preferences);
 }
 
 void GenericTextElement::invalidateHotSpot()
@@ -155,7 +154,7 @@ void GenericTextElement::invalidateHotSpot()
     hyperlink_->hotSpot=0;
 }
 
-void GenericTextElement::defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds)
+void GenericTextElement::defineHotSpot(Definition& definition, const Rectangle& bounds)
 {
     assert(isHyperlink());
     if (!hyperlink_->hotSpot)
@@ -164,7 +163,7 @@ void GenericTextElement::defineHotSpot(Definition& definition, const ArsLexis::R
         hyperlink_->hotSpot->addRectangle(bounds);
 }       
 
-void GenericTextElement::setHyperlink(const ArsLexis::String& resource, HyperlinkType type)
+void GenericTextElement::setHyperlink(const String& resource, HyperlinkType type)
 {
     if (!isHyperlink())
         hyperlink_=new HyperlinkProperties(resource, type);

@@ -3,6 +3,7 @@
 
 #include "Debug.hpp"
 #include "BaseTypes.hpp"
+#include "Graphics.hpp"
 
 enum HyperlinkType
 {
@@ -49,14 +50,14 @@ public:
     struct HyperlinkDecoration
     {
         UnderlineModeType underlineMode;
-        IndexedColorType textColor;
+        ArsLexis::Graphics::Color_t textColor;
         
         HyperlinkDecoration():
             underlineMode(grayUnderline),
             textColor(UIColorGetTableEntryIndex(UIObjectForeground))
         {}
         
-        HyperlinkDecoration(UnderlineModeType um, IndexedColorType tc):
+        HyperlinkDecoration(UnderlineModeType um, ArsLexis::Graphics::Color_t tc):
             underlineMode(um),
             textColor(tc)
         {}
@@ -70,11 +71,11 @@ public:
     
     struct StyleFormatting
     {
-        FontID fontId;
-        IndexedColorType textColor;
+        ArsLexis::Graphics::Font_t font;
+        ArsLexis::Graphics::Color_t textColor;
         
         StyleFormatting():
-            fontId(stdFont),
+            font(stdFont),
             textColor(UIColorGetTableEntryIndex(UIObjectForeground))
         {}
         

@@ -14,17 +14,15 @@ namespace ArsLexis
     
     #define USE_DEFAULT_NATIVE_GRAPHICS_HANDLE 1    
 
+    typedef int NativeGraphicsState_t;
+
 #elif defined(_WIN32_WCE)
 
     typedef COLORREF NativeColor_t;
 
     typedef HDC NativeGraphicsHandle_t;
     
-    // The following #define and struct are only an example how custom draw state container might be done.
-    #define USE_NATIVE_GRAPHICS_STATE 1
-    struct NativeGraphicsState
-    {
-    };
+    typedef int NativeGraphicsState_t;
     
 }    
 // What we need to do here is to include header implementing HFONT wrapper for Windows CE. 

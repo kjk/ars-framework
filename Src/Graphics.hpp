@@ -10,15 +10,13 @@ namespace ArsLexis
     class Graphics
     {
         NativeGraphicsHandle_t handle_;
-#ifdef USE_NATIVE_GRAPHICS_STATE
-        NativeGraphicsState graphicsState_;
-#endif          
 
     public:
     
         typedef NativeGraphicsHandle_t Handle_t;
         typedef NativeColor_t Color_t;
         typedef NativeFont_t Font_t;
+        typedef NativeGraphicsState_t State_t;
 
         explicit Graphics(const NativeGraphicsHandle_t& handle
 #ifdef USE_DEFAULT_NATIVE_GRAPHICS_HANDLE
@@ -107,6 +105,27 @@ namespace ArsLexis
             {graphics_.setFont(font);}
             
         };
+        
+        Font_t makeBold(Font_t font);
+        Font_t makeItalic(Font_t font);
+        
+        State_t pushState();
+
+        void popState(State_t state);
+        
+        class StateSaver
+        {
+            Graphics& graphics_;
+            State_t state_;
+        public:
+            explicit StateSaver(Graphics& graphics):
+                graphics_(graphics),
+                state_(graphics_.pushState())
+            {}
+            
+            ~StateSaver()
+            {graphics_.popState(state_);}
+        };            
 
     };                    
 

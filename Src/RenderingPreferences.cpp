@@ -2,7 +2,7 @@
 
 RenderingPreferences::RenderingPreferences()
 {
-    styles_[styleHeader].fontId=largeFont;
+    styles_[styleHeader].font=largeFont;
     UInt32 screenDepths=0;
     Boolean color=false;
     Err error=WinScreenMode(winScreenModeGet, NULL, NULL, &screenDepths, &color);

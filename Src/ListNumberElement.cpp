@@ -1,6 +1,7 @@
 #include "ListNumberElement.hpp"
 
 using ArsLexis::String;
+using ArsLexis::char_t;
 
 ListNumberElement::ListNumberElement(uint_t number):
     number_(number),
@@ -10,7 +11,7 @@ ListNumberElement::ListNumberElement(uint_t number):
 void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
 {
     static const uint_t bufferSize=16;    
-    char buffer[bufferSize];
+    char_t buffer[bufferSize];
     // Yeah, everybody know I should use std::stringstream here... But it enlarges code by 12kB and gives a load of warnings of non-inlined functions.
     uint_t wideNumber=8;
     if (totalCount_>=10 && totalCount_<100)

@@ -3,21 +3,6 @@
 namespace ArsLexis 
 {
 
-    FontID getBoldFont(FontID normal)
-    {
-        fontID result=normal;
-        switch (normal)
-        {
-            case stdFont:
-                result=boldFont;
-                break;
-            case largeFont:
-                result=largeBoldFont;
-                break;
-        }
-        return result;
-    }
-
     bool isWhitespace(char chr)
     {
         return chrSpace==chr || chrTab==chr || chrCarriageReturn==chr || chrLineFeed==chr;

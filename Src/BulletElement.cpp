@@ -1,13 +1,16 @@
 #include "BulletElement.hpp"
 
+using ArsLexis::Graphics;
+using ArsLexis::String;
+
 BulletElement::BulletElement():
     childIndentation_(0)
 {}
 
-void BulletElement::applyFormatting(const RenderingPreferences& prefs)
+void BulletElement::applyFormatting(Graphics& graphics, const RenderingPreferences& prefs)
 {
-    GenericTextElement::applyFormatting(prefs);
-    FntSetFont(symbolFont);
+    GenericTextElement::applyFormatting(graphics, prefs);
+    graphics.setFont(symbolFont);
 }
 
 void BulletElement::calculateLayout(LayoutContext& mc)
@@ -26,7 +29,7 @@ void BulletElement::calculateLayout(LayoutContext& mc)
     }
     if (text()[0]!=bullet)
     {
-        ArsLexis::String newBullet;
+        String newBullet;
         newBullet.reserve(3); // Why not 2? Because c_str() will require space for null-terminator anyway.
         newBullet+=bullet;
         newBullet+=symbolShiftNone;
