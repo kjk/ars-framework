@@ -93,9 +93,9 @@ Err iPediaConnection::enqueue()
     String status;
     getResource(connectionStatusStrings, statusStringOpeningConnection, status);
 #else
-	// I don't really see the value of storing strings in resuources (if we don't
-	// have localizations for different languages)
-	String status = "Downloading article"
+    // I don't really see the value of storing strings in resuources (if we don't
+    // have localizations for different languages)
+    String status = "Downloading article"
 #endif
     lookupManager_.setStatusText(status);
     lookupManager_.setPercentProgress(LookupManager::percentProgressDisabled);

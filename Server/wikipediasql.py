@@ -561,7 +561,6 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=
                     print "title after stripping is empty string, so skipping '%s'" % line.strip()
                     continue
                 lineParts = line.split(",")
-                #try:
                 ns = int(lineParts[0])
                 assert ns==NS_MAIN
                 txtOffset = int(lineParts[1])
@@ -569,8 +568,6 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=
                 md5Hash = lineParts[3]
                 viewCount = int(lineParts[4])
                 article = WikipediaArticleFromCache(sqlFileName,title,ns,txtOffset,txtLen,md5Hash,viewCount)
-                #except:
-                #    print "failed to parse as an article for title '%s'" % title
 
             yield article
             count += 1

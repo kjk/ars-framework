@@ -198,7 +198,7 @@ class ConvertedArticleRedirect:
 def convertArticles(sqlDump,articleLimit):
     count = 0
     redirects = {}
-    articlesLinks = {}
+    articleTitles = {}
     fTesting = False
     if fTesting:
         fUseCache = False
@@ -215,8 +215,8 @@ def convertArticles(sqlDump,articleLimit):
         else:
             txt = article.getText()
             links = articleconvert.articleExtractLinks(txt)
-            #articlesLinks[title] = links
-            articlesLinks[title] = 1
+            #articleTitles[title] = links
+            articleTitles[title] = 1
         count += 1
         if 0 == count % 1000:
             sys.stderr.write("processed %d rows, last term=%s\n" % (count,title.strip()))
@@ -224,11 +224,11 @@ def convertArticles(sqlDump,articleLimit):
             break
     # verify redirects
     print "Number of redirects: %d" % len(redirects)
-    print "Number of real articles: %d" % len(articlesLinks)
+    print "Number of real articles: %d" % len(articleTitles)
     unresolvedCount = 0
     setUnresolvedRedirectWriter(sqlDump)
     for (title,redirect) in redirects.items():
-        redirectResolved = resolveRedirect(title,redirect,redirects,articlesLinks)
+        redirectResolved = resolveRedirect(title,redirect,redirects,articleTitles)
         if None == redirectResolved:
             unresolvedCount +=1
             #print "redirect '%s' (to '%s') not resolved" % (title,redirect)
@@ -251,7 +251,7 @@ def convertArticles(sqlDump,articleLimit):
             title = article.getTitle()
             txt = article.getText()
             converted = articleconvert.convertArticle(title,txt)
-            noLinks = articleconvert.removeInvalidLinks(converted,redirects, articlesLinks)
+            noLinks = articleconvert.removeInvalidLinks(converted,redirects,articleTitles)
             if noLinks:
                 converted = noLinks
             convertedArticle = ConvertedArticle(article.getNamespace(), article.getTitle(), converted)

@@ -159,15 +159,21 @@ def fValidLink(link,redirects,articlesLinks):
         return True
     return False
 
+# remove invalid wikipedia links from txt. Invalid link is a link
+# to an article that is not present in articlesLinks or redirects
+# dictionaries
 def removeInvalidLinks(txt,redirects,articlesLinks):
     fModified = False
     while True:
         fLocallyModified = False
         for match in linkRe.finditer(txt):
             link=match.group(1)
+            link=link.replace(' ', '_')
             if fValidLink(link,redirects,articlesLinks):
                 #print "VALID_LINK: '%s'" % link
                 continue
+            #else:
+            #    print "%s-INVALID LINK" % link
             name=match.group(2)
             if None != name:
                 replacement = name[1:]
