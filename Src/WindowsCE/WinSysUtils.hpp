@@ -25,4 +25,7 @@ bool GetSpecialFolderPath(String& pathOut, BOOL fCreate=TRUE);
 int GetScrollBarDx();
 int GetMenuDy();
 
+void  DeinitDataConnection();
+bool  InitDataConnection();
+
 #endif

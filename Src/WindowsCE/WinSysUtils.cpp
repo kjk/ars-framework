@@ -184,16 +184,134 @@ int GetScrollBarDx()
 }
 
 #ifdef WIN32_PLATFORM_PSPC
+int g_menuDy = -1;
 int GetMenuDy()
 {
-    static int menuDy = -1;
-    if (-1==menuDy)
-        menuDy = GetSystemMetrics(SM_CYMENU);
-    return menuDy;
+    if (-1==g_menuDy)
+        g_menuDy = GetSystemMetrics(SM_CYMENU)+3;
+    return g_menuDy;
 }
 #else
 int GetMenuDy()
 {
     return 0;
 }
+#endif
+
+///The following Defines are only on Smartphone and Pocket PC Phone Edition
+#if (WIN32_PLATFORM_PSPC>300 || WIN32_PLATFORM_WFSP )
+
+// those 3 must be in this sequence in order to get IID_DestNetInternet
+// http://www.smartphonedn.com/forums/viewtopic.php?t=360
+#include <objbase.h>
+#include <initguid.h>
+#include <connmgr.h>
+
+typedef HRESULT (*CMGR_CONNECTION_STATUS)(HANDLE hConnection,DWORD *pdwStatus);
+typedef HRESULT (*CMGR_RELEASE_CONN)(HANDLE hConnection,LONG lCache );
+typedef HRESULT (*CMGR_ESTABLISH_CONN)(CONNMGR_CONNECTIONINFO *pConnInfo, HANDLE *phConnection, DWORD dwTimeout, DWORD *pdwStatus);
+
+CMGR_CONNECTION_STATUS  g_hConnMgrConnectionStatus = NULL;
+CMGR_ESTABLISH_CONN     g_hConnMgrEstablishConnectionSync = NULL;
+CMGR_RELEASE_CONN       g_hConnMgrReleaseConnection = NULL;
+
+// It is good practice to load the cellcore.dll dynamically to be able to
+// compile the code even for older platforms
+// Load cellcore.dll dynamically. Return false if couldn't do it
+bool InitCellCore()
+{
+    static bool fInited = false;
+    if (fInited)
+    {
+        if (NULL==g_hConnMgrConnectionStatus)
+            return false;
+        else
+            return true;
+    }
+
+    fInited = true;
+    HINSTANCE   hCellDll = LoadLibrary(TEXT("cellcore.dll"));
+    if (NULL==hCellDll)
+        return false;
+
+    DWORD lastError;
+    SetLastError(0);
+    // We need the Status and a call to establish the 
+    // connection
+    g_hConnMgrConnectionStatus = (CMGR_CONNECTION_STATUS)GetProcAddress(hCellDll,TEXT("ConnMgrConnectionStatus")); 
+    // The next line is just for debugging. You will have
+    // to decide what you want to do if this call fails
+    lastError = GetLastError();
+    if (0!=lastError)
+        goto WasError;
+    g_hConnMgrEstablishConnectionSync = (CMGR_ESTABLISH_CONN)GetProcAddress(hCellDll,TEXT("ConnMgrEstablishConnectionSync")); 
+    lastError = GetLastError();
+    if (0!=lastError)
+        goto WasError;
+    g_hConnMgrReleaseConnection = (CMGR_RELEASE_CONN)GetProcAddress(hCellDll,TEXT("ConnMgrReleaseConnection")); 
+    lastError = GetLastError();
+    if (0!=lastError)
+        goto WasError;
+    return true;
+WasError:
+    g_hConnMgrConnectionStatus = NULL;
+    g_hConnMgrEstablishConnectionSync = NULL;
+    g_hConnMgrReleaseConnection = NULL;
+
+    return false;
+}
+
+static HANDLE g_hConnection = NULL;
+
+// try to establish internet connection.
+// If can't (e.g. because tcp/ip stack is not working), display a dialog box
+// informing about that and return false
+// Return true if established connection.
+// Can be called multiple times - will do nothing if connection is already established.
+bool InitDataConnection()
+{
+    if (NULL!=g_hConnection)
+        return true;
+
+    if (!InitCellCore())
+    {
+        // if we can't open cellcore.dll then it means it doesn't exist
+        // which means that we don't have to use ConnMgr* calls
+        // which means that we report success to the caller
+        return true;
+    }
+
+    CONNMGR_CONNECTIONINFO ccInfo = {0};
+    ccInfo.cbSize      = sizeof(ccInfo);
+    ccInfo.dwParams    = CONNMGR_PARAM_GUIDDESTNET;
+    ccInfo.dwFlags     = CONNMGR_FLAG_PROXY_HTTP;
+    ccInfo.dwPriority  = CONNMGR_PRIORITY_USERINTERACTIVE;
+    ccInfo.guidDestNet = IID_DestNetInternet;
+    
+    DWORD dwStatus  = 0;
+    DWORD dwTimeout = 5000;     // connection timeout: 5 seconds
+    HRESULT res = (*g_hConnMgrEstablishConnectionSync)(&ccInfo, &g_hConnection, dwTimeout, &dwStatus);
+
+    if (FAILED(res))
+    {
+        assert(NULL==g_hConnection);
+        g_hConnection = NULL;
+    }
+
+    if (NULL==g_hConnection)
+        return false;
+    else
+        return true;
+}
+
+void DeinitDataConnection()
+{
+    if (NULL != g_hConnection)
+    {
+        (*g_hConnMgrReleaseConnection)(g_hConnection,1);
+        g_hConnection = NULL;
+    }
+}
+#else
+#error "wrong SDK"
 #endif
