@@ -2,6 +2,7 @@
 #include <FormObject.hpp>
 #include "iPediaApplication.hpp"
 #include "LookupManager.hpp"
+#include <SysUtils.hpp>
 
 using namespace ArsLexis;
 
@@ -695,6 +696,21 @@ void MainForm::search(bool fullText)
         lookupManager->search(term);
 }
 
+MainForm::RenderingProgressReporter::RenderingProgressReporter(MainForm& form):
+    form_(form),
+    ticksAtStart_(0),
+    lastPercent_(-1),
+    showProgress_(false),
+    afterTrigger_(false)
+{
+
+    Err error=ArsLexis::getResource(layoutProgressWaitText, waitText_);
+    if (error || waitText_.empty())
+        waitText_.assign("%d%%");
+    waitText_.c_str(); // We don't want reallocation to occur while rendering...
+}
+        
+
 void MainForm::RenderingProgressReporter::reportProgress(uint_t percent) 
 {
     if (percent==lastPercent_)
@@ -708,7 +724,8 @@ void MainForm::RenderingProgressReporter::reportProgress(uint_t percent)
         return;
     }
     
-    if (!afterTrigger_)    {
+    if (!afterTrigger_)
+    {
         // Delay before we start displaying progress meter in milliseconds. Timespans < 300ms are typically perceived "instant"
         // So we shouldn't distract user if the time is short enough.
         static const uint_t delay=100; 
@@ -722,7 +739,8 @@ void MainForm::RenderingProgressReporter::reportProgress(uint_t percent)
             showProgress_=true;
     }
     
-    if (!showProgress_)        return;
+    if (!showProgress_)
+        return;
         
     Graphics graphics(form_.windowHandle());
     Rectangle bounds=form_.bounds();
@@ -735,7 +753,8 @@ void MainForm::RenderingProgressReporter::reportProgress(uint_t percent)
     graphics.erase(rect);
 
     char buffer[100];
-    StrPrintF(buffer, "Wait... %d%%", percent);
+    StrPrintF(buffer, waitText_.c_str(), percent);
+
     WinHandle wh=WinSetDrawWindow(form_.windowHandle());
     graphics.drawCenteredText(buffer, rect.topLeft, rect.width());
     WinSetDrawWindow(wh);

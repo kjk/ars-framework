@@ -62,17 +62,11 @@ class MainForm: public iPediaForm
         uint_t lastPercent_;
         bool showProgress_:1;
         bool afterTrigger_:1;
-        
+        ArsLexis::String waitText_;
         
     public:
         
-        RenderingProgressReporter(MainForm& form):
-            form_(form),
-            ticksAtStart_(0),
-            lastPercent_(-1),
-            showProgress_(false),
-            afterTrigger_(false)
-        {}
+        RenderingProgressReporter(MainForm& form);
         
         virtual void reportProgress(uint_t percent);
                 

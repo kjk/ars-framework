@@ -1,4 +1,5 @@
 /* pilrc generated file.  Do not edit!*/
+#define layoutProgressWaitText 1054
 #define connectionStatusStrings 1053
 #define cancelSearchMenuItem 1052
 #define refineSearchMenuItem 1051

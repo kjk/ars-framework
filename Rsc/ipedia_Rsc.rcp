@@ -258,3 +258,6 @@ END
 
 STRINGTABLE ID connectionStatusStrings  "" "Resolving host address..." "Opening connection..." "Sending request..." "Waiting for server\'s answer..." "Retrieving response..."  
 
+
+
+STRING ID layoutProgressWaitText "Wait... %d%%"             
