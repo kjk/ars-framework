@@ -45,14 +45,6 @@ public:
         fontHeight_ = 11;
         handle_ = getFont(fontHeight_, effects_);
     }
-
-    // this one is for backwards compat with iNoah
-    WinFont(HFONT handle)
-    {
-		// TODO: not necessarily true
-		fontHeight_ = 11;
-        handle_ = handle;
-    }
         
     WinFont(int height)
     {
