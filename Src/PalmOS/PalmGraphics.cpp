@@ -236,12 +236,15 @@ uint_t Graphics::wordWrap(const char_t* text, uint_t width)
 
 void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
 {
-    DefinitionStyle s = *getStaticStyle(styleIndexDefault);
+    const DefinitionStyle* def = getStaticStyle(styleIndexDefault);
+    DefinitionStyle s = *def;
+
     if (isHyperlink)
         s |= *getStaticStyle(styleIndexHyperlink);
-    if (NULL != style)
+
+    if (NULL != style && def != style)
         s |= *style;
-        
+
     FontEffects fx;
     fx.setItalic(s.yes == s.italic);
     fx.setSmall(s.yes == s.small);

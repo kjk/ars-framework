@@ -298,8 +298,11 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
 
         Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
+
+        Graphics::State_t state = graphics.pushState();
+        graphics.applyStyle(getStaticStyle(styleIndexDefault), false);
         
-        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
+//        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
         
         if (delta>0) 
         {
@@ -323,6 +326,9 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
             moveHotSpots(pointDelta);
             renderLineRange(graphics, prefs, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
         }
+        
+        graphics.popState(state);
+        
         firstLine_ = newFirstLine;
         lastLine_ = newLastLine;
     }
@@ -626,13 +632,19 @@ status_t Definition::render(Graphics& graphics, const Rectangle& bounds, const R
  
 void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t begin, ElementPosition_t end)
 {
-    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
+    Graphics::State_t state = graphics.pushState();
+    graphics.applyStyle(getStaticStyle(styleIndexDefault), false);
+    
+//    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
+
     renderLineRange(graphics, prefs, lines_.begin() + firstLine_, lines_.begin() + lastLine_, 0, begin, end);
     uint_t rangeHeight = 0;
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;
     if (elements_.end() == begin)
         graphics.erase(Rectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
+        
+    graphics.popState(state);
 }
 
 // if there is selection, copy selection to text. Otherwise, copy
@@ -779,15 +791,18 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
         }
         else 
         {
-            selectionStartProgress_ = LayoutContext::progressCompleted;
             ElementPosition_t elem = inactiveSelectionStartElement_;
-            selectionStartElement_  = selectionEndElement_ = elements_.end();
-            renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
-            inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
-            trackingSelection_ = false;
-            selectionIsHyperlink_ = false;
             if (insideHyperlink)
                 (*elem)->performAction(*this, &point);
+            else
+            {
+                selectionStartProgress_ = LayoutContext::progressCompleted;
+                selectionStartElement_  = selectionEndElement_ = elements_.end();
+                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+                inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+                trackingSelection_ = false;
+                selectionIsHyperlink_ = false;
+            }
         }
         return true;
     }
@@ -873,13 +888,14 @@ void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphi
     if (elements_.end() != end)
         ++end;
 
-
-    selectionStartElement_ = selectionEndElement_ = elements_.end();
-    selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
-    renderElementRange(graphics, prefs, start, end);
-    
     if (inside)
         selectionClickHandler(point, text, selectionClickHandlerContext);
+    else
+    {
+        selectionStartElement_ = selectionEndElement_ = elements_.end();
+        selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
+        renderElementRange(graphics, prefs, start, end);
+    }
 }
 
 
@@ -1039,12 +1055,13 @@ bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& pr
                 if (!selectionIsHyperlink_)
                     return false;
                 assert(inactiveSelectionStartElement_ != elements_.end());
+/*                
                 selectionIsHyperlink_ = false;
                 trackingSelection_ = false;
                 selectionStartElement_ = selectionEndElement_ = elements_.end();
                 selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
                 renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
-                
+   */             
                 {
                     Point center;
                     DefinitionElement* elem = (*inactiveSelectionStartElement_);
@@ -1055,7 +1072,7 @@ bool Definition::navigatorKey(Graphics& graphics, const RenderingPreferences& pr
                         elem->performAction(*this, NULL);
                 }
                 
-                inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+//                inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
                 return true;
             
         }
