@@ -82,8 +82,14 @@ namespace ArsLexis
         
         bool handleScrollRepeat(const EventType& event);
         
+        bool handleKeyDownEvent(const EventType& event);
+
     protected:
     
+        void drawFocusRing();
+    
+        void removeFocusRing();
+
         void drawProxy();
 
         void handleDraw(Graphics& graphics);

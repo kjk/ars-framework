@@ -82,7 +82,6 @@ Definition::Definition():
     selectionStartProgress_(LayoutContext::progressCompleted),
     selectionEndProgress_(LayoutContext::progressCompleted),
     trackingSelection_(false),
-    selectedHotSpot_(0),
     renderingProgressReporter_(0),
     interactionBehavior_(0),
     selectionIsHyperlink_(false)
@@ -111,7 +110,6 @@ void Definition::clearHotSpots()
 {
     std::for_each(hotSpots_.begin(), hotSpots_.end(), ObjectDeleter<HotSpot>());
     hotSpots_.clear();
-    selectedHotSpot_=0;
 }
 
 void Definition::clearLines()
@@ -581,62 +579,80 @@ static bool hyperlinksEqual(const DefinitionElement* e1, const DefinitionElement
     return true;
 }
 
+static bool insideHotSpot(const Point& p, Definition::ElementPosition_t begin, Definition::ElementPosition_t end)
+{
+    while (begin != end)
+    {
+        assert((*begin)->isTextElement());
+        GenericTextElement* textElem = static_cast<GenericTextElement*>(*begin);
+        const GenericTextElement::HyperlinkProperties* props = textElem->hyperlinkProperties();
+        assert(NULL != props);
+        const Definition::HotSpot* hotSpot = props->hotSpot;
+        assert(NULL != hotSpot);
+        if (hotSpot->hitTest(p))
+            return true;
+        ++begin;
+    }
+    return false;
+}
+
 bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount) 
 {
-    if (trackingSelection_ && NULL == selectedHotSpot_)
+    if (trackingSelection_ && !selectionIsHyperlink_)
         return false;
-    if (NULL != selectedHotSpot_) 
+    if (selectionIsHyperlink_) 
     {
         assert(trackingSelection_);
         assert(selectionEndProgress_ == LayoutContext::progressCompleted);
-        bool insideHyperlink = selectedHotSpot_->hitTest(point);
+        bool insideHyperlink = insideHotSpot(point, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
         if (0 == clickCount) 
         {
             if (!insideHyperlink && selectionStartProgress_ != selectionEndProgress_)
             {
                 selectionStartProgress_ = LayoutContext::progressCompleted;
-                renderSingleElement(graphics, prefs, selectionStartElement_);
+                selectionStartElement_ = selectionEndElement_;
+                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             }
             else if (insideHyperlink && selectionStartProgress_ == selectionEndProgress_)
             {
                 selectionStartProgress_ =  0;
-                renderSingleElement(graphics, prefs, selectionStartElement_);
+                selectionStartElement_ = inactiveSelectionStartElement_;
+                renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             }
         }
         else 
         {
             selectionStartProgress_ = LayoutContext::progressCompleted;
-            ElementPosition_t elem = selectionStartElement_;
+            ElementPosition_t elem = inactiveSelectionStartElement_;
             selectionStartElement_  = selectionEndElement_ = elements_.end();
+            renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+            inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
             trackingSelection_ = false;
             selectionIsHyperlink_ = false;
-            renderSingleElement(graphics, prefs, elem);
             if (insideHyperlink)
-                selectedHotSpot_->element().performAction(*this);
-            selectedHotSpot_ = NULL;
+                (*elem)->performAction(*this);
         }
         return true;
     }
     else 
     {
+        HotSpot* hotSpot = NULL;
         HotSpots_t::const_iterator end=hotSpots_.end();
         for (HotSpots_t::const_iterator it=hotSpots_.begin(); it!=end; ++it)
         {
             if ((*it)->hitTest(point))
             {
-                selectedHotSpot_ = (*it);
+                hotSpot = (*it);
                 break;
             }
         }
-        if (NULL != selectedHotSpot_)
+        if (NULL != hotSpot)
         {
             trackingSelection_ = true;
             selectionIsHyperlink_ = true;
             selectionStartProgress_ = 0;
             selectionEndProgress_ = LayoutContext::progressCompleted;
-            selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &selectedHotSpot_->element());
-            renderSingleElement(graphics, prefs, selectionStartElement_);
-/*            
+            selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &hotSpot->element());
             ElementPosition_t pos = selectionStartElement_;
             while (true)
             {
@@ -656,11 +672,11 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
                 if (!hyperlinksEqual(*pos, *selectionEndElement_))
                     break;
                 selectionEndElement_ = pos;
-                renderSingleElement(graphics, prefs, *(*pos));
             }
             inactiveSelectionStartElement_ = selectionStartElement_;
             inactiveSelectionEndElement_ = selectionEndElement_;
-*/
+            ++inactiveSelectionEndElement_;
+            renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             return true;
         }
         return false;
@@ -800,7 +816,7 @@ void Definition::replaceElements(Elements_t& elements)
         inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
     selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
     trackingSelection_ = false;
-    selectedHotSpot_ = NULL;
+    selectionIsHyperlink_ = false;
 }
 
 bool Definition::mouseDown(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point)
@@ -825,4 +841,9 @@ bool Definition::mouseDrag(ArsLexis::Graphics& graphics, const RenderingPreferen
 
 Definition::HyperlinkHandler::~HyperlinkHandler()
 {}
+
+bool Definition::navigatorKey(NavigatorKey navKey)
+{
+    return false;
+}
 

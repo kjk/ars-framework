@@ -1,5 +1,6 @@
 #include <TextRenderer.hpp>
 #include <Application.hpp>
+#include <68k/Hs.h>
 
 using namespace ArsLexis;
 
@@ -256,3 +257,39 @@ void TextRenderer::handleNilEvent()
     if (NULL != scrollBar_)
         doUpdateScrollbar();
 }
+
+bool TextRenderer::handleKeyDownEvent(const EventType& event)
+{
+    Definition::NavigatorKey key = Definition::NavigatorKey(-1);
+    Form& form = *this->form();
+    if (form.fiveWayUpPressed(&event))
+        key = Definition::navKeyUp;
+    else if (form.fiveWayDownPressed(&event))
+        key = Definition::navKeyDown;
+    else if (form.fiveWayLeftPressed(&event))
+        key = Definition::navKeyLeft;
+    else if (form.fiveWayRightPressed(&event))
+        key = Definition::navKeyRight;
+    else if (form.fiveWayCenterPressed(&event))
+        key = Definition::navKeyCenter;
+    if (Definition::NavigatorKey(-1) != key)
+        return definition_.navigatorKey(key);
+    return false;
+}
+
+void TextRenderer::drawFocusRing()
+{
+    assert(hasFocus());
+    assert(form()->application().runningOnTreo600());
+    RectangleType rect;
+    FrmGetObjectBounds(*form(), index(), &rect);
+    Err error = HsNavDrawFocusRing(*form(), id(), hsNavFocusRingNoExtraInfo, &rect, hsNavFocusRingStyleSquare, false);
+    assert(errNone == error);
+}
+
+void TextRenderer::removeFocusRing()
+{
+    assert(form()->application().runningOnTreo600());
+    HsNavRemoveFocusRing(*form());
+}
+

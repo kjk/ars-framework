@@ -341,7 +341,6 @@ private:
     uint_t selectionStartProgress_;
     uint_t selectionEndProgress_;
     bool trackingSelection_;
-    HotSpot* selectedHotSpot_;
     RenderingProgressReporter* renderingProgressReporter_; 
     uint_t interactionBehavior_;
     
