@@ -39,7 +39,7 @@ namespace ArsLexis
         {
             registerEvent(SocketSelector::eventRead);
             requestBytesSent_+=dataSize;
-            if (requestBytesSent_==requestSize)
+            if (requestBytesSent_ == requestSize)
             {
                 sending_=false;
 /*                
@@ -64,7 +64,7 @@ namespace ArsLexis
             log().debug()<<_T("notifyReadable(): called while sending data, probably some connection error occured");
         status_t status=errNone;
         status_t error=getSocketErrorStatus(status);
-        if (errNone==error)
+        if (errNone == error)
             error=status;
         else {
             log().info()<<_T("notifyReadable(): getSocketErrorStatus() returned error (ignored): ")<<error;
@@ -84,13 +84,11 @@ namespace ArsLexis
             if (errNone!=error)
                 goto Exit;
             totalReceived_+=dataSize;
-            if (dataSize!=chunkSize_)
-                log().info()<<_T("notifyReadable(): dataSize!=chunkSize_; totalReceived: ")<<totalReceived_<<_T("; dataSize: ")<<dataSize;
             assert(dataSize<=chunkSize_);
             resizeResponse(responseSize+dataSize);
-            if (0==dataSize)
+            if (chunkSize_ != dataSize)
             {   
-                log().info()<<_T("notifyReadable(): dataSize==0 (server shut socket down?)");
+                log().info()<<_T("notifyReadable(): dataSize != chunkSize_ (server shut socket down?)");
                 error=notifyFinished();
                 abortConnection();
             }

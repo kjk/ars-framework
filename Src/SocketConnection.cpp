@@ -122,7 +122,7 @@ namespace ArsLexis
             return errNone;
             
         status_t error=selector_.select(timeout);
-        if (error)
+        if (errNone != error)
             return error;
             
         Connections_t::iterator end=connections_.end();
