@@ -182,15 +182,8 @@ namespace ArsLexis
     ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsigned int comma = 0, ArsLexis::char_t commaSymbol = _T('.'), ArsLexis::char_t kSeparator = _T(','));
     
     uint_t fuzzyTimeInterval(ulong_t seconds, char_t* buffer);
-    
+
+    int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo);
+
 }
-
-/*
-These below are redundant - MSL has implementation of both memmove and memcpy.    
-#ifdef _PALM_OS
-void memmove(char *dst, char *src, int len);
-#define memcpy memmove
-#endif
-*/
-
 #endif

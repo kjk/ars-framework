@@ -748,25 +748,24 @@ Done:
     return res;
 }
 
+// compare two version numbers as returned by Latest-Client-Version
+// an assumption is that it's of the form X.Y.
+// return 0 if version numbers are equal, > 0 if verNumOne is > than verNumTwo
+// and < 0 if verNumOne is < verNumTwo
+int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
+{
+    double verNumOneDbl;
+    double verNumTwoDbl;
+
+    strToDouble(verNumOne, &verNumOneDbl);
+    strToDouble(verNumTwo, &verNumTwoDbl);
+
+    if (verNumOneDbl==verNumTwoDbl)
+        return 0;
+    if (verNumOneDbl > verNumTwoDbl)
+        return 1;
+    return -1;
+}
 
 } // namespace ArsLexis
 
-/*
-#ifdef _PALM_OS
-void memmove(char *dst, char *src, int len)
-{
-    int i;
-    if(dst > src)
-    {
-        for(i=len-1;i>=0;i--)
-            dst[i] = src[i];   
-    }
-    else
-    if(dst < src)
-    {
-        for(i=0;i<len;i++)
-            dst[i] = src[i];    
-    }
-}
-#endif //_PALM_OS
-*/
