@@ -25,13 +25,11 @@ namespace ArsLexis
         delete payloadHandler_;
     }
 
-    void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler, uint_t length)
+    void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler, ulong_t length)
     {
         delete payloadHandler_;
-        payloadStart_=responsePosition_;
-        payloadLength_=length;
+        payloadLengthLeft_=payloadLength_=length;
         payloadHandler_=payloadHandler;
-        payloadHandler_->initialize(response(), payloadStart_);
     }
 
     Err FieldPayloadProtocolConnection::notifyProgress()
@@ -46,42 +44,44 @@ namespace ArsLexis
     {
         bool goOn=false;
         Err error=errNone;
-        const String& resp=response();
+        String& resp=response();
         do 
         {
-            if (0==payloadHandler_)
+            if (!inPayload())
             {
-                String::size_type end=resp.find(lineSeparator, responsePosition_);
+                String::size_type end=resp.find(lineSeparator);
                 goOn=(resp.npos!=end);
                 if (finish || goOn)
                 {
                     if (!goOn)
                         end=resp.length();
                     error=processLine(end);
+                    response().erase(0, end+1);
                 }
             }
             else
             {
-                if (resp.length()-payloadStart_>=payloadLength_+lineSeparatorLength)
+                ulong_t length=std::min<ulong_t>(payloadLengthLeft_, resp.length());
+                if (resp.length()>=payloadLengthLeft_+lineSeparatorLength)
                 {
-                    if (responsePosition_<payloadStart_+payloadLength_)
+                    if (length>0)
+                        error=payloadHandler_->handleIncrement(resp, length, true);
+                    if (!error)
                     {
-                        if (errNone==(error=payloadHandler_->handleIncrement(payloadStart_+payloadLength_, true)))
-                        {
-                            notifyPayloadFinished();
-                            responsePosition_=payloadStart_+payloadLength_+lineSeparatorLength;
-                            goOn=true;
-                        }
-                    }
+                        notifyPayloadFinished();
+                        resp.erase(0, payloadLengthLeft_+lineSeparatorLength);
+                        goOn=true;
+                    }                        
                 }
                 else
                 {
-                    bool finishPayload=(resp.length()-payloadStart_>=payloadLength_);
-                    if (errNone==(error=payloadHandler_->handleIncrement(resp.length(), finishPayload)))
+                    bool finishPayload=(resp.length()>=payloadLengthLeft_);
+                    if (errNone==(error=payloadHandler_->handleIncrement(resp, length, finishPayload)))
                     {
                         if (finishPayload)
                             notifyPayloadFinished();
-                        responsePosition_=resp.length();
+                        resp.erase(0, length);
+                        payloadLengthLeft_-=length;
                     }                            
                     goOn=false;
                 }
@@ -94,16 +94,15 @@ namespace ArsLexis
     {
         String name, value;
         const String& resp=response();
-        String::size_type separatorPos=resp.find(fieldSeparator, responsePosition_);
+        String::size_type separatorPos=resp.find(fieldSeparator);
         if (resp.npos!=separatorPos && separatorPos<lineEnd)
         {
-            name.assign(resp, responsePosition_, separatorPos-responsePosition_);
+            name.assign(resp, 0, separatorPos);
             separatorPos+=fieldSeparatorLength;
             value.assign(resp, separatorPos, lineEnd-separatorPos);
         }
         else
-            name.assign(resp, responsePosition_, lineEnd-responsePosition_);
-        responsePosition_=lineEnd+lineSeparatorLength;
+            name.assign(resp, 0, lineEnd);
         return (name.length()?handleField(name, value):errNone);
     }
     

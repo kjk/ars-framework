@@ -24,30 +24,21 @@ class iPediaConnection: public ArsLexis::FieldPayloadProtocolConnection
         statusStringRetrievingResponse
     };        
     
-    class SearchResultsHandler: public FieldPayloadProtocolConnection::PayloadHandler
+    class SearchResultsHandler: public PayloadHandler
     {
-        const ArsLexis::String* text_;
         ArsLexis::String searchResults_;
-        uint_t startOffset_;
 
     public:
 
-        SearchResultsHandler():
-            text_(0),
-            startOffset_(0)
+        SearchResultsHandler()
         {}
         
-        void initialize(const ArsLexis::String& payload, uint_t startOffset)
+        Err handleIncrement(const ArsLexis::String& text, ulong_t& length, bool finish)
         {
-            text_=&payload;
-            startOffset_=startOffset;
-        }
-                
-        Err handleIncrement(uint_t incrementEnd, bool finish)
-        {
-            assert(text_!=0);
             if (finish)
-                searchResults_.assign(*text_, startOffset_, incrementEnd-startOffset_);
+                searchResults_.assign(text, 0, length);
+            else
+                length=0;                
             return errNone;
         }
         

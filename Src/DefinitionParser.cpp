@@ -634,18 +634,18 @@ void DefinitionParser::parseTextLine()
     parseText(lineEnd_, styleDefault);                
 }
 
-Err DefinitionParser::handleIncrement(uint_t end, bool finish)
+Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool finish)
 {
-    assert(text_!=0);
-    if (!text_)
-        return sysErrParamErr;
+    text_=&text;
+    parsePosition_=0;
+    lineEnd_=0;
     bool goOn=false;
     do 
     {
 #ifndef NDEBUG    
         const char* text=text_->data()+parsePosition_;
 #endif        
-        goOn=detectNextLine(end, finish);
+        goOn=detectNextLine(length, finish);
         if (goOn || finish)
         {
             if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_)
@@ -697,6 +697,8 @@ Err DefinitionParser::handleIncrement(uint_t end, bool finish)
         assert(numListsStack_.empty());
         assert(currentNumberedList_.empty());            
     }
+    if (!finish)
+        length=parsePosition_;
     return errNone; // Since in wikipedia anybody may enter anything he likes, complaining about definition formatting would be inappropriate.
 }
 

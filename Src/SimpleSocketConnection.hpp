@@ -32,15 +32,15 @@ namespace ArsLexis
         void setRequest(const String& request)
         {request_=request;}
         
+        String& response()
+        {return response_;}
+        
     public:
 
         SimpleSocketConnection(SocketConnectionManager& manager);
         
         ~SimpleSocketConnection();
         
-        const String& response() const
-        {return response_;}
-
         void setMaxResponseSize(UInt16 size)
         {maxResponseSize_=size;}
         
@@ -50,7 +50,11 @@ namespace ArsLexis
         bool sending() const
         {return sending_;}
     
+        const String& response() const
+        {return response_;}
+        
     };
+    
 }
 
 #endif

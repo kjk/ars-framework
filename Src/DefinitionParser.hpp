@@ -173,13 +173,7 @@ public:
 
     DefinitionParser();
     
-    void initialize(const ArsLexis::String& text, uint_t startOffset)
-    {
-        text_=&text;
-        lastElementEnd_=lastElementStart_=parsePosition_=startOffset;
-    }
-
-    Err handleIncrement(uint_t end, bool finish=false);
+    Err handleIncrement(const ArsLexis::String& text, ulong_t& length, bool finish=false);
     
     void updateDefinition(Definition& definition);
     

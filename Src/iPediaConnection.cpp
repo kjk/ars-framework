@@ -71,8 +71,7 @@ void iPediaConnection::prepareRequest()
     if (getRandom_)
     {
         assert(term_.empty());
-        request+=getRandomDefField;
-        request+=":\n";
+        appendField(request, getRandomDefField);
     }
     request+='\n';
     setRequest(request); 
@@ -103,7 +102,7 @@ Err iPediaConnection::notifyProgress()
         lookupManager_.setStatusText(status);
         uint_t progress=LookupManager::percentProgressDisabled;
         if (inPayload())
-            progress=(payloadPosition()*100L)/payloadLength();
+            progress=((payloadLength()-payloadLengthLeft())*100L)/payloadLength();
         lookupManager_.setPercentProgress(progress);
         Application::sendEvent(iPediaApplication::appLookupProgressEvent);
     }

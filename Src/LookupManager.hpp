@@ -78,7 +78,7 @@ public:
         {}
     };
 
-    explicit LookupManager():
+    LookupManager():
         connectionManager_(netLibrary_),
         resolver_(netLibrary_),
         historyChange_(historyMoveForward),
