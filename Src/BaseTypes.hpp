@@ -1,7 +1,9 @@
 #ifndef __ARSLEXIS_BASE_TYPES_HPP__
 #define __ARSLEXIS_BASE_TYPES_HPP__
 
+#if defined(__PALMOS_H__)    
 #include <cstdint>
+#endif
 #include <string>
 
 typedef unsigned int uint_t;

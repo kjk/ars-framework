@@ -4,8 +4,8 @@
 
 void std::__msl_error(const char* str)
 {
-	ErrFatalDisplay(str);
-	ErrThrow(sysErrParamErr);
+    ErrFatalDisplay(str);
+    ErrThrow(sysErrParamErr);
 }
 
 void ArsLexis::handleBadAlloc()
