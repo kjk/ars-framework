@@ -55,6 +55,26 @@ namespace ArsLexis
     };
     
 #pragma mark -
+#pragma mark DebuggerLogSink
+    
+    class DebuggerLogSink: public LogSink
+    {
+    public:        
+        
+        DebuggerLogSink()
+        {}
+        
+        ~DebuggerLogSink()
+        {}
+        
+        void output(const String& str)
+        {
+            DbgMessage(str.c_str());
+        }
+        
+    };
+    
+#pragma mark -
 #pragma mark Logger
 
     class Logger
