@@ -12,8 +12,6 @@ extern ArsLexis::status_t readUniversalDataFromStream(ArsLexis::Reader& reader, 
 
 class UniversalDataHandler: public ArsLexis::LineBufferedPayloadHandler {
 
-    UniversalDataFormat universalData_;
-    
     int                 lineNo;
     
 protected:    
@@ -21,6 +19,8 @@ protected:
     ArsLexis::status_t handleLine(const ArsLexis::String& line);
     
 public:    
+
+    UniversalDataFormat universalData_;
 
     UniversalDataHandler();
 

@@ -12,12 +12,15 @@ struct UniversalDataFormat
     typedef std::vector<Vector_t> VectorOfVectors_t;
 
     int                 headerSize;
+    bool                fNormalized;
     VectorOfVectors_t   header;
     ArsLexis::String    data;
     
     UniversalDataFormat();
     
     ~UniversalDataFormat();
+    
+    void normalize();
     
     int getItemsCount();
     

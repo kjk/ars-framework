@@ -27,6 +27,7 @@ namespace {
                 if(errNone != numericValue(data, data + len, resultLong))
                     return SocketConnection::errResponseMalformed;
                 out.headerSize = resultLong;
+                out.fNormalized = false;
             }
             else if (lineNo <= out.headerSize)
             {
