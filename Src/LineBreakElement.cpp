@@ -15,7 +15,7 @@ void LineBreakElement::calculateOrRender(LayoutContext& layoutContext, bool rend
         //const RenderingPreferences::StyleFormatting& style=layoutContext.preferences.styleFormatting(styleDefault);
         //Graphics::FontSetter setFont(layoutContext.graphics, style.font);
         Graphics graphics;
-        graphics.applyStyle(*getStyle(), isHyperlink());
+        graphics.applyStyle(getStyle(), isHyperlink());
 
         uint_t reqHeight = layoutContext.graphics.fontHeight();
         reqHeight = reqHeight * mult_;

@@ -200,7 +200,7 @@ private:
 public:
     void invertRectangle(const Rectangle& rect); 
 
-    void applyStyle(const DefinitionStyle& style, bool isHyperlink);
+    void applyStyle(const DefinitionStyle* style, bool isHyperlink);
 };
 
 class ActivateGraphics: private NonCopyable

@@ -17,7 +17,7 @@ void HorizontalLineElement::render(RenderingContext& renderingContext)
     //const RenderingPreferences::StyleFormatting& format=renderingContext.preferences.styleFormatting(styleDefault);
     //Graphics::ColorSetter setForeColor(renderingContext.graphics, Graphics::colorForeground, format.textColor);
     Graphics gr;
-    gr.applyStyle(*getStyle(), isHyperlink());
+    gr.applyStyle(getStyle(), isHyperlink());
 
     renderingContext.graphics.drawLine(left+2, top, left+renderingContext.availableWidth()-2, top);
     

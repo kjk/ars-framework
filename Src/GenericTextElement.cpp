@@ -307,22 +307,9 @@ void GenericTextElement::render(RenderingContext& renderContext)
     calculateOrRender(renderContext, renderContext.left, renderContext.top, &renderContext.definition, true);
 }
 
-void GenericTextElement::applyHyperlinkDecorations(Graphics& graphics, const RenderingPreferences& preferences)
-{
-    if (isHyperlink())
-    {
-//        const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlinkProperties()->type);
-//        Font f=graphics.font();
-//        f.addEffects(decor.font.effects());
-//        graphics.setFont(f);
-//        graphics.setTextColor(decor.textColor);
-//        graphics.setForegroundColor(decor.textColor);
-    }
-}
-
 void GenericTextElement::applyFormatting(Graphics& graphics, const RenderingPreferences& preferences)
 {
-    graphics.applyStyle(*getStyle(), isHyperlink());
+    graphics.applyStyle(getStyle(), isHyperlink());
 }
 
 void GenericTextElement::toText(String& appendTo, uint_t from, uint_t to) const

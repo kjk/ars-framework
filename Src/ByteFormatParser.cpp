@@ -218,10 +218,10 @@ bool ByteFormatParser::parseParam()
             {
                 ulong_t mask = readUnaligned32(&inText_[start_]);
                 ulong_t fx = readUnaligned32(&inText_[start_+4]);
-                FontEffects fontEffects;                
+                // FontEffects fontEffects;                
                 //TODO: mask,fx -> fontEffects
                 
-                ((FormattedTextElement*)currentElement_)->setEffects(fontEffects);
+                //((FormattedTextElement*)currentElement_)->setEffects(fontEffects);
             }
             break;
 
@@ -276,10 +276,12 @@ void ByteFormatParser::parseElementParams()
             elems.push_back(currentElement_ = new BulletElement());
             break;
 
+/*
         case typeFormattedTextElement:
             elems.push_back(currentElement_ = new FormattedTextElement());
             break;
-
+ */
+ 
         case typeListNumberElement:
             elems.push_back(currentElement_ = new ListNumberElement());
             break;

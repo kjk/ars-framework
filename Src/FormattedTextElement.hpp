@@ -4,6 +4,7 @@
 #include "GenericTextElement.hpp"
 #include "FontEffects.hpp"
 
+/*
 class FormattedTextElement: public GenericTextElement
 {
     FontEffects fontEffects_;
@@ -22,5 +23,6 @@ public:
     ~FormattedTextElement();
     
 };
+ */
 
 #endif
