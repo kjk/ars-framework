@@ -69,7 +69,7 @@ class Definition;
 struct RenderingContext: public LayoutContext
 {
     Definition& definition;
-    const uint_t left;
+    uint_t left;
     uint_t top;
     
     RenderingContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, Definition& def, uint_t x, uint_t y, uint_t width):

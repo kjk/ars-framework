@@ -283,9 +283,11 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
     {
         renderContext.baseLine=line->baseLine;
         renderContext.renderingProgress=line->renderingProgress;
+        renderContext.left=bounds_.x()+line->leftMargin;
         ElementPosition_t last=elements_.end();
         ElementPosition_t current=line->firstElement;
-        bool lineFinished=false;    
+        bool lineFinished=false;  
+        DefinitionElement::Justification justify=(last!=current?(*current)->justification():DefinitionElement::justifyLeft);  
         while (!lineFinished && current!=last)
         {
             if (current>=selectionStartElement_ && current<=selectionEndElement_)
@@ -320,7 +322,7 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
                 }
                 ++current;
                 renderContext.renderingProgress=0;
-                if (renderContext.availableWidth()==0 || current==last || (*current)->breakBefore(renderContext.preferences))
+                if (renderContext.availableWidth()==0 || current==last || (*current)->breakBefore(renderContext.preferences) || justify!=(*current)->justification())
                     lineFinished=true;
             }
             else
@@ -341,12 +343,12 @@ void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences&
 
 void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress)
 {
-    uint_t topOffset=0;
     ElementPosition_t end(elements_.end());
     ElementPosition_t element(elements_.begin());
     LayoutContext layoutContext(graphics, prefs, bounds_.width());
     LineHeader lastLine;
     lastLine.firstElement=element;
+    DefinitionElement::Justification justify=(element!=end?(*element)->justification():DefinitionElement::justifyLeft);
     while (element!=end)
     {
         if (renderingProgressReporter_)
@@ -375,7 +377,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
                 else
                     layoutContext.nextTextElement=0;
             }
-            if (element==end || (*element)->breakBefore(prefs))
+            if (element==end || (*element)->breakBefore(prefs) || (*element)->justification()!=justify)
                 startNewLine=true;
         }
         else
@@ -385,8 +387,22 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
         {
             lastLine.height=layoutContext.usedHeight;
             lastLine.baseLine=layoutContext.baseLine;
-            topOffset+=lastLine.height;
+            switch (justify) 
+            {
+                case DefinitionElement::justifyRight:
+                    lastLine.leftMargin=layoutContext.screenWidth-layoutContext.usedWidth;
+                    break;
+                
+                case DefinitionElement::justifyCenter:
+                    lastLine.leftMargin=(layoutContext.screenWidth-layoutContext.usedWidth)/2;
+                    break;
+                    
+                default:
+                    lastLine.leftMargin=0;
+            }            
             lines_.push_back(lastLine);
+            if (end!=element)
+                justify=(*element)->justification();
             layoutContext.startNewLine();
             lastLine.firstElement=element;
             lastLine.renderingProgress=layoutContext.renderingProgress;

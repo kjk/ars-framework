@@ -25,7 +25,6 @@
 #include <CWCallbackThunks.h>
 #endif // __MWERKS__
 
- 
 namespace ArsLexis 
 {
 

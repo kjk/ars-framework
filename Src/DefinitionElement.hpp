@@ -5,12 +5,16 @@
 
 class DefinitionElement 
 {
-protected:
-
     DefinitionElement* parent_;
     
+protected:
+
+    DefinitionElement* parent()
+    {return parent_;}
+    
     DefinitionElement():
-        parent_(0)
+        parent_(0),
+        justification_(justifyInherit)
     {}
     
     virtual uint_t childIndentation() const
@@ -23,6 +27,9 @@ protected:
 
 public:
     
+    const DefinitionElement* parent() const
+    {return parent_;}
+
     virtual bool breakBefore(const RenderingPreferences&) const
     {return false;}
     
@@ -42,12 +49,29 @@ public:
         parent_=parent;
     }
     
+    enum Justification {
+        justifyInherit, // It means "inherit from parent or use default (left)"
+        justifyLeft,
+        justifyCenter,
+        justifyRight
+    };
+    
     virtual bool isTextElement() const
     {return false;}
     
     virtual void toText(ArsLexis::String& appendTo, uint_t from=0, uint_t to=LayoutContext::progressCompleted) const=0;
     
     friend class Definition::HotSpot;    
+    
+    void setJustification(Justification j)
+    {justification_=j;}
+    
+    Justification justification() const;
+
+private:
+    
+    Justification justification_;
+    
 };
 
 #endif

@@ -56,7 +56,8 @@ private:
         LineHeader():
             renderingProgress(0),
             height(0),
-            baseLine(0)
+            baseLine(0),
+            leftMargin(0)
         {}
         
         /**
@@ -82,6 +83,8 @@ private:
          * Position of baseline ralative to height.
          */
         uint_t baseLine;
+        
+        uint_t leftMargin;
     };
     
     typedef std::vector<LineHeader> Lines_t;
