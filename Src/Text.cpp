@@ -183,58 +183,84 @@ bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* 
     return (s1start==s1end && s2start==s2end);
 }
 
+static uint_t charToNumber(const char_t chr)
+{
+    if ( (chr >= _T('0')) && (chr <= _T('9')) )
+        return (uint_t) (chr - _T('0'));
+
+    if ( (chr >= _T('A')) && (chr <= _T('Z')) )
+        return (uint_t) (chr - _T('A'));
+
+    if ( (chr >= _T('a')) && (chr <= _T('z')) )
+        return (uint_t) 10 + (chr - _T('a'));
+
+    return 0xffff; // not sure if that's the best interface    
+}
+
+#define MAX_BASE 26  // arbitrary but good enough for us
+
 ArsLexis::status_t numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
 {
-    ArsLexis::status_t error=errNone;
-    bool     negative=false;
-    long     res=0;
-    String   numbers(_T("0123456789abcdefghijklmnopqrstuvwxyz"));
-    char_t   buffer[2];
+    ArsLexis::status_t error = errNone;
+    bool     negative = false;
+    long     res = 0;
+    uint_t   num;
 
-    if (begin>=end || base>numbers.length())
+    if ( (begin >= end) || (base >  MAX_BASE) )
     {    
         error=sysErrParamErr;
         goto OnError;           
     }
-    if (*begin==_T('-'))
+
+    if (_T('-') == *begin)
     {
-        negative=true;
-        if (++begin==end)
+        negative = true;
+        if (++begin == end)
         {
-            error=sysErrParamErr;
+            error = sysErrParamErr;
             goto OnError;           
         }
     }           
-    buffer[1]=chrNull;
-    while (begin!=end) 
+
+    while (begin != end) 
     {
-        // TODO: will it work with unicode on WINCE?
-        buffer[0]=toLower(*(begin++));
-        String::size_type num=numbers.find(buffer);
-        if (num>=base)
+        num = charToNumber(*begin);
+        if (num >= base)
         {   
-            error=sysErrParamErr;
+            error = sysErrParamErr;
             break;
         }
         else
         {
-            res*=base;
-            res+=num;
+            res *= base;
+            res += num;
         }
     }
     if (!error)
-       result=res;
+       result = res;
 OnError:
     return error;    
 }
 
-#define HEX_DIGITS _T("0123456789ABCDEF")
-
 static ArsLexis::char_t numToHex(int num)
 {
+    char_t  c;
     assert( (num>=0) && (num<16) );
-    ArsLexis::char_t c = HEX_DIGITS[num];
-    assert( '\0' != c );
+    if (num<=9)
+        c = _T('0') + num;
+    else
+        c = _T('A') + (num-10);
+    return c;
+}
+
+static ArsLexis::char_t numToHexSmall(int num)
+{
+    char_t  c;
+    assert( (num>=0) && (num<16) );
+    if (num<=9)
+        c = _T('0') + num;
+    else
+        c = _T('a') + (num-10);
     return c;
 }
 
@@ -279,8 +305,8 @@ ArsLexis::String hexBinEncode(const String& in)
 
 inline static void CharToHexString(ArsLexis::char_t* buffer, ArsLexis::char_t chr)
 {
-    buffer[0]=HEX_DIGITS[chr/16];
-    buffer[1]=HEX_DIGITS[chr%16];
+    buffer[0] = numToHex(chr / 16);
+    buffer[1] = numToHex(chr % 16);
 }
 
 void urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
@@ -1009,12 +1035,11 @@ long StrFind(const char_t* str, long len, char_t chr)
 long bufferToHexCode(const char* in, long inLength, char* out, long outLength)
 {
     assert(inLength*2 <= outLength);
-    char numbers[] = {"0123456789abcdef"};
     long pos = 0;
     for (pos = 0; pos < inLength; pos++)
     {
-        out[2*pos+1] = numbers[in[pos] & 0x0f];
-        out[2*pos]   = numbers[(in[pos] & 0xf0) >> 4];
+        out[2*pos+1] = (char)numToHexSmall(in[pos] & 0x0f);
+        out[2*pos]   = (char)numToHexSmall((in[pos] & 0xf0) >> 4);
     }
     //if given outLength is greater than needed - terminate with zero
     if (outLength > inLength*2)
