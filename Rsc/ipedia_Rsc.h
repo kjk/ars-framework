@@ -1,13 +1,17 @@
 /* pilrc generated file.  Do not edit!*/
-#define searchResultsList 1035
-#define searchResultsForm 1034
-#define serialNumberField 1033
-#define registrationForm 1031
-#define cancelButton 1030
-#define okButton 1029
-#define preferencesForm 1028
-#define currentTermField 1027
-#define forwardButton 1026
+#define backBitmap 1039
+#define forwardBitmap 1038
+#define searchResultsList 1037
+#define searchResultsForm 1036
+#define serialNumberField 1035
+#define registrationForm 1033
+#define cancelButton 1032
+#define okButton 1031
+#define preferencesForm 1030
+#define currentTermField 1029
+#define forwardDisabledBitmap 1028
+#define forwardButton 1027
+#define backDisabledBitmap 1026
 #define backButton 1025
 #define termInputField 1024
 #define definitionScrollBar 1023

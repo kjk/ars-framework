@@ -145,10 +145,10 @@ BEGIN
        	SCROLLBAR ID definitionScrollBar  AT (152 16 7 124) USABLE VALUE 50 MIN 0 MAX 100 PAGESIZE 10
 	FIELD ID termInputField  AT (18 146 97 Auto) MAXCHARS 255 EDITABLE UNDERLINED DYNAMICSIZE MULTIPLELINES HASSCROLLBAR  
 	BUTTON "Search" ID searchButton   AT (PrevRight+2 PrevTop AUTO AUTO)
-	BUTTON "\2" ID backButton  AT (0 147 10 12) FONT 4 NOFRAME DISABLED    
-	BUTTON "\3" ID forwardButton   AT (8 147 10 12) FONT 4 NOFRAME DISABLED    
+	BUTTON "" ID backButton  AT (0 146 10 11) FONT 4 NOFRAME DISABLED BITMAPID backDisabledBitmap GRAPHICAL    
+	BUTTON "" ID forwardButton   AT (8 146 10 11) FONT 4 NOFRAME DISABLED GRAPHICAL BITMAPID forwardDisabledBitmap    
 	FIELD ID currentTermField  AT (40 1 118 Auto) MAXCHARS 255   NONEDITABLE
-END
+	END
 
 ICONFAMILYEX
 BEGIN
@@ -204,3 +204,30 @@ BEGIN
 	
 	BUTTON "Cancel" ID cancelButton  AT (2 142 Auto Auto)
 END
+
+
+BITMAPFAMILYEX ID forwardBitmap 
+BEGIN
+	 BITMAP "forward-sm.bmp" BPP 1 DENSITY 1        
+	 BITMAP "forward-lg.bmp" BPP 1 DENSITY 2        
+END
+
+BITMAPFAMILYEX ID backBitmap 
+BEGIN
+	 BITMAP "back-sm.bmp" BPP 1 DENSITY 1        
+	 BITMAP "back-lg.bmp" BPP 1 DENSITY 2        
+END
+
+BITMAPFAMILYEX ID forwardDisabledBitmap 
+BEGIN
+	 BITMAP "forward-disabled-sm.bmp" BPP 1 DENSITY 1        
+	 BITMAP "forward-disabled-lg.bmp" BPP 1 DENSITY 2        
+END
+
+BITMAPFAMILYEX ID backDisabledBitmap 
+BEGIN
+	 BITMAP "back-disabled-sm.bmp" BPP 1 DENSITY 1        
+	 BITMAP "back-disabled-lg.bmp" BPP 1 DENSITY 2        
+END
+
+
