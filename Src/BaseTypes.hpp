@@ -10,7 +10,7 @@ typedef unsigned long ulong_t;
 namespace ArsLexis
 {
     
-#if defined(_WIN32_WCE)
+#if defined(_WIN32_WCE) || defined(_WIN32)
 
     typedef DWORD tick_t;
 
