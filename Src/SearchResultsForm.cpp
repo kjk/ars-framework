@@ -1,5 +1,6 @@
 #include "SearchResultsForm.hpp"
 #include "FormObject.hpp"
+#include "LookupManager.hpp"
 
 using ArsLexis::String;
 using ArsLexis::FormObject;
@@ -27,11 +28,14 @@ void SearchResultsForm::prepareListChoices()
 
 SearchResultsForm::SearchResultsForm(iPediaApplication& app):
     iPediaForm(app, searchResultsForm),
-    listPositionsString_(app.searchResults()),
     listPositionsCount_(0)
 {
-    listPositionsString_="Test\nWest\nRest\nBrest\n";
-    prepareListChoices();
+    LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager)
+    {
+        listPositionsString_=lookupManager->lastSearchResults();    
+        prepareListChoices();
+    }
 }
 
 SearchResultsForm::~SearchResultsForm()

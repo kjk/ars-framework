@@ -32,7 +32,7 @@ namespace ArsLexis
 
         ~SocketConnectionManager();
         
-        Boolean active() const
+        bool active() const
         {return selector_.active();}
         
         Err manageConnectionEvents(Int32 timeout=evtWaitForever);

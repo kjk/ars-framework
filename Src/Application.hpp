@@ -117,6 +117,8 @@ namespace ArsLexis
         
         UInt32 romVersion_;
         
+        static void sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength);
+        
     protected:
     
 #ifdef appFileCreator    
@@ -309,7 +311,12 @@ namespace ArsLexis
             appFirstAvailableEvent=firstUserEvent
         };
 
-        static void sendEvent(UInt16 eventId, const void* eventData=0, UInt16 dataLength=0);
+        template<typename Data>
+        static void sendEvent(UInt16 eventId, const Data& data)
+        {sendEvent(eventId, &data, sizeof(data));}
+        
+        static void sendEvent(UInt16 eventId)
+        {sendEvent(eventId, 0, 0);}
 
     };
     

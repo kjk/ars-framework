@@ -1,9 +1,7 @@
 #include "MainForm.hpp"
 #include "FormObject.hpp"
-#include "DefinitionParser.hpp"
 #include "iPediaApplication.hpp"
-#include "iPediaConnection.hpp"
-#include "SocketAddress.hpp"
+#include "LookupManager.hpp"
 
 using namespace ArsLexis;
 
@@ -21,6 +19,25 @@ MainForm::~MainForm()
 {
 }
 
+/* inline */ Definition* MainForm::getDefinition()
+{
+    Definition* def=0;
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lm=app.getLookupManager();
+    if (lm)
+        def=&lm->lastDefinition();
+    return def;
+}        
+
+/* inline */ const LookupHistory* MainForm::getLookupHistory() const
+{
+    const LookupHistory* hist=0;
+    const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+    const LookupManager* lm=app.getLookupManager();
+    if (lm)
+        hist=&lm->history();
+    return hist;
+}
 
 void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
 {
@@ -104,22 +121,25 @@ void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
     graphics.drawCenteredText("http://www.arslexis.com", point, bounds.width());
 }
 
-void MainForm::updateScrollBar()
+void MainForm::updateScrollBar(const Definition& definition)
 {
     ScrollBar scrollBar(*this, definitionScrollBar);
-    scrollBar.setPosition(definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
+    scrollBar.setPosition(definition.firstShownLine(), 0, definition.totalLinesCount()-definition.shownLinesCount(), definition.shownLinesCount());
     scrollBar.show();
 }
 
 void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
 {
-    const iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, app.renderingPreferences().backgroundColor());
-    bounds.explode(0, 15, 0, -33);
-    graphics.erase(bounds);
-    bounds.explode(2, 2, -12, -4);
-    definition_.render(graphics, bounds, app.renderingPreferences(), false);
-    updateScrollBar();    
+    Definition* definition=getDefinition();
+    if (definition)
+    {
+        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, renderingPreferences().backgroundColor());
+        bounds.explode(0, 15, 0, -33);
+        graphics.erase(bounds);
+        bounds.explode(2, 2, -12, -4);
+        definition->render(graphics, bounds, renderingPreferences(), false);
+        updateScrollBar(*definition);    
+    }
 }
 
 void MainForm::draw(UInt16 updateCode)
@@ -135,111 +155,56 @@ void MainForm::draw(UInt16 updateCode)
 }
 
 
-Err MainForm::initialize()
-{
-    Err error=iPediaForm::initialize();
-    if (!error)
-    {
-        iPediaApplication& app=static_cast<iPediaApplication&>(application());
-        definition_.setHyperlinkHandler(&app.hyperlinkHandler());
-    }
-    return error;
-}
-
 inline void MainForm::handleScrollRepeat(const EventType& event)
 {
-    iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    Graphics graphics(windowHandle());
-    definition_.scroll(graphics, app.renderingPreferences(), event.data.sclRepeat.newValue-event.data.sclRepeat.value);
+    Definition* definition=getDefinition();
+    if (definition)
+    {
+        Graphics graphics(windowHandle());
+        definition->scroll(graphics, renderingPreferences(), event.data.sclRepeat.newValue-event.data.sclRepeat.value);
+    }        
 }
 
 void MainForm::handlePenUp(const EventType& event)
 {
-    Point point(event.screenX, event.screenY);
-    if (definition_.bounds() && point)
-        definition_.hitTest(point); 
-}
-
-static void startLookupConnection(ArsLexis::Application& application, LookupHistory& history, const String& term, iPediaConnection::HistoryChange historyChange, const String& server)
-{
-    iPediaApplication& app=static_cast<iPediaApplication&>(application);
-    SocketConnectionManager* manager=0;
-    Err error=app.getConnectionManager(manager);
-    if (error)
-        return;
-
-    Resolver* resolver=0;
-    error=app.getResolver(resolver);
-    assert(manager);
-    assert(resolver);
-    if (!manager->active())
+    Definition* definition=getDefinition();
+    if (definition)
     {
-        app.log() << "startLookupConnection, server=" << server << " term=" << term;
-        iPediaConnection* conn=new iPediaConnection(*manager);
-        conn->setTransferTimeout(app.ticksPerSecond()*45L);
-        switch (historyChange)
-        {
-            case iPediaConnection::historyMoveBack:
-                conn->setTerm(history.previousTerm());
-                break;
-                
-            case iPediaConnection::historyMoveForward:
-                conn->setTerm(history.nextTerm());
-                break;
-                
-            case iPediaConnection::historyReplaceForward:
-                conn->setTerm(term);
-                break;
-                
-            default:
-                assert(false);
-        }
-        conn->setHistoryChange(historyChange);
-        resolver->resolveAndConnect(conn, server);
-    }            
-}
-
-void MainForm::startHistoryLookup(bool forward)
-{
-    ::startLookupConnection(application(), history(), String(), forward?iPediaConnection::historyMoveForward:iPediaConnection::historyMoveBack, server_);
-}
-
-
-void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
-{
-    ::startLookupConnection(application(), history(), newTerm, iPediaConnection::historyReplaceForward, server_);
-    Field fld(*this,termInputField);
-
-    if (newTerm != fld.text() )
-    {
-        fld.replaceText(newTerm.c_str());
+        Point point(event.screenX, event.screenY);
+        if (definition->bounds() && point)
+            definition->hitTest(point);
     }
-    fld.selectAllText();
 }
 
 void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
 {
-    Graphics graphics(windowHandle());
-    if (scrollPage==unit)
-        units*=(definition_.shownLinesCount());
-    iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    definition_.scroll(graphics, app.renderingPreferences(), units);
-    updateScrollBar();
+    Definition* definition=getDefinition();
+    if (definition)
+    {
+        Graphics graphics(windowHandle());
+        if (scrollPage==unit)
+            units*=(definition->shownLinesCount());
+        definition->scroll(graphics, renderingPreferences(), units);
+        updateScrollBar(*definition);
+    }
 }
 
+/*
 void MainForm::lookupTerm(const ArsLexis::String& newTerm)
 {
-    if (history().empty() || newTerm!=history().currentTerm())
-        startLookupConnection(newTerm);
+    if (history().empty() || newTerm!=history().currentTerm()) ;
+//        startLookupConnection(newTerm);
     else if (showDefinition!=displayMode())
     {
         setDisplayMode(showDefinition);
         update();
     }
 }
+*/
 
 void MainForm::handleControlSelect(const EventType& event)
 {
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
     switch (event.data.ctlSelect.controlID)
     {
         case searchButton:
@@ -247,16 +212,20 @@ void MainForm::handleControlSelect(const EventType& event)
                 Field field(*this, termInputField);
                 const char* textPtr=field.text();
                 if (textPtr!=0)
-                    lookupTerm(textPtr);
+                {
+                    LookupManager* lookupManager=app.getLookupManager(true);
+                    if (lookupManager)
+                        lookupManager->lookupIfDifferent(textPtr);
+                }
             }
             break;
             
         case backButton:
-            startHistoryLookup(false);
+//            startHistoryLookup(false);
             break;
         
         case forwardButton:
-            startHistoryLookup(true);
+//            startHistoryLookup(true);
             break;
         
         default:
@@ -285,6 +254,20 @@ bool MainForm::handleEvent(EventType& event)
         case sclRepeatEvent:
             handleScrollRepeat(event);
             break;
+            
+        case iPediaApplication::appLookupFinishedEvent:
+            {
+                const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
+                if (data.outcomeDefinition==data.outcome)
+                {
+                    synchronizeWithHistory();
+                    setDisplayMode(showDefinition);
+                    update();
+                }
+                else if (data.outcomeList==data.outcome)
+                    Application::popupForm(searchResultsForm);
+            }
+            break;                    
     
         default:
             handled=iPediaForm::handleEvent(event);
@@ -294,26 +277,30 @@ bool MainForm::handleEvent(EventType& event)
 
 void MainForm::synchronizeWithHistory()
 {
-    Field field(*this, currentTermField);
-    if (!history().empty())
+    const LookupHistory* history=getLookupHistory();
+    if (history)
     {
-        field.setText(history().currentTerm().c_str());
-        field.show();
-    }
-    else
-        field.hide();
+        Field field(*this, currentTermField);
+        if (!history->empty())
+        {
+            field.setText(history->currentTerm().c_str());
+            field.show();
+        }
+        else
+            field.hide();
 
-    UInt16 buttonsWidth=0;
-    Control control(*this, backButton);
-    bool enabled=history().hasPrevious();
-    control.setEnabled(enabled);
-    control.setGraphics(enabled?backBitmap:backDisabledBitmap);
-    
+        UInt16 buttonsWidth=0;
+        Control control(*this, backButton);
+        bool enabled=history->hasPrevious();
+        control.setEnabled(enabled);
+        control.setGraphics(enabled?backBitmap:backDisabledBitmap);
         
-    control.attach(forwardButton);
-    enabled=history().hasNext();
-    control.setEnabled(enabled);
-    control.setGraphics(enabled?forwardBitmap:forwardDisabledBitmap);
+            
+        control.attach(forwardButton);
+        enabled=history->hasNext();
+        control.setEnabled(enabled);
+        control.setGraphics(enabled?forwardBitmap:forwardDisabledBitmap);
+    }
 }
 
 bool MainForm::handleKeyPress(const EventType& event)
@@ -407,9 +394,13 @@ void MainForm::copySelectionToClipboard()
 {
     if (showDefinition==displayMode())
     {
-        ArsLexis::String text;
-        definition_.selectionToText(text);
-        ClipboardAddItem(clipboardText, text.data(), text.length());
+        Definition* definition=getDefinition();
+        if (definition)
+        {
+            ArsLexis::String text;
+            definition->selectionToText(text);
+            ClipboardAddItem(clipboardText, text.data(), text.length());
+        }
     }
 }
 

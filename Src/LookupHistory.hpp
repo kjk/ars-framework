@@ -29,18 +29,18 @@ public:
         return historyPosition_!=last;
     }
     
-    void replaceForward(const ArsLexis::String& term);
+    void replaceAllNext(const ArsLexis::String& term);
     
-    void moveForward()
+    void moveNext(const ArsLexis::String& term)
     {
-        assert(hasNext());
-        ++historyPosition_;
+        if (hasNext()) 
+            *(++historyPosition_)=term;
     }
     
-    void moveBack()
+    void movePrevious(const ArsLexis::String& term)
     {
-        assert(hasPrevious());
-        --historyPosition_;
+        if (hasPrevious())
+            *(--historyPosition_)=term;
     }
     
     const ArsLexis::String& currentTerm() const

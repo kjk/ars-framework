@@ -1,6 +1,6 @@
 #include "iPediaHyperlinkHandler.hpp"
 #include "iPediaApplication.hpp"
-#include "MainForm.hpp"
+#include "LookupManager.hpp"
 
 using namespace ArsLexis;
 
@@ -30,9 +30,9 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
 void iPediaHyperlinkHandler::handleTermHyperlink(const ArsLexis::String& term)
 {
     iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
-    MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
-    if (form)
-        form->lookupTerm(term);
+    LookupManager* lookupManager=app.getLookupManager();  
+    if (lookupManager)
+        lookupManager->lookupIfDifferent(term);
 }
 
 

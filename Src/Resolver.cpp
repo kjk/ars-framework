@@ -90,6 +90,7 @@ namespace ArsLexis
 
         NetIPAddr resAddr=buffer->address[0];
         assert(resAddr!=0);
+        cache_[name]=resAddr;
 
 #ifdef NEVER
         char addrStr[32];

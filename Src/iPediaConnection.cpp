@@ -2,20 +2,20 @@
 #include "iPediaApplication.hpp"
 #include "DefinitionParser.hpp"
 #include "SysUtils.hpp"
-#include "MainForm.hpp"
 #include "DeviceInfo.hpp"
+#include "LookupManager.hpp"
 
 using namespace ArsLexis;
 
-iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
-    FieldPayloadProtocolConnection(manager),
+iPediaConnection::iPediaConnection(LookupManager& lookupManager):
+    FieldPayloadProtocolConnection(lookupManager.connectionManager()),
+    lookupManager_(lookupManager),
     transactionId_(random((UInt32)-1)),
     formatVersion_(0),
     definitionParser_(0),
     searchResultsHandler_(0),
     payloadType_(payloadNone),
-    historyChange_(historyReplaceForward),
-    serverError_(serverErrorNone),
+    serverError_(LookupManager::serverErrorNone),
     notFound_(false),
     registering_(false),
     performFullTextSearch_(false)
@@ -25,6 +25,7 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
 iPediaConnection::~iPediaConnection()
 {
     delete definitionParser_;
+    delete searchResultsHandler_;
 }
 
 #define protocolVersion "1"
@@ -71,6 +72,7 @@ void iPediaConnection::prepareRequest()
 
 void iPediaConnection::open()
 {
+    Application::sendEvent(iPediaApplication::appLookupStartedEvent);
     prepareRequest();
     SimpleSocketConnection::open();
 }
@@ -134,8 +136,8 @@ Err iPediaConnection::handleField(const String& name, const String& value)
         error=numericValue(value, numValue);
         if (!error)
         {
-            if (numValue>=serverErrorFirst && numValue<=serverErrorLast)
-                serverError_=static_cast<ServerError>(numValue);
+            if (numValue>=LookupManager::serverErrorFirst && numValue<=LookupManager::serverErrorLast)
+                serverError_=static_cast<LookupManager::ServerError>(numValue);
             else
                 error=errResponseMalformed;
         }            
@@ -152,98 +154,45 @@ Err iPediaConnection::notifyFinished()
     Err error=FieldPayloadProtocolConnection::notifyFinished();
     if (!error)
     {
+        LookupManager::LookupFinishedEventData data;
         if (!serverError_)
         {
             iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
             if (definitionParser_!=0)
             {
-                MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
-                if (form)
-                {
-                    definitionParser_->updateDefinition(form->definition());
-                    switch (historyChange_)
-                    {
-                        case historyMoveForward:
-                            form->history().moveForward();
-                            break;
-                        
-                        case historyMoveBack:
-                            form->history().moveBack();
-                            break;
-                        
-                        case historyReplaceForward:
-                            form->history().replaceForward(resultsFor_);
-                            break;
-                        
-                        default:
-                            assert(false);
-                    }                    
-                    form->setDisplayMode(MainForm::showDefinition);
-                    form->synchronizeWithHistory();
-                    form->update();
-                }
+                definitionParser_->updateDefinition(lookupManager_.lastDefinition());
+                lookupManager_.setLastTerm(resultsFor_);
+                data.outcome=data.outcomeDefinition;
             }
             if (searchResultsHandler_!=0)
             {
+                lookupManager_.setLastSearchResults(searchResultsHandler_->searchResults());
+                lookupManager_.setLastSearchExpression(resultsFor_);
+                data.outcome=data.outcomeList;
             }
 
             if (registering_ && !serverError_)
                 app.preferences().serialNumberRegistered=true;
             
             if (notFound_)
-                app.sendDisplayAlertEvent(definitionNotFoundAlert);
+                data.outcome=data.outcomeNotFound;
         }
         else
-            handleServerError();
+        {
+            data.outcome=data.outcomeServerError;
+            data.serverError=serverError_;
+        }
+        Application::sendEvent(iPediaApplication::appLookupFinishedEvent, data);               
     }
     return error;        
 }
 
-#define SOCK_CONN_REFUSED 10061
-
 void iPediaConnection::handleError(Err error)
 {
-    log()<<"handleError(), error code "<<error;
-    UInt16 alertId=frmInvalidObjectId;
-    switch (error)
-    {
-        case errResponseTooLong:
-            alertId=definitionTooBigAlert;
-            break;
-            
-        case errResponseMalformed:
-            alertId=malformedResponseAlert;
-            break;
-        
-        case netErrTimeout:
-            alertId=connectionTimedOutAlert;
-            break;
-
-        case SOCK_CONN_REFUSED:
-            alertId=cantConnectToServerAlert;
-            break;
-        
-        default:
-            alertId=connectionErrorAlert;
-    }
-    iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
-    app.sendDisplayAlertEvent(alertId);
+    log()<<"handleError(): error code "<<error;
+    LookupManager::LookupFinishedEventData data(LookupManager::LookupFinishedEventData::outcomeError, error);
+    Application::sendEvent(iPediaApplication::appLookupFinishedEvent, data);
     SimpleSocketConnection::handleError(error);
-}
-
-static const UInt16 serverErrorAlerts[]=
-{   
-    serverFailureAlert,
-    unsupportedDeviceAlert,
-    invalidAuthorizationAlert,
-    malformedRequestAlert
-};
-
-void iPediaConnection::handleServerError()
-{
-    assert(serverErrorNone!=serverError_);
-    assert(serverErrorLast>=serverError_);
-    FrmAlert(serverErrorAlerts[serverError_-1]);
 }
 
 void iPediaConnection::notifyPayloadFinished()
@@ -266,3 +215,4 @@ void iPediaConnection::notifyPayloadFinished()
     payloadType_=payloadNone;
     FieldPayloadProtocolConnection::notifyPayloadFinished();
 }
+

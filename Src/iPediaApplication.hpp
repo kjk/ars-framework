@@ -4,30 +4,21 @@
 #include "ipedia.h"
 #include "Application.hpp"
 #include "DynamicInputAreas.hpp"
-#include "SocketConnection.hpp"
 #include "RenderingPreferences.hpp"
 #include "iPediaHyperlinkHandler.hpp"
-#include "Resolver.hpp"
 #include "Logging.hpp"
+
+class LookupManager;
 
 class iPediaApplication: public ArsLexis::Application 
 {
     mutable ArsLexis::RootLogger log_;
     ArsLexis::DIA_Support diaSupport_;
-    Boolean diaNotifyRegistered_;
-    
-    ArsLexis::NetLibrary* netLib_;
-    ArsLexis::SocketConnectionManager* connectionManager_;
-    
-    Err getNetLibrary(ArsLexis::NetLibrary*& netLib);
-    
+    bool diaNotifyRegistered_;
     UInt16 ticksPerSecond_;
-    
     iPediaHyperlinkHandler hyperlinkHandler_;
-    ArsLexis::Resolver* resolver_;
+    LookupManager* lookupManager_;
     
-    ArsLexis::String searchResults_;
-        
     void detectViewer();
     
 protected:
@@ -56,8 +47,9 @@ public:
     
     Err initialize();
     
-    Err getConnectionManager(ArsLexis::SocketConnectionManager*& manager);
-    Err getResolver(ArsLexis::Resolver*& resolver);
+    LookupManager* getLookupManager(bool create=false);
+    const LookupManager* getLookupManager() const
+    {return lookupManager_;}
     
     UInt16 ticksPerSecond() const
     {return ticksPerSecond_;}
@@ -109,19 +101,13 @@ public:
     struct DisplayAlertEventData
     {
         UInt16 alertId;
+        
+        DisplayAlertEventData(UInt16 aid):
+            alertId(aid) {}
     };
     
-    void setSearchResults(const ArsLexis::String& searchResults)
-    {searchResults_=searchResults;}
-    
-    const ArsLexis::String& searchResults() const
-    {return searchResults_;}
-    
-    void sendDisplayAlertEvent(UInt16 alertId)
-    {
-        DisplayAlertEventData data={alertId};
-        sendEvent(appDisplayAlertEvent, &data, sizeof(data));
-    }
+    static void sendDisplayAlertEvent(UInt16 alertId)
+    {sendEvent(appDisplayAlertEvent, DisplayAlertEventData(alertId));}
     
     ArsLexis::Logger& log() const
     {return log_;}

@@ -2,11 +2,13 @@
 #define __DEFINITION_REQUEST_CONNECTION_HPP__
 
 #include "FieldPayloadProtocolConnection.hpp"
+#include "LookupManager.hpp"
 
 class DefinitionParser;
 
 class iPediaConnection: public ArsLexis::FieldPayloadProtocolConnection
 {
+    LookupManager& lookupManager_;
     UInt32 transactionId_;
     ArsLexis::String term_;
     uint_t formatVersion_;
@@ -40,6 +42,9 @@ class iPediaConnection: public ArsLexis::FieldPayloadProtocolConnection
             return errNone;
         }
         
+        const ArsLexis::String& searchResults() const
+        {return searchResults_;}
+        
     };
     
     SearchResultsHandler* searchResultsHandler_;
@@ -67,50 +72,25 @@ protected:
 
 public:
 
-    enum HistoryChange
-    {
-        historyMoveBack,
-        historyMoveForward,
-        historyReplaceForward
-    };
-
-    enum ServerError
-    {
-        serverErrorNone,
-        serverErrorFailure,
-        serverErrorFirst=serverErrorFailure,
-        serverErrorUnsupportedDevice,
-        serverErrorInvalidAuthorization,
-        serverErrorMalformedRequest,
-        serverErrorLast=serverErrorMalformedRequest
-    };
-
     void open();
     
-    iPediaConnection(ArsLexis::SocketConnectionManager& manager);
+    iPediaConnection(LookupManager& lm);
     
     ~iPediaConnection();
     
     void setTerm(const ArsLexis::String& term)
     {term_=term;}
     
-    void setHistoryChange(HistoryChange hc)
-    {historyChange_=hc;}
-    
     void setPerformFullTextSearch(bool value)
     {performFullTextSearch_=value;}
     
 private:
     
-    HistoryChange historyChange_;
-    ServerError serverError_;
+    LookupManager::ServerError serverError_;
 
     uint_t notFound_:1;
     uint_t registering_:1;
     uint_t performFullTextSearch_:1;
-    
-    
-    void handleServerError();
     
 };
 

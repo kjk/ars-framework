@@ -83,9 +83,9 @@ namespace ArsLexis
         return error;
     }
 
-    Err SocketBase::setNonBlocking()
+    Err SocketBase::setNonBlocking(bool value)
     {
-        Boolean flag=true;
+        Boolean flag=value;
         Err error=setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
         return error;
     } 

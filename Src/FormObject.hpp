@@ -133,7 +133,7 @@ namespace ArsLexis
         void setText(MemHandle handle)
         {FldSetTextHandle(object(), handle);}
 
-        void selectAllText();
+        void selectWholeText();
 
         void replaceText(const char* text);
     };

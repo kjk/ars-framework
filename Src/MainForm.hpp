@@ -2,14 +2,20 @@
 #define __MAINFORM_HPP__
 
 #include "iPediaForm.hpp"
-#include "Definition.hpp"
-#include "LookupHistory.hpp"
+
+class Definition;
+class LookupHistory;
+class RenderingPreferences;
 
 class MainForm: public iPediaForm
 {
-    Definition definition_;
-    LookupHistory history_;
     ArsLexis::String server_;
+    
+    Definition* getDefinition();
+    const LookupHistory* getLookupHistory() const;
+    const RenderingPreferences& renderingPreferences() const
+    {return static_cast<const iPediaApplication&>(application()).renderingPreferences();}
+    
     
     void handleScrollRepeat(const EventType& data);
     void handlePenUp(const EventType& event);
@@ -19,20 +25,17 @@ class MainForm: public iPediaForm
     void drawSplashScreen(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     void drawDefinition(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     
-    void startLookupConnection(const ArsLexis::String& term);
-    void startHistoryLookup(bool forward);
-    
-    void updateScrollBar();
+    void updateScrollBar(const Definition& def);
     
     void copySelectionToClipboard();
+
+    void synchronizeWithHistory();
     
 protected:
 
     void resize(const ArsLexis::Rectangle& screenBounds);
     
     void draw(UInt16 updateCode=frmRedrawUpdateCode);
-    
-    Err initialize();
     
     bool handleWindowEnter(const struct _WinEnterEventType& data);
     
@@ -46,12 +49,6 @@ public:
     
     ~MainForm();
 
-    Definition& definition()
-    {return definition_;}
-    
-    LookupHistory& history()
-    {return history_;}    
-    
     enum DisplayMode
     {
         showSplashScreen,
@@ -64,10 +61,6 @@ public:
     void setDisplayMode(DisplayMode displayMode)
     {displayMode_=displayMode;}
     
-    void lookupTerm(const ArsLexis::String& term);
-    
-    void synchronizeWithHistory();
-
     enum ScrollUnit
     {
         scrollLine,

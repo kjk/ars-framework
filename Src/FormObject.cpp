@@ -39,11 +39,10 @@ namespace ArsLexis
         assert(0!=object_);
     }
     
-    void Field::selectAllText()
+    void Field::selectWholeText()
     {
-        UInt16 endPos;
-        endPos = FldGetTextLength(object());
-        FldSetSelection(object(),(UInt16)0,endPos);
+        UInt16 endPos=FldGetTextLength(object());
+        FldSetSelection(object(), 0, endPos);
     }
 
     void Field::replaceText(const char* text)
