@@ -317,7 +317,6 @@ error_t KXmlParser::readName(String& ret)
     error_t error;
     int pos = txtPos_;
     int c;
-    bool weAreInsiddeQuote = false;
     if ((error=peek(c,0))!=eNoError)
         return error;
 
@@ -325,14 +324,11 @@ error_t KXmlParser::readName(String& ret)
         && (c < _T('A') || c > _T('Z'))
         && c != _T('_')
         && c != _T(':')
-        && !(completlyLoose_ && c == _T('\"'))
         && c < 0x0c0)
         return eNameExpected;
 
     do
     {
-        if(c == _T('\"'))
-            weAreInsiddeQuote = !weAreInsiddeQuote;
         if ((error=read(c))!=eNoError)
             return error;
         push(c);
@@ -341,11 +337,6 @@ error_t KXmlParser::readName(String& ret)
     } while ((c >= _T('a') && c <= _T('z'))
         || (c >= _T('A') && c <= _T('Z'))
         || (c >= _T('0') && c <= _T('9'))
-        || (completlyLoose_ && c == _T('\"'))  //when [AD] <AD- "http:\\...." found
-        || (weAreInsiddeQuote && completlyLoose_ && c == _T('/'))
-        || (weAreInsiddeQuote && completlyLoose_ && c == _T('='))
-        || (weAreInsiddeQuote && completlyLoose_ && c == _T('?'))
-        || (weAreInsiddeQuote && completlyLoose_ && c == _T(';'))
         || c == _T('_')
         || c == _T('-')
         || c == _T(':')
@@ -542,18 +533,6 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
 
     attributeCount_ = 0;
 
-    if(completlyLoose_ && 0==name_.compare(_T("AD-")))
-    {
-        //just skip to > (this is advertisment so screw it!)
-        while(true)
-        {
-            if ((error=read(c))!=eNoError)
-                return error;
-            if (c == _T('>'))
-                break;
-        }
-    }
-    else //normal procedure
     while (true) {
         if ((error=skip())!=eNoError)
             return error;
@@ -594,13 +573,21 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
             return eUnexpectedEof;
 
         String attrName;
-        if ((error=readName(attrName))!=eNoError)
+        int tmpC;
+        if ((error=peek(tmpC,0))!=eNoError)
             return error;
-
+        
+        if(tmpC == '\"' && completlyLoose_)
+        {
+            attrName = _T(" "); //no name, but must be not empty (happen in <AD- "http://...."> tegs)
+        }
+        else
+            if ((error=readName(attrName))!=eNoError)
+                return error;
+        
         if (attrName.empty())
             return eAttrNameExpected;
 
-        int tmpC;
         if ((error=peek(tmpC,0))!=eNoError)
             return error;
         bool fCanBeAttrWithNoValue=false;
@@ -619,8 +606,14 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
         }
         else
         {
-            if ((error=read(_T('=')))!=eNoError)
-                return error;
+            if(tmpC == '\"' && completlyLoose_)
+            {
+                //nothing (dont read '=' becouse there is no '=' )
+            }
+            else
+                if ((error=read(_T('=')))!=eNoError)
+                    return error;
+
             if ((error=skip())!=eNoError)
                 return error;
             int delimiter;
