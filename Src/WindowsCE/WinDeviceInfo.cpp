@@ -87,6 +87,13 @@ namespace ArsLexis
         return sysErrParamErr;
     }
 
+    status_t gePlatform(String& out)
+    {
+        // TODO: make it different for Pocket PC
+        out.append("Smartphone");
+        return errNone;
+    }
+
     namespace {
 
         typedef status_t (TokenGetter)(String&);
@@ -109,12 +116,12 @@ namespace ArsLexis
     String deviceInfoToken()
     {
         String out;
-        renderDeviceIdentifierToken(out, _T("HS"), getHotSyncName);
         renderDeviceIdentifierToken(out, _T("SN"), getDeviceSerialNumber);
         renderDeviceIdentifierToken(out, _T("PN"), getPhoneNumber);
+        renderDeviceIdentifierToken(out, _T("PL"), getPlatform);
         //renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
         //renderDeviceIdentifierToken(out, _T("OD"), getOEMDeviceId);
-        out.append(_T("OC:1234"));
+        //out.append(_T("OC:1234"));
         //out.append(_T("OD:3456"));
         return out;
     }

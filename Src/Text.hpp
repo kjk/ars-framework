@@ -157,7 +157,11 @@ namespace ArsLexis
     {inOut=hexBinEncode(inOut);}
     
     void urlEncode(const String& in, String& out);
-    
+
+    void removeNonDigits(const String& in, String& out);
+
+    void removeNonDigits(const char_t *in, String& out);
+
     void eraseStart(String& str, String::size_type length);
 
 #if defined(_PALM_OS)

@@ -6,10 +6,10 @@
 
 #define transactionIdField      _T("Transaction-ID")
 #define protocolVersionField    _T("Protocol-Version")
-#define clientVersionField      _T("Client-Version")
+#define clientInfoField         _T("Client-Info")
 #define getCookieField          _T("Get-Cookie")
 #define cookieField             _T("Cookie")
-#define registerField           _T("Register")
+#define regCodeField            _T("Registration-Code")
 #define formatVersionField      _T("Format-Version")
 #define errorField              _T("Error")
 

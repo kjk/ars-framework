@@ -144,10 +144,13 @@ namespace {
 
 void ArsLexis::urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
 {
+    char_t *hexNum = _T("%  ");
+
     const char_t* begin=in.data();
     const char_t* end=begin+in.length();
     out.resize(0);
     out.reserve(in.length());
+
     while (begin!=end)
     {        
         char_t chr=*begin++;
@@ -156,14 +159,45 @@ void ArsLexis::urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
             (chr>=_T('0') && chr<=_T('9')) || 
             _T('-')==chr || _T('_')==chr || _T('.')==chr || _T('!')==chr || 
             _T('~')==chr || _T('*')==chr || _T('\'')==chr || _T('(')==chr || _T(')')==chr)
-            out.append(1, chr);
+            out.append(chr, 1);
         else
         {
-            char_t buffer[3];
-            *buffer=_T('%');
-            CharToHexString(buffer+1, chr);
-            out.append(buffer, 3);
+            CharToHexString(hexNum+1, chr);
+            out.append(hexNum, 3);
         }
+    }
+}
+
+void ArsLexis::removeNonDigits(const ArsLexis::String& in, ArsLexis::String& out)
+{
+    const char_t* curPos=in.data();
+    int len = (int)in.length();
+
+    out.resize(0);
+    out.reserve(len);
+
+    while (len>0)
+    {
+        if (isDigit(*curPos))
+            out.append(*curPos,1);
+        ++curPos;
+        --len;
+    }
+}
+
+void ArsLexis::removeNonDigits(const char_t *in, ArsLexis::String& out)
+{
+    int len = tstrlen(in);
+
+    out.resize(0);
+    out.reserve(len);
+
+    while (len>0)
+    {
+        if (isDigit(*in))
+            out.append(*in,1);
+        ++in;
+        --len;
     }
 }
 
