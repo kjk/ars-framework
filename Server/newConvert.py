@@ -298,7 +298,6 @@ def convertArticles(sqlDump,articleLimit):
             sys.stderr.write("phase 2 processed %d, last title=%s\n" % (count,article.getTitle()))
 
     convWriter.close()
-    deinitDatabase()
 
 # return a list of databases on the server
 def getDbList(conn):
@@ -380,7 +379,13 @@ def createIpediaDb(sqlDumpName,fRecreate=False):
     createIpediaSchema(dbName)
 
 def createFtIndex():
+    print "starting to create full-text index"
     query = "CREATE FULLTEXT INDEX full_text_index ON articles(title,body);"
+    conn = getIpediaConnection(None)
+    cur = conn.cursor()
+    cur.execute(query)
+    cur.close()
+    print "finished creating full-text index"
 
 if __name__=="__main__":
 
@@ -404,6 +409,7 @@ if __name__=="__main__":
         convertArticles(sqlDump,articleLimit)
         timer.stop()
         timer.dumpInfo()
+        createFtIndex()
     finally:
         deinitDatabase()
 
