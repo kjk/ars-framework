@@ -21,12 +21,6 @@ public:
         iPediaForm(app, registrationForm)
     {}    
     
-    Err initialize()
-    {
-        iPediaForm::initialize();
-        return memErrInvalidParam;
-    }        
-
 };
 
 #endif
