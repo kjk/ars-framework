@@ -48,6 +48,8 @@ namespace ArsLexis
         assert(0!=object_);
     }
     
+#pragma mark -
+    
     void Field::replace(const char* text, uint_t length)
     {
         erase();

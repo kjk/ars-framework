@@ -26,6 +26,10 @@ namespace ArsLexis
         assert(it!=forms_.end());
         forms_.erase(it);
     }
+
+    namespace {
+        static Metrowerks::compile_assert<sizeof(Application*)<=sizeof(UInt32)> may_store_app_pointer_as_feature;
+    }
     
     Err Application::setInstance(UInt32 creatorId, Application* app) throw()
     {
@@ -35,15 +39,13 @@ namespace ArsLexis
         UInt32 value=0;
         assert(ftrErrNoSuchFeature==FtrGet(creatorId, featureInstancePointer, &value));
 #endif        
-        assert(sizeof(app)<=sizeof(UInt32));
         error=FtrSet(creatorId, featureInstancePointer, reinterpret_cast<UInt32>(app));
         return error;
     }
     
     Application* Application::getInstance(UInt32 creatorId) throw()
     {
-        Application* app=0;
-        assert(sizeof(app)<=sizeof(UInt32));
+        Application* app;
         Err error=FtrGet(creatorId, featureInstancePointer, reinterpret_cast<UInt32*>(&app));
         return app;
     }

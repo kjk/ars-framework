@@ -6,6 +6,8 @@
 namespace ArsLexis
 {
 
+#pragma mark FormObject
+
     class FormObject: private NonCopyable
     {
         Form* form_;
@@ -64,6 +66,9 @@ namespace ArsLexis
         {FrmShowObject(*form_, index_);}
 
     };
+    
+#pragma mark -
+#pragma mark FormObjectWrapper<WrappedType>
 
     template<class WrappedType> 
     class FormObjectWrapper: public FormObject
@@ -90,6 +95,8 @@ namespace ArsLexis
 
     };
 
+#pragma mark -
+#pragma mark ScrollBar
 
     class ScrollBar: public FormObjectWrapper<ScrollBarType>
     {
@@ -104,6 +111,9 @@ namespace ArsLexis
         {SclSetScrollBar(object(), value, min, max, pageSize);}
 
     };
+
+#pragma mark -
+#pragma mark Field
 
     class Field: public FormObjectWrapper<FieldType>
     {
@@ -152,6 +162,9 @@ namespace ArsLexis
         
     };
 
+#pragma mark -
+#pragma mark Control
+
     class Control: public FormObjectWrapper<ControlType>
     {
     public:
@@ -174,6 +187,9 @@ namespace ArsLexis
                 
     };
     
+#pragma mark -
+#pragma mark List
+
     class List: public FormObjectWrapper<ListType>
     {
     public:

@@ -23,15 +23,16 @@ namespace ArsLexis
     
     std::uint32_t random(std::uint32_t range)
     {
-        std::int32_t rand1=SysRandom(0);
-        if ( 2 == (rand1 % 3) )
-            rand1 = SysRandom(TimGetTicks());
+        std::uint32_t rand1=SysRandom(0);
+//        if ( 2 == (rand1 % 3) )
+//            rand1 = SysRandom(TimGetTicks());
 
-        std::int32_t rand2=SysRandom(0);
-        if ( 2 == (rand2 % 3) )
-            rand2 = SysRandom(TimGetTicks());
+        std::uint32_t rand2=SysRandom(0);
+//        if ( 2 == (rand2 % 3) )
+//            rand2 = SysRandom(TimGetTicks());
 
-        std::uint32_t result = rand1*sysRandomMax + rand2;
+//        std::uint32_t result = rand1*sysRandomMax + rand2;
+        std::uint32_t rand3=SysRandom(0);        std::uint32_t result = (rand1<<30)|(rand2<<15)|rand3;
         result = result % range;
         return result;
     }

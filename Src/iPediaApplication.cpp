@@ -44,7 +44,7 @@ Err iPediaApplication::initialize()
     Err error=Application::initialize();
     if (!error)
     {
-        if (diaSupport_.available() && isNotifyManager()) 
+        if (diaSupport_ && isNotifyManager()) 
         {
             error=registerNotify(diaSupport_.notifyType());
             if (!error)
@@ -79,7 +79,7 @@ Err iPediaApplication::normalLaunch()
 Err iPediaApplication::handleSystemNotify(SysNotifyParamType& notify)
 {
     const ArsLexis::DIA_Support& dia=getDIASupport();
-    if (dia.available() && dia.notifyType()==notify.notifyType)
+    if (dia && dia.notifyType()==notify.notifyType)
         dia.handleNotify();
     return errNone;
 }

@@ -14,7 +14,7 @@ namespace ArsLexis
         full.reserve(8+1+2+contextLength_+1+1+length+1+1);
         char_t buffer[9];
         tick_t timestamp=ticks();
-        tprintf(buffer, _T("%lx"), timestamp);
+        tprintf(buffer, _T("%08lx"), timestamp);
         full.append(buffer, 8).append(_T("\t["), 2).append(context_, contextLength_).append(_T("]:\t"), 3).append(text, length).append(1, _T('\n'));
         logRaw(full, level);
     }
@@ -25,7 +25,7 @@ namespace ArsLexis
         if (log_)
         {
             char_t buffer[26];
-            int len=tprintf(buffer, _T("%hu (=0x%hx)"), ui, ui);
+            int len=tprintf(buffer, _T("%hu (0x%04hx)"), ui, ui);
             if (len>0)
                 line_.append(buffer, len);
         }                
@@ -38,7 +38,7 @@ namespace ArsLexis
         if (log_)
         {
             char_t buffer[26];
-            int len=tprintf(buffer, _T("%hd (=0x%hx)"), i, i);
+            int len=tprintf(buffer, _T("%hd (0x%04hx)"), i, i);
             if (len>0)
                 line_.append(buffer, len);
         }                
@@ -84,6 +84,8 @@ namespace ArsLexis
         return LineAppender(*this, logLevelDefault<=threshold_, logLevelDefault)<<val;
     }
 #endif  // _MSC_VER
+
+#pragma mark -
 
 #ifndef _PALM_OS
 		
@@ -145,6 +147,8 @@ namespace ArsLexis
                 (*it).first->output(text);
     }
 
+#pragma mark -
+
     FunctionLogger::FunctionLogger(const char_t* context, Logger& parent):
         ChildLogger(context, parent)
     {
@@ -164,7 +168,6 @@ namespace ArsLexis
     }
 
 #pragma mark -
-#pragma mark HostFileLogSink    
 
 #ifdef _PALM_OS
 
@@ -191,7 +194,6 @@ namespace ArsLexis
     }
 
 #pragma mark -
-#pragma mark MemoLogSink
 
     MemoLogSink::MemoLogSink() throw():
         db_(NULL)

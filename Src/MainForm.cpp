@@ -1,5 +1,5 @@
 #include "MainForm.hpp"
-#include "FormObject.hpp"
+#include <FormObject.hpp>
 #include "iPediaApplication.hpp"
 #include "LookupManager.hpp"
 
@@ -472,6 +472,8 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
     bool handled=false;
     switch (itemId)
     {
+    
+#ifndef NDEBUG    
         case useDictPcMenuItem:
             switchServer(serverDictPcArslexis);
             handled=true;
@@ -481,6 +483,7 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             switchServer(serverLocalhost);
             handled=true;
             break;
+#endif
             
         case registerMenuItem:
             Application::popupForm(registrationForm);
@@ -507,11 +510,24 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             handled=true;
             break;
 
+#ifndef NDEBUG
         case toggleStressModeMenuItem:
             handleToggleStressMode();
             handled=true;
             break;
+#endif            
             
+        case searchMenuItem:
+            search();
+            handled=true;
+            break;
+
+        case fullTextSearchMenuItem:
+            search(true);
+            handled=true;
+            break;
+        
+        
         default:
             handled=iPediaForm::handleMenuCommand(itemId);
     }
