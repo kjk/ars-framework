@@ -7,11 +7,11 @@
 namespace ArsLexis {
 
     int getStatesCount();
-    
-    void getStateName(int pos,ArsLexis::String& nameOut);
-    
-    void getStateSymbol(int pos, ArsLexis::String& symbolOut);
-    
+
+    char_t *getStateName(int pos);
+
+    char_t *getStateSymbol(int pos);
+
     int getIndexByFirstChar(ArsLexis::char_t inChar);
     
 }

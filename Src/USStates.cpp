@@ -87,38 +87,35 @@ namespace ArsLexis{
         {"YT", "Yukon"}
     };
 
-    static inline uint_t statesCount()
-    {
-        return sizeof(states)/sizeof(states[0]);
-    }
+#define STATES_COUNT sizeof(states)/sizeof(states[0])
 
     int getStatesCount()
     {
-        return statesCount();
+        return STATES_COUNT;
     }
 
-    void getStateName(int pos, String& nameOut)
-    {   
-        assert(pos >= 0 && pos < statesCount());
-        nameOut.assign(states[pos].name);
-    }
-
-    void getStateSymbol(int pos, ArsLexis::String& symbolOut) 
+    char_t *getStateName(int pos)
     {
-        assert(pos >= 0 && pos < statesCount());
-        symbolOut.assign(states[pos].abbrev);
+        assert(pos >= 0 && pos < STATES_COUNT);
+        return (char_t*)states[pos].name;
     }
-    
-    // always return index value in (0, statesCount-1)   
+
+    char_t *getStateSymbol(int pos)
+    {
+        assert(pos >= 0 && pos < STATES_COUNT);
+        return (char_t*)states[pos].abbrev;
+    }
+
+    // always return index value in (0, statesCount-1)
     int getIndexByFirstChar(ArsLexis::char_t inChar)
     {
         inChar = ArsLexis::toLower(inChar);
-        for (int i = 0; i < statesCount(); i++)
+        for (int i = 0; i < STATES_COUNT; i++)
         {
             char_t foundChar = ArsLexis::toLower(states[i].name[0]);
             if (inChar <= foundChar)
                 return i;
         }
-        return getStatesCount()-1;
-    }    
+        return STATES_COUNT-1;
+    }
 } 
