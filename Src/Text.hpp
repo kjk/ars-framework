@@ -158,6 +158,8 @@ namespace ArsLexis
 
     void replaceCharInString(char_t *str, char_t orig, char_t replacement);
 
+    void ReverseStringList(char_t **strList, int strListLen);
+
 }
 
 /*

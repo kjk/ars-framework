@@ -591,6 +591,19 @@ void replaceCharInString(char_t* str, char_t orig, char_t replacement)
     }
 }
 
+void ReverseStringList(char_t **strList, int strListLen)
+{
+    char_t *tmp;
+    int strListLenHalf = strListLen / 2;
+    for (int i=0; i<strListLenHalf; i++)
+    {
+        tmp = strList[i];
+        strList[i] = strList[strListLen-i-1];
+        strList[strListLen-i-1] = tmp;
+    }
+}
+
+
 } // namespace ArsLexis
 
 /*

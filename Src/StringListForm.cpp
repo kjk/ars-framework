@@ -178,7 +178,7 @@ bool StringListForm::handleOpen()
 
 bool StringListForm::handleWindowEnter(const struct _WinEnterEventType& data)
 {
-    const FormType* form=*this;
+    const FormType* form = *this;
     if (data.enterWindow==static_cast<const void*>(form))
     {
         List list(*this, stringListId_);
