@@ -28,6 +28,7 @@ private:
         CacheEntryUrlBuffer_t url;
         StreamNameBuffer_t streamName;
         CacheEntryTitleBuffer_t title;
+        bool onlyLink;
         
         IndexEntry();
     };
@@ -67,6 +68,8 @@ public:
     
     const char_t* entryTitle(ulong_t index) const;
     
+    bool isEntryOnlyLink(ulong_t index) const;
+    
     void setEntryTitle(ulong_t index, const char_t* title);
     
     status_t removeEntry(ulong_t index);
@@ -74,6 +77,10 @@ public:
     status_t removeEntriesAfter(ulong_t startIndex);
     
     status_t appendEntry(const char_t* url, ulong_t& index);
+    
+    status_t insertLink(ulong_t index, const char_t* url, const char_t* title);
+    
+    status_t appendLink(const char_t* url, const char_t* title);
     
     status_t replaceEntries(ulong_t from, const char_t* newUrl);
     

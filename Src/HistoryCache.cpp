@@ -118,6 +118,7 @@ status_t HistoryCache::serializeIndexIn(Serializer& serialize)
             serialize(entry.url, maxCacheEntryUrlLength + 1);
             serialize(entry.streamName, DataStore::maxStreamNameLength + 1);
             serialize(entry.title, maxCacheEntryTitleLength + 1);
+            serialize(entry.onlyLink);
         }
         indexEntriesCount_ = count;
     }
@@ -154,6 +155,7 @@ status_t HistoryCache::serializeIndexOut(Serializer& serialize)
             serialize(entry.url, maxCacheEntryUrlLength + 1);
             serialize(entry.streamName, DataStore::maxStreamNameLength + 1);
             serialize(entry.title, maxCacheEntryTitleLength + 1);
+            serialize(entry.onlyLink);
         }
     }
     ErrCatch(ex)
@@ -183,6 +185,12 @@ const char_t* HistoryCache::entryTitle(ulong_t index) const
 {
     assert(index < indexEntriesCount_);
     return indexEntries_[index].title;
+}
+
+bool HistoryCache::isEntryOnlyLink(ulong_t index) const
+{
+    assert(index < indexEntriesCount_);
+    return indexEntries_[index].onlyLink;
 }
 
 void HistoryCache::setEntryTitle(ulong_t index, const char_t* str)
@@ -224,19 +232,19 @@ status_t HistoryCache::removeEntriesAfter(ulong_t from)
     return errNone;
 }
 
-status_t HistoryCache::appendEntry(const char_t* title, ulong_t& index)
+status_t HistoryCache::appendEntry(const char_t* url, ulong_t& index)
 {
     status_t err;
     if (indexEntriesCount_ == indexCapacity_)
         if (errNone != (err = removeEntry(0)))
             return err;
     
-    ulong_t len = tstrlen(title);
+    ulong_t len = tstrlen(url);
     if (len > maxCacheEntryUrlLength)
         len = maxCacheEntryUrlLength;
     
     IndexEntry& entry = indexEntries_[indexEntriesCount_];
-    memcpy(entry.url, title, len * sizeof(char_t));
+    memcpy(entry.url, url, len * sizeof(char_t));
     entry.url[len] = _T('\0');
     
     tprintf(entry.streamName, _T("_History %lx%lx"), ticks(), random(ULONG_MAX));
@@ -249,6 +257,39 @@ status_t HistoryCache::appendEntry(const char_t* title, ulong_t& index)
     index = indexEntriesCount_++;
     return errNone;
 }
+
+status_t HistoryCache::appendLink(const char_t* url, const char_t* title)
+{
+    ulong_t index;
+    status_t err = appendEntry(url, index);
+    if (errNone != err)
+        return err;
+    
+    setEntryTitle(index, title);
+    indexEntries_[index].onlyLink = true;
+    return errNone;
+}
+
+status_t HistoryCache::insertLink(ulong_t index, const char_t* url, const char_t* title)
+{
+    status_t err = appendLink(url, title);
+    if (errNone != err)
+        return err;
+     
+    IndexEntry* tmp = new_nt IndexEntry();
+    if (NULL == tmp)
+        return memErrNotEnoughSpace;
+    
+    ulong_t count = indexEntriesCount_ - (index + 1);
+    memmove(tmp, indexEntries_ + (indexEntriesCount_ - 1), sizeof(IndexEntry));
+    memmove(indexEntries_ + (index + 1), indexEntries_ + index, count * sizeof(IndexEntry));
+    memmove(indexEntries_ + index, tmp, sizeof(IndexEntry));
+    
+    memzero(tmp, sizeof(*tmp));
+    delete tmp;
+    return errNone;    
+}
+
 
 status_t HistoryCache::replaceEntries(ulong_t from, const char_t* newEntry)
 {
@@ -303,7 +344,9 @@ status_t HistoryCache::moveEntryToEnd(ulong_t& index)
     memmove(indexEntries_ + index, indexEntries_ + (index + 1), (indexEntriesCount_ - (index + 1)) * sizeof(*tmp));
     memmove(indexEntries_ + (indexEntriesCount_ - 1), tmp, sizeof(*tmp));
     
+    memzero(tmp, sizeof(*tmp));
     delete tmp;
+    
     index = (indexEntriesCount_ - 1);
     return errNone;
 }
