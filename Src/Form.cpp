@@ -117,20 +117,27 @@ namespace ArsLexis
     
     void Form::handleObjectFocusChange(const EventType& event)
     {
+        FormGadget* gadget;
+        bool taking = (event.eType == frmObjectFocusTakeEvent);
+        if (frmInvalidObjectId != focusedControlIndex_ && frmGadgetObj == FrmGetObjectType(form_, focusedControlIndex_) && taking)
+        {
+            gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, focusedControlIndex_));
+            assert(NULL != gadget);
+            gadget->handleFocusChange(FormGadget::focusLosing);
+        }
         const frmObjectFocusTake& data = reinterpret_cast<const frmObjectFocusTake&>(event.data);
         assert(id_ == data.formID);
         UInt16 index = FrmGetObjectIndex(form_, data.objectID);
         if (frmInvalidObjectId == index)
             return;
-        bool hasFocus = (event.eType == frmObjectFocusTakeEvent);
-        if (hasFocus)
+        if (taking)
             focusedControlIndex_ = index;
         FormObjectKind kind = FrmGetObjectType(form_, index);
         if (frmGadgetObj != kind)
             return;
-        FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, index));
+        gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, index));
         assert(NULL != gadget);
-        gadget->handleFocusChange(hasFocus ? FormGadget::focusTaking : FormGadget::focusLosing);
+        gadget->handleFocusChange(taking ? FormGadget::focusTaking : FormGadget::focusLosing);
     }
     
     bool Form::handleEvent(EventType& event)

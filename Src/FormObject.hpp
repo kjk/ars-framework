@@ -197,6 +197,9 @@ namespace ArsLexis
         void replace(const String& text)
         {replace(text.data(), text.length());}
         
+        void setInsertionPoint(uint_t pos) 
+        {FldSetInsertionPoint(object(), pos);}
+        
         bool usable() const;
         
         bool readOnly() const;

@@ -150,6 +150,7 @@ namespace ArsLexis
     void FormObject::focus()
     {
         assert(valid());
+        form_->releaseFocus();          // To make sure event focus lost is sent before event focus taken on Treo 600
         FormObjectKind kind = type();
         bool isTreo = form_->application().runningOnTreo600();
         if (isTreo && frmInvalidObjectId != id_)

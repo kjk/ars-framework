@@ -119,6 +119,11 @@ bool FormGadget::handleGadgetCommand(UInt16 command, void* param)
 
 void FormGadget::handleFocusChange(FocusChange change)
 {
-    if (focusTaking == change && form()->application().runningOnTreo600() && visible() && form()->visible())
-        drawFocusRing();
+    if (form()->application().runningOnTreo600() && visible() && form()->visible()) 
+    {
+        if (focusTaking == change)
+            drawFocusRing();
+        else
+            removeFocusRing();
+    }
 }

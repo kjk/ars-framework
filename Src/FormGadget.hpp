@@ -23,6 +23,8 @@ namespace ArsLexis {
         
         virtual void drawFocusRing() {}
         
+        virtual void removeFocusRing() {}
+        
         virtual void handleDraw(Graphics& graphics);
         
         virtual bool handleEvent(EventType& event);
