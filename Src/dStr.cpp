@@ -135,10 +135,6 @@ dStr *dStrFromCharP3(char_t *strOne, char_t *strTwo, char_t *strThree)
     if (NULL==dstr)
         return NULL;
 
-    dstr->bufSize = bufSize;
-    dstr->strLen = 0;
-    DSTR_STR(dstr)[0] = '\0';
-
     dstrNew = dStrAppend(dstr, strTwo, strTwoLen);
     assert(NULL != dstrNew);
     dstrNew = dStrAppend(dstr, strThree, strThreeLen);
