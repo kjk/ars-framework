@@ -277,6 +277,11 @@ namespace ArsLexis
         {return sysGetROMVerMinor(romVersion());}
         
         friend void handleBadAlloc();
+        
+        enum Error
+        {
+            errFirstAvailable=appErrorClass
+        };
 
     };
     

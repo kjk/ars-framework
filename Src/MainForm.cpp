@@ -359,8 +359,10 @@ bool MainForm::handleKeyPress(const EventType& event)
         case vchrRockerCenter:
         case chrLineFeed:
         case chrCarriageReturn:
-            Control control(*this, goButton);
-            control.hit();
+            {
+                Control control(*this, goButton);
+                control.hit();
+            }                
             handled=true;
             break;
     }

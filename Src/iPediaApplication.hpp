@@ -90,6 +90,12 @@ public:
     const RenderingPreferences& renderingPreferences() const
     {return preferences().renderingPreferences;}
     
+    enum Error
+    {
+        errMalformedResponse=Application::errFirstAvailable,
+        errFirstAvailable
+    };
+    
 private:
     
     Preferences preferences_;

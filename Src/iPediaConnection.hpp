@@ -12,10 +12,9 @@ class iPediaConnection: public ArsLexis::SimpleSocketConnection
     ArsLexis::String term_;
 
     UInt16 inPayload_:1;
-    UInt16 payloadIsError_:1;
     UInt16 definitionNotFound_:1;
     UInt16 registering_:1;
-    UInt16 formatVersion_:12;
+    UInt16 formatVersion_:13;
     
     UInt16 payloadStart_;    
     UInt16 payloadLength_;
@@ -59,10 +58,24 @@ public:
     
     void setHistoryChange(HistoryChange hc)
     {historyChange_=hc;}
+    
+    enum ServerError
+    {
+        serverErrorNone,
+        serverErrorFailure,
+        serverErrorFirst=serverErrorFailure,
+        serverErrorUnsupportedDevice,
+        serverErrorInvalidAuthorization,
+        serverErrorMalformedRequest,
+        serverErrorLast=serverErrorMalformedRequest
+    };
 
 private:
     
     HistoryChange historyChange_;
+    ServerError serverError_;
+    
+    void handleServerError();
     
 };
 

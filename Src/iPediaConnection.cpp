@@ -13,14 +13,14 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
     parser_(0),
     transactionId_(random((UInt32)-1)),
     inPayload_(false),
-    payloadIsError_(false),
     definitionNotFound_(false),
     registering_(false),
     formatVersion_(0),
     payloadStart_(0),
     payloadLength_(0),
     processedSoFar_(0),
-    historyChange_(historyReplaceForward)
+    historyChange_(historyReplaceForward),
+    serverError_(serverErrorNone)
 {
 }
 
@@ -114,19 +114,22 @@ void iPediaConnection::processLine(UInt16 start, UInt16 end)
     Int32 value=0;
     Err error=errNone;
     const char* line=response().data()+start;
-    if (start==response().find(definitionNotFoundField, start))
+    if (start==response().find(transactionIdField, start)) ;
+        //! @todo Handle transactionid field.
+    else if (start==response().find(definitionNotFoundField, start))
         definitionNotFound_=true;
     else if (start==response().find(formatVersionField, start))
     {
         error=extractFieldIntValue(response(), start, end, value);
         if (!error)
             formatVersion_=value;
+        else
+            error=iPediaApplication::errMalformedResponse;
     }
     else if (start==response().find(definitionForField, start))
         definitionForTerm_=extractFieldValue(response(), start, end);
-    else if ((start==response().find(errorField, start)) || (start==response().find(definitionField, start))) // Assignment here is intentional.
+    else if (start==response().find(definitionField, start)) 
     {
-        payloadIsError_=(start==response().find(errorField, start));
         error=extractFieldIntValue(response(), start, end, value);
         if (!error)
         {
@@ -136,15 +139,30 @@ void iPediaConnection::processLine(UInt16 start, UInt16 end)
             delete parser_;
             parser_=new DefinitionParser(response(), payloadStart_);
         }
+        else
+            error=iPediaApplication::errMalformedResponse;
     }
     else if (start==response().find(cookieField, start))
     {
         String cookie=extractFieldValue(response(), start, end);
         iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
-        if (cookie.length()!=iPediaApplication::Preferences::cookieLength) ;
-        // @todo Notify malformed response here.
+        if (cookie.length()!=iPediaApplication::Preferences::cookieLength)
+            error=iPediaApplication::errMalformedResponse;
         else
             StrCopy(app.preferences().cookie, cookie.c_str());
+    }
+    else if (start==response().find(errorField, start))
+    {
+        error=extractFieldIntValue(response(), start, end, value);
+        if (!error)
+        {
+            if (value>=serverErrorFirst && value<=serverErrorLast)
+                serverError_=static_cast<ServerError>(value);
+            else
+                error=iPediaApplication::errMalformedResponse;
+        }            
+        else
+            error=iPediaApplication::errMalformedResponse;
     }
 
     if (error)
@@ -199,53 +217,79 @@ void iPediaConnection::reportProgress()
 void iPediaConnection::finalize()
 {
     processResponseIncrement(true);
-    iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
-    if (parser_!=0)
+    if (!serverError_)
     {
-        MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
-        if (form)
+        iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
+        if (parser_!=0)
         {
-            parser_->updateDefinition(form->definition());
-            switch (historyChange_)
+            MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
+            if (form)
             {
-                case historyMoveForward:
-                    form->history().moveForward();
-                    break;
-                
-                case historyMoveBack:
-                    form->history().moveBack();
-                    break;
-                
-                case historyReplaceForward:
-                    form->history().replaceForward(definitionForTerm_);
-                    break;
-                
-                default:
-                    assert(false);
-            }                    
-            form->setDisplayMode(MainForm::showDefinition);
-            form->synchronizeWithHistory();
-            form->update();
+                parser_->updateDefinition(form->definition());
+                switch (historyChange_)
+                {
+                    case historyMoveForward:
+                        form->history().moveForward();
+                        break;
+                    
+                    case historyMoveBack:
+                        form->history().moveBack();
+                        break;
+                    
+                    case historyReplaceForward:
+                        form->history().replaceForward(definitionForTerm_);
+                        break;
+                    
+                    default:
+                        assert(false);
+                }                    
+                form->setDisplayMode(MainForm::showDefinition);
+                form->synchronizeWithHistory();
+                form->update();
+            }
         }
+        
+        if (registering_ && !serverError_)
+            app.preferences().serialNumberRegistered=true;
+        
+        if (definitionNotFound_)
+            FrmAlert(definitionNotFoundAlert);
     }
-    
-    if (registering_ && !payloadIsError_)
-        app.preferences().serialNumberRegistered=true;
-    
-    if (definitionNotFound_)
-        FrmAlert(definitionNotFoundAlert);
+    else
+        handleServerError();
         
     SimpleSocketConnection::finalize();
 }
 
 void iPediaConnection::handleError(Err error)
 {
+    UInt16 alertId=frmInvalidObjectId;
     switch (error)
     {
         case netErrBufTooSmall:
-            FrmAlert(definitionTooBigAlert);
+            alertId=definitionTooBigAlert;
             break;
-            //! @todo Display meaningful messages in case of other errors as well.
+            
+        case iPediaApplication::errMalformedResponse:
+            alertId=malformedResponseAlert;
+            break;
     }
+    if (frmInvalidObjectId!=alertId)
+        FrmAlert(alertId);
     SimpleSocketConnection::handleError(error);
+}
+
+static const UInt16 serverErrorAlerts[]=
+{   
+    serverFailureAlert,
+    unsupportedDeviceAlert,
+    invalidAuthorizationAlert,
+    malformedRequestAlert
+};
+
+void iPediaConnection::handleServerError()
+{
+    assert(serverErrorNone!=serverError_);
+    assert(serverErrorLast>=serverError_);
+    FrmAlert(serverErrorAlerts[serverError_-1]);
 }
