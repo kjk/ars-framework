@@ -98,3 +98,19 @@ bool HistorySupport::handleEventInForm(EventType& event)
     
     return true;
 }
+
+ulong_t HistorySupport::setEntryTitleForUrl(const char_t* title, const char_t* url)
+{
+    HistoryCache cache;
+    status_t err = cache.open(cacheName_);
+    if (errNone != err)
+        return HistoryCache::entryNotFound;        
+    
+    ulong_t index = cache.entryIndex(url);
+    if (HistoryCache::entryNotFound == index)
+        return HistoryCache::entryNotFound;
+        
+    cache.setEntryTitle(index,title);
+    cache.close();
+    return index;
+}

@@ -152,12 +152,21 @@ status_t HistoryCache::writeIndex()
 
 ulong_t HistoryCache::entryIndex(const char_t* entry) const
 {
+/*
     for (ulong_t i = 0; i <indexEntriesCount_; ++i)
     {   
         if (0 == tstrcmp(entry, indexEntries_[i].url))
             return i;
     }
     return entryNotFound;
+*/
+    ulong_t j = entryNotFound;
+    for (ulong_t i = 0; i <indexEntriesCount_; ++i)
+    {   
+        if (0 == tstrcmp(entry, indexEntries_[i].url))
+            j = i;
+    }
+    return j;
 }
 
 const char_t* HistoryCache::entryUrl(ulong_t index) const

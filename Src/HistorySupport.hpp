@@ -34,6 +34,10 @@ public:
     
     bool handleEventInForm(EventType& event);
     
+    /**
+     * return index of that entry (entryNotFound (-1) if not found)
+     */
+    ulong_t setEntryTitleForUrl(const char_t* title, const char_t* url);
 };
 
 #endif
