@@ -971,17 +971,21 @@ char_t* StringCopyN(const char_t* str, int strLen)
     return newStr;
 }
 
-// note: caller needs to free memory with delete
-char* CharCopyN(const char* str, int strLen)
+// note: caller needs to free memory with free
+char* CharCopyN__(const char* curStr, int len, const char_t* file, int line)
 {
     using namespace std;
-    char *newStr = new char[strLen+1];
-    if (NULL==newStr)
+    if (-1 == len)
+        len = strlen(curStr);
+    char *newStr = (char*)malloc__(sizeof(char) * (len + 1), file, line);
+    if (NULL == newStr)
         return NULL;
-    memcpy(newStr, str, strLen*sizeof(char));
-    newStr[strLen] = '\0';
+
+    memcpy(newStr, curStr, sizeof(char) * len);
+    newStr[len] = '\0';
     return newStr;
 }
+
 
 // strip (i.e. remove whitespace from the beginning and the end of the string)
 // str in place.

@@ -133,7 +133,7 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
 //always return style!
 DefinitionStyle* parseStyle(const char* style, ulong_t length)
 {
-    DefinitionStyle* s = new DefinitionStyle();
+    DefinitionStyle* s = new_nt DefinitionStyle();
     s->reset();
 
 

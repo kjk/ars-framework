@@ -196,7 +196,8 @@ char_t *StringCopy2__(const char_t *curStr, int len, const char_t* file, int lin
 
 char_t *StringCopyN(const char_t *str, int strLen);
 
-char* CharCopyN(const char* str, int strLen);
+char* CharCopyN__(const char* curStr, int len, const char_t* file, int line);
+#define CharCopyN(str, len) CharCopyN__(str, len, __FILE__, __LINE__)
 
 bool StrEmpty(const char_t *str);
 void StrStrip(char_t *str);

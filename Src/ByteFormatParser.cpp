@@ -65,6 +65,8 @@ ByteFormatParser::ByteFormatParser():
 ByteFormatParser::~ByteFormatParser()
 {
     delete model_;
+    for (int i=0; i < totalStyleCount_; i++)
+        free(styleNames_[i]);
     delete [] styleNames_;
 }
 
@@ -72,7 +74,10 @@ DefinitionModel* ByteFormatParser::releaseModel()
 {
     DefinitionModel* model = model_;
     model_ = NULL;
+    for (int i=0; i < totalStyleCount_; i++)
+        free(styleNames_[i]);
     delete [] styleNames_;
+    totalStyleCount_ = 0;    
     styleNames_ = NULL;
     return model;
 }
@@ -99,7 +104,10 @@ void ByteFormatParser::reset()
 
     delete model_;
     model_ = NULL;
+    for (int i=0; i < totalStyleCount_; i++)
+        free(styleNames_[i]);
     delete [] styleNames_;
+    totalStyleCount_ = 0;    
     styleNames_ = NULL;
 }
 
@@ -217,7 +225,7 @@ bool ByteFormatParser::parseParam()
                     // <nameLength><name><value>
                     ulong_t nameLength = readUnaligned32(&inText_[start_]);
                     styleNames_[styleCount_] = CharCopyN(&inText_[start_+sizeLength], nameLength);
-                    DefinitionStyle* style =  parseStyle(&inText_[start_+sizeLength+nameLength],currentParamLength_-(sizeLength+nameLength));
+                    DefinitionStyle* style = parseStyle(&inText_[start_+sizeLength+nameLength],currentParamLength_-(sizeLength+nameLength));
                     model_->styles_[styleCount_] = style;
                     styleCount_++;
                 }            
@@ -234,6 +242,7 @@ bool ByteFormatParser::parseParam()
                 const DefinitionStyle* serverStyle = NULL;
                 for (int i=0; i<totalStyleCount_;i++)
                 {
+                    //TODO: this is ugly (but not broken - styles are sorted!)
                     if (0 == StrNCompare(styleNames_[i],&inText_[start_],currentParamLength_))
                     {
                         serverStyle = model_->styles_[i];
@@ -251,12 +260,13 @@ bool ByteFormatParser::parseParam()
         case paramStylesCount:
             {
                 //  free old styles
+                for (int i=0; i < totalStyleCount_; i++)
+                    free(styleNames_[i]);
                 delete [] styleNames_;
-
+                styleNames_ = NULL;
                 delete [] model_->styles_;
                 model_->styles_ = NULL;
                 model_->styleCount_ = 0;
-                
                 styleCount_ = 0;
                 totalStyleCount_ = readUnaligned32(&inText_[start_]);
                 assert(totalStyleCount_ > 0);
@@ -264,12 +274,20 @@ bool ByteFormatParser::parseParam()
                 
                 model_->styles_ = new_nt DefinitionStyle*[totalStyleCount_];
                 if (NULL == model_->styles_)
+                {
+                    totalStyleCount_ = 0;
                     return false; // TODO: here it's broken by design - no way to return error code
-                    
+                }    
                 memzero(model_->styles_, sizeof(DefinitionStyle*) * totalStyleCount_);
                 model_->styleCount_ = totalStyleCount_;
               
                 styleNames_ = new_nt char*[totalStyleCount_];
+                if (NULL == styleNames_)
+                {
+                    totalStyleCount_ = 0;
+                    return false; // TODO: here it's broken by design - no way to return error code
+                }    
+                memzero(styleNames_, sizeof(char*) * totalStyleCount_);
             }
             break;
         
