@@ -79,7 +79,6 @@ namespace KXml2{
         error_t pushEntity();
         error_t pushText(int delimiter, bool resolveEntities);
         String  get(int pos);
-        String  getText();
         void    push(int c);
         error_t read(const char c);
         error_t read(int& ret);
@@ -94,6 +93,7 @@ namespace KXml2{
     public:
         KXmlParser();
         ~KXmlParser();
+        String  getText();
         error_t setInput(XmlReader *reader);
         error_t setFeature(String feature, bool flag);
         error_t nextToken(int& ret);
