@@ -45,7 +45,7 @@ namespace ArsLexis
         }
         //we need to add "..."
         uint_t ellipsisWidth = 100;
-        uint_t ellipsisLength = 4;
+        uint_t ellipsisLength = 3;
         charsInWidth(_T("..."), ellipsisLength, ellipsisWidth);
         width = widthInOut - ellipsisWidth;
         length = lengthInOut;
