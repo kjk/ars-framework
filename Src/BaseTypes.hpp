@@ -27,7 +27,7 @@ namespace ArsLexis
     struct EventType
     {
         int eType;
-        void* data;
+        char data[8];
     };
 
     typedef DWORD tick_t;

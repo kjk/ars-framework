@@ -87,10 +87,10 @@ namespace ArsLexis
         return sysErrParamErr;
     }
 
-    status_t gePlatform(String& out)
+    status_t getPlatform(String& out)
     {
         // TODO: make it different for Pocket PC
-        out.append("Smartphone");
+        out.append(_T("Smartphone"));
         return errNone;
     }
 
