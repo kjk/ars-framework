@@ -72,7 +72,10 @@ static BOOL CALLBACK RegCodeDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
         {
             HWND hwndEdit = GetDlgItem(hDlg,IDC_EDIT_REGCODE);
             GetEditWinText(hwndEdit, g_newRegCode);
-            EndDialog(hDlg, REGISTER_PRESSED);
+            if (!g_newRegCode.empty())
+            {
+                EndDialog(hDlg, REGISTER_PRESSED);
+            }
             return TRUE;
         }
     }
