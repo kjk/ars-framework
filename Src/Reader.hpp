@@ -30,7 +30,7 @@ namespace ArsLexis {
         // return 0 in length if this is the end of stream
         virtual status_t readRaw(void* buffer, uint_t& length)=0;
         
-        status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
+        virtual status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
         
         virtual ~Reader();
         

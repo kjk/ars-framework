@@ -2,6 +2,7 @@
 #include <Text.hpp>
 #include <Reader.hpp>
 #include <DataStore.hpp>
+#include <BufferedReader.hpp>
 
 #if defined(__MWERKS__)
 # pragma far_code
@@ -145,8 +146,9 @@ status_t UniversalDataHandler::handleIncrement(const ArsLexis::String& payload, 
 
 UniversalDataHandler::~UniversalDataHandler() {}
 
-static status_t readUniversalDataFromReader(ArsLexis::Reader& reader, UniversalDataFormat& out)
+static status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, UniversalDataFormat& out)
 {
+    BufferedReader reader(origReader, 1024);
     int lineNo = 0;
     long controlDataLength = 0;
     bool eof = false;

@@ -44,6 +44,9 @@ namespace ArsLexis {
         status_t readRaw(void* buffer, uint_t& length);
         
         ulong_t position() const {return position_;}
+
+        //! Provides accelerated readLine thanks to the use of buffering.        
+        virtual status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
         
     private:
 

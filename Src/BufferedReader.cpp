@@ -140,5 +140,47 @@ status_t BufferedReader::readMarked(void* buffer, uint_t& length)
     return errNone;
 }
 
+status_t BufferedReader::readLine(bool& eof, String& out, char_t delimiter)
+{
+    String line;
+    while (true) 
+    {
+        const char_t* begin = (const char_t*)&buffer_[position_];
+        uint_t length = (buffer_.size() - position_)/sizeof(char_t);
+        if (0 != length)
+        {
+            const char_t* end = begin + length;
+            const char_t* pos = std::find(begin, end, delimiter);
+            uint_t readLength = pos - begin;
+            line.append(begin, readLength);
+            position_ += readLength * sizeof(char_t);
+            if (pos != end) // We've found delimiter
+            {
+                position_ += sizeof(char_t); // Skip delimiter
+                break;
+            }
+        }
+        assert(buffer_.size() == position_);
+        position_ = 0;
+        buffer_.resize(chunkSize_);
+        length = chunkSize_;
+        status_t error = reader_.readRaw(&buffer_[position_], length);
+        if (errNone != error)
+        {
+            buffer_.clear();
+            return error;
+        }
+        buffer_.resize(length);
+        if (0 == length)
+        {
+            eof = true;
+            break;
+        }
+    }
+    out = line;
+    return errNone;
+}
+
+
     
 
