@@ -230,6 +230,12 @@ namespace ArsLexis
             );
         }
            
+        void setLabel(const char* label)
+        {CtlSetLabel(object(), label);}
+        
+        const char* label() const
+        {return CtlGetLabel(object());}
+        
         ~Control();
                 
     };
