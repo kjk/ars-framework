@@ -1,4 +1,7 @@
 /* pilrc generated file.  Do not edit!*/
+#define currentTermField 1015
+#define forwardButton 1014
+#define backButton 1013
 #define termInputField 1012
 #define termLabel 1011
 #define definitionScrollBar 1010
