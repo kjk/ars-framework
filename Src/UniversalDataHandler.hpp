@@ -17,8 +17,6 @@ extern void readUniversalDataFromStream(const ArsLexis::char_t* streamName, Univ
 
 class UniversalDataHandler: public ArsLexis::LineBufferedPayloadHandler {
 
-    DataStoreWriterPtr      writer_;
-    const ArsLexis::char_t* writerStreamName_;
     int                     lineNo_;
     long                    controlDataLength_;
     
@@ -33,8 +31,6 @@ public:
     UniversalDataFormat universalData;
 
     UniversalDataHandler();
-
-    UniversalDataHandler(const ArsLexis::char_t* streamName);
 
     ~UniversalDataHandler();
 

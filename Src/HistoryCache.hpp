@@ -34,8 +34,6 @@ private:
     
     status_t writeIndex();
     
-    void close();
-    
 public:
     
     DataStore* dataStore;
@@ -64,6 +62,8 @@ public:
     DataStoreReader* readerForEntry(ulong_t index);
     
     DataStoreWriter* writerForEntry(ulong_t index);
+    
+    void close();
     
 };
 

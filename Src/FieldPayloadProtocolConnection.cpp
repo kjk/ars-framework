@@ -61,6 +61,12 @@ namespace ArsLexis
         return error;
     }
 
+    status_t FieldPayloadProtocolConnection::handlePayloadIncrement(const String& payload, ulong_t& length, bool finish)
+    {
+        assert(NULL != payloadHandler_.get());
+        return payloadHandler_->handleIncrement(payload, length, finish);
+    }
+
     status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
     {
         bool goOn=false;
@@ -91,7 +97,7 @@ namespace ArsLexis
                 if (resp.length()>=payloadLengthLeft_+lineSeparatorLength)
                 {
                     if (length>0)
-                        error=payloadHandler_->handleIncrement(resp, length, true);
+                        error = handlePayloadIncrement(resp, length, true);
                     if (errNone!=error)
                         goto Exit;
                     error = notifyPayloadFinished();
@@ -104,7 +110,7 @@ namespace ArsLexis
                 else
                 {
                     bool finishPayload = (resp.length()>=payloadLengthLeft_);
-                    error = payloadHandler_->handleIncrement(resp, length, finishPayload);
+                    error = handlePayloadIncrement(resp, length, finishPayload);
                     if (errNone!=error)
                         goto Exit;
 

@@ -56,17 +56,8 @@ OnError:
 
 UniversalDataHandler::UniversalDataHandler():
     lineNo_(0), 
-    controlDataLength_(0),
-    writerStreamName_(NULL)
+    controlDataLength_(0)
 {}
-
-UniversalDataHandler::UniversalDataHandler(const ArsLexis::char_t* streamName):
-    lineNo_(0),
-    controlDataLength_(0),
-    writerStreamName_(streamName)
-{
-    openDataStoreWriter(writerStreamName_, writer_);
-}
 
 status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, long& controlDataLength)
 {
@@ -128,7 +119,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
 
 status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
 {
-    writeLineToDataStore(writer_, line);
+//    writeLineToDataStore(writer_, line);
     return parseUniversalDataFormatTextLine(line, universalData, lineNo_, controlDataLength_);
 }
 
@@ -162,8 +153,8 @@ static status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, Univer
         ArsLexis::status_t error=reader.readLine(eof, line);
         if (errNone!=error)
             return error;
-        if (eof) //writer puts '\n' after last line... 
-            break;
+//      if (eof) //writer puts '\n' after last line... 
+//            break;
         error = parseUniversalDataFormatTextLine(line, out, lineNo, controlDataLength);
         if (errNone!=error)
             return error;

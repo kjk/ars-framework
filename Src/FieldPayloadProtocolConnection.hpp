@@ -43,6 +43,8 @@ namespace ArsLexis
         
     protected:
     
+        virtual status_t handlePayloadIncrement(const String& payload, ulong_t& length, bool finish);
+        
         virtual status_t handleField(const String& name, const String& value)
         {
             assert(false);
