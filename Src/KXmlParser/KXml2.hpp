@@ -1,7 +1,7 @@
 #ifndef __KXML2_KXML2_HPP__
 #define __KXML2_KXML2_HPP__
 
-#include "BaseTypes.hpp"
+#include "..\BaseTypes.hpp"
 
 namespace KXml2 {
 
