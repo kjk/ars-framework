@@ -53,16 +53,16 @@ static BOOL InitStringList(HWND hDlg)
     shidi.dwFlags = SHIDIF_SIZEDLGFULLSCREEN;
     shidi.hDlg    = hDlg;
 
+    // If we could not initialize the dialog box, return an error
+    if (!SHInitDialog(&shidi))
+        return FALSE;
+
     // Set up the menu bar
     SHMENUBARINFO shmbi = {0};  
     shmbi.cbSize     = sizeof(shmbi);
     shmbi.hwndParent = hDlg;
     shmbi.nToolBarId = IDR_STRING_LIST_MENUBAR;
     shmbi.hInstRes   = GetModuleHandle(NULL);
-
-    // If we could not initialize the dialog box, return an error
-    if (!SHInitDialog(&shidi))
-        return FALSE;
     
     if (!SHCreateMenuBar(&shmbi))
         return FALSE;
@@ -114,13 +114,20 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
 
     if (WM_COMMAND==msg)
     {
-        if (wp==ID_CANCEL)
+        uint_t control = LOWORD(wp);
+        uint_t code = HIWORD(wp);
+        if (control==ID_CANCEL)
         {
             EndDialog(hDlg, CANCEL_PRESSED);
         }
-        else if (wp==ID_SELECT)
+        else if (control==ID_SELECT)
         {
             DoSelect(hDlg);
+        }
+        if (LBN_DBLCLK==code)
+        {
+            assert(IDC_STRING_LIST==control);
+            PostMessage(hDlg,WM_COMMAND, MAKELONG(ID_SELECT,0),0);
         }
     }
     return FALSE;
