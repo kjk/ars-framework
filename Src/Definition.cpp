@@ -143,12 +143,12 @@ void Definition::calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int 
         int newFirstLine=firstLine_+delta;
         if (newFirstLine<0)
             newFirstLine=0;
-        else if (newFirstLine>=linesCount)
+        else if (newFirstLine>=(int)linesCount)
             newFirstLine=linesCount-1;
 
-        uint_t height=0;
-        int newLastLine=0;
-        for (int lineIndex=newFirstLine; lineIndex<linesCount; ++lineIndex)
+        int height=0;
+        uint_t newLastLine=0;
+        for (uint_t lineIndex=newFirstLine; lineIndex<linesCount; ++lineIndex)
         {
             height+=lines_[lineIndex].height;
             if (height>bounds_.height())
@@ -221,7 +221,7 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
         
         if (delta>0) 
         {
-            pointDelta.y=-unionTop;
+            pointDelta.y=-(int)unionTop;
             graphics.copyArea(unionRect, bounds_.topLeft);
             graphics.erase(ArsLexis::Rectangle(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight));
             moveHotSpots(pointDelta);
