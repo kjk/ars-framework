@@ -283,7 +283,7 @@ error_t KXmlParser::pushEntity() {
     }
     else
     {
-        for (int i = 0; i < result.length(); i++)
+        for (size_t i = 0; i < result.length(); i++)
             push(result[i]);
     }
     return eNoError;
@@ -370,8 +370,6 @@ error_t KXmlParser::pushText(int delimiter, bool resolveEntities)
 
 error_t KXmlParser::getNamespaceCount(int& ret, int depth)
 {
-    error_t error;
-
     if (depth > depth_)
         return eIndexOutOfBoundsException;
     ret = nspCounts_[depth];
@@ -565,7 +563,6 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
         if (attrName.length() == 0)
             return eAttrNameExpected;
 
-        // kjk modifications
         int tmpC;
         if((error=peek(tmpC,0))!=eNoError)
             return error;
@@ -707,8 +704,7 @@ error_t KXmlParser::parseEndTag()
     return eNoError;
 }
 
-    /** precondition: &lt! consumed */
-
+/** precondition: &lt! consumed */
 error_t KXmlParser::parseDoctype(bool pushV) {
     error_t error;
         int nesting = 1;
@@ -804,9 +800,12 @@ error_t KXmlParser::parseLegacy(int& ret, bool pushV) {
 
                 if (pos < attributeCount_ && "standalone"==attributes_[4*pos+2]) {
                     String st = attributes_[3+4*pos];
-                    if ("yes"==st) standalone_ = true;
-                    else if ("no"==st) standalone_ = false;
-                    else return eIllegalStandaloneValue;
+                    if ("yes"==st) 
+                        standalone_ = true;
+                    else if ("no"==st) 
+                        standalone_ = false;
+                    else 
+                        return eIllegalStandaloneValue;
                     pos++;
                 }
 
@@ -849,7 +848,7 @@ error_t KXmlParser::parseLegacy(int& ret, bool pushV) {
         return eIllegalStartTag;
     }
 
-    for (int i = 0; i < req.length(); i++)
+    for (size_t i = 0; i < req.length(); i++)
     {
         if((error=read(req[i]))!=eNoError)
             return error;
@@ -902,72 +901,75 @@ error_t KXmlParser::parseLegacy(int& ret, bool pushV) {
 /** 
 * common base for next and nextToken. Clears the state, except from 
 * txtPos and whitespace. Does not set the type variable */
-error_t KXmlParser::nextImpl(){
+error_t KXmlParser::nextImpl()
+{
     error_t error;
 
-        if (reader_ == NULL)
-            return eNoInputSpecified;
+    if (reader_ == NULL)
+        return eNoInputSpecified;
 
-        if (type_ == END_TAG)
-            depth_--;
+    if (type_ == END_TAG)
+        depth_--;
 
-        while(true) {
-            attributeCount_ = -1;
+    while(true)
+    {
+        attributeCount_ = -1;
 
-            if (degenerated_) {
-                degenerated_ = false;
-                type_ = END_TAG;
-                return eNoError;
-            }
-
-            prefix_ = "";
-            name_ = "";
-            nameSpace_ = "";
-            text_ = "";
-
-            if((error=peekType(type_))!=eNoError)
-                return error;
-
-            switch (type_) {
-
-                case ENTITY_REF :
-                    if((error=pushEntity())!=eNoError)
-                        return error;
-                    return eNoError;
-
-                case START_TAG :
-                    if((error=parseStartTag(false))!=eNoError)
-                        return error;
-                    return eNoError;
-
-                case END_TAG :
-                    if((error=parseEndTag())!=eNoError)
-                        return error;
-                    return eNoError;
-
-                case END_DOCUMENT :
-                    return eNoError;
-
-                case TEXT :
-                    if((error=pushText('<', !token_))!=eNoError)
-                        return error;
-                    if (depth_ == 0) {
-                        if (isWhitespace_)
-                            type_ = IGNORABLE_WHITESPACE;
-                        // make exception switchable for instances.chg... !!!!
-                        //	else 
-                        //    return eTextNotAllowedOutsideRootElement;  
-                    }
-                    return eNoError;
-
-                default :
-                    if((error=parseLegacy(type_,token_))!=eNoError)
-                        return error;
-                    if (type_ != XML_DECL)
-                        return eNoError;
-                        
-            }
+        if (degenerated_)
+        {
+            degenerated_ = false;
+            type_ = END_TAG;
+            return eNoError;
         }
+
+        prefix_ = "";
+        name_ = "";
+        nameSpace_ = "";
+        text_ = "";
+
+        if((error=peekType(type_))!=eNoError)
+            return error;
+
+        switch (type_)
+        {
+            case ENTITY_REF :
+                if((error=pushEntity())!=eNoError)
+                    return error;
+                return eNoError;
+
+            case START_TAG :
+                if((error=parseStartTag(false))!=eNoError)
+                    return error;
+                return eNoError;
+
+            case END_TAG :
+                if((error=parseEndTag())!=eNoError)
+                    return error;
+                return eNoError;
+
+            case END_DOCUMENT :
+                return eNoError;
+
+            case TEXT :
+                if((error=pushText('<', !token_))!=eNoError)
+                    return error;
+                if (depth_ == 0) {
+                    if (isWhitespace_)
+                        type_ = IGNORABLE_WHITESPACE;
+                    // make exception switchable for instances.chg... !!!!
+                    //	else 
+                    //    return eTextNotAllowedOutsideRootElement;  
+                }
+                return eNoError;
+
+            default :
+                if((error=parseLegacy(type_,token_))!=eNoError)
+                    return error;
+                if (type_ != XML_DECL)
+                    return eNoError;
+                    
+        }
+    }
 }
 
 /* PUBLIC */
@@ -983,7 +985,7 @@ error_t KXmlParser::setInput(XmlReader *reader)
     attributeCount_ = -1;
     encoding_ = "";
     version_ = "";
-    standalone_ = "";
+    standalone_ = false;
     wasCR_ = false;
     if (reader_ == NULL)
         return eNoReader;
@@ -1014,24 +1016,15 @@ bool KXmlParser::isProp (String n1, bool prop, String n2) {
 error_t KXmlParser::setFeature(String feature, bool flag)
 {
     MUSTDO
-    error_t error;
 
     if (FEATURE_PROCESS_NAMESPACES == feature)
         processNsp_ = flag;
-    else if (isProp(feature, false, "relaxed"))
-        relaxed_ = flag;
+    else
+        if (isProp(feature, false, "relaxed"))
+            relaxed_ = flag;
         else
             return eUnsupportedFeature;
 
-    //WHAT IS THIS???
-    if (feature==FEATURE_RELAXED)
-    {
-        fRelaxed_ = flag;
-    }
-    else
-    {
-        // TODO: throw an exception? do nothing?
-    }
     return eNoError;
 }
 
@@ -1088,9 +1081,8 @@ String KXmlParser::getText()
 
 error_t KXmlParser::getPositionDescription(String& ret)
 {
-    error_t error;
-        
     String buf;
+
     if (type_ < TYPESLENGHT)
         buf = TYPES[type_];
     else
