@@ -1,6 +1,6 @@
 #include <SocketConnection.hpp>
-#include <algorithm>
 #include <DeviceInfo.hpp>
+#include <Resolver.hpp>
 
 #if defined(_PALM_OS)
 #include <Application.hpp>
@@ -8,7 +8,6 @@
 
 namespace ArsLexis 
 {
-
     void SocketConnectionManager::registerEvent(SocketConnection& connection, SocketSelector::EventType event)
     {
         selector_.registerSocket(connection.socket(), event);
@@ -24,7 +23,6 @@ namespace ArsLexis
     
     SocketConnectionManager::SocketConnectionManager():
         selector_(netLib_, false),
-        resolver_(netLib_),
         connectionsCount_(0)
     {}
     
@@ -101,7 +99,7 @@ namespace ArsLexis
                 if (netLib_.closed())
                     error=openNetLib();
                 if (!error)                
-                    error=conn->resolve(resolver_);
+                    error=conn->resolve();
                 if (error)
                 {
                     conn->handleError(error);
@@ -295,10 +293,10 @@ namespace ArsLexis
         return error;
     }
     
-    status_t SocketConnection::resolve(Resolver& resolver)
+    status_t SocketConnection::resolve()
     {
         assert(stateUnresolved==state());
-        status_t error=resolver.resolve(address_, addressString_, 0, transferTimeout());
+        status_t error=ArsLexis::resolveFunc(address_, manager_.netLib_, addressString_, 0, transferTimeout());
         if (!error)
             setState(stateUnopened);
         return error;

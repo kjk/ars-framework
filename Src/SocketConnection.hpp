@@ -5,7 +5,6 @@
 #include <ErrBase.h>
 #include <Logging.hpp>
 #include <SocketAddress.hpp>
-#include <Resolver.hpp>
 #include <NetLibrary.hpp>
 #include <list>
 
@@ -18,7 +17,6 @@ namespace ArsLexis
     {
         NetLibrary      netLib_;
         SocketSelector  selector_;
-        Resolver        resolver_;
 
         int                 connectionsCount_;
         SocketConnection *  connections_[MAX_CONNECTIONS];
@@ -84,7 +82,7 @@ namespace ArsLexis
 
         status_t getSocketErrorStatus(status_t& out) const;
 
-        virtual status_t resolve(Resolver& resolver);
+        virtual status_t resolve();
 
         virtual status_t notifyWritable();
 
