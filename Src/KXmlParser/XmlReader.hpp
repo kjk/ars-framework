@@ -12,7 +12,8 @@ namespace KXml2{
     class XmlReader
     {
     public:
-    
+        virtual long getActPosition() = 0;
+
         virtual error_t read(int& ret) = 0;
         
         virtual error_t read(int& ret, String& dst, int offset, int range)=0;

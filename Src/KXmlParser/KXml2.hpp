@@ -38,6 +38,17 @@ namespace KXml2 {
          eAttrNameExpected,         //parseStartTag()
          eInvalidDelimiter,         //parseStartTag()
          eNoInputSpecified,         //nextImpl()
+         eNoReader,                 //when reader_ == NULL
+         eElementStackEmpty,        //no elements on stack
+         eExpectedDifferentName,    //parseEndTag()
+         eTextNotAllowedOutsideRootElement, //text
+         ePIMustNotStartWithXml,    //parseLegacy()
+         eVersionExpected,          //parseLegacy()
+         eIllegalStandaloneValue,   //parseLegacy()
+         eIllegalXmldecl,           //parseLegacy()
+         eIllegalStartTag,          //parseLegacy()
+         eIllegalCommentDelimiter,  //parseLegacy()
+         eUnsupportedFeature,       //setFeature()
 
          errr   
 

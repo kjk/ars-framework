@@ -24,6 +24,8 @@ namespace KXml2{
         error_t read(int& ret);
 
         error_t read(int& ret, String& dst, int offset, int range);
+
+        long getActPosition();
         
     };
     

@@ -15,9 +15,6 @@ namespace KXml2{
         bool        fRelaxed_;
         XmlReader * reader_;
 
-        //as #define in cpp.
-        //static const char_t * UNEXPECTED_EOF = "Unexpected EOF";
-        //static const char_t * ILLEGAL_TYPE = "Wrong event type";
         static const int LEGACY = 999;
         static const int XML_DECL = 998;
 
@@ -82,6 +79,7 @@ namespace KXml2{
         error_t pushEntity();
         error_t pushText(int delimiter, bool resolveEntities);
         String  get(int pos);
+        String  getText();
         void    push(int c);
         error_t read(const char c);
         error_t read(int& ret);
@@ -89,16 +87,24 @@ namespace KXml2{
         error_t skip();
         error_t parseStartTag(bool xmldecl);
         error_t adjustNsp(bool& ret);
+        error_t parseEndTag();
+        error_t parseLegacy(int& ret, bool pushV);
+        error_t parseDoctype(bool pushV);
+        bool    isProp (String n1, bool prop, String n2);
     public:
         KXmlParser();
-        void    setInput(XmlReader *reader);
-        void    setFeature(String feature, bool flag);
-        void    nextToken();
+        ~KXmlParser();
+        error_t setInput(XmlReader *reader);
+        error_t setFeature(String feature, bool flag);
+        error_t nextToken(int& ret);
         error_t next(int& ret);
-        String  getPositionDescription();
+        error_t getPositionDescription(String& ret);
         int     getEventType();
         void    defineEntityReplacementText(String entity, String value);
 
+
+    public:
+        error_t TestIt(int i);
     private: //public in java!
         error_t getAttributeName(String& ret, int index);
         String  getNamespace(String prefix);

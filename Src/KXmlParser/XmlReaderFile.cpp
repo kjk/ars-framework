@@ -34,3 +34,7 @@ error_t XmlReaderFile::read(int& ret, String& dst, int offset, int range)
     return xmlReaderMemory_->read(ret, dst, offset, range);
 }
 
+long XmlReaderFile::getActPosition()
+{
+    return xmlReaderMemory_->getActPosition();
+}

@@ -13,8 +13,10 @@ namespace KXml2 {
 
     class XmlReaderMemory : public XmlReader
     {
+    private:
         const char_t *  buf_;
         long            bufSize_;
+        long            actPos_;
 
     public:
     
@@ -24,6 +26,7 @@ namespace KXml2 {
         
         error_t read(int &ret, String& dst, int offset, int range);
         
+        long getActPosition();
     };
     
 }
