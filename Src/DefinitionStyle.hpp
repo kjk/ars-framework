@@ -39,6 +39,7 @@ enum
 #define styleNameBoldGreen      "boldgreen"
 #define styleNameBoldBlue       "boldblue"
 #define styleNameLargeBlue      "largeblue"
+#define styleNameSmallGray      "smallgray"
 
 #define styleNameHeader         "header"
 #define styleNameSmallHeader    "smallheader"

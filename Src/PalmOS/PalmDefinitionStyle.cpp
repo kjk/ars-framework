@@ -75,6 +75,7 @@ static const StaticStyleEntry staticStyleTable[] =
     COLOR_AND_FONT(styleNameLargeBlue, BLUE, largeFont),
     COLOR_AND_FONT_BOLD(styleNamePageTitle, COLOR_UI_MENU_SELECTED_FILL, largeFont),
     COLOR(styleNameRed,RED),
+    COLOR_AND_FONT(styleNameSmallGray, GRAY, smallFont),
     COLOR(styleNameSmallHeader, COLOR_UI_FORM_FRAME),
     COLOR_BOLD(styleNameStockPriceDown, RED),
     COLOR_BOLD(styleNameStockPriceUp, GREEN),
