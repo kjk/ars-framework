@@ -54,8 +54,7 @@ namespace ArsLexis
 
         virtual ~FormObject();
 
-        bool valid() const
-        {return form_!=0 && (id_!=frmInvalidObjectId || frmGraffitiStateObj == type()) && index_!=frmInvalidObjectId && object_!=0;}
+        bool valid() const;
 
         UInt16 index() const
         {return index_;}

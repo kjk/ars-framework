@@ -65,6 +65,12 @@ void operator delete(void *ptr)
 #endif            
 }
 
+void operator delete[](void *ptr)
+{
+    ::operator delete(ptr);
+}
+
+
 void* operator new[](size_t size)
 {
     void* ptr=ArsLexis::allocate(size);

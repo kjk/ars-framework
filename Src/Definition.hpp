@@ -125,6 +125,8 @@ public:
     
         virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement)=0;
         
+        virtual void handleHyperlink(const ArsLexis::String& hyperlink);
+    
         virtual ~HyperlinkHandler();
         
     };

@@ -59,10 +59,7 @@ void* operator new[](size_t size);
 
 void* operator new[](size_t size, const char* file, int line);
 
-inline void operator delete[](void *ptr)
-{
-    ::operator delete(ptr);
-}
+void operator delete[](void *ptr);
 
 void* malloc__(size_t size, const char* file, int line);
 
@@ -93,6 +90,26 @@ inline void* operator new[](size_t size, NewDontThrowTag, const char* file, int 
     return malloc__(size, file, line);
 }
 
+inline void operator delete(void* p, NewDontThrowTag)
+{
+    ::operator delete(p);
+}
+
+inline void operator delete[](void* p, NewDontThrowTag)
+{
+    ::operator delete(p);
+}
+
+inline void operator delete(void* p, NewDontThrowTag, const char*, int)
+{
+    ::operator delete(p);
+}
+
+inline void operator delete[](void* p, NewDontThrowTag, const char*, int)
+{
+    ::operator delete(p);
+}
+
 #ifdef malloc
 # undef malloc
 #endif
@@ -105,8 +122,8 @@ inline void* operator new[](size_t size, NewDontThrowTag, const char* file, int 
 #if !defined(NDEBUG) && !defined(_MSC_VER)
 // MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
 # define malloc(a) malloc__((a), __FILE__, __LINE__)
-# define new_nt new  //(newDontThrow, __FILE__, __LINE__)
 # define new new (__FILE__, __LINE__)
+# define new_nt new //(newDontThrow, __FILE__, __LINE__)
 #else
 # define new_nt new (newDontThrow)
 # define malloc(a) malloc__(a)

@@ -4,6 +4,7 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 #include <FormObject.hpp>
+#include <Definition.hpp>
 
 class PopupMenuItemDrawHandler: public ArsLexis::List::CustomDrawHandler
 {
@@ -45,6 +46,7 @@ class PopupMenu
 
 public:
 
+    Definition::HyperlinkHandler* hyperlinkHandler;
     PopupMenuItemDrawHandler itemDrawHandler;
     ArsLexis::List list;
 

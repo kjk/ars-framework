@@ -1217,3 +1217,7 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
     }
 }
 #endif
+
+void Definition::HyperlinkHandler::handleHyperlink(const String&)
+{
+}

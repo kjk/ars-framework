@@ -5,7 +5,8 @@
 using namespace ArsLexis;
 
 PopupMenu::PopupMenu(ArsLexis::Form& form):
-    list(form)
+    list(form),
+    hyperlinkHandler(NULL)
 {
 }
 
@@ -68,10 +69,29 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
         
     list.attachByIndex(index);
     list.setCustomDrawHandler(&itemDrawHandler);
-    Int16 selection = LstPopupList(list);
     
-    
-    return selection;
+    const char_t* hyperlink = NULL;
+    Int16 sel;
+    while (true)
+    {
+        sel = LstPopupList(list);
+        if (noListSelection == sel)
+            break;
+        const PopupMenuItemDrawHandler::Item& item = itemDrawHandler.items[sel];
+        if (item.active)
+        {
+            hyperlink = item.hyperlink;
+            break;
+        }
+    }
+    list.hide();
+
+    if (NULL != hyperlinkHandler && NULL != hyperlink)
+    {
+        hyperlinkHandler->handleHyperlink(hyperlink);
+    }
+           
+    return sel;
 }
 
 uint_t PopupMenuItemDrawHandler::itemsCount() const
@@ -171,9 +191,9 @@ static bool extractLong(const char_t*& data, long& length, long& val)
         if (255 < chr)
             return false;
 #ifdef _PALM_OS
-        b[3 - i] = chr;
-#else
         b[i] = chr;        
+#else
+        b[3 - i] = chr;
 #endif
     }    
     val = l;
@@ -235,7 +255,7 @@ bool PopupMenuItemDrawHandler::itemsFromString(const char_t* data, long length)
             goto Fail;
         
         item.active = (0 == (flagItemInactive & val));
-        item.bold = (0 == (flagItemBold & val));
+        item.bold = (0 != (flagItemBold & val));
     }
     delete [] items;
     items = newItems;
@@ -243,6 +263,6 @@ bool PopupMenuItemDrawHandler::itemsFromString(const char_t* data, long length)
     return true;
     
 Fail:
-    delete newItems;
+    delete [] newItems;
     return false;        
 }

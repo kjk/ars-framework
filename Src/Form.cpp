@@ -20,6 +20,14 @@ static void updateForm(int formId, UInt16 updateCode)
 namespace ArsLexis 
 {
 
+    bool FormObject::valid() const
+    {
+        return NULL != form_ && 
+            (frmInvalidObjectId != index_ && NULL != object_) && 
+            (frmInvalidObjectId != id_ || frmGraffitiStateObj == type());
+    }
+    
+
     Boolean Form::routeEventToForm(EventType* event)
     {
         Form* form = NULL;
