@@ -10,7 +10,8 @@ IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 using namespace ArsLexis;
 
 iPediaApplication::iPediaApplication():
-    diaNotifyRegistered_(false)
+    diaNotifyRegistered_(false),
+    ticksPerSecond_(SysTicksPerSecond())
 {
 }
 
@@ -40,7 +41,7 @@ static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStage
 
 Err iPediaApplication::normalLaunch()
 {
-
+    setEventTimeout(0);
     NetLibrary* netLib;
     getNetLib(netLib);
     if (netLib)
@@ -51,7 +52,7 @@ Err iPediaApplication::normalLaunch()
         if (!error || netErrWouldBlock==error)
         {
             connection->registerEvent(SocketSelector::eventWrite);
-            connection->registerEvent(SocketSelector::eventException);
+//            connection->registerEvent(SocketSelector::eventException);
         }
         else
             delete connection;
@@ -105,9 +106,18 @@ Err iPediaApplication::getNetLib(NetLibrary*& netLib)
 
 void iPediaApplication::waitForEvent(EventType& event)
 {
-    if (connectionManager_.get() && connectionManager_->connectionsAvailable())
-        connectionManager_->runUntilEvent();
-    Application::waitForEvent(event);
+    if (connectionManager_.get() && connectionManager_->active())
+    {
+        setEventTimeout(0);
+        Application::waitForEvent(event);
+        if (nilEvent==event.eType)
+            connectionManager_->runUntilEvent(ticksPerSecond_/20);
+    }
+    else
+    {
+        setEventTimeout(evtWaitForever);
+        Application::waitForEvent(event);
+    }        
 }
 
 Err iPediaApplication::initializeForm(Form& form)

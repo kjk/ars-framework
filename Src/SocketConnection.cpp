@@ -35,7 +35,7 @@ namespace ArsLexis
     
     SocketConnectionManager::SocketConnectionManager(NetLibrary& netLib):
         netLib_(netLib),
-        selector_(netLib)
+        selector_(netLib, false)
     {}
     
     SocketConnectionManager::~SocketConnectionManager()
@@ -47,43 +47,39 @@ namespace ArsLexis
     }
 
 
-    Err SocketConnectionManager::runUntilEvent()
+    Err SocketConnectionManager::runUntilEvent(Int32 timeout)
     {
-        Err error=errNone;
-        while (!error)
+        Err error=selector_.select(timeout);
+        if (!error)
         {
-            error=selector_.select();
-            if (!error)
+            assert(selector_.eventsCount()>0);
+            UInt16 connCount=connections_.size();
+            for (UInt16 i=0; i<connCount; ++i)
             {
-                assert(selector_.eventsCount()>0);
-                UInt16 connCount=connections_.size();
-                for (UInt16 i=0; i<connCount; ++i)
+                SocketConnection* conn=connections_[i];
+                if (conn)
                 {
-                    SocketConnection* conn=connections_[i];
-                    if (conn)
+                    if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
                     {
-                        if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
-                        {
-                            unregisterEvent(*conn, SocketSelector::eventRead);
-                            conn->notifyReadable();
-                        }
-                        if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
-                        {
-                            unregisterEvent(*conn, SocketSelector::eventWrite);
-                            conn->notifyWritable();
-                        } 
-                        // There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
-                        // Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
-                        if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventException))
-                        {
-                            unregisterEvent(*conn, SocketSelector::eventException);
-                            conn->notifyException();
-                        }                        
+                        unregisterEvent(*conn, SocketSelector::eventRead);
+                        conn->notifyReadable();
                     }
+                    if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
+                    {
+                        unregisterEvent(*conn, SocketSelector::eventWrite);
+                        conn->notifyWritable();
+                    } 
+                    // There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
+                    // Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
+                    if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventException))
+                    {
+                        unregisterEvent(*conn, SocketSelector::eventException);
+                        conn->notifyException();
+                    }                        
                 }
-                if (selector_.checkStandardEvent())
-                    break;
             }
+//            if (selector_.checkStandardEvent())
+//                break;
         }
         return error;
     }

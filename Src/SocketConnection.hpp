@@ -29,10 +29,10 @@ namespace ArsLexis
 
         ~SocketConnectionManager();
         
-        Boolean connectionsAvailable() const
-        {return !connections_.empty();}
+        Boolean active() const
+        {return selector_.active();}
         
-        Err runUntilEvent();
+        Err runUntilEvent(Int32 timeout=evtWaitForever);
         
         friend class SocketConnection;
     };

@@ -148,26 +148,28 @@ namespace ArsLexis
         if (-1==eventsCount)
         {
             // The following is workaround for probable PalmOS 5+ bug - NetLibSelect returns -1 without any error code (seems to do so when there are some events in the queue)
-            if (!error) 
-            {
-                eventsCount_=1;
-                netFDSet(sysFileDescStdIn, &outputFDs_[eventRead]);
-            }
+//            if (!error) 
+//            {
+//                eventsCount_=1;
+//                netFDSet(sysFileDescStdIn, &outputFDs_[eventRead]);
+//            }
 //            assert(error);
-            else
-                eventsCount_=0;
+//            else
+            if (!error)
+                error=netErrTimeout;
+            eventsCount_=0;
         }
         else
         {
             assert(!error);
             // This also seems to be a bug in PalmOS 5+. We have to simulate input event by incrementing eventsCount.
-            if (0==eventsCount)
-            {
-                eventsCount_=1;
-                netFDSet(sysFileDescStdIn, &outputFDs_[eventRead]);
-            }
-//            assert(eventsCount>0);
-            else
+//            if (0==eventsCount)
+//            {
+//                eventsCount_=1;
+//                netFDSet(sysFileDescStdIn, &outputFDs_[eventRead]);
+//            }
+            assert(eventsCount>0);
+//            else
                 eventsCount_=eventsCount;
         }            
         return error;
@@ -181,7 +183,7 @@ namespace ArsLexis
                 netFDIsSet(i, &inputFDs_[eventWrite]) ||
                 netFDIsSet(i, &inputFDs_[eventException]))
             {
-                width_=i;
+                width_=i+1;
                 break;
             }                
     }

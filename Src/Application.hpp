@@ -214,6 +214,9 @@ namespace ArsLexis
         virtual Err normalLaunch()
         {return errNone;}
         
+        void setEventTimeout(Int32 timeout)
+        {eventTimeout_=timeout;}
+        
     public:
     
         virtual Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);

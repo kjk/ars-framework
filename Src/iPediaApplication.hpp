@@ -18,6 +18,8 @@ class iPediaApplication: public ArsLexis::Application
     ConnectionManagerPtr connectionManager_;
     
     Err getNetLib(ArsLexis::NetLibrary*& netLib);
+    
+    UInt16 ticksPerSecond_;
 
 protected:
 

@@ -176,6 +176,9 @@ namespace ArsLexis
         UInt16 eventsCount() const
         {return eventsCount_;}
         
+        Boolean active() const
+        {return inputFDs_[eventRead] || inputFDs_[eventWrite] || inputFDs_[eventException];}
+        
     };
     
 }
