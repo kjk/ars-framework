@@ -9,31 +9,33 @@ RESETAUTOID 1000
 
 MENU ID mainMenuBar
 BEGIN
+    PULLDOWN "Main"
+    BEGIN
+         MENUITEM "Search" ID searchMenuItem "S"
+         MENUITEM "Full-text Search" ID fullTextSearchMenuItem "F"
+         MENUITEM "Last Search Results" ID searchResultsMenuItem  "L"
+         MENUITEM SEPARATOR ID AUTOID
+         MENUITEM "Random article" ID randomMenuItem  "R"
+#ifndef NDEBUG		 
+         MENUITEM SEPARATOR ID AUTOID
+         MENUITEM "localhost" ID useLocalhostMenuItem  
+         MENUITEM "dict-pc.arslexis.com" ID useDictPcMenuItem    
+         MENUITEM "Stress Mode" ID toggleStressModeMenuItem   
+#endif
+    END
+		 
     PULLDOWN "Edit"
     BEGIN
-		MENUITEM "Random article" ID randomMenuItem  "R"
         MENUITEM "Copy"ID copyMenuItem "C"
-		MENUITEM "Select All" ID selectAllMenuItem "S"
-		MENUITEM SEPARATOR ID AUTOID
-    	
-END
+        MENUITEM "Select All" ID selectAllMenuItem "S"
+    END
 
-
-	PULLDOWN "Server"
-	BEGIN
-        	MENUITEM "localhost" ID useLocalhostMenuItem  "L"
-            MENUITEM "dict-pc.arslexis.com" ID useDictPcMenuItem   "D" 
-        END
-
-	PULLDOWN "Options"
-	BEGIN
-        	MENUITEM "Register" ID registerMenuItem  "R"
-       	MENUITEM "Search Results" ID searchResultsMenuItem  "S"
-	MENUITEM SEPARATOR
-	MENUITEM "About" ID aboutMenuItem  "A"
-	MENUITEM SEPARATOR
-	MENUITEM "Stress Mode" ID toggleStressModeMenuItem "M"   
-END
+    PULLDOWN "Options"
+    BEGIN
+        MENUITEM "Register" ID registerMenuItem  "G"
+        MENUITEM SEPARATOR
+        MENUITEM "About" ID aboutMenuItem  "A"
+    END
 END	
 
 ALERT ID romIncompatibleAlert
@@ -255,3 +257,4 @@ BEGIN
 END
 
 STRINGTABLE ID connectionStatusStrings  "" "Resolving host address..." "Opening connection..." "Sending request..." "Waiting for server\'s answer..." "Retrieving response..."  
+
