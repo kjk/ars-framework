@@ -22,6 +22,8 @@
 #define typeListNumberElement               'linu'
 #define typeParagraphElement                'parg'
 #define typeIndentedParagraphElement        'ipar'
+//styles table (params are styles entries)
+#define typeStylesTableElement              'sttb'
 //pop parent element
 #define typePopParentElement                'popp'
 
@@ -33,8 +35,10 @@
 #define paramListNumber                     'lnum'
 #define paramListTotalCount                 'ltcn'
 #define paramLineBreakSize                  'muld'
-//TODO: make it works
+#define paramStyleName                      'stnm'
 #define paramFontEffects                    'fnte'
+//param of StylesTable - one style entry
+#define paramStyleEntry                     'sten'
 
 
 //other (numbers)
@@ -138,14 +142,14 @@ bool ByteFormatParser::parseParam()
         case paramTextValue:
             {
                 String str(inText_,start_,currentParamLength_);
-                if (currentElementType_ == typeGenericTextElement ||
-                    currentElementType_ == typeFormattedTextElement)
+                if (typeGenericTextElement == currentElementType_ ||
+                    typeFormattedTextElement == currentElementType_)
                     ((GenericTextElement*)currentElement_)->setText(str);
             }
             break;
             
         case paramListNumber:
-            if (currentElementType_ == typeListNumberElement)
+            if (typeListNumberElement == currentElementType_)
                 ((ListNumberElement*)currentElement_)->setNumber(readUnaligned32(&inText_[start_]));
             break;
     
@@ -197,12 +201,12 @@ bool ByteFormatParser::parseParam()
             break;
             
         case paramListTotalCount:
-            if (currentElementType_ == typeListNumberElement)
+            if (typeListNumberElement == currentElementType_)
                 ((ListNumberElement*)currentElement_)->setTotalCount(readUnaligned32(&inText_[start_]));
             break;
 
         case paramLineBreakSize:
-            if (currentElementType_ == typeLineBreakElement)
+            if (typeLineBreakElement == currentElementType_)
             {
                 ulong_t mul = readUnaligned32(&inText_[start_]);
                 ulong_t div = readUnaligned32(&inText_[start_+4]);
@@ -211,7 +215,7 @@ bool ByteFormatParser::parseParam()
             break;
             
         case paramFontEffects:
-            if (currentElementType_ == typeFormattedTextElement)
+            if (typeFormattedTextElement == currentElementType_)
             {
                 ulong_t mask = readUnaligned32(&inText_[start_]);
                 ulong_t fx = readUnaligned32(&inText_[start_+4]);
@@ -220,6 +224,24 @@ bool ByteFormatParser::parseParam()
                 
                 ((FormattedTextElement*)currentElement_)->setEffects(fontEffects);
             }
+            break;
+
+        case paramStyleEntry:
+            if (typeStylesTableElement == currentElementType_)
+            {
+                //TODO: parse style entry
+            
+            
+            
+            }
+            else
+                assert(false);
+            break;
+
+
+        case paramStyleName:
+            //TODO: set style for element
+        
             break;
             
         default:
@@ -269,6 +291,10 @@ void ByteFormatParser::parseElementParams()
 
         case typeIndentedParagraphElement:
             elems.push_back(currentElement_ = new ParagraphElement(true));
+            break;
+
+        case typeStylesTableElement:
+            //TODO: clear styles table?
             break;
             
         default:
