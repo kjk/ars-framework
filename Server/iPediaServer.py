@@ -175,7 +175,7 @@ class iPediaProtocol(basic.LineReceiver):
             return True
             
         except _mysql_exceptions.Error, ex:
-            print inst
+            print ex
             if cursor:
                 cursor.close()
             self.error=iPediaServerError.serverFailure
@@ -210,7 +210,7 @@ class iPediaProtocol(basic.LineReceiver):
             cursor.close()
             return True
         except _mysql_exceptions.Error, ex:
-            print inst
+            print ex
             if cursor:
                 cursor.close()
             self.error=iPediaServerError.serverFailure
@@ -233,7 +233,7 @@ class iPediaProtocol(basic.LineReceiver):
                     cursor.close()
                     return False
             except _mysql_exceptions.Error, ex:
-                print inst
+                print ex
                 if cursor:
                     cursor.close()
                 self.error=iPediaServerError.serverFailure
@@ -349,7 +349,7 @@ class iPediaProtocol(basic.LineReceiver):
                     self.outputField(definitionNotFoundField)
             cursor.close()
         except _mysql_exceptions.Error, ex:
-            print inst
+            print ex
             if cursor:
                 cursor.close()
             self.error=iPediaServerError.serverFailure
