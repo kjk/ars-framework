@@ -38,18 +38,18 @@ namespace ArsLexis {
         void setMessageBody(const String& mb)
         {messageBody_=mb;}
         
-        void setUri(const String& uri)
-        {uri_=uri;}
+        void setUri(const String& uri);
         
         enum Error {
             errHttpUnknownTransferEncoding=errFirstAvailable,
             errHttpUnsupportedStatusCode,
             errFirstAvailable
         };
+        
+        void addRequestHeader(const String& field, const String& value);
 
     private:
     
-        
         uint_t protocolVersionMajor_:4;
         uint_t protocolVersionMinor_:4;
         RequestMethod requestMethod_:8;

@@ -52,7 +52,7 @@ namespace ArsLexis {
         uint_t major=protocolVersionMajor_;
         uint_t minor=protocolVersionMinor_;
         int verLen=StrPrintF(versionBuffer, "%hu.%hu", major, minor);
-        out.append(method).append(' ', 1).append(uri_).append(" HTTP/", 6).append(versionBuffer, verLen).append(crLf);
+        out.append(method).append(1, ' ').append(uri_).append(" HTTP/", 6).append(versionBuffer, verLen).append(crLf);
     }
 
     void HttpConnection::renderHeaderField(String& out, const RequestField_t& field)
@@ -67,8 +67,14 @@ namespace ArsLexis {
         RequestFields_t::const_iterator end=requestFields_.end();
         for (RequestFields_t::const_iterator it=requestFields_.begin(); it!=end; ++it)
             renderHeaderField(request, *it);
-        setRequest(request);
         requestFields_.clear();
+        request.append(crLf);
+        if (!messageBody_.empty())
+        {
+            request.append(messageBody_);
+            messageBody_.clear();
+        }
+        setRequest(request);
     }
 
     Err HttpConnection::handleResponseField(const String& field, const String& value)
@@ -101,6 +107,25 @@ namespace ArsLexis {
     {
         commitRequest();
         return SimpleSocketConnection::open();
+    }
+
+    void HttpConnection::addRequestHeader(const String& field, const String& value) 
+    {
+        requestFields_.push_back(std::make_pair(field, value));
+    }
+    
+    void HttpConnection::setUri(const String& uri) 
+    {
+        uri_=uri;
+        static const int prefixLength=7;
+        if (uri.find("http://")==0)
+        {
+            String::size_type end=uri.find("/", prefixLength);
+            String address(uri, prefixLength, end-prefixLength);
+            if (address.npos==address.find(':'))
+                address.append(":80", 3);
+            setAddress(address);            
+        }
     }
     
 }

@@ -205,10 +205,13 @@ namespace ArsLexis
             log().info()<<"open(), got netErrSocketBusy from connect(), changed to errNone";
             error=errNone;
         }
-
-        setState(stateOpened);
-        registerEvent(SocketSelector::eventException);
-        registerEvent(SocketSelector::eventWrite);
+        
+        if (!error)
+        {
+            setState(stateOpened);
+            registerEvent(SocketSelector::eventException);
+            registerEvent(SocketSelector::eventWrite);
+        }
         return error;
     }
 
