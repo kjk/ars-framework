@@ -1016,6 +1016,9 @@ long bufferToHexCode(const char* in, long inLength, char* out, long outLength)
         out[2*pos+1] = numbers[in[pos] & 0x0f];
         out[2*pos]   = numbers[(in[pos] & 0xf0) >> 4];
     }
+    //if given outLength is greater than needed - terminate with zero
+    if (outLength > inLength*2)
+        out[inLength*2] = '\0';
     return inLength*2;
 }
 
