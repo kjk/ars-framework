@@ -32,6 +32,9 @@ StaticAssert<COLOR_NOT_DEF_INDEX != COLOR_DEF_INDEX>;
 #define YELLOW   RGB(255,255,0)
 #define GRAY     RGB(127,127,127)
 
+#define COLOR_UI_MENU_SELECTED_FILL   RGB(0,0,196)
+#define COLOR_UI_FORM_FRAME           RGB(0,0,196)
+
 #define FONT_NOT_DEF  FontID(-1)
 #define NOT_DEF          DefinitionStyle::notDefined
 #define TRUE            DefinitionStyle::yes
@@ -57,14 +60,23 @@ static const StaticStyleEntry staticStyleTable[] =
     COLOR(styleNameBlack,BLACK),
     COLOR(styleNameBlue,BLUE),
     COLOR_BOLD(styleNameBold,COLOR_NOT_DEF),
+    COLOR_BOLD(styleNameBoldBlue,BLUE),
+    COLOR_BOLD(styleNameBoldGreen,GREEN),
+    COLOR_BOLD(styleNameBoldRed,RED),
     COLOR(styleNameGray,GRAY),
     COLOR(styleNameGreen,GREEN),
+    COLOR_BOLD(styleNameHeader, COLOR_UI_FORM_FRAME),
     COLOR_AND_FONT(styleNameLarge, COLOR_NOT_DEF, largeFont),
+    COLOR_AND_FONT(styleNameLargeBlue, BLUE, largeFont),
+    COLOR_AND_FONT(styleNamePageTitle, COLOR_UI_MENU_SELECTED_FILL, largeFont),
     COLOR(styleNameRed,RED),
+    COLOR(styleNameSmallHeader, COLOR_UI_FORM_FRAME),
+    COLOR_BOLD(styleNameStockPriceDown, RED),
+    COLOR_BOLD(styleNameStockPriceUp, GREEN),
     COLOR(styleNameYellow,YELLOW)
     //TODO: add more and more:)
-    
 };
+
 
 uint_t getStaticStyleCount()
 {
@@ -132,6 +144,8 @@ inline static bool isColorDefined(const RGBColorType& col)
 
 DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)
 {
+    if (&other == NULL)
+        return *this;
     if (NOT_DEF != other.bold)
         bold = other.bold;
     if (NOT_DEF != other.italic)
@@ -170,5 +184,10 @@ void test_StaticStyleTable()
             assert(false);
         }
     }
+    
+    //test |= operator on NULL style
+    DefinitionStyle* ptr = NULL;
+    DefinitionStyle s = *getStaticStyle(styleIndexDefault);
+    s |= *ptr;
 }
 #endif

@@ -24,6 +24,16 @@ enum
 #define styleNameGreen          "green"
 #define styleNameYellow         "yellow"
 #define styleNameBlack          "black"
+#define styleNameBoldRed        "boldred"
+#define styleNameBoldGreen      "boldgreen"
+#define styleNameBoldBlue       "boldblue"
+#define styleNameLargeBlue      "largeblue"
+
+#define styleNameHeader         "header"
+#define styleNameSmallHeader    "smallheader"
+#define styleNamePageTitle      "pagetitle"
+#define styleNameStockPriceUp   "stockpriceup"
+#define styleNameStockPriceDown "stockpricedown"
 
 class DefinitionStyle;
 
