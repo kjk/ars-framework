@@ -7,7 +7,7 @@
 
 import re,unicodedata,entities
 
-def stripUnconsistentBlocks(text, startPattern, endPattern):
+def stripBlocks(text, startPattern, endPattern):
     opened=0
     spanStart=-1
     spans=[]
@@ -32,9 +32,8 @@ def stripUnconsistentBlocks(text, startPattern, endPattern):
         text=text[:start]+text[end:]
     return text
 
-
-def stripBlocks(text, blockElem):
-    return stripUnconsistentBlocks(text, '<%s.*?>' % blockElem, '</%s>' % blockElem)
+def stripTagBlocks(text, blockElem):
+    return stripBlocks(text, '<%s.*?>' % blockElem, '</%s>' % blockElem)
 
 def replaceRegExp(text, regExp, repl):
     match=regExp.search(text)
@@ -66,6 +65,35 @@ multipleLinesRe=re.compile("\n{3,100}")
 def stripMultipleNewLines(txt):
     txt=replaceRegExp(txt,multipleLinesRe,"\n\n")
     return txt
+    
+
+wikiStubText=""
+wikiSpoilerText="'''Warning:''' Plot details follow."
+wikiDisambigText="This is a disambiguation page; that is, one that points to other pages that might otherwise have the same name."
+wikiCopyVio1Text=""
+wikiCopyVio2Text=""
+wikiNPOVText=""
+wikiDisputedText=""
+wikiInclusionText=""
+wikiProtectedText=""
+wikiInUseText=""
+wikiControversialText=""
+wikiMacroRe=re.compile("\{\{(msg)|(subst)\:.*?\}\}", re.I)
+
+def replaceWikiMacros(term, text):
+    text=text.replace("{{msg:stub}}", wikiStubText)
+    text=text.replace("{{msg:spoiler}}", wikiSpoilerText)
+    text=text.replace("{{msg:disambig}}", wikiDisambigText)
+#    text=text.replace("{{msg:copyvio1}}", wikiCopyVio1Text)
+#    text=text.replace("{{msg:copyvio2}}", wikiCopyVio2Text)
+#    text=text.replace("{{msg:NPOV}}", wikiNPOVText)
+#    text=text.replace("{{msg:disputed}}", wikiDisputedText)
+#    text=text.replace("{{msg:inclusion}}", wikiInclusionText)
+#    text=text.replace("{{msg:protected}}", wikiProtectedText)
+#    text=text.replace("{{msg:inuse}}", wikiInUseText)
+#    text=text.replace("{{msg:controversial}}", wikiControversialText)
+    text=replaceRegExp(text, wikiMacroRe, "")
+    return text
 
 #def convertEntities(text):
 #    matches=[]
@@ -87,27 +115,32 @@ def stripMultipleNewLines(txt):
 
 # main function: given the text of wikipedia article in original wikipedia
 # format, return the article in our own format
-def convertArticle(text):
-    text=text.replace('\r','')
-    text=text.replace('&minus;', '-') # no idea why would someone use &minus; but it happens e.g. in "electron"
-    text=replaceRegExp(text, commentRe, '')     # This should be safe, as it's illegal in html to nest comments
-
-    text=stripBlocks(text, 'div')
-    text=stripBlocks(text, 'table')
-    text=stripUnconsistentBlocks(text, r'\{\|', r'\|\}')
-
-    text=replaceRegExp(text, scriptRe, '')
-
-    text=replaceTagList(text, ['b', 'strong'], "'''")
-    text=replaceTagList(text, ['em', 'i', 'cite'], "''")
-    text=replaceTagList(text, ['hr'], '----')
-    text=replaceTagList(text, ['p'], '<br>')
-    text=replaceTagList(text, ['dfn', 'code', 'samp', 'kbd', 'var', 'abbr', 'acronym', 'blockquote', 'q', 'pre', 'ins', 'del', 'dir', 'menu', 'img', 'object', 'big', 'span', 'applet', 'font', 'basefont', 'tr', 'td', 'table', 'center', 'div'], '')
-    text=replaceRegExp(text, badLinkRe, '')
-    text=entities.convertNamedEntities(text)
-    text=entities.convertNumberedEntities(text)
-    text=stripMultipleNewLines(text)
-    text=text.strip()
-    text+='\n'
-    return text
-
+def convertArticle(term, text):
+    try:
+        text=text.replace('__NOTOC__', '')
+        text=replaceWikiMacros(term, text)
+        text=text.replace('\r','')
+        text=replaceRegExp(text, commentRe, '')     # This should be safe, as it's illegal in html to nest comments
+    
+        text=stripTagBlocks(text, 'div')
+        text=stripTagBlocks(text, 'table')
+        text=stripBlocks(text, r'\{\|', r'\|\}')
+    
+        text=replaceRegExp(text, scriptRe, '')
+    
+        text=replaceTagList(text, ['b', 'strong'], "'''")
+        text=replaceTagList(text, ['em', 'i', 'cite'], "''")
+        text=replaceTagList(text, ['hr'], '----')
+        text=replaceTagList(text, ['p'], '<br>')
+        text=replaceTagList(text, ['dfn', 'code', 'samp', 'kbd', 'var', 'abbr', 'acronym', 'blockquote', 'q', 'pre', 'ins', 'del', 'dir', 'menu', 'img', 'object', 'big', 'span', 'applet', 'font', 'basefont', 'tr', 'td', 'table', 'center', 'div'], '')
+        text=replaceRegExp(text, badLinkRe, '')
+        text=entities.convertNamedEntities(term, text)
+        text=entities.convertNumberedEntities(term, text)
+        text=stripMultipleNewLines(text)
+        text=text.strip()
+        text+='\n'
+        return text
+    except:
+        print "Exception while converting term: ", term
+        return ''
+  

@@ -104,6 +104,10 @@ latin1_refs['uuml']=252
 latin1_refs['yacute']=253
 latin1_refs['thorn']=254
 latin1_refs['yuml']=255
+latin1_refs['minus']=ord('-')
+# approximate
+latin1_refs['mdash']=151
+latin1_refs['ndash']=150
 
 greek_refs=dict()
 greek_refs[913]='Alpha'
@@ -441,6 +445,9 @@ approx_refs[533]='u'
 approx_refs[534]='U'
 approx_refs[535]='u'
 approx_refs[771]='ã'
+approx_refs[8211]=chr(150)
+approx_refs[8212]=chr(151)
+approx_refs[8217]='\''
 approx_refs[8226]='º'
 approx_refs[8230]='º'
 #approx_refs[8242]='\''
@@ -455,7 +462,7 @@ approx_refs[16422]='...'
 numEntityRe=re.compile(r'&#(\d+);')
 entityRefRe=re.compile(r'&(\w+);')
 
-def convertNamedEntities(text):
+def convertNamedEntities(term, text):
     matches=[]
     for iter in entityRefRe.finditer(text):
         matches.append(iter)
@@ -468,7 +475,7 @@ def convertNamedEntities(text):
             text=text[:match.start()]+name+text[match.end():]
     return text;
 
-def convertNumberedEntities(text):
+def convertNumberedEntities(term, text):
     matches=[]
     for iter in numEntityRe.finditer(text):
         matches.append(iter)
@@ -476,19 +483,22 @@ def convertNumberedEntities(text):
     for match in matches:
         num=int(text[match.start(1):match.end(1)])
         if num>255:
-            char=unichr(num)
-            decomposed=unicodedata.normalize('NFKD', char)
-            valid=''
-            for char in decomposed:
-                if ord(char)<256:
-                    valid+=chr(ord(char))
-            if len(valid):
-                text=text[:match.start()]+valid+text[match.end():]
-            else:
-                if approx_refs.has_key(num):
-                    text=text[:match.start()]+approx_refs[num]+text[match.end():]
-                elif greek_refs.has_key(num):
-                    text=text[:match.start()]+'/'+greek_refs[num]+'/'+text[match.end():]
+            try:
+                char=unichr(num)
+                decomposed=unicodedata.normalize('NFKD', char)
+                valid=''
+                for char in decomposed:
+                    if ord(char)<256:
+                        valid+=chr(ord(char))
+                if len(valid):
+                    text=text[:match.start()]+valid+text[match.end():]
+                else:
+                    if approx_refs.has_key(num):
+                        text=text[:match.start()]+approx_refs[num]+text[match.end():]
+                    elif greek_refs.has_key(num):
+                        text=text[:match.start()]+'/'+greek_refs[num]+'/'+text[match.end():]
+            except ValueError:
+                print "Wide unicode character (%d) in definition for term: %s." % (num, term)
         else:
             text=text[:match.start()]+chr(num)+text[match.end():]
     return text

@@ -135,7 +135,7 @@ def convertTerm(cur_title,definition,ts):
     if g_fVerbose:
         log_txt = "term: %s " % term
 
-    newDef = articleconvert.convertArticle(definition)
+    newDef = articleconvert.convertArticle(term, definition)
     #newDef = definition       # uncomment to insert unconverted definition
 
     try:
@@ -178,7 +178,7 @@ def convertTermSlow(cur_title,definition,ts):
             if g_fVerbose:
                 log_txt += " Update existing record id: " + str(outRow[0])
             termId = outRow[0]
-            newDef = convertDefinition(definition)
+            newDef = convertDefinition(term, definition)
             ipedia_write_cur.execute("""UPDATE definitions SET definition='%s', last_modified='%s' WHERE id=%d""" % (dbEscape(newDef), dbEscape(str(timestamp)), termId))
         else:
             if g_fVerbose:
@@ -186,7 +186,7 @@ def convertTermSlow(cur_title,definition,ts):
     else:
         if g_fVerbose:
             log_txt += "*New record"
-        newDef = convertDefinition(definition)
+        newDef = convertDefinition(term, definition)
         ipedia_write_cur.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (dbEscape(term), dbEscape(newDef), dbEscape(str(timestamp))))
 
     if g_fVerbose:

@@ -417,7 +417,6 @@ class iPediaProtocol(basic.LineReceiver):
 
     def preprocessDefinition(self, db, cursor, definition):
         definition=self.validateInternalLinks(db, cursor, definition)
-        definition=definition.replace("__NOTOC__", '')
         definition=definition.replace("{{CURRENTMONTH}}", str(datetime.date.today().month));
         definition=definition.replace("{{CURRENTMONTHNAME}}", datetime.date.today().strftime("%B"))
         definition=definition.replace("{{CURRENTMONTHNAMEGEN}}", datetime.date.today().strftime("%B"))
