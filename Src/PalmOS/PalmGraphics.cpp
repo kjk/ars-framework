@@ -123,5 +123,17 @@ namespace ArsLexis
         RectangleType nr=toNative(rect);
         WinSetClip(&nr);        
     }
+    
+    Graphics::ClipRectangleSetter::ClipRectangleSetter(Graphics& graphics, const Rectangle& rectangle):
+        graphics_(graphics)
+    {
+        WinGetClip(&original_);
+        graphics_.setClipping(rectangle);
+    }
+    
+    Graphics::ClipRectangleSetter::~ClipRectangleSetter()
+    {
+        WinSetClip(&original_);        
+    }
  
 }

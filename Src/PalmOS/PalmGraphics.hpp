@@ -112,6 +112,17 @@ namespace ArsLexis {
             
         };
         
+        class ClipRectangleSetter: private NonCopyable
+        {
+            Graphics& graphics_;
+            RectangleType original_;
+        public:
+            
+            ClipRectangleSetter(Graphics& graphics, const Rectangle& rectangle);
+            
+            ~ClipRectangleSetter();
+        };
+        
         State_t pushState()
         {
             WinPushDrawState();
