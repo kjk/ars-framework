@@ -477,7 +477,7 @@ std::vector<ArsLexis::String> split(const String& str, const String& spliter)
 {
     std::vector<ArsLexis::String> vec;
     String::size_type curPos = 0;
-    String::size_type spliterPos;
+    String::size_type spliterPos = 0;
     while (String::npos != spliterPos)
     {
         spliterPos = str.find(spliter,curPos);
@@ -627,8 +627,8 @@ void convertFloatStringToUnsignedLong(const ArsLexis::String str, unsigned long&
 
 ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsigned int comma, ArsLexis::char_t commaSymbol, ArsLexis::char_t kSeparator)
 {
-    char buffer[64];
-    StrPrintF(buffer,"%lu",value);
+    char_t buffer[64];
+    tprintf(buffer,_T("%lu"),value);
     String str = buffer;
     //fill with zeros
     while (comma >= str.size())

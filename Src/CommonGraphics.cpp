@@ -33,10 +33,11 @@ namespace ArsLexis
 
     void Graphics::stripToWidthWithEllipsis(String& textInOut, uint_t& lengthInOut, uint_t& widthInOut, bool fFullWords)
     {
-        Graphics graphics;
+        // Graphics graphics;
         uint_t width = widthInOut;
         uint_t length = lengthInOut;
-        graphics.charsInWidth(textInOut.c_str(),length,width);
+        //graphics.charsInWidth(textInOut.c_str(),length,width);
+        charsInWidth(textInOut.c_str(),length,width);
         if (length == textInOut.length())
         {
             //fits in width
@@ -47,23 +48,27 @@ namespace ArsLexis
         //we need to add "..."
         uint_t ellipsisWidth = 100;
         uint_t ellipsisLength = 4;
-        graphics.charsInWidth(_T("..."),ellipsisLength,ellipsisWidth);
+        //graphics.charsInWidth(_T("..."),ellipsisLength,ellipsisWidth);
+        charsInWidth(_T("..."),ellipsisLength,ellipsisWidth);
         width = widthInOut - ellipsisWidth;
         length = lengthInOut;
         if (!fFullWords)
         {
             //just wrap
-            graphics.charsInWidth(textInOut.c_str(),length,width);
+            //graphics.charsInWidth(textInOut.c_str(),length,width);
+            charsInWidth(textInOut.c_str(),length,width);
             textInOut.erase(length);
             textInOut.append(_T("..."));
             lengthInOut = textInOut.length();
-            graphics.charsInWidth(textInOut.c_str(),lengthInOut,widthInOut);
+            //graphics.charsInWidth(textInOut.c_str(),lengthInOut,widthInOut);
+            charsInWidth(textInOut.c_str(),lengthInOut,widthInOut);
             return;
         }
         else
         {
             //wrap word
-            length = graphics.wordWrap2(textInOut.c_str(), width, width);
+            //length = graphics.wordWrap2(textInOut.c_str(), width, width);
+            length = wordWrap2(textInOut.c_str(), width, width);
             textInOut.erase(length);
             textInOut.append(_T("..."));
             lengthInOut = length + ellipsisLength;
