@@ -16,8 +16,8 @@ namespace ArsLexis{
     typedef const char_t CountryNameField_t[countryNameLength];
     
     struct CountryArrayEntry {
-        const StateAbbrevField_t abbrev;
-        const StateNameField_t name; 
+        const CountryAbbrevField_t abbrev;
+        const CountryNameField_t name; 
     };
     
     static const CountryArrayEntry countries[]={
@@ -297,7 +297,7 @@ namespace ArsLexis{
     int getInternationalCountryIndexByFirstChar(ArsLexis::char_t inChar)
     {
         inChar = ArsLexis::toLower(inChar);
-        for (int i = 0; i < statesCount(); i++)
+        for (int i = 0; i < countriesCount(); i++)
         {
             char_t foundChar = ArsLexis::toLower(countries[i].name[0]);
             if (inChar <= foundChar)
