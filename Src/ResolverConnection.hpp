@@ -1,6 +1,7 @@
 #ifndef __ARSLEXIS_RESOLVER_CONNECTION_HPP__
 #define __ARSLEXIS_RESOLVER_CONNECTION_HPP__
 
+#include "Resolver.hpp"
 #include "SimpleSocketConnection.hpp"
 #include <list>
 
@@ -16,7 +17,7 @@ namespace ArsLexis
         SocketConnection* nextConnection_;
         String address_;
         UInt16 port_;
-        bool useSecondaryDNS_;
+        Resolver::DNS_Choice dnsChoice_;
         UInt16 requestId_;
         const char* data_;
         UInt32 resolvedAddress_;
@@ -39,7 +40,7 @@ namespace ArsLexis
     
     public:
 
-        ResolverConnection(Resolver& resolver, SocketConnection* nextConnection, const String& address, UInt16 port);
+        ResolverConnection(Resolver& resolver, SocketConnection* nextConnection, const String& address, UInt16 port, Resolver::DNS_Choice dnsChoice);
 
         ~ResolverConnection();
         

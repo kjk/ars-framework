@@ -30,6 +30,8 @@ namespace ArsLexis
         Err getSetting(UInt16 setting, void* value, UInt16& valueLength) const;
         Err setSetting(UInt16 setting, const void* value, UInt16 valueLength);
         
+        Err getHostByName(const char* name, NetHostInfoBufType* buffer, Int32 timeout=evtWaitForever);
+        
     };
     
 }

@@ -54,4 +54,11 @@ namespace ArsLexis
         return NetLibSettingSet(refNum(), setting, const_cast<void*>(value), valueLength);
     }
 
+    Err NetLibrary::getHostByName(const char* name, NetHostInfoBufType* buffer, Int32 timeout)
+    {
+        Err error=errNone;
+        NetHostInfoType* info=NetLibGetHostByName(refNum(), name, buffer, timeout, &error);
+        return error;
+    }
+
 }

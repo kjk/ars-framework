@@ -122,7 +122,7 @@ Err iPediaApplication::getNetLibrary(NetLibrary*& netLib)
             assert(!ifError);
             netLib_=tmp;
             connectionManager_=new SocketConnectionManager(*netLib_);
-            resolver_=new Resolver();
+            resolver_=new Resolver(*netLib_);
         }
     }
     if (!error)

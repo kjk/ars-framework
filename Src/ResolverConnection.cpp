@@ -6,13 +6,13 @@
 namespace ArsLexis
 {
 
-    ResolverConnection::ResolverConnection(Resolver& resolver, SocketConnection* nextConnection, const String& address, UInt16 port):
+    ResolverConnection::ResolverConnection(Resolver& resolver, SocketConnection* nextConnection, const String& address, UInt16 port, Resolver::DNS_Choice dnsChoice):
         SimpleSocketConnection(nextConnection->manager()),
         resolver_(resolver),
         nextConnection_(nextConnection),
         address_(address),
         port_(port),
-        useSecondaryDNS_(false),
+        dnsChoice_(dnsChoice),
         requestId_(0),
         data_(0),
         resolvedAddress_(0)
@@ -26,33 +26,16 @@ namespace ArsLexis
 
     void ResolverConnection::open()
     {
-        static const UInt16 dnsPort=53;
-        UInt32 dnsAddress=0;
-        UInt16 addressSize=sizeof(dnsAddress);
-        Err error=manager().netLibrary().getSetting(useSecondaryDNS_?netSettingSecondaryDNS:netSettingPrimaryDNS, &dnsAddress, addressSize);
-        if (!error)
-        {
-            if (0==dnsAddress)
-                dnsAddress=0xc2cc9822;                   // Use 194.204.152.34 in case we run on simulator that always returns 0
-            INetSocketAddress addr(dnsAddress, dnsPort);
-            setAddress(addr);
-            buildQuery();
-            SimpleSocketConnection::open();
-        }
-        else
-            handleError(error);
+        buildQuery();
+        SimpleSocketConnection::open();
     }
     
     void ResolverConnection::handleError(Err error)
     {
-        if (useSecondaryDNS_)
-            nextConnection_->handleError(error);
+        if (Resolver::dnsSecondary==dnsChoice_)
+            resolver_.blockingResolveAndConnect(nextConnection_, address_, port_);
         else
-        {
-            ResolverConnection* secondaryConnection=new ResolverConnection(resolver_, nextConnection_, address_, port_);
-            secondaryConnection->useSecondaryDNS_=true;
-            secondaryConnection->open();
-        }
+            resolver_.doResolveAndConnect(nextConnection_, address_, port_, Resolver::dnsSecondary);
         nextConnection_=0;
         SimpleSocketConnection::handleError(error);
     }

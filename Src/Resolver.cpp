@@ -1,26 +1,40 @@
 #include "Resolver.hpp"
 #include "ResolverConnection.hpp"
 #include "SysUtils.hpp"
+#include "NetLibrary.hpp"
 
 namespace ArsLexis
 {
 
     void Resolver::updateCacheEntry(const String& name, UInt32 address)
     {
+/*    
         AddressCache_t::iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(name));
         if (it!=cache_.end())
             it->address=address;
         else
             cache_.push_front(CacheEntry(name, address));
+*/
+        for (int i=0; i<dnsAddressesCount_; ++i)
+            dnsAddresses_[i]=0;
+        cache_[name]=address;         
+        queryServerAddresses();   
     }
 
-    Resolver::Resolver()
+    Resolver::Resolver(NetLibrary& netLib):
+        netLib_(netLib)
     {
         updateCacheEntry("localhost", 0x7f000001);
     }
     
     Resolver::~Resolver()
     {
+    }
+    
+    UInt32 Resolver::dnsAddress(DNS_Choice choice)
+    {
+        assert(choice<dnsAddressesCount_);
+        return dnsAddresses_[choice];
     }
     
     Err Resolver::validateAddress(const String& origAddress, String& validAddress, UInt16& port)
@@ -49,6 +63,42 @@ namespace ArsLexis
         return error;
     }
     
+    void Resolver::doResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port, DNS_Choice choice)
+    {
+        UInt32 dnsAddr=dnsAddress(choice);
+        if (0==dnsAddr)
+        {
+            if (dnsPrimary==choice)
+                doResolveAndConnect(connection, name, port, dnsSecondary);
+            else
+                blockingResolveAndConnect(connection, name, port);
+        }
+        else
+        {
+            ResolverConnection* resolverConnection=new ResolverConnection(*this, connection, name, port, choice);
+            INetSocketAddress addr(dnsAddr, 53);
+            resolverConnection->setAddress(addr);
+            resolverConnection->open();
+        }            
+    }
+    
+    void Resolver::blockingResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port)
+    {
+        NetHostInfoBufType* buffer=new NetHostInfoBufType;
+        MemSet(buffer, sizeof(*buffer), 0);
+        Err error=netLib_.getHostByName(name.c_str(), buffer, connection->transferTimeout());
+        if (!error)
+        {
+            UInt32 resAddr=buffer->address[0];
+            assert(resAddr!=0);
+            INetSocketAddress addr(resAddr, port);
+            connection->setAddress(addr);
+            connection->open();
+        }
+        else
+            connection->handleError(error);
+        delete buffer;
+    }
    
     Err Resolver::resolveAndConnect(SocketConnection* connection, const String& address, UInt16 port)
     {
@@ -57,22 +107,29 @@ namespace ArsLexis
         Err error=validateAddress(address, validAddress, port);
         if (!error)
         {
-            AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
+//            AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
+            AddressCache_t::const_iterator it=cache_.find(validAddress);
             if (it!=cache_.end())
             {
-                INetSocketAddress addr(it->address, port);
+//                INetSocketAddress addr(it->address, port);
+                INetSocketAddress addr(it->second, port);
                 connection->setAddress(addr);
                 connection->open();
             }
             else
-            {
-                ResolverConnection* resolverConnection=new ResolverConnection(*this, connection, validAddress, port);
-                resolverConnection->open();
-            }
+                doResolveAndConnect(connection, validAddress, port, dnsPrimary);
         }
         return error;            
     }
    
-
+    void Resolver::queryServerAddresses()
+    {
+        static const UInt16 dnsPort=53;
+        for (int i=0; i<dnsAddressesCount_; ++i)
+        {
+            UInt16 addressSize=sizeof(UInt32);
+            Err error=netLib_.getSetting(i>0?netSettingSecondaryDNS:netSettingPrimaryDNS, &dnsAddresses_[i], addressSize);
+        }        
+    }
 
 }
