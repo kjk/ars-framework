@@ -38,6 +38,12 @@ public:
      * return index of that entry (entryNotFound (-1) if not found)
      */
     ulong_t setEntryTitleForUrl(const char_t* title, const char_t* url);
+    
+    /**
+     * fetch hyperlinkHandle with url under given index
+     * return false if index not found
+     */
+    bool fetchHistoryEntry(ulong_t index); 
 };
 
 #endif

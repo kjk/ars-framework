@@ -60,7 +60,7 @@ status_t HistorySupport::setup(const char_t* cacheName, uint_t popupMenuId, uint
     if (NULL == (cacheName_ = StringCopy2(cacheName)))
         return memErrNotEnoughSpace;
         
-    // this->hyperlinkHandler = hyperlinkHandler;        
+    this->hyperlinkHandler = hyperlinkHandler;        
     popupMenu_.hyperlinkHandler = hyperlinkHandler;
     popupMenuId_ = popupMenuId;
     historyButtonId_ = historyButtonId;
@@ -104,7 +104,7 @@ ulong_t HistorySupport::setEntryTitleForUrl(const char_t* title, const char_t* u
     HistoryCache cache;
     status_t err = cache.open(cacheName_);
     if (errNone != err)
-        return HistoryCache::entryNotFound;        
+        return HistoryCache::entryNotFound;
     
     ulong_t index = cache.entryIndex(url);
     if (HistoryCache::entryNotFound == index)
@@ -113,4 +113,27 @@ ulong_t HistorySupport::setEntryTitleForUrl(const char_t* title, const char_t* u
     cache.setEntryTitle(index,title);
     cache.close();
     return index;
+}
+
+bool HistorySupport::fetchHistoryEntry(ulong_t index)
+{
+    HistoryCache cache;
+    status_t err = cache.open(cacheName_);
+    if (errNone != err)
+        return false;
+    
+    if (index >= cache.entriesCount())
+    {
+        cache.close(); 
+        return false;
+    }
+    //TODO: this is ugly!
+    String url = cache.entryUrl(index);
+    cache.close(); 
+
+    Point point;
+    point.x = 10;
+    point.y = 10;
+    hyperlinkHandler->handleHyperlink(url, &point);
+    return true;
 }
