@@ -9,8 +9,7 @@ enum HyperlinkType
 {
     hyperlinkBookmark,
     hyperlinkTerm,
-    hyperlinkExternal,
-    hyperlinkClicked
+    hyperlinkExternal
 };
 
 enum ElementStyle
@@ -29,7 +28,7 @@ class RenderingPreferences
 
     enum {
         stylesCount_=2,
-        hyperlinkTypesCount_=4,
+        hyperlinkTypesCount_=3,
     };        
     
     uint_t standardIndentation_;
@@ -39,12 +38,6 @@ class RenderingPreferences
     
 public:
 
-    enum BulletType 
-    {
-        bulletCircle,
-        bulletDiamond
-    };
-    
     RenderingPreferences();
     
     enum SynchronizationResult 
@@ -60,9 +53,6 @@ public:
     SynchronizationResult synchronize(const RenderingPreferences&)
     {return noChange;}
     
-    BulletType bulletType() const
-    {return bulletType_;}
-
     struct StyleFormatting
     {
         ArsLexis::Font font;
@@ -99,18 +89,15 @@ public:
     ArsLexis::Color backgroundColor() const
     {return backgroundColor_;}
     
-    void setBulletType(BulletType type);
-    
     void setBackgroundColor(ArsLexis::Color color)
     {backgroundColor_=color;}
     
-    enum {reservedPrefIdCount=3+(hyperlinkTypesCount_+stylesCount_)*StyleFormatting::reservedPrefIdCount};
+    enum {reservedPrefIdCount=2+(hyperlinkTypesCount_+stylesCount_)*StyleFormatting::reservedPrefIdCount};
     Err serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const;
     Err serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId);
 
 private:
     
-    BulletType bulletType_;
     ArsLexis::Color backgroundColor_;
     StyleFormatting hyperlinkDecorations_[hyperlinkTypesCount_];
     StyleFormatting styles_[stylesCount_];

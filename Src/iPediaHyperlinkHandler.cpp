@@ -73,12 +73,10 @@ void iPediaHyperlinkHandler::handleHyperlink(Definition& definition, DefinitionE
             makeClicked=handleTermHyperlink(props->resource);
             break;
 
-        case hyperlinkClicked:
-            break;            
-            
         default:
             assert(false);
-    }            
+    }    
+/*            
     if (makeClicked) 
     {
         iPediaApplication& app=iPediaApplication::instance();
@@ -90,4 +88,5 @@ void iPediaHyperlinkHandler::handleHyperlink(Definition& definition, DefinitionE
             definition.renderSingleElement(graphics, app.preferences().renderingPreferences, element);
         }
     }
+*/    
 }

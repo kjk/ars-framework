@@ -314,17 +314,18 @@ void MainForm::handleLookupFinished(const EventType& event)
 
 void MainForm::handleExtendSelection(const EventType& event, bool finish)
 {
-    if (showDefinition==displayMode())
-    {
-        Definition* definition=getDefinition();
-        if (definition)
-        {
-            iPediaApplication& app=iPediaApplication::instance();
-            ArsLexis::Point point(event.screenX, event.screenY);
-            Graphics graphics(windowHandle());
-            definition->extendSelection(graphics, app.preferences().renderingPreferences, point, finish);
-        }        
-    }
+    if (showDefinition!=displayMode())
+        return;
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    const LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager && lookupManager->lookupInProgress())
+        return;
+    Definition* definition=getDefinition();
+    if (!definition)
+        return;
+    ArsLexis::Point point(event.screenX, event.screenY);
+    Graphics graphics(windowHandle());
+    definition->extendSelection(graphics, app.preferences().renderingPreferences, point, finish);
 }
 
 inline void MainForm::handlePenDown(const EventType& event)
@@ -552,16 +553,14 @@ void MainForm::randomArticle()
 
 void MainForm::copySelectionToClipboard()
 {
-    if (showDefinition==displayMode())
-    {
-        Definition* definition=getDefinition();
-        if (definition)
-        {
-            ArsLexis::String text;
-            definition->selectionToText(text);
-            ClipboardAddItem(clipboardText, text.data(), text.length());
-        }
-    }
+    if (showDefinition!=displayMode())
+        return;
+    Definition* definition=getDefinition();
+    if (!definition)
+        return;
+    ArsLexis::String text;
+    definition->selectionToText(text);
+    ClipboardAddItem(clipboardText, text.data(), text.length());
 }
 
 bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)

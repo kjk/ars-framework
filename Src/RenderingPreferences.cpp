@@ -7,7 +7,6 @@ using ArsLexis::Font;
 
 RenderingPreferences::RenderingPreferences():
     standardIndentation_(16),
-    bulletType_(bulletCircle),
     bulletIndentation_(2),
     backgroundColor_(0)
 {
@@ -19,13 +18,11 @@ RenderingPreferences::RenderingPreferences():
     {
         hyperlinkDecorations_[hyperlinkTerm].textColor=57;
         hyperlinkDecorations_[hyperlinkExternal].textColor=35;
-        hyperlinkDecorations_[hyperlinkClicked].textColor=65;
     }
     else if (screenDepths>=2) // 4 colors
     {
         hyperlinkDecorations_[hyperlinkTerm].textColor=2; // Dark gray
         hyperlinkDecorations_[hyperlinkExternal].textColor=1; // Light gray
-        hyperlinkDecorations_[hyperlinkClicked].textColor=1;
     }
     if (screenDepths>=2)
     {
@@ -41,29 +38,14 @@ RenderingPreferences::RenderingPreferences():
 
 void RenderingPreferences::calculateIndentation()
 {
-    Font font(symbolFont);
-    char bullet[2];
-    bullet[0]=(bulletType()==bulletCircle)?symbolShiftPunc:symbolDiamondChr;
-    bullet[1]=chrNull;
+    const char* bullet="\x95";
     Graphics graphics;
-    Graphics::FontSetter setFont(graphics, font);
     standardIndentation_=graphics.textWidth(bullet, 1)+bulletIndentation_;
 }
 
-void RenderingPreferences::setBulletType(BulletType type)
-{
-    if (bulletType_!=type)
-    {
-        bulletType_=type;
-        calculateIndentation();
-    }
-}
-    
 Err RenderingPreferences::serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const
 {
     Err error=errNone;
-    if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, bulletType_)))
-        goto OnError;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, backgroundColor_)))
         goto OnError;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, bulletIndentation_)))
@@ -89,9 +71,6 @@ Err RenderingPreferences::serializeIn(ArsLexis::PrefsStoreReader& reader, int un
     Err error=errNone;
     RenderingPreferences tmp;
     UInt16 val;
-    if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
-        goto OnError;
-    tmp.setBulletType(static_cast<BulletType>(val));
     if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
         goto OnError;
     tmp.setBackgroundColor(val);        

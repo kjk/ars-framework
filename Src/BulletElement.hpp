@@ -9,8 +9,6 @@ class BulletElement: public GenericTextElement
     
 protected:
 
-    void applyFormatting(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs);
-    
     uint_t childIndentation() const
     {return childIndentation_;}
 
