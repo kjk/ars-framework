@@ -226,6 +226,7 @@ def convertTerm(cur_title,definition,ts):
         log_txt = "term: %s " % term
 
     newDef = convertDefinition(definition)
+    #newDef = definition       # uncomment to insert unconverted definition
 
     try:
         ipedia_write_cur.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (dbEscape(term), dbEscape(newDef), dbEscape(str(timestamp))))
@@ -324,7 +325,7 @@ def convertOneTerm(term):
         print "Didn't find a row in enwiki.cur with cur_title='%s'" % dbEscape(term)
     else:
         termId = row[0]
-        convertTerm(row[0],row[1],row[2],True)
+        convertTerm(row[0],row[1],row[2])
 
 def fDetectRemoveCmdFlag(flag):
     fFlagPresent = False
