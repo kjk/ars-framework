@@ -341,7 +341,7 @@ ST_AFTER_COMMA = 3
 ST_AFTER_ARGS = 4
 
 # return a tuple containing sql insert into args
-def genINSERTArgs(sqlFileName):
+def iterINSERTArgs(sqlFileName):
     st = BigStr(sqlFileName)
     fSkipped = st.fSkipUntilTxt(BEG_TXT)
     assert fSkipped
@@ -472,7 +472,7 @@ def convertFile(inName,limit):
     stats = WikipediaStats()
     count = 0
     startTiming()
-    for sqlArgs in genINSERTArgs(inName):
+    for sqlArgs in iterINSERTArgs(inName):
         #print sqlArgs
         stats.addStats(sqlArgs)
         title = sqlArgs[CUR_TITLE]

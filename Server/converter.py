@@ -23,7 +23,17 @@
 #             is optimized for bulk conversion to an empty ipedia database
 #             but doesn't support -ts argument and has less reporting
 # -ts timestamp : limit the rows we update to those that have timestamp greater than the one give
+# -fromsql fileName : convert directly from sql file, no need for enwiki.cur database
+# -usepsyco : if used, will use psyco for speeding up, false by default
+
 import MySQLdb, sys, datetime, re, unicodedata, time, entities
+import convertFromSQL
+try:
+    import psyco
+    g_fPsycoAvailable = True
+except:
+    print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
+    g_fPsycoAvailable = False
 
 # if True, we'll print a lot of debug text to stdout
 g_fVerbose       = False
@@ -315,6 +325,19 @@ def convertAll(articleLimit):
             break
         curOffset += rowsPerQuery
 
+def convertAllFromSQL(fileName,articleLimit):
+    count = 0
+    for sqlArgs in convertFromSQL.iterINSERTArgs(fileName):
+        title = sqlArgs[convertFromSQL.CUR_TITLE]
+        txt = sqlArgs[convertFromSQL.CUR_TEXT]
+        timestamp = sqlArgs[convertFromSQL.CUR_TIMESTAMP]
+        convertTerm(title,txt,timestamp)
+        count += 1
+        if 0 == count % 500:
+            sys.stderr.write("processed %d rows, last term=%s\n" % (count,title))
+        if articleLimit and count >= articleLimit:
+            return
+
 def convertOneTerm(term):
     global g_connOne
     query="""SELECT cur_title,cur_text,cur_timestamp FROM cur WHERE cur_title='%s' AND cur_namespace=0""" % dbEscape(term)
@@ -370,6 +393,11 @@ def dumpTimingInfo():
 
 if __name__=="__main__":
 
+    fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
+    if g_fPsycoAvailable and fUsePsyco:
+        print "using psyco"
+        psyco.full()
+
     initDatabase()
 
     g_fForceConvert = fDetectRemoveCmdFlag( "-force" )
@@ -387,11 +415,14 @@ if __name__=="__main__":
     if articleLimit:
         articleLimit = int(articleLimit)
 
-    startTiming()
+    fromSql = getRemoveCmdArg("-fromsql")    
     termToConvert = getRemoveCmdArg("-one")
+    startTiming()
     if None!=termToConvert:
         g_fVerbose = True
         convertOneTerm(termToConvert)
+    elif None != fromSql:
+        convertAllFromSQL(fromSql,articleLimit)
     else:
         convertAll(articleLimit)
     endTiming()
