@@ -133,7 +133,8 @@ void GenericTextElement::applyHyperlinkDecorations(const RenderingPreferences& p
 
 void GenericTextElement::applyFormatting(const RenderingPreferences& preferences)
 {
-    const RenderingPreferences::StyleFormatting& format=preferences.styleFormatting(style_);    FntSetFont(format.fontId);
+    const RenderingPreferences::StyleFormatting& format=preferences.styleFormatting(style_);
+    FntSetFont(format.fontId);
     WinSetTextColor(format.textColor);
     applyHyperlinkDecorations(preferences);
 }

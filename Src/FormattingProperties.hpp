@@ -31,6 +31,7 @@ public:
     
     Boolean typewriterFont() const
     {return typewriter_;}
+
     void setTypewriterFont(Boolean val) 
     {typewriter_=val;}
 
@@ -51,6 +52,7 @@ public:
     
    void setUnderline(Boolean val)
    {underline_=val;}
+
 };
 
 #endif

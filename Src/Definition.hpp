@@ -142,10 +142,10 @@ public:
         DefinitionElement& element()
         {return element_;}
         
-        /**
-         * @return @c true if any part of @c HotSpot is still in @c validArea, @c false otherwise.
-         */
-        Boolean move(const PointType& delta, const ArsLexis::Rectangle& validArea);
+        void move(const PointType& delta, const ArsLexis::Rectangle& validArea);
+        
+        Boolean valid() const
+        {return !rectangles_.empty();}
         
         ~HotSpot();
         
@@ -185,6 +185,8 @@ public:
     
     void hitTest(const PointType& point);
     
+    void clear();
+    
 private:
 
     RenderingPreferences preferences_;
@@ -202,8 +204,6 @@ private:
      */
     void clearLines();
 
-    void clear();
-    
     void calculateLayout(const ElementPosition_t& firstElement, UInt16 renderingProgress);
     
     void calculateVisibleRange(UInt16& firstLine, UInt16& lastLine, Int16 delta=0);

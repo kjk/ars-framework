@@ -28,7 +28,7 @@ Definition::HotSpot::~HotSpot()
     element_.invalidateHotSpot();
 }
 
-Boolean Definition::HotSpot::move(const PointType& delta, const ArsLexis::Rectangle& validArea)
+void Definition::HotSpot::move(const PointType& delta, const ArsLexis::Rectangle& validArea)
 {
     Rectangles_t::iterator end=rectangles_.end();
     Rectangles_t::iterator it=rectangles_.begin();
@@ -45,7 +45,6 @@ Boolean Definition::HotSpot::move(const PointType& delta, const ArsLexis::Rectan
             it=next;
         }
     }
-    return !rectangles_.empty();
 }
 
 Definition::Definition():
@@ -133,8 +132,8 @@ void Definition::moveHotSpots(const PointType& delta)
     HotSpots_t::iterator it=hotSpots_.begin();
     while (it!=end)
     {
-        Boolean stillValid=(*it)->move(delta, bounds_);
-        if (!stillValid)
+        (*it)->move(delta, bounds_);
+        if (!(*it)->valid())
         {
             HotSpots_t::iterator next=it;
             ++next;

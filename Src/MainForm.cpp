@@ -4,6 +4,8 @@
 #include "ParagraphElement.hpp"
 #include "HorizontalLineElement.hpp"
 #include "LineBreakElement.hpp"
+#include "ListNumberElement.hpp"
+#include "DefinitionParser.hpp"
 
 void MainForm::resize(const RectangleType& screenBounds)
 {
@@ -93,8 +95,10 @@ Err MainForm::initialize()
             "whole project, which is not quite the same as a single Makefile. "
         ));
         element->setParent(*bullet);
-        definition_.appendElement(element=new HorizontalLineElement());
-        element->setParent(*bullet);
+        ListNumberElement* listNumber=0;
+        definition_.appendElement(listNumber=new ListNumberElement(1));
+        listNumber->setParent(*bullet);
+        listNumber->setTotalCount(1);
         definition_.appendElement(element=new GenericTextElement(
             "This conclusion runs counter to much accumulated folk wisdom in building large projects "
             "on UNIX. Some of the main objections raised by this folk wisdom are examined and "
@@ -103,7 +107,7 @@ Err MainForm::initialize()
             "and without the intuitvely expected compromise of modularity. The use of a whole "
             "project make is not as difficult to put into practice as it may at first appear. "
         ));
-        element->setParent(*bullet);
+        element->setParent(*listNumber);
     }
     return error;
 }
