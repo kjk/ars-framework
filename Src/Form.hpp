@@ -7,6 +7,9 @@
 #include <Utility.hpp>
 #include <FiveWay.hpp>
 
+class PopupMenu;
+class HyperlinkHandlerBase;
+
 namespace ArsLexis 
 {
     struct EventProperties;
@@ -43,6 +46,13 @@ namespace ArsLexis
         bool handleObjectFocusChange(const EventType& event);
         
         void handleFocusOnEntry();
+
+        PopupMenu* popupMenu_; 
+        HyperlinkHandlerBase* popupMenuHyperlinkHandler_;
+        
+        uint_t popupMenuEventId_;
+        uint_t popupMenuId_;
+        void showPopupMenu(const char_t* txt, long len, const Point& point);
         
     protected:
     
@@ -83,9 +93,19 @@ namespace ArsLexis
         
         virtual void afterGadgetDraw() {}
             
-        virtual bool handleExtendedEvent(void *eventData);
+        virtual bool handleExtendedEvent(EventType& event);
 
     public:
+    
+        enum {popupMenuEventInvalid = uint_t(-1)};
+        
+        void setPopupMenuEventId(uint_t id) {popupMenuEventId_ = id;}
+        
+        void setPopupMenuHyperlinkHandler(HyperlinkHandlerBase* hh) {popupMenuHyperlinkHandler_ = hh;}
+        
+        void setPopupMenuId(uint_t id) {popupMenuId_ = id;}
+        
+        void setupPopupMenu(uint_t id, uint_t eventId, HyperlinkHandlerBase* hh);
         
         Form(Application& app, UInt16 id);
         

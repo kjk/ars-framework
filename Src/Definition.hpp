@@ -16,6 +16,20 @@
 #include <RenderingPreferences.hpp>
 
 class DefinitionElement;
+class Definition;
+
+class HyperlinkHandlerBase
+{
+public:
+
+    virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const ArsLexis::Point* point);
+    
+    virtual void handleHyperlink(const ArsLexis::String& hyperlink, const ArsLexis::Point* point);
+
+    virtual ~HyperlinkHandlerBase();
+    
+};
+
 
 /**
  * Handles rendering and user interactions (clicking parts of, selecting etc.) with definition text .
@@ -34,6 +48,8 @@ public:
     iterator begin() {return elements_.begin();}
     const_iterator end() const {return elements_.end();}
     iterator end() {return elements_.end();}
+    
+    typedef HyperlinkHandlerBase HyperlinkHandler;
     
 private:
     
@@ -119,18 +135,6 @@ private:
     
 public:
 
-    class HyperlinkHandler
-    {
-    public:
-    
-        virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const ArsLexis::Point* point);
-        
-        virtual void handleHyperlink(const ArsLexis::String& hyperlink, const ArsLexis::Point* point);
-    
-        virtual ~HyperlinkHandler();
-        
-    };
-    
     /**
      * Hot spot is a place in definition that allows to execute some action on clicking it.
      * It's made of one or more rectangular areas, that represent the space in which 
@@ -261,10 +265,10 @@ public:
      */
     void clear();
     
-    HyperlinkHandler* hyperlinkHandler()
+    HyperlinkHandlerBase* hyperlinkHandler()
     {return hyperlinkHandler_;}
     
-    void setHyperlinkHandler(HyperlinkHandler* handler)
+    void setHyperlinkHandler(HyperlinkHandlerBase* handler)
     {hyperlinkHandler_=handler;}
     
     void goToBookmark(const ArsLexis::String&)
@@ -344,7 +348,7 @@ public:
     void doRender(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
 
 
-    HyperlinkHandler* hyperlinkHandler_;
+    HyperlinkHandlerBase* hyperlinkHandler_;
 
     typedef std::list<HotSpot*> HotSpots_t;
     HotSpots_t hotSpots_;

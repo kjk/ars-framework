@@ -6,6 +6,7 @@
 #include <68k/Hs.h>
 #include <ExtendedEvent.hpp>
 #include <Text.hpp>
+#include <PopupMenu.hpp>
 
 static void updateForm(int formId, UInt16 updateCode)
 {
@@ -107,7 +108,11 @@ namespace ArsLexis
         focusedControlIndex_(noFocus),
         returnToFormId_(frmInvalidObjectId),
         formOpenReceived_(false),
-        winEnterReceived_(false)
+        winEnterReceived_(false),
+        popupMenu_(NULL),
+        popupMenuEventId_(popupMenuEventInvalid),
+        popupMenuHyperlinkHandler_(NULL),
+        popupMenuId_(frmInvalidObjectId)
     {
         getScreenBounds(screenBoundsBeforeWinExit_);
     }
@@ -139,6 +144,9 @@ namespace ArsLexis
     Form::~Form() 
     {
         free(title_);
+        
+        delete popupMenu_;
+        popupMenu_ = NULL;
         
         if (deleteOnClose_) 
             FrmDeleteForm(form_);
@@ -209,6 +217,9 @@ namespace ArsLexis
     
     bool Form::handleEvent(EventType& event)
     {
+        if (NULL != popupMenu_ && popupMenu_->handleEventInForm(event))
+            return true;
+
         bool handled=false;
         switch (event.eType)
         {
@@ -254,11 +265,9 @@ namespace ArsLexis
                 break;
             
             case extEvent: 
-            {
-                char *data = reinterpret_cast<char*>(&(event.data));
-                handled = handleExtendedEvent((void*)data);
+                handled = handleExtendedEvent(event);
                 break;
-            }
+                
         }
         return handled;
     }
@@ -489,8 +498,20 @@ namespace ArsLexis
             handleFocusOnEntry();
     }
 
-    bool Form::handleExtendedEvent(void *eventData) 
+    bool Form::handleExtendedEvent(EventType& event) 
     {
+        if (popupMenuEventInvalid != popupMenuEventId_ && popupMenuEventId_ == getExtendedEventId(&event))
+        {
+            Int16 x = event.screenX, y = event.screenY; Boolean b;
+            if (0 == x && 0 == y)
+                EvtGetPen(&x, &y, &b);
+            Point point(x, y);
+            long len = getTextEventDataLength(&event);
+            const char_t* txt = getTextEventData(&event);
+            if (NULL != txt)
+                showPopupMenu(txt, len, point);
+            return true;
+        }
         return false;
     }
     
@@ -515,6 +536,29 @@ namespace ArsLexis
         UInt16 index = FrmGetObjectIndex(form_, id);
         assert(frmInvalidObjectId != index);
         return index;
+    }
+    
+    void Form::showPopupMenu(const char_t* txt, long len, const Point& point)
+    {
+        assert(frmInvalidObjectId != popupMenuId_);
+        assert(NULL != popupMenuHyperlinkHandler_);
+        
+        delete popupMenu_;
+        popupMenu_ = NULL;
+        popupMenu_ = new_nt PopupMenu(*this);
+        if (NULL == popupMenu_)
+            return;    
+        if (!popupMenu_->itemDrawHandler.itemsFromString(txt, len))
+            return;
+        popupMenu_->hyperlinkHandler = popupMenuHyperlinkHandler_;
+        popupMenu_->popup(popupMenuId_, point);
+    }
+
+    void Form::setupPopupMenu(uint_t id, uint_t eventId, HyperlinkHandlerBase* hh)
+    {
+        setPopupMenuId(id);
+        setPopupMenuEventId(eventId);
+        setPopupMenuHyperlinkHandler(hh);
     }
     
 }

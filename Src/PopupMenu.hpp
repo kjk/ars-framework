@@ -47,7 +47,7 @@ class PopupMenu
 
 public:
 
-    Definition::HyperlinkHandler* hyperlinkHandler;
+    HyperlinkHandlerBase* hyperlinkHandler;
     PopupMenuItemDrawHandler itemDrawHandler;
     ArsLexis::List list;
 

@@ -938,13 +938,6 @@ bool Definition::mouseDrag(ArsLexis::Graphics& graphics, const RenderingPreferen
 }
 
 
-#if defined(_PALM_OS)
-#pragma segment Segment1
-#endif
-
-Definition::HyperlinkHandler::~HyperlinkHandler()
-{}
-
 bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey)
 {
     if (usesHyperlinkNavigation())
@@ -1260,12 +1253,18 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
 #endif
 
 
-void Definition::HyperlinkHandler::handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const Point* point)
+#if defined(_PALM_OS)
+#pragma segment Segment1
+#endif
+
+HyperlinkHandlerBase::~HyperlinkHandlerBase()
+{}
+
+void HyperlinkHandlerBase::handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const Point* point)
 {
     assert(hyperlinkElement.isHyperlink());
     const DefinitionElement::HyperlinkProperties& props = *hyperlinkElement.hyperlinkProperties();
     const String& hyperlink = props.resource;
-
     handleHyperlink(hyperlink, point);
 }
 
