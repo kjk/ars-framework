@@ -163,6 +163,11 @@ namespace ArsLexis
         return errNone;
     }
     
+    void SocketConnectionManager::abortConnections() 
+    {
+        std::for_each(connections_.begin(), connections_.end(), ObjectDeleter<SocketConnection>());
+        connections_.clear();                
+    }
     
     SocketConnection::SocketConnection(SocketConnectionManager& manager):
         manager_(manager),

@@ -34,7 +34,6 @@ namespace ArsLexis
         if (requestLeft>chunkSize_)
             requestLeft=chunkSize_;
         uint_t dataSize=0;
-        processReadyUiEvents();
         status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
         if (errNone==error || netErrWouldBlock==error)
         {
@@ -79,7 +78,6 @@ namespace ArsLexis
             error=resizeResponse(responseSize+chunkSize_);
             if (errNone!=error)
                 goto Exit;            
-            //processReadyUiEvents(); 
             error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
             if (errNone!=error)
                 goto Exit;

@@ -62,7 +62,10 @@ namespace ArsLexis {
        {bytesProgress_=bytes;}
 
         void showProgress(Graphics& graphics, const Rectangle& bounds, bool clearBkg=true)
-        {progressReporter_->showProgress(*this, graphics, bounds, clearBkg);}
+        {
+            if (0!=progressReporter_.get())
+                progressReporter_->showProgress(*this, graphics, bounds, clearBkg);
+        }
         
         virtual ~LookupProgressReportingSupport();
         
@@ -117,6 +120,12 @@ namespace ArsLexis {
                     break;                    
             }
             
+        }
+        
+        void abortConnections()
+        {
+            lookupInProgress_=false;
+            connectionManager().abortConnections();
         }
         
         SocketConnectionManager& connectionManager()

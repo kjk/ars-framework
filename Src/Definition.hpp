@@ -31,6 +31,13 @@ class Definition: private ArsLexis::NonCopyable
 public:
 
     typedef std::vector<DefinitionElement*> Elements_t;
+    
+    typedef Elements_t::const_iterator const_iterator;
+    const_iterator begin() const
+    {return elements_.begin();}
+    
+    const_iterator end() const
+    {return elements_.end();}
 
 private:
     

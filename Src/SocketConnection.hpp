@@ -47,6 +47,8 @@ namespace ArsLexis
         
         status_t manageConnectionEvents(long timeout=evtWaitForever);
         
+        void abortConnections();
+        
         friend class SocketConnection;
     };
 
