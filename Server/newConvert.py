@@ -140,16 +140,19 @@ def convertArticles(sqlDump,articleLimit):
     count = 0
     redirects = {}
     articlesLinks = {}
-    for article in wikipediasql.iterWikipediaArticles(sqlDump):
+    fUseCache = False
+    fRecreateCache = True   # mostly for testing
+    for article in wikipediasql.iterWikipediaArticles(sqlDump,articleLimit,fUseCache,fRecreateCache):
         # we only convert article from the main namespace
         assert article.getNamespace() == wikipediasql.NS_MAIN
         title = article.getTitle()
-        if article.fRedirect:
+        if article.fRedirect():
             redirects[title] = article.getRedirect()
         else:
             txt = article.getText()
             links = articleconvert.articleExtractLinks(txt)
-            articlesLinks[title] = links
+            #articlesLinks[title] = links
+            articlesLinks[title] = 1
         count += 1
         if 0 == count % 1000:
             sys.stderr.write("processed %d rows, last term=%s\n" % (count,title))
@@ -158,18 +161,21 @@ def convertArticles(sqlDump,articleLimit):
     # verify redirects
     print "Number of redirects: %d" % len(redirects)
     print "Number of real articles: %d" % len(articlesLinks)
+    unresolvedCount = 0
     for (title,redirect) in redirects.items():
         redirectResolved = resolveRedirect(redirect,redirects,articlesLinks)
         if None == redirectResolved:
-            print "redirect '%s' (to '%s') not resolved" % (title,redirect)
+            unresolvedCount +=1
+            #print "redirect '%s' (to '%s') not resolved" % (title,redirect)
+    print "Number of unresolved redirects: %d" % unresolvedCount
 
-    ipedia_write_cur = getNamedCursor(g_connTwo, "ipedia_write_cur")
+    #ipedia_write_cur = getNamedCursor(g_connTwo, "ipedia_write_cur")
         
     # go over articles again (hopefully now using the cache),
     # convert them to a destination format (including removing invalid links)
     # and insert into a database
     count = 0
-    for article in wikipediasql.iterWikipediaArticles(sqlDump,redirects,articlesLinks):
+    for article in wikipediasql.iterWikipediaArticles(sqlDump,articleLimit,True,False):
         if article.fRedirect():
             # what do I do now?
             pass

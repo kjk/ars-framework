@@ -159,19 +159,6 @@ def fValidLink(link,redirects,articlesLinks):
         return True
     return False
 
-def validateInternalLinks(db, cursor, definition):
-    for match in matches:
-        term=match.group(1)
-        if len(term) and (term not in testedLinks):
-            testedLinks.append(term)
-            idTermDef=findExactDefinition(db, cursor, term)
-            if idTermDef:
-                validLinks.append(term)
-        if term not in validLinks:
-            name=match.group(match.lastindex).lstrip('| ').rstrip().replace('_', ' ')
-            definition=definition[:match.start()]+name+definition[match.end():]
-    return definition
-
 def removeInvalidLinks(txt,redirects,articlesLinks):
     fModified = False
     while True:

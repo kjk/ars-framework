@@ -29,11 +29,6 @@ INVERSE_TIMESTAMP = 14
 CUR_TOUCHED = 15
 EXPECTED_ARGS_COUNT = 16
 
-class WikipediaArticleBase:
-    def __init__(self):
-        print "WikipediaArticleBase() constructor"
-        self.flag = False
-
 relaxedRe1=re.compile(r'\[\[(.*?)\]', re.S)
 relaxedRe2=re.compile(r'\[(.*?)\]', re.S)
 
@@ -69,38 +64,38 @@ def fInvalidRedirect(row):
             return True
     return False
 
-class WikipediaArticleFromSql(WikipediaArticleBase):
+class WikipediaArticleFromSql:
     def __init__(self,row):
         self.row = row
         assert not fInvalidRedirect(row)
         self.md5Hash = None
         self.row[CUR_TITLE] = self.row[CUR_TITLE].strip()
         txt = row[CUR_TEXT]
-        redirectNum = int(row[CUR_IS_REDIRECT])
-        assert redirectNum==0 or redirectNum==1
-        if 0==redirectNum:
-            self.fRedirectFlag = False
+        #redirectNum = int(row[CUR_IS_REDIRECT])
+        #assert redirectNum==0 or redirectNum==1
+        self.redirect = None
+        # we pretty much ignore the CUR_IS_REDIRECT setting
+        # if it's marked as redirect and is not, we throw it out
+        # before coming here
+        # if it's not marked as redirect but looks like redirect
+        # we treat it as redirect anyway
+        redirect = getRedirectFromText(txt)
+        if redirect:
+            self.redirect = redirect
+            if int(row[CUR_IS_REDIRECT])==0:
+                # redirect not marked as such
+                print "%s is a redirect but not marked as such" % getTitle()
         else:
-            self.fRedirectFlag = True
-        if self.fRedirectFlag:
-            redirect = getRedirectFromText(txt)
-            if not redirect:
-                print "%s is not redirect" % txt
-                print row[CUR_IS_REDIRECT]
-            assert redirect != None
-        else:
-            redirect = getRedirectFromText(txt)
-            if redirect:
-                self.row[CUR_TEXT] = redirect
-                self.fRedirectFlag = True
-            else:
-                self.row[CUR_TEXT] = txt.strip()
+            self.row[CUR_TEXT] = txt.strip()
     def getId(self):  return int(self.row[CUR_ID])
     def getNamespace(self): return int(self.row[CUR_NAMESPACE])
     def getTitle(self): return self.row[CUR_TITLE]
     def getText(self): return self.row[CUR_TEXT]
-    def fRedirect(self):  return self.fRedirectFlag
-    def getRedirect(self): return self.getText()
+    def fRedirect(self):
+        if self.redirect:
+            return True
+        return False
+    def getRedirect(self): return self.redirect
     def getViewCount(self): return int(self.row[CUR_COUNTER])
     def getTimestamp(self): return self.row[CUR_TIMESTAMP]
     def getHash(self):
@@ -143,15 +138,15 @@ def getTxt(sqlFileName,txtOff,txtLen):
     fo.close()
     return txt
 
-class WikipediaArticleRedirect(WikipediaArticleBase):
+class WikipediaArticleRedirect:
     def __init__(self,title,redirect):
-        self.title = title
-        self.redirect = redirect
+        self.title = title.strip()
+        self.redirect = redirect.strip()
     def getTitle(self): return self.title
     def getRedirect(self): return self.redirect        
     def fRedirect(self): return True
 
-class WikipediaArticleFromCache(WikipediaArticleBase):
+class WikipediaArticleFromCache:
     def __init__(self,sqlFileName,title,ns,txtOffset,txtLen,md5Hash,viewCount):
         self.sqlFileName = sqlFileName
         self.title = title
@@ -396,15 +391,21 @@ ST_AFTER_ARGS = 4
 # an iterator that given a *.sql or *.sql.bz2 wikipedia dump file
 # returns WikpediaArticle instances representing one wikipedia article
 # If fUseCache is True, then uses (if exists) or creates *.txt cache files
-def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False):
-    if limit:
-        assert fUseCache==False
+def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=False):
+    #if limit:
+    #    assert fUseCache==False
 
-    if fUseCache:
-        if fCacheExists(sqlFileName):
-            iterCachedWikipediaArticles(sqlFileName)
+    cacheWriter = None
+    if fRecreateCache:
         cacheWriter = ArticleCacheWriter(sqlFileName)
         cacheWriter.open()
+    else:
+        if fUseCache and fCacheExists(sqlFileName):
+            iterCachedWikipediaArticles(sqlFileName,limit)
+            return
+        else:
+            cacheWriter = ArticleCacheWriter(sqlFileName)
+            cacheWriter.open()
 
     st = SQLTokenizer(sqlFileName)
     fSkipped = st.fSkipUntilTxt(BEG_TXT)
@@ -437,10 +438,11 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False):
                     args = []
                     continue
                 if fInvalidRedirect(args):
+                    print "rejected '%s' as invalid redirect" % args[CUR_TITLE].strip()
                     args = []
                     continue
                 article = WikipediaArticleFromSql(args)
-                if fUseCache:
+                if cacheWriter:
                     cacheWriter.write(article)
                 yield article
                 count += 1
@@ -484,7 +486,7 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False):
             st.dumpBeforeAfterBuf()
             assert 0
     st.close()
-    if fUseCache:
+    if cacheWriter:
         cacheWriter.close()
 
 def fIsRedirectLine(line):
@@ -495,6 +497,7 @@ def fIsRedirectLine(line):
 
 def iterCachedWikipediaArticles(sqlFileName,limit):
     fileName = getIdxFileName(sqlFileName)
+    print "getting articles from cache %s" % fileName
     fo = open(fileName,"rb")
     count = 0
     while True:
@@ -502,19 +505,22 @@ def iterCachedWikipediaArticles(sqlFileName,limit):
         if len(title)==0:
             break
         #print "Title: %s" % title
-        dataTxt = fo.readline()
-        #print "data: %s" % dataTxt
-        dataTuple = dataTxt.split(",")
-        ns = int(dataTuple[0])
-        assert ns==NS_MAIN
-        txtOffset = int(dataTuple[1])
-        txtLen = int(dataTuple[2])
-        md5Hash = dataTuple[3]
-        viewCount = int(dataTuple[4])
-        article = WikipediaArticleFromCache(sqlFileName,title,ns,txtOffset,txtLen,md5Hash,viewCount)
+        line = fo.readline()
+        if fIsRedirectLine(line):
+            redirect = fo.readline()
+            article = WikipediaArticleRedirect(line,redirect)
+        else:
+            lineParts = line.split(",")
+            ns = int(lineParts[0])
+            assert ns==NS_MAIN
+            txtOffset = int(lineParts[1])
+            txtLen = int(lineParts[2])
+            md5Hash = lineParts[3]
+            viewCount = int(lineParts[4])
+            article = WikipediaArticleFromCache(sqlFileName,title,ns,txtOffset,txtLen,md5Hash,viewCount)
         yield article
         count += 1
-        if count > limit:
+        if limit and count > limit:
             break
     fo.close()
 

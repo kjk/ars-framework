@@ -3,7 +3,7 @@
 #
 # Collect routines frequently used in other places
 
-import sys,time
+import os,sys,time
 
 def fIsBzipFile(inFileName):
     if len(inFileName)>4 and ".bz2" == inFileName[-4:]:
