@@ -142,7 +142,7 @@ namespace ArsLexis
             
             LineAppender& operator=(const LineAppender&);
             
-            LineAppender(Logger& logger, uint_t level, bool doLog):
+            LineAppender(Logger& logger, bool doLog, uint_t level):
                 logger_(logger),
                 level_(level),
                 last_(true),
