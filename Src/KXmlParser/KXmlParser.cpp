@@ -598,11 +598,20 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
             if((error=read(delimiter))!=eNoError)
                 return error;
 
+            int p = txtPos_;
+
             if (delimiter != '\'' && delimiter != '"') {
                 if (!relaxed_)
                 {
                     return eInvalidDelimiter;
                 }
+                /* to detect attributes without "
+                   for example: bgcolor=eeaaaa 
+                   delimiter = 'e'
+                */
+                if(delimiter != ' ')
+                    push(delimiter);
+
                 delimiter = ' ';
             }
 
@@ -614,7 +623,6 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
             attributes_[i++] = ""; //NULL;
             attributes_[i++] = attrName;
 
-            int p = txtPos_;
             if((error=pushText(delimiter, true))!=eNoError)
                 return error;
 

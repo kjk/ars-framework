@@ -39,6 +39,29 @@ namespace KXml2{
             virtual error_t getPositionDescription(String& ret) = 0;
             virtual int     getEventType() = 0;
             virtual void    defineEntityReplacementText(const String& entity, const String& value) = 0;
+            virtual String  getText() = 0;
+            virtual bool    getFeature(const String& feature) = 0;
+            virtual String  getInputEncoding() = 0;
+            virtual String  getNamespacePrefix(int pos) = 0;
+            virtual String  getNamespaceUri(int pos) = 0;
+            virtual int     getDepth() = 0;
+            virtual int     getLineNumber() = 0;
+            virtual int     getColumnNumber() = 0;
+            virtual error_t isWhitespace(bool& ret) = 0;
+            virtual String  getNamespace() = 0;
+            virtual String  getName() = 0;
+            virtual String  getPrefix() = 0;
+            virtual error_t isEmptyElementTag(bool& ret) = 0;
+            virtual int     getAttributeCount() = 0;
+            virtual error_t getAttributeNamespace(String& ret, int index) = 0;
+            virtual error_t getAttributeName(String& ret, int index) = 0;
+            virtual error_t getAttributePrefix(String& ret, int index) = 0;
+            virtual error_t getAttributeValue(String& ret, int index) = 0;
+            virtual String  getAttributeValue(const String& nameSpace, const String& name) = 0;
+            virtual String  getNamespace(const String& prefix) = 0;
+            virtual error_t getNamespaceCount(int& ret, int depth) = 0;
+            virtual error_t nextText(String& ret) = 0;
+            virtual error_t nextTag(int& ret) = 0;
     };
 }
 
