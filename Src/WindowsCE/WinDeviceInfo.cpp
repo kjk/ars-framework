@@ -12,7 +12,7 @@
 
 #include <aygshell.h>
 #include <tpcshell.h>
-#include <winuserm.h>
+#include <winuser.h>
 #include <winbase.h>
 #include <sms.h>
 
@@ -24,7 +24,7 @@ namespace ArsLexis
         return sysErrParamErr;
     }
 
-    status_t getSystemParameter(String& out, uint_t param)
+    status_t getSystemParameter(String& out, int param)
     {
         status_t error=ERROR_INSUFFICIENT_BUFFER;
         
@@ -119,8 +119,8 @@ namespace ArsLexis
         renderDeviceIdentifierToken(out, _T("SN"), getDeviceSerialNumber);
         renderDeviceIdentifierToken(out, _T("PN"), getPhoneNumber);
         renderDeviceIdentifierToken(out, _T("PL"), getPlatform);
-        //renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
-        //renderDeviceIdentifierToken(out, _T("OD"), getOEMDeviceId);
+        renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
+        renderDeviceIdentifierToken(out, _T("OD"), getOEMDeviceId);
         //out.append(_T("OC:1234"));
         //out.append(_T("OD:3456"));
         return out;
