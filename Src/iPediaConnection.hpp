@@ -94,6 +94,9 @@ public:
     
     void setPerformFullTextSearch(bool value)
     {performFullTextSearch_=value;}
+
+    void setRandom()
+    {getRandom_=true;}
     
 private:
     
@@ -102,6 +105,7 @@ private:
     uint_t notFound_:1;
     uint_t registering_:1;
     uint_t performFullTextSearch_:1;
+    uint_t getRandom_:1;
     
 };
 

@@ -18,7 +18,8 @@ iPediaConnection::iPediaConnection(LookupManager& lookupManager):
     serverError_(LookupManager::serverErrorNone),
     notFound_(false),
     registering_(false),
-    performFullTextSearch_(false)
+    performFullTextSearch_(false),
+    getRandom_(false)
 {
 }
 
@@ -30,20 +31,21 @@ iPediaConnection::~iPediaConnection()
 
 #define protocolVersion "1"
 
-#define transactionIdField       "Transaction-ID"
+#define transactionIdField      "Transaction-ID"
 #define protocolVersionField    "Protocol-Version"
-#define clientVersionField        "Client-Version"
-#define getCookieField            "Get-Cookie"
-#define getDefinitionField        "Get-Definition"
-#define cookieField                 "Cookie"
-#define registerField               "Register"
+#define clientVersionField      "Client-Version"
+#define getCookieField          "Get-Cookie"
+#define getDefinitionField      "Get-Definition"
+#define getRandomDefField       "Get-Random-Definition"
+#define cookieField             "Cookie"
+#define registerField           "Register"
 #define formatVersionField      "Format-Version"
-#define resultsForField             "Results-For"
-#define definitionField              "Definition"
-#define errorField                   "Error"
-#define notFoundField              "Not-Found"
-#define searchField                 "Search"
-#define searchResultsField       "Search-Results"
+#define resultsForField         "Results-For"
+#define definitionField         "Definition"
+#define errorField              "Error"
+#define notFoundField           "Not-Found"
+#define searchField             "Search"
+#define searchResultsField      "Search-Results"
 
 void iPediaConnection::prepareRequest()
 {
@@ -58,14 +60,20 @@ void iPediaConnection::prepareRequest()
         appendField(request, getCookieField, deviceInfoToken());
     else
         appendField(request, cookieField, app.preferences().cookie);
-        
+
     if (!term_.empty())
         appendField(request, (performFullTextSearch_?searchField:getDefinitionField), term_);
-        
+
     registering_=!(app.preferences().serialNumberRegistered || chrNull==app.preferences().serialNumber[0]);
     if (registering_)
         appendField(request, registerField, app.preferences().serialNumber);
-        
+
+    if (getRandom_)
+    {
+        assert(term_.empty());
+        request+=getRandomDefField;
+        request+=":\n";
+    }
     request+='\n';
     setRequest(request); 
 }

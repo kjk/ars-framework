@@ -133,6 +133,14 @@ void LookupManager::lookupTerm(const ArsLexis::String& term)
     resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
 }
 
+void LookupManager::lookupRandomTerm()
+{
+    historyChange_=historyReplaceForward;
+    iPediaConnection* conn=new iPediaConnection(*this);
+    conn->setRandom();
+    resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
+}
+
 void LookupManager::moveHistory(bool forward)
 {
     if ((forward && history_.hasNext()) || (!forward && history_.hasPrevious()))

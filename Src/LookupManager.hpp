@@ -102,22 +102,24 @@ public:
     {return lookupInProgress_;}
 
     void showProgress(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds) const;
-    
+
     void handleLookupEvent(const EventType& event);
-    
+
     Definition& lastDefinition() 
     {return lastDefinition_;}
-    
+
     void lookupTerm(const ArsLexis::String& term);
-    
+
+    void lookupRandomTerm();
+
     //! @return @c true if lookup is started, @c false otherwise.
     bool lookupIfDifferent(const ArsLexis::String& term);
-    
+
     void moveHistory(bool forward=false);
-    
+
     const ArsLexis::String& lastSearchExpression() const
     {return lastSearchExpression_;}
-    
+
     const ArsLexis::String& lastInputTerm() const
     {return lastInputTerm_;}
     

@@ -444,8 +444,18 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
 
 void MainForm::randomArticle()
 {
-
-
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager(true);
+    assert(lookupManager); // shouldn't it be always here?
+    if (lookupManager && !lookupManager->lookupInProgress())
+    {
+        lookupManager->lookupRandomTerm();
+        if (showDefinition!=displayMode())
+        {
+            updateAfterLookup();
+            update();
+        }
+    }
 }
 
 void MainForm::copySelectionToClipboard()
