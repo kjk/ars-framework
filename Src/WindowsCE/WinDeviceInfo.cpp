@@ -52,7 +52,7 @@ namespace ArsLexis
         else
             error = sysErrParamErr;
         
-        //delete buffer;
+        delete buffer;
         return error;                
     }
 
@@ -73,6 +73,7 @@ namespace ArsLexis
 
     status_t getPhoneNumber(String& out)
     {
+        #ifndef PPC
         SMS_ADDRESS address;
         memset(&address,0,sizeof(SMS_ADDRESS));
         HRESULT res = SmsGetPhoneNumber(&address);
@@ -81,13 +82,18 @@ namespace ArsLexis
             out.append(address.ptsAddress);
             return errNone;
         }
+        #endif
         return sysErrParamErr;
     }
 
     status_t getPlatform(String& out)
     {
         // TODO: make it different for Pocket PC
-        out.append(_T("Smartphone"));
+        #ifdef PPC
+            out.append(_T("Pocket PC 2002"));
+        #else
+            out.append(_T("Smartphone"));
+        #endif
         return errNone;
     }
 
