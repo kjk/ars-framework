@@ -15,11 +15,11 @@
 namespace ArsLexis
 {
 
-    Err getDeviceSerialNumber(String& out)
+    status_t getDeviceSerialNumber(String& out)
     {
         char* data;
         UInt16 length;
-        Err error=SysGetROMToken(0, sysROMTokenSnum, reinterpret_cast<UInt8**>(&data), &length);
+        status_t error=SysGetROMToken(0, sysROMTokenSnum, reinterpret_cast<UInt8**>(&data), &length);
         if (!error)
         {
             if (NULL==data || 0xff==*data)
@@ -30,11 +30,11 @@ namespace ArsLexis
         return error;
     }
 
-    Err getOEMCompanyId(String& out)
+    status_t getOEMCompanyId(String& out)
     {
         UInt32  id;
         char*   idAsChar;
-        Err error = FtrGet(sysFtrCreator, sysFtrNumOEMCompanyID, &id);
+        status_t error = FtrGet(sysFtrCreator, sysFtrNumOEMCompanyID, &id);
         if (!error)
         {
             idAsChar = (char*)&id;
@@ -43,11 +43,11 @@ namespace ArsLexis
         return error;
     }
 
-    Err getOEMDeviceId(String& out)
+    status_t getOEMDeviceId(String& out)
     {
         UInt32  id;
         char *  idAsChar;
-        Err error=FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
+        status_t error=FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
         if (!error)
         {
             idAsChar = (char*) &id;
@@ -56,10 +56,10 @@ namespace ArsLexis
         return error;
     }
 
-    Err getHotSyncName(String& out)
+    status_t getHotSyncName(String& out)
     {
         char  nameBuffer[dlkUserNameBufSize];
-        Err error=DlkGetSyncInfo(NULL, NULL, NULL, nameBuffer, NULL, NULL);
+        status_t error=DlkGetSyncInfo(NULL, NULL, NULL, nameBuffer, NULL, NULL);
         if (!error)
         {
             uint_t len=StrLen(nameBuffer);
@@ -71,11 +71,11 @@ namespace ArsLexis
         return error;
     }
 
-    Err getPhoneNumber(String& out)
+    status_t getPhoneNumber(String& out)
     {
         bool libLoaded=false;
         UInt16 refNum=sysInvalidRefNum ;
-        Err error=SysLibFind(phnLibCDMAName, &refNum);
+        status_t error=SysLibFind(phnLibCDMAName, &refNum);
         if (error)
             error=SysLibFind(phnLibGSMName, &refNum);
         if (error)
@@ -117,12 +117,12 @@ namespace ArsLexis
 
     namespace {
 
-        typedef Err (TokenGetter)(String&);
+        typedef status_t (TokenGetter)(String&);
 
         static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGetter* getter)
         {
             String token;
-            Err error=(*getter)(token);
+            status_t  error=(*getter)(token);
             if (!error)
             {
                 if (!out.empty())

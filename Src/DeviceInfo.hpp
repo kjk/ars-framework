@@ -3,20 +3,23 @@
 
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
+
+#if defined(_PALM_OS)
 #include <PalmOS.h>
+#endif
 
 namespace ArsLexis
 {
 
-    Err getDeviceSerialNumber(String& out);
+    status_t getDeviceSerialNumber(String& out);
     
-    Err getOEMCompanyId(String& out);
+    status_t getOEMCompanyId(String& out);
     
-    Err getOEMDeviceId(String& out);
+    status_t getOEMDeviceId(String& out);
     
-    Err getHotSyncName(String& out);
+    status_t getHotSyncName(String& out);
 
-    Err getPhoneNumber(String& out);
+    status_t getPhoneNumber(String& out);
 
     String deviceInfoToken();
 
