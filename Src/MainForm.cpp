@@ -237,19 +237,27 @@ void MainForm::handleControlSelect(const EventType& event)
 
 void MainForm::setControlsState(bool enabled)
 {
-    Control control(*this, backButton);
-    control.setEnabled(enabled);
-    control.attach(forwardButton);
-    control.setEnabled(enabled);
-    control.attach(searchButton);
-    control.setEnabled(enabled);
-    if (enabled)
-    {
-        Field field(*this, termInputField);
-        field.focus();
+    {  // Scopes will allow compiler to optimize stack space allocating both form objects in the same place
+        Control control(*this, backButton);
+        control.setEnabled(enabled);
+        control.attach(forwardButton);
+        control.setEnabled(enabled);
+        control.attach(searchButton);
+        control.setEnabled(enabled);
     }
-    else
-        releaseFocus();        
+    {        
+        Field field(*this, termInputField);
+        if (enabled)
+        {
+            field.show();
+            field.focus();
+        }
+        else
+        {
+            releaseFocus();
+            field.hide();
+        }
+    }
 }
 
 bool MainForm::handleEvent(EventType& event)
@@ -279,10 +287,7 @@ bool MainForm::handleEvent(EventType& event)
                 const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
                 if (data.outcomeDefinition==data.outcome)
                 {
-                    Field field(*this, termInputField);
-                    field.selectWholeText();                    
-                    synchronizeWithHistory();
-                    setDisplayMode(showDefinition);
+                    updateAfterLookup();
                     update();
                 }
                 else if (data.outcomeList==data.outcome)
@@ -303,25 +308,33 @@ bool MainForm::handleEvent(EventType& event)
     return handled;
 }
 
-void MainForm::synchronizeWithHistory()
+void MainForm::updateAfterLookup()
 {
-    const LookupHistory* history=getLookupHistory();
-    if (history)
+    const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+    const LookupManager* lookupManager=app.getLookupManager();
+    if (lookupManager)
     {
-        if (!history->empty())
-            setTitle(history->currentTerm());
+        setDisplayMode(showDefinition);
+        const LookupHistory& history=lookupManager->history();
+        if (!history.empty())
+            setTitle(history.currentTerm());
 
-        UInt16 buttonsWidth=0;
-        Control control(*this, backButton);
-        bool enabled=history->hasPrevious();
-        control.setEnabled(enabled);
-        control.setGraphics(enabled?backBitmap:backDisabledBitmap);
-        
-            
-        control.attach(forwardButton);
-        enabled=history->hasNext();
-        control.setEnabled(enabled);
-        control.setGraphics(enabled?forwardBitmap:forwardDisabledBitmap);
+        {
+            Control control(*this, backButton);
+            bool enabled=history.hasPrevious();
+            control.setEnabled(enabled);
+            control.setGraphics(enabled?backBitmap:backDisabledBitmap);
+                
+            control.attach(forwardButton);
+            enabled=history.hasNext();
+            control.setEnabled(enabled);
+            control.setGraphics(enabled?forwardBitmap:forwardDisabledBitmap);
+        }
+        {
+            Field field(*this, termInputField);        
+            field.replaceText(lookupManager->lastInputTerm().c_str());
+            field.selectWholeText();                    
+        }            
     }
 }
 
@@ -458,13 +471,11 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
     {
         if (!lookupManager->lastDefinition().empty())
         {
-            synchronizeWithHistory();
-            setDisplayMode(showDefinition);
+            updateAfterLookup();
             if (!app.diaSupport().available()) // If there's DIA support update() will be called anyway...
                 update();
         }            
-        if (lookupManager->lookupInProgress())
-            setControlsState(false);
+        setControlsState(!lookupManager->lookupInProgress());
     }            
     return iPediaForm::handleWindowEnter(data);
 }

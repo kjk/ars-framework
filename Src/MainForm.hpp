@@ -27,7 +27,7 @@ class MainForm: public iPediaForm
     void randomArticle();
     void copySelectionToClipboard();
 
-    void synchronizeWithHistory();
+    void updateAfterLookup();
     
     void moveHistory(bool forward);
     void switchServer(const char* server);

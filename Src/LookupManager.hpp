@@ -21,7 +21,8 @@ class LookupManager
     ArsLexis::Resolver resolver_;
     Definition lastDefinition_;
 
-    ArsLexis::String lastTerm_;
+    ArsLexis::String lastInputTerm_;
+    ArsLexis::String lastFoundTerm_;
     ArsLexis::String lastSearchExpression_;
     ArsLexis::String lastSearchResults_;
     
@@ -116,6 +117,9 @@ public:
     const ArsLexis::String& lastSearchExpression() const
     {return lastSearchExpression_;}
     
+    const ArsLexis::String& lastInputTerm() const
+    {return lastInputTerm_;}
+    
 private:
     
     void handleServerError(ServerError serverError);
@@ -137,8 +141,8 @@ private:
     void setLastSearchResults(const ArsLexis::String& sr)
     {lastSearchResults_=sr;}
     
-    void setLastTerm(const ArsLexis::String& t)
-    {lastTerm_=t;}
+    void setLastFoundTerm(const ArsLexis::String& t)
+    {lastFoundTerm_=t;}
     
     void setLastSearchExpression(const ArsLexis::String& se)
     {lastSearchExpression_=se;}

@@ -64,15 +64,15 @@ void LookupManager::handleDefinition()
     switch (historyChange_)
     {
         case historyReplaceForward:
-            history_.replaceAllNext(lastTerm_);
+            history_.replaceAllNext(lastFoundTerm_);
             break;
         
         case historyMoveBack:
-            history_.movePrevious(lastTerm_);
+            history_.movePrevious(lastFoundTerm_);
             break;
         
         case historyMoveForward:
-            history_.moveNext(lastTerm_);
+            history_.moveNext(lastFoundTerm_);
             break;
     }
 }
@@ -122,7 +122,7 @@ void LookupManager::lookupTerm(const ArsLexis::String& term)
 {
     historyChange_=historyReplaceForward;
     iPediaConnection* conn=new iPediaConnection(*this);
-    conn->setTerm(term);
+    conn->setTerm(lastInputTerm_=term);
     resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
 }
 
@@ -132,7 +132,7 @@ void LookupManager::moveHistory(bool forward)
     {
         historyChange_=(forward?historyMoveForward:historyMoveBack);
         iPediaConnection* conn=new iPediaConnection(*this);
-        conn->setTerm(forward?history_.nextTerm():history_.previousTerm());
+        conn->setTerm(lastInputTerm_=(forward?history_.nextTerm():history_.previousTerm()));
         resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
     }
 }
@@ -156,7 +156,8 @@ void LookupManager::showProgress(ArsLexis::Graphics& graphics, const ArsLexis::R
     graphics.drawText(text, length, p);
     if (percentProgressDisabled!=percentProgress_)
     {
-        assert(percentProgress_<=100);        p.x+=width+2;
+        assert(percentProgress_<=100);
+        p.x+=width+2;
         char buffer[8];
         length=StrPrintF(buffer, " %hd%%", percentProgress_);
         width=rect.width()-width;

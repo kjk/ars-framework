@@ -30,7 +30,8 @@ void SearchResultsForm::updateSearchResults()
                 listPositions_.push_back(start);
             }
         }
-        setTitle(lookupManager->lastSearchExpression());
+        if (!lookupManager->lastSearchExpression().empty())
+            setTitle(lookupManager->lastSearchExpression());
     }
     List list(*this, searchResultsList);
     list.setChoices(&listPositions_[0], listPositions_.size());
@@ -105,17 +106,25 @@ inline void SearchResultsForm::handleControlSelect(const EventType& event)
 
 void SearchResultsForm::setControlsState(bool enabled)
 {
-    Control control(*this, refineSearchButton);
-    control.setEnabled(enabled);
-    control.attach(cancelButton);
-    control.setEnabled(enabled);
-    if (enabled)
     {
-        Field field(*this, refineSearchInputField);
-        field.focus();
+        Control control(*this, refineSearchButton);
+        control.setEnabled(enabled);
+        control.attach(cancelButton);
+        control.setEnabled(enabled);
     }
-    else
-        releaseFocus();        
+    {        
+        Field field(*this, refineSearchInputField);
+        if (enabled)
+        {
+            field.show();
+            field.focus();
+        }
+        else
+        {
+            releaseFocus();
+            field.hide();
+        }
+    }            
 }
 
 void SearchResultsForm::handleListSelect(const EventType& event)
@@ -212,8 +221,8 @@ bool SearchResultsForm::handleWindowEnter(const struct _WinEnterEventType& data)
     }
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
     LookupManager* lookupManager=app.getLookupManager();
-    if (lookupManager && lookupManager->lookupInProgress())
-        setControlsState(false);
+    if (lookupManager)
+        setControlsState(!lookupManager->lookupInProgress());
 
     return iPediaForm::handleWindowEnter(data);
 }

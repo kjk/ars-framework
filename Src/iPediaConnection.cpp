@@ -187,7 +187,7 @@ Err iPediaConnection::notifyFinished()
             if (definitionParser_!=0)
             {
                 definitionParser_->updateDefinition(lookupManager_.lastDefinition());
-                lookupManager_.setLastTerm(resultsFor_);
+                lookupManager_.setLastFoundTerm(resultsFor_);
                 data.outcome=data.outcomeDefinition;
             }
             if (searchResultsHandler_!=0)
