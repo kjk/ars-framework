@@ -1340,7 +1340,6 @@ void DefinitionModel::swap(DefinitionModel& other)
     std::swap(styleCount_, other.styleCount_);
 }
 
-
 #if defined(_PALM_OS)
 #pragma segment Segment1
 #endif
