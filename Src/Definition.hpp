@@ -212,9 +212,11 @@ public:
     
     /**
      * Checks if @c point falls within bounds of any currently displayed @c HotSpot. If so,
-     * calls @c DefinitionElement::hotSpotClicked() of element associated with @c HotSpot.
+     * calls @c DefinitionElement::performAction() of element associated with @c HotSpot.
      */
-    void hitTest(const ArsLexis::Point& point);
+    void click(const ArsLexis::Point& point);
+    
+    void extendSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking=false);
     
     /**
      * Resets this definition to its default state (without any elements, hot spots etc.).
@@ -265,6 +267,14 @@ private:
     
     void moveHotSpots(const ArsLexis::Point& delta);
     
+    ArsLexis::Point selectionStart_;
+    ArsLexis::Point selectionEnd_;
+    ElementPosition_t selectionStartElement_;
+    ElementPosition_t selectionEndElement_;
+    uint_t selectionStartProgress_;
+    uint_t selectionEndProgress_;
+    bool trackingSelection_;
+    HotSpot* selectedHotSpot_;
 };
 
 #ifdef __MWERKS__

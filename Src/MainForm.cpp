@@ -199,13 +199,15 @@ void MainForm::handlePenUp(const EventType& event)
 {
     if (showDefinition==displayMode())
     {
+/*    
         Definition* definition=getDefinition();
         if (definition)
         {
             Point point(event.screenX, event.screenY);
             if (definition->bounds() && point)
-                definition->hitTest(point);
+                definition->click(point);
         }
+*/        
     }
 }
 
@@ -326,9 +328,25 @@ void MainForm::handleLookupFinished(const EventType& event)
     }        
 }
 
+void MainForm::handleExtendSelection(const EventType& event, bool finish)
+{
+    if (showDefinition==displayMode())
+    {
+        Definition* definition=getDefinition();
+        if (definition)
+        {
+            iPediaApplication& app=iPediaApplication::instance();
+            ArsLexis::Point point(event.screenX, event.screenY);
+            Graphics graphics(windowHandle());
+            definition->extendSelection(graphics, app.preferences().renderingPreferences, point, finish);
+        }        
+    }
+}
+
 inline void MainForm::handlePenDown(const EventType& event)
 {
     lastPenDownTimestamp_=TimGetTicks();
+    handleExtendSelection(event);
 }
 
 bool MainForm::handleEvent(EventType& event)
@@ -345,9 +363,13 @@ bool MainForm::handleEvent(EventType& event)
             break;
         
         case penUpEvent:
-            handlePenUp(event);
+            handleExtendSelection(event, true);
             break;
-            
+    
+        case penMoveEvent:
+            handleExtendSelection(event);
+            break;        
+                
         case sclRepeatEvent:
             handleScrollRepeat(event);
             break;

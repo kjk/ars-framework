@@ -54,6 +54,8 @@ class MainForm: public iPediaForm
     
     void updateNavigationButtons();
     
+    void handleExtendSelection(const EventType& event, bool endTracking=false);
+    
 protected:
 
     void resize(const ArsLexis::Rectangle& screenBounds);

@@ -77,7 +77,13 @@ bool Definition::HotSpot::operator<(const Definition::HotSpot& other) const
 Definition::Definition():
     firstLine_(0),
     lastLine_(0),
-    hyperlinkHandler_(0)
+    hyperlinkHandler_(0),
+    selectionStartElement_(elements_.end()),
+    selectionEndElement_(elements_.end()),
+    selectionStartProgress_(LayoutContext::progressCompleted),
+    selectionEndProgress_(LayoutContext::progressCompleted),
+    trackingSelection_(false),
+    selectedHotSpot_(0)
 {}
 
 namespace {
@@ -103,6 +109,7 @@ void Definition::clearHotSpots()
 {
     std::for_each(hotSpots_.begin(), hotSpots_.end(), ObjectDeleter<HotSpot>());
     hotSpots_.clear();
+    selectedHotSpot_=0;
 }
 
 void Definition::clearLines()
@@ -119,6 +126,8 @@ void Definition::clear()
     clearLines();
     std::for_each(elements_.begin(), elements_.end(), ObjectDeleter<DefinitionElement>());
     elements_.clear();
+    selectionStartElement_=elements_.end();
+    selectionEndElement_=elements_.end();
     bounds_.clear();
 }
 
@@ -281,9 +290,27 @@ bool Definition::renderLine(RenderingContext& renderContext, const LinePosition_
         bool lineFinished=false;    
         while (!lineFinished && current!=last)
         {
+            if (current>=selectionStartElement_ && current<=selectionEndElement_)
+            {
+                if (current!=selectionStartElement_)
+                    renderContext.selectionStart=0;
+                else
+                    renderContext.selectionStart=selectionStartProgress_;
+                if (current!=selectionEndElement_)
+                    renderContext.selectionEnd=LayoutContext::progressCompleted;
+                else
+                    renderContext.selectionEnd=selectionEndProgress_;
+            }
+            else
+                renderContext.selectionStart=renderContext.selectionEnd=LayoutContext::progressCompleted;
             (*current)->render(renderContext);
             if (renderContext.isElementCompleted())
             {
+                if (*current==elementToRepaint)
+                {
+                    finished=true;
+                    break;
+                }
                 ++current;
                 renderContext.renderingProgress=0;
                 if (renderContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(renderContext.preferences))
@@ -389,14 +416,22 @@ void Definition::swap(Definition& other)
     std::swap(bounds_, other.bounds_);
     hotSpots_.swap(other.hotSpots_);
     std::swap(hyperlinkHandler_, other.hyperlinkHandler_);
+    std::swap(selectionStart_, other.selectionStart_);
+    std::swap(selectionEnd_, other.selectionEnd_);
+    std::swap(selectionStartElement_, other.selectionStartElement_);
+    std::swap(selectionEndElement_, other.selectionEndElement_);
+    std::swap(selectionStartProgress_, other.selectionStartProgress_);
+    std::swap(selectionEndProgress_, other.selectionEndProgress_);
+
 }
 
 void Definition::appendElement(DefinitionElement* element)
 {
     elements_.push_back(element);
+    selectionStartElement_=selectionEndElement_=elements_.end();
 }
 
-void Definition::hitTest(const Point& point)
+void Definition::click(const Point& point)
 {
     HotSpots_t::iterator end=hotSpots_.end();
     for (HotSpots_t::iterator it=hotSpots_.begin(); it!=end; ++it)
@@ -430,4 +465,45 @@ void Definition::renderSingleElement(ArsLexis::Graphics& graphics, const Renderi
 {
     //! @todo Optimize renderSingleElement() do that it really renders single element not all of them.
     renderLayout(graphics, prefs, &element);
+}
+
+void Definition::extendSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const ArsLexis::Point& point, bool endTracking)
+{
+    if (!trackingSelection_)
+    {
+        selectionStart_=point;
+        trackingSelection_=true;
+    }
+    selectionEnd_=point;
+    if (selectedHotSpot_)
+    {
+        if (!selectedHotSpot_->hitTest(point))
+        {
+            selectionStartProgress_=selectionEndProgress_=LayoutContext::progressCompleted;
+            selectionStartElement_=selectionEndElement_=elements_.end();
+            renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+            selectedHotSpot_=0;
+        }
+    }
+    else
+    {
+        HotSpots_t::const_iterator end=hotSpots_.end();
+        for (HotSpots_t::const_iterator it=hotSpots_.begin(); it!=end; ++it)
+        {
+            if ((*it)->hitTest(point))
+            {
+                selectedHotSpot_=(*it);
+                break;
+            }
+        }
+        if (selectedHotSpot_)
+        {
+            selectionStartProgress_=0;
+            selectionEndProgress_=LayoutContext::progressCompleted;
+            selectionStartElement_=selectionEndElement_=std::find(elements_.begin(), elements_.end(), &selectedHotSpot_->element());
+            renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+        }
+    }
+    if (selectedHotSpot_ && endTracking)
+        selectedHotSpot_->element().performAction(*this);
 }

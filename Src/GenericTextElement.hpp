@@ -8,6 +8,8 @@ class GenericTextElement: public DefinitionElement
 
     ArsLexis::String text_;
     ElementStyle style_;
+    
+    void drawTextWithSelection(ArsLexis::Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Point& point);
 
 public:
     

@@ -44,6 +44,32 @@ namespace {
 
 }
 
+void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Point& p)
+{
+    uint_t intersectStart=std::max(start, selectionStart);
+    uint_t intersectEnd=std::min(end, selectionEnd);
+    ArsLexis::Point point(p);
+    uint_t length;
+    const char* text;
+    if (intersectStart<intersectEnd)
+    {
+        if (start<intersectStart)
+        {
+            graphics.drawText(text=(text_.c_str()+start), length=(intersectStart-start), point);
+            point.x+=graphics.textWidth(text, length);
+        }
+        graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point, true);
+        point.x+=graphics.textWidth(text, length);
+        if (intersectEnd<end)
+        {
+            graphics.drawText(text=(text_.c_str()+intersectEnd), length=(end-intersectEnd), point);
+            point.x+=graphics.textWidth(text, length);
+        }
+    }
+    else
+        graphics.drawText(text=(text_.c_str()+start), length=(end-start), point);
+}
+
 void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
 {
     assert(!layoutContext.isElementCompleted());
@@ -87,7 +113,9 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     uint_t width=graphics.textWidth(text, length);
 
     uint_t charsToDraw=length;
-    while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
+    while (charsToDraw && 
+        std::isspace(*(text+charsToDraw-1)) && 
+        layoutContext.availableWidth()<graphics.textWidth(text, charsToDraw))
         --charsToDraw;
     uint_t dispWidth=graphics.textWidth(text, charsToDraw);
     if (dispWidth>layoutContext.availableWidth())
@@ -95,7 +123,8 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
     if (render)
     {
-        graphics.drawText(text, charsToDraw, Point(left, top));
+        drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
+            layoutContext.selectionStart, layoutContext.selectionEnd, Point(left, top));
         if (isHyperlink())
             defineHotSpot(*definition, ArsLexis::Rectangle(left, top, width, lineHeight));
     }
@@ -105,11 +134,11 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
     left+=width;    
     text+=length;
-
     if (*text)
     {
         layoutContext.renderingProgress+=length;
         layoutContext.usedWidth+=width;
+/*        
         if (tryPacking)
         {
             nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
@@ -125,7 +154,9 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
                     uint_t charsToDraw=length;
                     while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
                         --charsToDraw;
-                    graphics.drawText(text, length, Point(left, top));
+                    drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
+                        layoutContext.selectionStart, layoutContext.selectionEnd, Point(left, top));
+//                    graphics.drawText(text, charsToDraw, Point(left, top));
                     if (isHyperlink())
                         defineHotSpot(*definition, ArsLexis::Rectangle(left, top, width, lineHeight));
                 }
@@ -133,7 +164,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
                 layoutContext.renderingProgress+=length;
                 layoutContext.usedWidth+=width;
             }
-        }            
+        }    */        
     }
     else
         layoutContext.markElementCompleted(width);    
