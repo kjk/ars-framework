@@ -1,11 +1,14 @@
 #include <aygshell.h>
 #include <WinSysUtils.hpp>
 #include <EnterRegCodeDialog.hpp>
-/* This code assumes that there is resource.h file in the project
+#include "resource.h"
+
+/*
+This code assumes that there is resource.h file in the project
 that uses this file and that IDR_REGISTER_MENUBER,IDC_EDIT_REGCODE
 are defined there and IDC_EDIT_REGCODE is an appropriate dialog resource.
-Look into sm_inoah and sm_ipedia to see how it's defined. */
-#include "resource.h"
+Look into sm_inoah and sm_ipedia to see how it's defined.
+*/
 
 #define REGISTER_PRESSED 1
 #define LATER_PRESSED    2

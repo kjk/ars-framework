@@ -3,6 +3,7 @@
 #include <Shellapi.h>
 
 using ArsLexis::String;
+using ArsLexis::char_t;
 
 // TODO: implement. Used by iPediaConnection
 ulong_t ArsLexis::random(ulong_t range)
@@ -31,7 +32,17 @@ void ArsLexis::localizeNumber(char_t* begin, char_t* end)
 
 void ArsLexis::processReadyUiEvents()
 {
-	
+
+}
+
+void GetListSelectedItemText(HWND ctrl, String& txtOut)
+{
+    int idx = SendMessage(ctrl, LB_GETCURSEL, 0, 0);
+    int len = SendMessage(ctrl, LB_GETTEXTLEN, idx, 0);
+    char_t *buf = new char_t[len+1];
+    SendMessage(ctrl, LB_GETTEXT, idx, (LPARAM) buf);
+    txtOut.assign(buf);
+    delete [] buf;
 }
 
 // return a text in text edit window represented by hwnd in txtOut

@@ -16,6 +16,7 @@ using ArsLexis::String;
 
 void GetEditWinText(HWND hwnd, String &txtOut);
 void SetEditWinText(HWND hwnd, String& txt);
+void GetListSelectedItemText(HWND ctrl, String& txtOut);
 bool GotoURL(const ArsLexis::char_t *url);
 bool GetSpecialFolderPath(String& pathOut, BOOL fCreate=TRUE);
 
