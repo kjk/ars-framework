@@ -50,7 +50,7 @@ void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start,
     uint_t intersectEnd=std::min(end, selectionEnd);
     ArsLexis::Point point(p);
     uint_t length;
-    const char* text;
+    const char_t* text;
     if (intersectStart<intersectEnd)
     {
         if (start<intersectStart)
