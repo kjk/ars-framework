@@ -3,9 +3,6 @@
 
 #include "Debug.hpp"
 
-#include <PalmOS.h>
-#include <CWCallbackThunks.h>
-
 namespace ArsLexis 
 {
 
@@ -25,12 +22,6 @@ namespace ArsLexis
         
     protected:
     
-        FormType* form()
-        {return form_;}
-        
-        const FormType* form() const
-        {return form_;}
-
         /**
          * Handles @c frmCloseEvent.
          * This function calls <code>delete this</code>, so when overriding it should be called last, 
@@ -54,7 +45,13 @@ namespace ArsLexis
          * Redraws form.
          * Calls FrmDrawForm().
          */
-        virtual void redraw();
+        virtual void draw()
+        {
+            assert(form_!=0);
+            FrmDrawForm(form_);
+        }
+        
+        virtual Boolean handleEvent(EventType& event);
             
     public:
         
@@ -64,8 +61,6 @@ namespace ArsLexis
         
         virtual ~Form();
         
-        virtual Boolean handleEvent(EventType& event);
-
         Application& application()
         {return application_;}
         
@@ -76,9 +71,6 @@ namespace ArsLexis
         
         UInt16 id() const 
         {return id_;}
-        
-        Boolean isVisible() const 
-        {return FrmVisible(form());}
         
         UInt16 showModal();
         
@@ -101,9 +93,49 @@ namespace ArsLexis
         void closePopup()
         {returnToForm(0);}
         
+        operator const FormType* () const 
+        {return form_;}
+        
+        operator FormType* ()
+        {return form_;}
+        
+        Boolean visible() const
+        {
+            assert(form_);
+            return FrmVisible(form_);
+        }
+        
+        UInt16 getObjectIndex(UInt16 objectId) const
+        {   
+            assert(form_!=0);
+            return FrmGetObjectIndex(form_, objectId);
+        }
+        
+        void getObjectBounds(UInt16 index, RectangleType& bounds) const
+        {
+            assert(form_!=0);
+            assert(frmInvalidObjectId!=index);
+            FrmGetObjectBounds(form_, index, &bounds);
+        }
+        
+        void setObjectBounds(UInt16 index, const RectangleType& bounds) const
+        {
+            assert(form_!=0);
+            assert(frmInvalidObjectId!=index);
+            FrmSetObjectBounds(form_, index, &bounds);
+        }
+        
+        void getBounds(RectangleType& bounds) const
+        {
+            assert(form_!=0);
+            FrmGetFormBounds(form_, &bounds);
+        }
+        
+        void setBounds(const RectangleType& bounds);
+
         friend class Application;
     };
-
+    
 }
 
 #endif

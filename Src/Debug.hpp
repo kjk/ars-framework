@@ -9,6 +9,8 @@
 #define DEBUG
 #endif
 
+// Prevents using MSL-provided error function (called when normally exception would be thrown).
+#define _MSL_ERROR_FUNC -1
 
 #include <new>
 

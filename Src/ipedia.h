@@ -1,6 +1,8 @@
 #ifndef IPEDIA_H_
 #define IPEDIA_H_
 
+#include "ipedia_Rsc.h"
+
 
 #define appFileCreator			'iPED'
 #define appName					"iPedia"

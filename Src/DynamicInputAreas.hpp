@@ -10,24 +10,20 @@
 #include "Library.hpp"
 
 #include <PalmOS.h>
-#include <bitset>
 
 namespace ArsLexis 
 {
 
+    class Form;
+    
     class DIA_Support
     {
-        enum Flag_t {
-            flagHasPenInputMgr,
-            flagHasSonySilkLib,
-            flagSonyLibIsVsk,
+        
+        UInt16 hasPenInputMgr_:1;
+        UInt16 hasSonySilkLib_:2;
+        UInt16 sonyLibIsVsk_:3;
+        UInt16 notUsed_:13;
 
-            flagCount
-        };
-        
-        typedef std::bitset<flagCount> Flags_t;
-        Flags_t flags_;
-        
         Library sonySilkLib_;
                         
         DIA_Support(const DIA_Support&);
@@ -42,18 +38,20 @@ namespace ArsLexis
         ~DIA_Support();
 
         Boolean hasPenInputManager() const 
-        {return flags_.test(flagHasPenInputMgr);}
+        {return hasPenInputMgr_;}
         
         Boolean hasSonySilkLib() const 
-        {return flags_.test(flagHasSonySilkLib);}
+        {return hasSonySilkLib_;}
         
         Boolean available() const 
         {return hasPenInputManager()||hasSonySilkLib();}
 
         UInt32 notifyType() const 
         {return hasPenInputManager()?sysNotifyDisplayResizedEvent:sysNotifyDisplayChangeEvent;}        
-        
+       
         void handleNotify() const;
+        
+        Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const;
         
     };
     

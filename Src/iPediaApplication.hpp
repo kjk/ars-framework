@@ -15,21 +15,32 @@ class iPediaApplication: public ArsLexis::Application
     NetLibPtr netLib_;
     
     Err getNetLib(ArsLexis::NetLibrary*& netLib);
+
+protected:
+
+    Err handleSystemNotify(SysNotifyParamType& notify);
+    
+    Err normalLaunch();
+
+    void waitForEvent(EventType& event);
+    
+    ArsLexis::Form* createForm(UInt16 formId);
+    
+    Err initializeForm(ArsLexis::Form& form);
+    
+    Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
         
 public:
 
     const ArsLexis::DIA_Support& getDIASupport() const
     {return diaSupport_;}
 
-    iPediaApplication(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
+    iPediaApplication();
     
     ~iPediaApplication();
     
     Err initialize();
     
-    Err handleSystemNotify(SysNotifyParamType& notify);
-    
-    Err normalLaunch();
 };
 
 

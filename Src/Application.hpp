@@ -20,7 +20,6 @@
 #include "Debug.hpp"
 
 #include <CWCallbackThunks.h>
-
 #include <map>
 
 namespace ArsLexis 
@@ -85,31 +84,13 @@ namespace ArsLexis
          * @internal
          * Called internally by @c instance().
          */
-        static Application& getInstance(UInt32 creatorId);
+        static Application* getInstance(UInt32 creatorId);
         
         /**
          * @internal 
          * Actual @c EvtGetEvent() timeout used by @c runEventLoop().
          */
         Int32 eventTimeout_;
-        
-        /**
-         * @internal 
-         * Launch code used while instantiating this @c Application.
-         */
-        const UInt16 launchCommand_;
-        
-        /**
-         * @internal 
-         * Pointer to launch parameter block used while instantiating this @c Application.
-         */
-        MemPtr const launchParameterBlock_;
-        
-        /**
-         * @internal
-         * Launch flags used instantiating this @c Application.
-         */
-        const UInt16 launchFlags_;
         
         /**
          * @internal
@@ -157,13 +138,13 @@ namespace ArsLexis
         };
     
 #ifdef appFileCreator    
-        explicit Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId=appFileCreator);
+        explicit Application(UInt32 creatorId=appFileCreator);
 #else
         /**
          * Constructor. 
          * Initializes @c Application object and sets it as current instance through the call to @c FtrSet().
          */
-        explicit Application(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags, UInt32 creatorId);
+        explicit Application(UInt32 creatorId);
 #endif
 
         /**
@@ -171,7 +152,7 @@ namespace ArsLexis
          * @param requiredVersion version needed to run this application.
          * @param alertId if version is lower than @c requiredVersion, this alert will be shown.
          */
-        Err checkRomVersion(UInt32 requiredVersion, UInt16 alertId=frmInvalidObjectId);
+        static Err checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId=frmInvalidObjectId);
         
         /**
          * Creates and activates a new @c Form object.
@@ -181,6 +162,10 @@ namespace ArsLexis
          */
         virtual void loadForm(UInt16 formId);
         
+        virtual Form* createForm(UInt16 formId);
+        
+        virtual Err initializeForm(Form& form);
+        
         /**
          * Called from within @c runEventLoop() to handle application-level events.
          * Currently the only handled event is @c frmLoadEvent. Override to add support
@@ -189,6 +174,15 @@ namespace ArsLexis
          * @return @c true if @c event is fully processed, @c false otherwise.
          */
         virtual Boolean handleApplicationEvent(EventType& event);
+        
+        /**
+         * Waits for next event.
+         * Allows to use non-standard function to obtain event, which might be useful
+         * in network apps, that need to remain responsive while processing requests.
+         * Current implementation simply calls @c EvtGetEvent() with actual @c eventTimeout_.
+         * @param event @c EventType structure to be filled on return.
+         */
+        virtual void waitForEvent(EventType& event);
         
         /**
          * Runs event-processing loop.
@@ -203,7 +197,7 @@ namespace ArsLexis
         Err unregisterNotify(UInt32 notifyType, Int8 priority=sysNotifyNormalPriority);
         
         /**
-         * Called from @c run() in case when application is run with @c sysAppLaunchCmdNotify code.
+         * Called from @c handleLaunchCode() in case when application is run with @c sysAppLaunchCmdNotify code.
          * Override it to perform some useful stuff.
          */
         virtual Err handleSystemNotify(SysNotifyParamType& notify)
@@ -211,14 +205,17 @@ namespace ArsLexis
         
         /**
          * Called from @c run() in case when application is run with @c sysAppLaunchCmdNormalLaunch code.
-         * You must override it and provide some reasonable contents like this (error checking omitted for clarity):
+         * You should override it and provide some reasonable contents like this (error checking omitted for clarity):
          * @code
          *     checkRomVersion(myRequiredRomVersion, myRomIncompatibleAlert);
          *     gotoForm(myMainForm);
          *     runEventLoop();
          * @endcode
          */ 
-        virtual Err normalLaunch()=0;
+        virtual Err normalLaunch()
+        {return errNone;}
+        
+        virtual Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
 
     public:
     
@@ -234,16 +231,6 @@ namespace ArsLexis
          */
         static Application& instance();
         
-        
-        UInt16 launchCommand() const 
-        {return launchCommand_;}
-        
-        MemPtr launchParameterBlock() const
-        {return launchParameterBlock_;}
-        
-        UInt16 launchFlags() const
-        {return launchFlags_;}
-        
         UInt16 cardNumber() const
         {return cardNo_;}
         
@@ -253,47 +240,48 @@ namespace ArsLexis
         friend class Form;
 
         /**
-         * Main application function. 
-         * Dispatches control flow to appropriate launch code handlers.
-         * @see normalLaunch().
-         */
-        virtual Err run();
-        
-        /**
-         * Instantiates object of @c AppClass class, calls its @c run() function and deletes object afterwards.
+         * Instantiates object of @c AppClass class, calls its @c handleLaunchCode(UInt16, MemPtr, UInt16) function and deletes object afterwards.
          * This function will catch @c PalmOSError or @c std::bad_alloc exceptions, perform some
          * cleanup and return appropriate error code.
          * @return standard PalmOS error code.
          * @note This function is designed so that it should be the only code called from @c PilotMain() function,
          * unless you know what you're doing.
          */
-        template<class AppClass> 
+        template<class AppClass, UInt32 creatorId> 
         static Err main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
         
-        void gotoForm(UInt16 formId)
+        static void gotoForm(UInt16 formId)
         {FrmGotoForm(formId);}
         
-        void popupForm(UInt16 formId)
+        static void popupForm(UInt16 formId)
         {FrmPopupForm(formId);}
 
     };
     
-    template<class AppClass> 
+    template<class AppClass, UInt32 creatorId> 
     Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     {
         Err error=errNone;
         if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
-            error=_CW_SetupExpandedMode(); // This makes it possible to use polymorphism, exceptions and all the other stuff that makes C++ rules.
+            error=_CW_SetupExpandedMode();
         if (!error)
         {
-            AppClass* application=new AppClass(cmd, cmdPBP, launchFlags);
+            Application* application=getInstance(creatorId);
             if (application)
+                error=application->handleLaunchCode(cmd, cmdPBP, launchFlags);
+            else
             {
-                error=application->initialize();
-                if (!error)
-                    error=application->run();
+                application=new AppClass;
+                if (application)
+                {
+                    error=application->initialize();
+                    if (!error)
+                        error=application->handleLaunchCode(cmd, cmdPBP, launchFlags);
+                }
+                else
+                    error=memErrNotEnoughSpace;
+                delete application;
             }
-            delete application;
         }
         return error;
     }  
@@ -309,7 +297,9 @@ namespace ArsLexis
 #define IMPLEMENT_APPLICATION_INSTANCE(creatorId) \
 namespace ArsLexis { \
     Application& Application::instance() { \
-        return getInstance((creatorId)); \
+        Application* app=getInstance((creatorId)); \
+        assert(app!=0); \
+        return  *app;\
     } \
 } 
 

@@ -35,4 +35,15 @@ namespace ArsLexis
             close();
     }
 
+    Err NetLibrary::getHostByName(const char* name, NetHostInfoBufType* hostInfoBuffer, Int32 timeout)
+    {
+        assert(refNum());
+        assert(name!=0);
+        Err error=errNone;
+        NetHostInfoType* hostInfo=NetLibGetHostByName(refNum(), name, hostInfoBuffer, timeout, &error);
+        if (!hostInfo)
+            assert(error);
+        return error;
+    }
+
 }

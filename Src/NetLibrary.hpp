@@ -26,7 +26,8 @@ namespace ArsLexis
         {return closed_;}
         
         Err close(Boolean immediate=false);
-    
+        
+        Err getHostByName(const char* name, NetHostInfoBufType* hostInfo, Int32 timeout=evtWaitForever);
     };
     
 }

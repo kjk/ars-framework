@@ -1,4 +1,5 @@
 #include "DynamicInputAreas.hpp"
+#include "Form.hpp"
 #include <SonyCLIE.h>
 
 namespace ArsLexis 
@@ -28,29 +29,32 @@ namespace ArsLexis
                         VskSetState(sonySilkLib_, vskStateEnable, vskResizeHorizontally);			
                 }
                 if (!error)
-                    flags_.set(flagSonyLibIsVsk);
+                    sonyLibIsVsk_=true;
             }
             if (!error)
-                flags_.set(flagHasSonySilkLib);
+                hasSonySilkLib_=true;
         }
-        return flags_.test(flagHasSonySilkLib);
+        return hasSonySilkLib();
     }
 
-    DIA_Support::DIA_Support()
+    DIA_Support::DIA_Support():
+        hasPenInputMgr_(false),
+        hasSonySilkLib_(false),
+        sonyLibIsVsk_(false)
     {
         if (!tryInitSonySilkLib())
         {
             UInt32 value=0;
             Err error=FtrGet(pinCreator, pinFtrAPIVersion, &value);
             if (!error && value)
-                flags_.set(flagHasPenInputMgr);
+                hasPenInputMgr_=true;
         }
     }
 
     void DIA_Support::sonySilkLibDispose()
     {
         assert(hasSonySilkLib());
-        if (flags_.test(flagSonyLibIsVsk))
+        if (sonyLibIsVsk_)
         {
             Err error=VskClose(sonySilkLib_);
             if (vskErrStillOpen==error)
@@ -81,6 +85,34 @@ namespace ArsLexis
         RectangleType& bounds=event.data.winDisplayChanged.newBounds;
         WinGetBounds(WinGetDisplayWindow(), &bounds);
         EvtAddUniqueEventToQueue(&event, 0, true);
+    }
+    
+    Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW) const
+    {
+        FormType* formPtr=form;
+        assert(formPtr);
+        Err error=errNone;
+        if (hasSonySilkLib())
+            handleNotify(); 
+        else if (hasPenInputManager())
+        {
+            error=FrmSetDIAPolicyAttr(formPtr, frmDIAPolicyCustom);
+            if (!error)
+            {
+                error=PINSetInputTriggerState(pinInputTriggerEnabled);
+                if (!error) 
+                {
+                    WinHandle wh=FrmGetWindowHandle(formPtr);
+                    assert(wh);
+                    error=WinSetConstraintsSize(wh, minH, prefH, maxH, minW, prefW, maxW);
+                    if (!error)
+                        error=PINSetInputAreaState(pinInputAreaUser);
+                }
+            }
+        }
+        if (pinErrNoSoftInputArea==error) 
+            error=errNone;
+        return error;
     }
 
 }

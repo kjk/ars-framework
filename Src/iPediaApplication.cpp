@@ -1,16 +1,15 @@
 
 #include "iPediaApplication.hpp"
 #include "SysUtils.hpp"
-#include "ipedia_Rsc.h"
+#include "MainForm.hpp"
 
 
 IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 
 using namespace ArsLexis;
 
-iPediaApplication::iPediaApplication(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags):
-    Application(cmd, cmdPBP, launchFlags)
-    , diaNotifyRegistered_(false)
+iPediaApplication::iPediaApplication():
+    diaNotifyRegistered_(false)
 {
 }
 
@@ -26,11 +25,6 @@ Err iPediaApplication::initialize()
                 diaNotifyRegistered_=true;
         }
     }
-    if (!error)
-    {
-        NetLibrary* netLib=0;
-        error=getNetLib(netLib);
-    }
     return error;
 }
 
@@ -45,13 +39,9 @@ static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,0,0,sysROMStage
 
 Err iPediaApplication::normalLaunch()
 {
-    Err error=checkRomVersion(iPediaRequiredRomVersion, romIncompatibleAlert);
-    if (!error)
-    {
-        gotoForm(mainForm);
-        runEventLoop();
-    }
-    return error;        
+    gotoForm(mainForm);
+    runEventLoop();
+    return errNone;
 }
 
 Err iPediaApplication::handleSystemNotify(SysNotifyParamType& notify)
@@ -60,6 +50,14 @@ Err iPediaApplication::handleSystemNotify(SysNotifyParamType& notify)
     if (dia.available() && dia.notifyType()==notify.notifyType)
         dia.handleNotify();
     return errNone;
+}
+
+Err iPediaApplication::handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
+{
+    Err error=checkRomVersion(iPediaRequiredRomVersion, launchFlags, romIncompatibleAlert);
+    if (!error)
+        error=Application::handleLaunchCode(cmd, cmdPBP, launchFlags);
+    return error;
 }
 
 Err iPediaApplication::getNetLib(NetLibrary*& netLib)
@@ -84,4 +82,33 @@ Err iPediaApplication::getNetLib(NetLibrary*& netLib)
     if (!error)
         netLib=netLib_.get();
     return error;
+}
+
+void iPediaApplication::waitForEvent(EventType& event)
+{
+    //! @todo use netLib's select to implement non-blocking network io.
+    Application::waitForEvent(event);
+}
+
+Err iPediaApplication::initializeForm(Form& form)
+{
+    Err error=Application::initializeForm(form);
+    if (!error && diaSupport_.available())
+        diaSupport_.configureForm(form, 160, 160, 225, 160,160, 225);
+    return error;
+}
+
+Form* iPediaApplication::createForm(UInt16 formId)
+{
+    Form* form=0;
+    switch (formId)
+    {
+        case mainForm:
+            form=new MainForm(*this);
+            break;
+        
+        default:
+            assert(false);
+    }
+    return form;            
 }

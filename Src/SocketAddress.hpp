@@ -10,6 +10,7 @@ namespace ArsLexis
     class SocketAddress 
     {
     public:
+
         typedef std::pair<NetSocketAddrType*, UInt16> NetSocketAddrProxy;
         typedef std::pair<const NetSocketAddrType*, UInt16> ConstNetSocketAddrProxy;
         

@@ -85,27 +85,30 @@ namespace ArsLexis
     Boolean Form::handleOpen()
     {
         deleteOnClose=false;
-        update();
+        draw();
         return true;
     }
     
     Boolean Form::handleUpdate(UInt16 updateCode)
     {
-        redraw();
+        draw();
         return true;
     }
 
-    void Form::redraw()
-    {
-        FrmDrawForm(form_);
-    }
-    
     void Form::returnToForm(UInt16 formId)
     {
         deleteOnClose=false;
         handleClose();
         FrmReturnToForm(formId);
     }
+    
+    void Form::setBounds(const RectangleType& bounds)
+    {
+        assert(form_!=0);
+        WinHandle wh=FrmGetWindowHandle(form_);
+        assert(wh);
+        WinSetBounds(wh, &bounds);
+    }        
 
 }
 
