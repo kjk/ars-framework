@@ -370,6 +370,9 @@ public:
      */
     bool handleKeyDownEvent(const EventType& event, uint_t options=0);
     
+    void setVisibleItemsCount(UInt16 count)
+    {LstSetHeight(object(), count);}
+    
     ~List();
 
 };
