@@ -1,40 +1,76 @@
+#include <BaseTypes.hpp>
 #include "WinFont.h"
 
 using namespace ArsLexis;
 
-//400 bytes to speed up operation - 
-//in fact it can be hash table, because it's quite rare
-HFONT WinFont::fontsHandles_[16-6][3][2][2];
+// cache of font handles
+HFONT g_fontHandles[16-6][3][2][2];
 
-void WinFont::createFont(int height, int weight, int realWeight, int isUnder, int isStrike)
+static void InitFontHandles()
 {
+	static bool g_fInitialized = false;
+	if (g_fInitialized)
+		return;
+
+	for (int a=0; a<16-6; a++)
+	{
+		for (int b=0; b<3; b++)
+		{
+			for (int c=0; c<2; c++)
+			{
+				for (int d=0; d<2; d++)
+				{
+					g_fontHandles[a][b][c][d];
+				}
+			}
+		}
+	}
+	g_fInitialized = true;
+}
+
+static HFONT createFont(int height, int weight, int realWeight, int isUnder, int isStrike)
+{
+	InitFontHandles();
+
+    if (NULL != g_fontHandles[height-6][weight][isUnder][isStrike])
+        return g_fontHandles[height-6][weight][isUnder][isStrike];
+
     LOGFONT logfnt;
-    HFONT   fnt=(HFONT)GetStockObject(SYSTEM_FONT);    
-    GetObject(fnt, sizeof(logfnt), &logfnt);
+    HFONT   stdFont = (HFONT)GetStockObject(SYSTEM_FONT);
+    GetObject(stdFont, sizeof(logfnt), &logfnt);
+
     logfnt.lfWeight = realWeight;
     logfnt.lfHeight = -height;
-    if(isUnder)
+
+    if (isUnder)
         logfnt.lfUnderline = TRUE;
-    if(isStrike)
+    if (isStrike)
         logfnt.lfStrikeOut = TRUE;
     assert(height<maxFontHeight);
-    fontsHandles_[height-6][weight][isUnder][isStrike] = CreateFontIndirect(&logfnt);
-    if(NULL == fontsHandles_[height-6][weight][isUnder][isStrike])
-        fontsHandles_[height-6][weight][isUnder][isStrike] = fnt;
+
+    HFONT newFont = CreateFontIndirect(&logfnt);
+    if (NULL == newFont)
+        g_fontHandles[height-6][weight][isUnder][isStrike] = stdFont;
+    else
+        g_fontHandles[height-6][weight][isUnder][isStrike] = newFont;
+
+    return g_fontHandles[height-6][weight][isUnder][isStrike];
 }
-        
-HFONT WinFont::getFont(int height, ArsLexis::FontEffects effects)
+
+HFONT getFont(int height, FontEffects effects)
 {
-    int weight = 0;
-    int underline = 0;
-    int strike = 0;
     LONG realWeight = FW_NORMAL;
 
-    if(effects.underline()!=FontEffects::underlineNone)
+    int underline = 0;
+    if (effects.underline() != FontEffects::underlineNone)
         underline = 1;
-    if(effects.strikeOut())
+
+    int strike = 0;
+    if (effects.strikeOut())
         strike = 1;
-    switch(effects.weight())
+
+    int weight = 0;
+    switch (effects.weight())
     {
         case FontEffects::weightPlain:
             if (effects.italic())
@@ -53,15 +89,11 @@ HFONT WinFont::getFont(int height, ArsLexis::FontEffects effects)
             break;
     };
 
-    if (effects.subscript()||effects.superscript())
+    if (effects.subscript() || effects.superscript())
         height = height * 3 / 4;
 
     if (effects.isSmall())
         height = height * 9 / 10;
-        
-    
-    if(NULL==fontsHandles_[height-6][weight][underline][strike])
-        createFont(height, weight, realWeight, underline, strike);
 
-    return fontsHandles_[height-6][weight][underline][strike];
+    return createFont(height, weight, realWeight, underline, strike);
 }
