@@ -19,7 +19,7 @@ namespace ArsLexis {
     
         void setBreakColor(const RGBColorType& color) {breakColor_ = color;}
         
-        const RGBColorType& greakColor() const {return breakColor_;}
+        const RGBColorType& breakColor() const {return breakColor_;}
     
         explicit HmStyleList(Form& form, UInt16 id=frmInvalidObjectId);
     
