@@ -140,6 +140,7 @@ namespace ArsLexis
 
     int AddLinesToList(const String& txt, CharPtrList_t& strList);
 
+    String strip(const String& str);
 }
 
 #ifdef _PALM_OS

@@ -442,6 +442,22 @@ int AddLinesToList(const String& txt, CharPtrList_t& strList)
     return count;
 }
 
+String strip(const String& str)
+{
+    uint_t left = 0;
+    uint_t right = str.length();
+
+    while (isSpace(str[left]) && left < right)
+        left++;
+    while (isSpace(str[right-1]) && left < right)
+        right--;
+    if (left == right)
+        return _T("");
+    else
+        return String(str, left, right);
+
+}
+
 } // namespace ArsLexis
 
 #ifdef _PALM_OS
