@@ -38,6 +38,9 @@ static const double pow2[] = {
     1e-004, 1e-002, 1e-001
 };
 
+void printDouble(double x, char *s);
+void printDoubleRoundInternal(double x, char *s, double roundFactor, int numDigits, int precLimit);
+
 void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit, bool insertThousandSeparator)
 {
     printDoubleRoundInternal(x,s,roundFactor,numDigits,precLimit);
@@ -57,9 +60,6 @@ void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int 
         }
     }
 }
-
-void printDouble(double x, char *s);
-void printDoubleRoundInternal(double x, char *s, double roundFactor, int numDigits, int precLimit);
 
 void printDouble(double x, char *s)
 {
