@@ -63,7 +63,7 @@ public:
      */
     bool fetchHistoryEntry(ulong_t index); 
     
-    void lookupFinished(bool success, const char_t* entryTitle);
+    long lookupFinished(bool success, const char_t* entryTitle);
     
     bool move(int delta);
     

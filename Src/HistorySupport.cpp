@@ -207,30 +207,31 @@ bool HistorySupport::fetchHistoryEntry(ulong_t index)
     return selectEntry(cache, index);    
 }
 
-void HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
+long HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
 {
     
     if (!success)
     {
         lastAction_ = actionNewSearch;    
-        return;
+        return -1;
     }
         
     HistoryCache cache;
     status_t err = cache.open(cacheName_);
     if (errNone != err)
-        return;
+        return -1;
     
     if (actionNewSearch == lastAction_)
     {
         assert(0 != cache.entriesCount());
         if (0 == cache.entriesCount())
-            return;
+            return -1;
             
         currentHistoryIndex_ = cache.entriesCount() - 1;
         cache.setEntryTitle(currentHistoryIndex_, entryTitle);
     }
     lastAction_ = actionNewSearch;
+    return currentHistoryIndex_;
 }
 
 bool HistorySupport::move(int delta)
