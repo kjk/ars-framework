@@ -73,6 +73,13 @@ namespace ArsLexis
         width=w;
     }
 
+    inline Graphics::Font_t& Graphics::font()
+    {return support_.font;}
+    
+    inline const Graphics::Font_t& Graphics::font() const
+    {return support_.font;}
+    
+
 }
 
 #endif

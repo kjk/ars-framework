@@ -468,7 +468,7 @@ bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
 
 void DefinitionParser::parseTextLine()
 {
-    if (!lineAllowsContinuation(previousLineType_))
+    if (!lineAllowsContinuation(previousLineType_) )
     {
         ParagraphElement* para=new ParagraphElement();
         appendElement(para);
@@ -486,7 +486,7 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
         goOn=detectNextLine(end, finish);
         if (goOn || finish)
         {
-            if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ && listElementLine!=previousLineType_)
+            if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ /*  && listElementLine!=previousLineType_ */)
                 popParent(); 
                 
             if (listElementLine==previousLineType_ && listElementLine!=lineType_)
@@ -565,8 +565,6 @@ void DefinitionParser::parseListElementLine()
     while (parsePosition_<lineEnd_ && isWhitespace(text_[parsePosition_]))
         ++parsePosition_;
     parseText(lineEnd_, styleDefault);
-    if (!lineAllowsContinuation(listElementLine))
-        popParent();
 }
 
 void DefinitionParser::parseIndentedLine()

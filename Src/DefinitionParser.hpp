@@ -145,7 +145,7 @@ class DefinitionParser
     
     static bool lineAllowsContinuation(LineType lineType)
     {
-        return listElementLine==lineType || textLine==lineType || indentedLine==lineType;
+        return textLine==lineType || indentedLine==lineType;
     }
 
 
