@@ -116,6 +116,8 @@ namespace ArsLexis
 
         void setPosition(int value, int min, int max, int pageSize)
         {SclSetScrollBar(object(), value, min, max, pageSize);}
+        
+        ~ScrollBar();
 
     };
 
@@ -167,6 +169,8 @@ namespace ArsLexis
         void replace(const String& text)
         {replace(text.data(), text.length());}
         
+        ~Field();
+        
     };
 
 #pragma mark -
@@ -191,6 +195,8 @@ namespace ArsLexis
         
         void setGraphics(DmResID bitmapId, DmResID selBitmapId=NULL)
         {CtlSetGraphics(object(), bitmapId, selBitmapId);}
+        
+        ~Control();
                 
     };
     
@@ -253,7 +259,7 @@ namespace ArsLexis
             
             virtual uint_t itemsCount() const=0;
             
-            virtual ~CustomDrawHandler() {}
+            virtual ~CustomDrawHandler();
 
             friend class List;               
         };
@@ -266,6 +272,8 @@ namespace ArsLexis
         {LstSetTopItem(object(), item);}
         
         void updateItemsCount(const CustomDrawHandler& handler);
+        
+        ~List();
 
     };
     

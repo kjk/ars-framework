@@ -81,5 +81,14 @@ namespace ArsLexis
             
         return error;
     }
+    
+    status_t SimpleSocketConnection::notifyFinished()
+    {return errNone;}
+    
+    status_t SimpleSocketConnection::notifyProgress()
+    {return errNone;}
+
+    SimpleSocketConnection::~SimpleSocketConnection()
+    {}
         
 }

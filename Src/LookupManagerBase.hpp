@@ -40,7 +40,7 @@ namespace ArsLexis {
 
         virtual void showProgress(Graphics& graphics, const Rectangle& bounds) const;
         
-        virtual ~LookupProgressReportingSupport() {}
+        virtual ~LookupProgressReportingSupport();
         
     };
 

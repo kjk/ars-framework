@@ -14,3 +14,6 @@ void LineBreakElement::calculateOrRender(LayoutContext& layoutContext, bool rend
     }
     layoutContext.markElementCompleted(0);
 }
+
+LineBreakElement::~LineBreakElement()
+{}

@@ -23,7 +23,7 @@ namespace ArsLexis
         uint_t size() const
         {return sizeof(address_);}
         
-        virtual ~SocketAddress() {}
+        virtual ~SocketAddress();
     };
     
     class INetSocketAddress: public SocketAddress
@@ -60,6 +60,8 @@ namespace ArsLexis
 
         ushort_t port() const
         {return netToHostS(address().port);}
+        
+        ~INetSocketAddress();
         
     };
     

@@ -49,6 +49,18 @@ namespace ArsLexis
     }
     
 #pragma mark -
+
+    ScrollBar::~ScrollBar()
+    {}
+    
+    Field::~Field()
+    {}
+    
+    Control::~Control()
+    {}
+
+    List::~List()
+    {}
     
     void Field::replace(const char* text, uint_t length)
     {
@@ -58,6 +70,7 @@ namespace ArsLexis
 
 #pragma mark -
 #pragma mark List
+
 
     // At any given time an element of the list is selected. This function
     // will set a new item selected of the pos curSelected + delta. delta
@@ -131,4 +144,7 @@ namespace ArsLexis
         setTopItem(top);
     }
  
+    List::CustomDrawHandler::~CustomDrawHandler()
+    {}
+
 }

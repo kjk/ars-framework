@@ -4,7 +4,7 @@
 #ifdef __MWERKS__
 # pragma pcrelconstdata on
 # pragma far_code
-# pragma inline_bottom_up on
+//# pragma inline_bottom_up on
 #endif
 
 namespace ArsLexis {
@@ -52,7 +52,9 @@ namespace ArsLexis {
     {}        
 
     HttpConnection::~HttpConnection() 
-    {}
+    {
+        std::for_each(requestFields_.begin(), requestFields_.end(), ObjectDeleter<RequestField_t>());
+    }
 
     void HttpConnection::renderRequestLine(String& out) 
     {
@@ -77,7 +79,8 @@ namespace ArsLexis {
         renderRequestLine(request);
         RequestFields_t::const_iterator end=requestFields_.end();
         for (RequestFields_t::const_iterator it=requestFields_.begin(); it!=end; ++it)
-            renderHeaderField(request, *it);
+            renderHeaderField(request, *(*it));
+        std::for_each(requestFields_.begin(), requestFields_.end(), ObjectDeleter<RequestField_t>());
         requestFields_.clear();
         request.append(crLf);
         if (!messageBody_.empty())
@@ -131,7 +134,7 @@ namespace ArsLexis {
 
     void HttpConnection::addRequestHeader(const String& field, const String& value) 
     {
-        requestFields_.push_back(std::make_pair(field, value));
+        requestFields_.push_back(new RequestField_t(field, value));
     }
     
     void HttpConnection::setUri(const String& uri) 
@@ -469,4 +472,10 @@ charAvailable:
         return errNone;
     }   
     
+    HttpConnection::ChunkedBodyReader::~ChunkedBodyReader()
+    {}
+    
+    HttpConnection::BodyReader::~BodyReader()
+    {}
+
 }

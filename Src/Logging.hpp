@@ -242,13 +242,16 @@ namespace ArsLexis
 
     class RootLogger: public Logger, private NonCopyable
     {
-        typedef std::pair<LogSink*, uint_t> SinkWithThreshold;
-        typedef std::list<SinkWithThreshold> Sinks_t;
+        struct SinkWithThreshold {
+            LogSink* sink;
+            uint_t threshold;
+            SinkWithThreshold(LogSink* s, uint_t thr): sink(s), threshold(thr) {}
+            ~SinkWithThreshold() {delete sink;}
+        };
+
+        typedef std::list<SinkWithThreshold*> Sinks_t;
         Sinks_t sinks_;
    
-        static void deleteSink(SinkWithThreshold& s) 
-        {delete s.first;}            
-     
     public:
     
         RootLogger(const char_t* context, LogSink* sink=0, uint_t sinkThreshold=logLevelDefault);

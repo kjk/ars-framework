@@ -8,7 +8,7 @@
 #ifdef __MWERKS__
 # pragma far_code
 # pragma inline_bottom_up on
-# pragma inline_depth(100)
+//# pragma inline_depth(100)
 #endif
 
 
@@ -159,7 +159,7 @@ namespace ArsLexis
 #else
         rootLoggerInstance=0;
 #endif // _PALM_OS
-        std::for_each(sinks_.begin(), sinks_.end(), deleteSink);        
+        std::for_each(sinks_.begin(), sinks_.end(), ObjectDeleter<SinkWithThreshold>());        
     }
 
     RootLogger* RootLogger::instance() throw()
@@ -178,15 +178,15 @@ namespace ArsLexis
     void RootLogger::addSink(LogSink* newSink, uint_t threshold) throw()
     {
         assert(newSink);
-        sinks_.push_back(SinkWithThreshold(newSink, threshold));
+        sinks_.push_back(new SinkWithThreshold(newSink, threshold));
     }
 
     void RootLogger::logRaw(const String& text, uint_t level)
     {
-        Sinks_t::iterator end(sinks_.end());
-        for (Sinks_t::iterator it(sinks_.begin()); it!=end; ++it)
-            if ((*it).second>=level)
-                (*it).first->output(text);
+        Sinks_t::iterator end=sinks_.end();
+        for (Sinks_t::iterator it=sinks_.begin(); it!=end; ++it)
+            if ((*it)->threshold>=level)
+                (*it)->sink->output(text);
     }
 
 #pragma mark -

@@ -271,4 +271,15 @@ namespace ArsLexis
         return errNone;
     }
 
+
+    status_t SocketConnection::notifyWritable()
+    {return errNone;}
+        
+    status_t SocketConnection::notifyReadable()
+    {return errNone;}
+        
+    void SocketConnection::handleError(status_t)
+    {abortConnection();}
+        
+
 }

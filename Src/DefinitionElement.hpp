@@ -37,11 +37,9 @@ public:
     
     virtual void render(RenderingContext& rc)=0;
     
-    virtual ~DefinitionElement()
-    {}
+    virtual ~DefinitionElement();
     
-    virtual void performAction(Definition&)
-    {}
+    virtual void performAction(Definition&);
     
     void setParent(DefinitionElement* parent)
     {

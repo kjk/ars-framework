@@ -33,7 +33,7 @@ namespace ArsLexis {
         
         status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
         
-        virtual ~Reader() {}
+        virtual ~Reader();
         
     };
     

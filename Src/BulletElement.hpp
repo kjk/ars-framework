@@ -28,6 +28,7 @@ public:
             appendTo.append(_T("\n• "));
     }
     
+    ~BulletElement();
 
 };
 

@@ -38,6 +38,9 @@ public:
             appendTo.append(1, '\n');
         GenericTextElement::toText(appendTo, from, to);
     }
+    
+    ~ListNumberElement();
+    
 };
 
 #endif

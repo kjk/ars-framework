@@ -20,7 +20,7 @@ namespace ArsLexis {
     
         virtual status_t flush()=0;
         
-        virtual ~Writer() {}
+        virtual ~Writer();
     
     };
 

@@ -17,3 +17,6 @@ void FormattedTextElement::applyFormatting(Graphics& graphics, const RenderingPr
     graphics.setTextColor(styleFormat.textColor);
     applyHyperlinkDecorations(graphics, preferences);
 }
+
+FormattedTextElement::~FormattedTextElement()
+{}

@@ -5,8 +5,8 @@
 
 #ifdef __MWERKS__
 # pragma far_code
-# pragma inline_bottom_up on
-# pragma inline_depth(100)
+//# pragma inline_bottom_up on
+//# pragma inline_depth(100)
 #endif
 
 namespace ArsLexis

@@ -524,3 +524,21 @@ void Definition::extendSelection(ArsLexis::Graphics& graphics, const RenderingPr
         selectedHotSpot_=0;
     }        
 }
+
+Definition::HyperlinkHandler::~HyperlinkHandler()
+{}
+
+Definition::LineHeader::LineHeader():
+    renderingProgress(0),
+    height(0),
+    baseLine(0),
+    leftMargin(0)
+{}
+
+void Definition::replaceElements(Elements_t& elements)
+{
+    clear();
+    elements_.swap(elements);
+}
+
+

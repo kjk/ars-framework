@@ -24,6 +24,8 @@ public:
             appendTo.append(1, '\n');
     }
 
+    ~LineBreakElement();
+    
 };
 
 #endif

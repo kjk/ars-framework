@@ -9,3 +9,10 @@ DefinitionElement::Justification DefinitionElement::justification() const
 {
     return (justifyInherit!=justification_?justification_:(0!=parent_?parent_->justification():justifyLeft));
 }
+
+DefinitionElement::~DefinitionElement()
+{}
+
+void DefinitionElement::performAction(Definition&)
+{}
+    

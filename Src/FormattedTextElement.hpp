@@ -18,6 +18,9 @@ public:
 
     void setEffects(ArsLexis::FontEffects fx)
     {fontEffects_=fx;}
+    
+    ~FormattedTextElement();
+    
 };
 
 #endif

@@ -77,7 +77,7 @@ namespace ArsLexis {
         String uri_;
         String messageBody_;
         typedef std::pair<String, String> RequestField_t;
-        typedef std::vector<RequestField_t> RequestFields_t;
+        typedef std::vector<RequestField_t*> RequestFields_t;
         RequestFields_t requestFields_;
 
         void renderRequestLine(String& out);
@@ -129,6 +129,8 @@ namespace ArsLexis {
             
             status_t read(int& num, String& dst, int offset, int range);
             
+            ~BodyReader();
+            
         };
         
         class ChunkedBodyReader: public BodyReader {
@@ -153,6 +155,8 @@ namespace ArsLexis {
             explicit ChunkedBodyReader(HttpConnection& conn);
 
             status_t read(int& chr);
+            
+            ~ChunkedBodyReader();
             
         };
         

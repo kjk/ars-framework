@@ -23,6 +23,8 @@ public:
             appendTo.append(_T("\n----"));
     }
     
+    ~HorizontalLineElement();
+    
 };
 
 #endif

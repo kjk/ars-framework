@@ -53,12 +53,7 @@ private:
          * @internal 
          * Initializes members to default values.
          */
-        LineHeader():
-            renderingProgress(0),
-            height(0),
-            baseLine(0),
-            leftMargin(0)
-        {}
+        LineHeader();
         
         /**
          * @internal
@@ -122,8 +117,7 @@ public:
     
         virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement)=0;
         
-        virtual ~HyperlinkHandler()
-        {}
+        virtual ~HyperlinkHandler();
         
     };
     
@@ -202,11 +196,7 @@ public:
     ~Definition();
 
 
-    void replaceElements(Elements_t& elements)
-    {
-        clear();
-        elements_.swap(elements);
-    }
+    void replaceElements(Elements_t& elements);
     
     /**
      * Adds hot spot to the collection of this definition's hot spots. Definition takes ownership 

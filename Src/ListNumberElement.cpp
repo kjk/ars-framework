@@ -39,3 +39,6 @@ void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
     str=buffer;
     swapText(str);
 }
+
+ListNumberElement::~ListNumberElement()
+{}

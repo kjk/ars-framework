@@ -23,4 +23,7 @@ namespace ArsLexis {
         return errNone;
     }
     
+    Reader::~Reader()
+    {}
+    
 }

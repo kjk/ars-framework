@@ -4,6 +4,10 @@
 #include <SysUtils.hpp>
 
 namespace ArsLexis {
+
+
+    LookupProgressReportingSupport::~LookupProgressReportingSupport()
+    {}
     
     void LookupProgressReportingSupport::showProgress(Graphics& graphics, const Rectangle& bounds) const
     {

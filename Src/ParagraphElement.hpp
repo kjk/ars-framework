@@ -22,6 +22,8 @@ public:
         childIndentation_(0)
     {}
 
+    ~ParagraphElement();
+    
 };
 
 class IndentedParagraphElement: public ParagraphElement
@@ -30,6 +32,8 @@ public:
     
     void calculateLayout(LayoutContext& layoutContext);
 
+    ~IndentedParagraphElement();
+    
 };    
 
 #endif

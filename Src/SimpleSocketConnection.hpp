@@ -27,11 +27,9 @@ namespace ArsLexis
         
         status_t notifyReadable();
         
-        virtual status_t notifyFinished()
-        {return errNone;}
+        virtual status_t notifyFinished();
         
-        virtual status_t notifyProgress()
-        {return errNone;}
+        virtual status_t notifyProgress();
         
         void setRequest(const String& request)
         {request_=request;}
@@ -51,6 +49,8 @@ namespace ArsLexis
         
         bool sending() const
         {return sending_;}
+        
+        ~SimpleSocketConnection();
     
     };
     

@@ -25,4 +25,6 @@ void BulletElement::calculateLayout(LayoutContext& mc)
     childIndentation_=(mc.usedWidth-widthBefore)+mc.preferences.bulletIndentation();
 }
 
+BulletElement::~BulletElement()
+{}
 

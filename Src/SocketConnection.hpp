@@ -82,11 +82,9 @@ namespace ArsLexis
         
         virtual status_t resolve(Resolver& resolver);
     
-        virtual status_t notifyWritable()
-        {return errNone;}
+        virtual status_t notifyWritable();
         
-        virtual status_t notifyReadable()
-        {return errNone;}
+        virtual status_t notifyReadable();
         
         virtual status_t notifyException();
         
@@ -97,8 +95,7 @@ namespace ArsLexis
         void setState(State state)
         {state_=state;}
         
-        virtual void handleError(status_t)
-        {abortConnection();}
+        virtual void handleError(status_t);
         
         void registerEvent(SocketSelector::EventType event)
         {manager_.registerEvent(*this, event);}

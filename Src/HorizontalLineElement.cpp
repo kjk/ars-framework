@@ -23,3 +23,5 @@ void HorizontalLineElement::render(RenderingContext& renderingContext)
     renderingContext.markElementCompleted(renderingContext.availableWidth());
 }
     
+HorizontalLineElement::~HorizontalLineElement()
+{}
