@@ -1330,6 +1330,8 @@ DefinitionModel::DefinitionModel():
 DefinitionModel::~DefinitionModel()
 {
     DestroyElements(elements);
+    for (ulong_t i = 0; i < styleCount_; ++i)
+        delete styles_[i];
     delete [] styles_;
 }
 

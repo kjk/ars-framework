@@ -218,8 +218,7 @@ bool ByteFormatParser::parseParam()
                     ulong_t nameLength = readUnaligned32(&inText_[start_]);
                     styleNames_[styleCount_] = CharCopyN(&inText_[start_+sizeLength], nameLength);
                     DefinitionStyle* style =  parseStyle(&inText_[start_+sizeLength+nameLength],currentParamLength_-(sizeLength+nameLength));
-                    model_->styles_[styleCount_] = *style;
-                    //todo: delete style?
+                    model_->styles_[styleCount_] = style;
                     styleCount_++;
                 }            
             }
@@ -237,7 +236,7 @@ bool ByteFormatParser::parseParam()
                 {
                     if (0 == StrNCompare(styleNames_[i],&inText_[start_],currentParamLength_))
                     {
-                        serverStyle = &model_->styles_[i];
+                        serverStyle = model_->styles_[i];
                         i = totalStyleCount_;
                     }
                 }
@@ -253,14 +252,24 @@ bool ByteFormatParser::parseParam()
             {
                 //  free old styles
                 delete [] styleNames_;
+
                 delete [] model_->styles_;
+                model_->styles_ = NULL;
+                model_->styleCount_ = 0;
+                
                 styleCount_ = 0;
                 totalStyleCount_ = readUnaligned32(&inText_[start_]);
                 assert(totalStyleCount_ > 0);
                 // alloc memory for new styles
+                
+                model_->styles_ = new_nt DefinitionStyle*[totalStyleCount_];
+                if (NULL == model_->styles_)
+                    return false; // TODO: here it's broken by design - no way to return error code
+                    
+                memzero(model_->styles_, sizeof(DefinitionStyle*) * totalStyleCount_);
                 model_->styleCount_ = totalStyleCount_;
+              
                 styleNames_ = new_nt char*[totalStyleCount_];
-                model_->styles_ = new_nt DefinitionStyle[totalStyleCount_];
             }
             break;
         

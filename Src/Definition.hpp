@@ -41,7 +41,7 @@ public:
 
 private:
     
-    DefinitionStyle* styles_;
+    DefinitionStyle** styles_;
     ulong_t styleCount_;
  
 public:
