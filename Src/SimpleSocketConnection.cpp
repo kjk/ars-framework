@@ -110,7 +110,13 @@ Exit:
     
     status_t SimpleSocketConnection::notifyFinished()
     {
+        // TODO: hack, this should be done more cleanly
+#ifdef _PALM_OS
         status_t error=socket().shutdown(netSocketDirBoth);
+#else
+        // TODO: not even implemented in WinNetLibrary
+        status_t error=socket().shutdown(0);
+#endif
         if (error)
             log().debug()<<_T("notifyFinished(): Socket::shutdown() returned error: ")<<error;
         return error;

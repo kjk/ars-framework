@@ -103,8 +103,6 @@ namespace ArsLexis
     
     int NetLibrary::socketShutdown(NativeSocket_t socket, int direction, long timeout, status_t& error)
     {
-        
-
         /*error = shutdown (socket, direction); 
         if(error)
         {
