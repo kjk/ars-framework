@@ -61,6 +61,7 @@ static const LangCodeEntry langCodes[] =
     {"gn", "Guarani"},
     {"gu", "Gujarati"},
     {"ha", "Hausa"},
+    {"he", "Hebrew"},
     {"hi", "Hindi"},
     {"hr", "Croatian"},
     {"hu", "Hungarian"},
