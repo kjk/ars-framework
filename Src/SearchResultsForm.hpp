@@ -15,7 +15,7 @@ class SearchResultsForm: public iPediaForm
     
     void prepareListChoices();
 
-    void handleControlSelect(const ctlSelect& data);
+    void handleControlSelect(const EventType& data);
     
 protected:
     

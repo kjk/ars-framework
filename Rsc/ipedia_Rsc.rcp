@@ -232,3 +232,8 @@ BEGIN
 END
 
 
+
+//FONTFAMILY ID testFont FONTID 128 
+//BEGIN
+//	 FONT "../Fonts/Verdana\ 8.pfn" DENSITY 144
+//END	 

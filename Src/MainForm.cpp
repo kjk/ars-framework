@@ -146,11 +146,11 @@ Err MainForm::initialize()
     return error;
 }
 
-inline void MainForm::handleScrollRepeat(const sclRepeat& data)
+inline void MainForm::handleScrollRepeat(const EventType& event)
 {
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
     Graphics graphics(windowHandle());
-    definition_.scroll(graphics, app.renderingPreferences(), data.newValue-data.value);
+    definition_.scroll(graphics, app.renderingPreferences(), event.data.sclRepeat.newValue-event.data.sclRepeat.value);
 }
 
 void MainForm::handlePenUp(const EventType& event)
@@ -230,9 +230,9 @@ void MainForm::lookupTerm(const ArsLexis::String& newTerm)
     }
 }
 
-void MainForm::handleControlSelect(const ctlSelect& data)
+void MainForm::handleControlSelect(const EventType& event)
 {
-    switch (data.controlID)
+    switch (event.data.ctlSelect.controlID)
     {
         case searchButton:
             {
@@ -266,7 +266,7 @@ bool MainForm::handleEvent(EventType& event)
             break;
             
         case ctlSelectEvent:
-            handleControlSelect(event.data.ctlSelect);
+            handleControlSelect(event);
             handled=true;
             break;
         
@@ -275,7 +275,7 @@ bool MainForm::handleEvent(EventType& event)
             break;
             
         case sclRepeatEvent:
-            handleScrollRepeat(event.data.sclRepeat);
+            handleScrollRepeat(event);
             break;
     
         default:

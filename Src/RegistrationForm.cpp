@@ -45,9 +45,9 @@ bool RegistrationForm::handleOpen()
     return handled;
 }
 
-void RegistrationForm::handleControlSelect(const ctlSelect& data)
+void RegistrationForm::handleControlSelect(const EventType& event)
 {
-    if (okButton==data.controlID)
+    if (okButton==event.data.ctlSelect.controlID)
     {
         Field field(*this, serialNumberField);
         const char* text=field.text();
@@ -71,7 +71,7 @@ bool RegistrationForm::handleEvent(EventType& event)
     switch (event.eType)
     {
         case ctlSelectEvent:
-            handleControlSelect(event.data.ctlSelect);
+            handleControlSelect(event);
             handled=true;
             break;
             

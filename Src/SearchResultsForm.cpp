@@ -68,7 +68,7 @@ void SearchResultsForm::resize(const ArsLexis::Rectangle& screenBounds)
     update();
 }
 
-inline void SearchResultsForm::handleControlSelect(const ctlSelect& data)
+inline void SearchResultsForm::handleControlSelect(const EventType& event)
 {
     closePopup();
 }
@@ -80,7 +80,7 @@ bool SearchResultsForm::handleEvent(EventType& event)
     switch (event.eType)
     {
         case ctlSelectEvent:
-            handleControlSelect(event.data.ctlSelect);
+            handleControlSelect(event);
             handled=true;
             break;
     

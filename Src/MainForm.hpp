@@ -11,9 +11,9 @@ class MainForm: public iPediaForm
     LookupHistory history_;
     ArsLexis::String server_;
     
-    void handleScrollRepeat(const sclRepeat& data);
+    void handleScrollRepeat(const EventType& data);
     void handlePenUp(const EventType& event);
-    void handleControlSelect(const ctlSelect& data);
+    void handleControlSelect(const EventType& data);
     bool handleKeyPress(const EventType& event);
     
     void drawSplashScreen(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);

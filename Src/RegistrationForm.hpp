@@ -5,7 +5,7 @@
 
 class RegistrationForm: public iPediaForm
 {
-    void handleControlSelect(const ctlSelect& data);
+    void handleControlSelect(const EventType& data);
 
 protected:
 
