@@ -46,6 +46,7 @@ namespace ArsLexis {
         enum status_tor {
             errHttpUnknownTransferEncoding=errFirstAvailable,
             errHttpUnsupportedStatusCode,
+            errHttpUnexpectedEndOfChunk,
             errFirstAvailable
         };
         

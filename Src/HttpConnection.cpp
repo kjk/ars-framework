@@ -457,6 +457,8 @@ charAvailable:
             return error;
         if (++chunkPosition_==chunkLength_)
             state_=stateAfterBodyCr;
+        else if (npos==chr)
+            return errHttpUnexpectedEndOfChunk;
         return errNone;
     }   
     
