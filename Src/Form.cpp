@@ -213,7 +213,7 @@ namespace ArsLexis
                 FormObject object(*this, entryFocusControlId_);
                 object.focus();
                 entryFocusControlId_ = frmInvalidObjectId;
-                update();
+                object.draw();
             }
         }
         return false;
