@@ -42,12 +42,14 @@ namespace ArsLexis
 // Font *must* be copyable, so it should be reference-counted internally (we discussed these matters 
 // with Marek and it seems it's the easiest way to ensure proper HDC behavior. Of course you don't
 // have to use the proposed names as long as typedefs are set correctly.
-#include "WinFont.hpp"
+//#include "WinFont.hpp"
 
 namespace ArsLexis 
 { 
 
-    typedef WinFont NativeFont_t;
+ //   typedef WinFont NativeFont_t;
+
+	typedef int NativeFont_t;
     
     struct NativeGraphicsSupport
     {

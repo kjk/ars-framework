@@ -117,16 +117,22 @@ Err iPediaApplication::getNetLibrary(NetLibrary*& netLib)
         NetLibrary* tmp=new NetLibrary;
         UInt16 ifError=0;
         error=tmp->initialize(ifError);
-        if (!error)
+        if (errNone==error && 0==ifError)
         {
-            assert(!ifError);
             netLib_=tmp;
             connectionManager_=new SocketConnectionManager(*netLib_);
             resolver_=new Resolver(*netLib_);
         }
+        else {
+            if (errNone==error)
+                error=netErrDeviceInitFail;
+            delete tmp;
+        }                
     }
     if (!error)
         netLib=netLib_;
+    else
+        FrmAlert(networkUnavailableAlert);        
     return error;
 }
 

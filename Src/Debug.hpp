@@ -26,6 +26,8 @@
 #include <new>
 #include <cassert>
 
+#if defined(__MWERKS__)
+
 namespace ArsLexis 
 {
     /** 
@@ -79,5 +81,7 @@ inline void operator delete[](void *ptr)
 {
     ::operator delete(ptr);
 }
+
+#endif
 
 #endif

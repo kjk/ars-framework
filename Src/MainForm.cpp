@@ -14,7 +14,8 @@ MainForm::MainForm(iPediaApplication& app):
 {
 /*
     FormattedTextElement* ft;
-    definition_.appendElement(ft=new FormattedTextElement("This is a piece of text written in standard font. "));    definition_.appendElement(ft=new FormattedTextElement("This is striked out. "));
+    definition_.appendElement(ft=new FormattedTextElement("This is a piece of text written in standard font. "));
+    definition_.appendElement(ft=new FormattedTextElement("This is striked out. "));
     ft->fontEffects().setStrikeOut(true);
     definition_.appendElement(ft=new FormattedTextElement("This is once again a piece of text written in standard font. "));
     definition_.appendElement(ft=new FormattedTextElement("This is underlined. "));

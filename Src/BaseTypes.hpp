@@ -14,6 +14,9 @@ namespace ArsLexis
 #if defined(_WIN32_WCE)
 
     typedef TCHAR char_t;
+
+	#define tstrlen _tcslen
+	#define tprintf _stprintf
     
 #else
     
