@@ -121,7 +121,7 @@ namespace ArsLexis
     class HostInfoBuffer {
         NetHostInfoBufType hostInfo_;
     public:
-        NetHostInfoBufType& hostInfo() {	return hostInfo_; };
+        NetHostInfoBufType& hostInfo() { return hostInfo_; };
         IPAddr getAddress() 
         {
              IPAddr  ipaddr;  
@@ -131,7 +131,7 @@ namespace ArsLexis
     };
 
 #elif defined(_WIN32)	
-    
+
     class HostInfoBuffer {
         struct hostent *hostInfo_;
     public:

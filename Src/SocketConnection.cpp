@@ -65,7 +65,6 @@ namespace ArsLexis
                 --countAfter;
             }
         }
-        assert(countAfter!=connectionsCount_);
         connectionsCount_ = countAfter;
     }
         

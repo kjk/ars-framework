@@ -45,7 +45,7 @@ namespace ArsLexis
         else
             cache_.push_front(std::make_pair(name, address));
 */
-        cache_[name].ip=address;            
+        //cache_[name].ip=address;            
     }
 
     status_t Resolver::validateAddress(const String& origAddress, String& validAddress, ushort_t& port)
@@ -87,7 +87,7 @@ namespace ArsLexis
         IPAddr  resAddr=buffer->getAddress();
         assert(resAddr.ip!=0);
 //        cache_.push_front(std::make_pair(name, resAddr));
-        cache_[name]=resAddr;
+        //cache_[name]=resAddr;
 
 #ifdef NEVER
         char addrStr[32];
@@ -116,16 +116,16 @@ namespace ArsLexis
             out=addr;
             return errNone;
         }
-        AddressCache_t::const_iterator it=cache_.find(validAddress);
+//        AddressCache_t::const_iterator it=cache_.find(validAddress);
 //      AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
-        if (!(cache_.end()==it))
+/*        if (!(cache_.end()==it))
         {
             addr.setIpAddress((*it).second);
             addr.setPort(port);
             out=addr;
             return errNone;
         }
-        else
+        else*/
             return blockingResolve(out, validAddress, port, timeout);
     }
    
