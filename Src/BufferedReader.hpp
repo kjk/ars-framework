@@ -28,7 +28,18 @@ namespace ArsLexis {
         
         void unmark();
         
-        void rewind();
+        enum SeekType {
+            seekFromBeginning,
+            seekFromCurrentPosition,
+            seekFromEnd
+        };
+
+        typedef long SeekOffset;
+        
+        //! Seek is relative to marked position. If there's no marked position it fails.        
+        status_t  seek(SeekOffset offset, SeekType type=seekFromCurrentPosition);
+        
+        status_t rewind() { return seek(0, seekFromBeginning);}
         
         status_t readRaw(void* buffer, uint_t& length);
         
@@ -37,6 +48,10 @@ namespace ArsLexis {
         bool isMarked_;    
         Buffer_t::size_type position_;
         uint_t chunkSize_;
+        
+        status_t readNonMarked(void* buffer, uint_t& length);
+        
+        status_t readMarked(void* buffer, uint_t& length);
     
     };
 

@@ -3,12 +3,14 @@
 
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
+#include <map>
 
 namespace ArsLexis {
 
     class Reader;
     class Writer;
     class Serializer;
+    class BufferedReader;
     
     class Serializable {
     
@@ -28,8 +30,14 @@ namespace ArsLexis {
     
     class Serializer {
     
-        Reader* reader_;
+        BufferedReader* reader_;
         Writer* writer_;
+        bool isIndexed_;
+        
+        typedef std::map<std::uint32_t, uint_t> RecordIndex_t;
+        RecordIndex_t recordIndex_;
+        
+        void loadIndex();
     
     public:
     

@@ -1,6 +1,6 @@
 #include <Serializer.hpp>
-#include <Reader.hpp>
 #include <Writer.hpp>
+#include <BufferedReader.hpp>
 
 using namespace ArsLexis;
 using namespace std;
@@ -13,13 +13,23 @@ uint_t Serializable::schemaVersion() const {return 1;}
 Serializable::~Serializable() {}
 
 
-Serializer::Serializer(Reader& reader): reader_(&reader), writer_(NULL), direction_(directionInput) {}
+Serializer::Serializer(Reader& reader): 
+    reader_(new BufferedReader(reader)), 
+    writer_(NULL), 
+    direction_(directionInput) {
+    reader_->mark();
+}
 
 Serializer::Serializer(Writer& writer): reader_(NULL), writer_(&writer), direction_(directionOutput) {}
 
-Serializer::Serializer(Reader& reader, Writer& writer, Direction dir): reader_(&reader), writer_(&writer), direction_(dir) {}
+Serializer::Serializer(Reader& reader, Writer& writer, Direction dir): 
+    reader_(new BufferedReader(reader)), 
+    writer_(&writer), 
+    direction_(dir) {
+    reader_->mark();
+}
 
-Serializer::~Serializer() {}
+Serializer::~Serializer() {delete reader_;}
 
 void Serializer::serializeChunk(void* buffer, uint_t length)
 {
