@@ -34,12 +34,13 @@ namespace ArsLexis {
         protocolVersionMinor_(1),
         requestMethod_(methodGet),
         uri_("/"),
-        insideResposeHeaders_(false),
+        insideResponseHeaders_(false),
         insideResponseBody_(false),
         chunkedEncoding_(false),
         skippingInfoResponse_(false),
         bodyContentsAvailable_(false),
-        finished_(false)
+        finished_(false),
+        chunkedBodyFinished_(false)
     {}        
 
     HttpConnection::~HttpConnection() 
@@ -84,7 +85,7 @@ namespace ArsLexis {
         Err error=errNone;
         if (equalsIgnoreCase(field, "Transfer-Encoding"))
         {
-            if (equalsIgnoreCase(field, "chunked"))
+            if (equalsIgnoreCase(value, "chunked"))
                 chunkedEncoding_=true;
             else 
                 error=errHttpUnknownTransferEncoding;
@@ -156,20 +157,23 @@ namespace ArsLexis {
             if (line.empty())
             {
                 if (skippingInfoResponse_)
-                    skippingInfoResponse_=insideResponseBody_=insideResposeHeaders_=false;
+                    skippingInfoResponse_=insideResponseBody_=insideResponseHeaders_=false;
                 else
                 {
-                    insideResponseBody_=true;
-                    insideResposeHeaders_=false;
+                    if (!chunkedBodyFinished_)
+                    {
+                        insideResponseBody_=true;
+                        insideResponseHeaders_=false;
+                    }
                     break;
                 }
             }
             else 
             {
-                if (!insideResposeHeaders_)
+                if (!insideResponseHeaders_)
                 {
                     error=processStatusLine(line);
-                    insideResposeHeaders_=true;
+                    insideResponseHeaders_=true;
                 }
                 else
                     error=processHeaderLine(line);
@@ -347,24 +351,37 @@ namespace ArsLexis {
     {
         status_t error;
         int c;
-        if (stateAfterBodyCr==state_)
+    start:
+        if (stateAfterBodyCr==state_ || stateAfterLastChunkCr==state_)
         {
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
             if ('\r'!=c)
                 return SocketConnection::errResponseMalformed;
-            state_=stateAfterBodyLf;
+            state_=stateAfterBodyCr==state_?stateAfterBodyLf:stateAfterLastChunkLf;
         }
-        if (stateAfterBodyLf==state_)
+        if (stateAfterBodyLf==state_ || stateAfterLastChunkLf==state_)
         {
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
             if ('\n'!=c)
                 return SocketConnection::errResponseMalformed;
-            state_=stateInHeader;
-            chunkHeader_.clear();
+            if (stateAfterBodyLf==state_)
+            {
+                state_=stateInHeader;
+                chunkHeader_.clear();
+            }
+            else
+            {
+                flush();
+                connection_.insideResponseBody_=false;
+                connection_.chunkedBodyFinished_=true;
+                connection_.insideResponseHeaders_=true;
+                chr=npos;
+                return errNone;
+            }
         }
         if (stateInHeader==state_)
         {
@@ -394,16 +411,14 @@ namespace ArsLexis {
                 return error;
             if ('\n'!=c)
                 return SocketConnection::errResponseMalformed;
-            state_=stateInBody;
+            if (0!=chunkLength_)                
+                state_=stateInBody;
+            else
+            {
+                state_=stateAfterLastChunkCr;                goto start;
+            }
         }
         assert(stateInBody==state_);
-        if (0==chunkLength_)
-        {
-            flush();
-            connection_.insideResponseBody_=false;
-            chr=npos;
-            return errNone;
-        }
         assert(chunkPosition_<chunkLength_);
         error=BodyReader::read(chr);
         if (errNone!=error)
@@ -415,11 +430,12 @@ namespace ArsLexis {
     
     status_t HttpConnection::ChunkedBodyReader::parseChunkHeader()
     {
-        String::size_type end=chunkHeader_.find(';');
+        String::size_type end=chunkHeader_.find_first_of("; \t");
         if (chunkHeader_.npos==end)
             end=chunkHeader_.length();
         long val;
-        status_t error=numericValue(chunkHeader_.data(), chunkHeader_.data()+end, val, 16);        if (errNone!=error)
+        status_t error=numericValue(chunkHeader_.data(), chunkHeader_.data()+end, val, 16);
+        if (errNone!=error)
             return SocketConnection::errResponseMalformed;
         chunkLength_=val;
         return errNone;

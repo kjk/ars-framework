@@ -57,12 +57,13 @@ namespace ArsLexis {
         uint_t protocolVersionMinor_:4;
         RequestMethod requestMethod_:8;
         
-        bool insideResposeHeaders_:1;
+        bool insideResponseHeaders_:1;
         bool insideResponseBody_:1;
         bool chunkedEncoding_:1;
         bool skippingInfoResponse_:1;
         bool bodyContentsAvailable_:1;
         bool finished_:1;
+        bool chunkedBodyFinished_:1;
         
         String uri_;
         String messageBody_;
@@ -129,10 +130,12 @@ namespace ArsLexis {
                 stateAfterHeader,
                 stateInBody,
                 stateAfterBodyCr,
-                stateAfterBodyLf
+                stateAfterBodyLf,
+                stateAfterLastChunkCr,
+                stateAfterLastChunkLf
             } state_;
-            uint_t chunkPosition_;
-            uint_t chunkLength_;
+            ulong_t chunkPosition_;
+            ulong_t chunkLength_;
             
             status_t parseChunkHeader();
             
