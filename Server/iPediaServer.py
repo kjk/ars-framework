@@ -134,6 +134,7 @@ class iPediaProtocol(basic.LineReceiver):
         self.definitionId=None
         self.getRandom=None
         self.linesCount=0
+        self.searchExpression=None
         
     def getDatabase(self):
         if not self.db:
@@ -475,7 +476,6 @@ class iPediaProtocol(basic.LineReceiver):
             idTermDef=self.findExactDefinition(db, cursor, self.requestedTerm)
             if idTermDef:
                 self.definitionId, self.term, definition=idTermDef
-#               definition=self.findExactDefinition(db, cursor)
             if definition:
                 self.outputDefinition(self.preprocessDefinition(db, cursor, definition))
             else:
@@ -488,6 +488,29 @@ class iPediaProtocol(basic.LineReceiver):
                     self.outputPayloadField(searchResultsField, joinedList)
                 else:
                     self.outputField(notFoundField)
+            cursor.close()
+        except _mysql_exceptions.Error, ex:
+            print ex
+            if cursor:
+                cursor.close()
+            self.error=iPediaServerError.serverFailure
+            return False
+        return True
+        
+    def handleSearchRequest(self):
+        cursor=None
+        try:
+            db=self.getDatabase()
+            cursor=db.cursor()
+            self.termList=self.findFullTextMatches(db, cursor, self.searchExpression)
+            if self.termList:
+                self.outputField(resultsForField, self.searchExpression)
+                joinedList=""
+                for term in self.termList:
+                    joinedList+=(term+'\n')
+                self.outputPayloadField(searchResultsField, joinedList)
+            else:
+                self.outputField(notFoundField)
             cursor.close()
         except _mysql_exceptions.Error, ex:
             print ex
@@ -547,7 +570,10 @@ class iPediaProtocol(basic.LineReceiver):
             return self.finish()
         
         if self.term and not self.handleDefinitionRequest():
-            return self.finish()                                
+            return self.finish()
+            
+        if self.searchExpression and not self.handleSearchRequest():
+            return self.finish();
 
         if self.getRandom and not self.handleGetRandomRequest():
             return self.finish()
@@ -596,6 +622,9 @@ class iPediaProtocol(basic.LineReceiver):
 
             elif request.startswith(getRandomField):
                 self.getRandom = True
+                
+            elif request.startswith(searchField):
+                self.searchExpression=self.extractFieldValue(request)        
             else:
                 self.error=iPediaServerError.malformedRequest
 
