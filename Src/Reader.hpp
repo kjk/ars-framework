@@ -11,7 +11,7 @@
 // provide good Palm implementation
 namespace ArsLexis {
 
-    class Reader: public NonCopyable
+    class Reader: private NonCopyable
     {
     public:
     

@@ -14,7 +14,7 @@ namespace ArsLexis {
         enum {invalidFileHandle=0};
 #elif defined(_WIN32)
         typedef HANDLE FileHandle_t;
-        enum {invalidFileHandle=INVALID_HANDLE_VALUE};
+        enum {invalidFileHandle=reinterpret_cast<ulong_t>(INVALID_HANDLE_VALUE)};
 #else
 # error "Define FileReader::FileHandle_t for your system."
 #endif
@@ -38,7 +38,7 @@ namespace ArsLexis {
         //! @todo Transform parameter names into human-readable form. 
         //! @note If all the parameters except fileName will have sensible default values then it'll be possible to use the same call to open() on both platforms.
         status_t open(const char_t* fileName, 
-			ulong_t access=GENERIC_READ,
+            ulong_t access=GENERIC_READ,
             ulong_t shareMode=FILE_SHARE_READ,
             LPSECURITY_ATTRIBUTES securityAttributes=NULL,
             ulong_t creationDisposition=OPEN_EXISTING,
