@@ -10,7 +10,6 @@ namespace ArsLexis {
 #endif
 
     RichApplication::RichApplication():
-        log_(_T("root")),
         diaNotifyRegistered_(false),
         hasHighDensityFeatures_(highDensityFeaturesPresent()),
         showAlerts_(true)
@@ -69,7 +68,10 @@ namespace ArsLexis {
             if (showAlerts_)
                 FrmAlert(data.alertId);
             else
-                log().debug()<<"Alert: "<<data.alertId;
+            {
+                Log(eLogDebug, "Alert: ", false);
+                LogUlong(eLogDebug, data.alertId, true);
+            }
             handled=true;
         }
         else if (appDisplayCustomAlertEvent==event.eType)
@@ -79,12 +81,18 @@ namespace ArsLexis {
             if (showAlerts_)
                 FrmCustomAlert(data.alertId, customAlerts_.front().c_str(), "", "");
             else
-                log().debug()<<"Custom alert: "<<data.alertId<<'['<<customAlerts_.front()<<']';
+            {
+                Log(eLogDebug, _T("Custom alert: "), false);
+                LogUlong(eLogDebug, data.alertId, false);
+                Log(eLogDebug, _T("["), false);
+                Log(eLogDebug, customAlerts_.front().c_str(), false);                
+                Log(eLogDebug, _T("]"), true);
+            }
             customAlerts_.pop_front();
-            handled=true;
+            handled = true;
         }
         else
-            handled=Application::handleApplicationEvent(event);
+            handled = Application::handleApplicationEvent(event);
         return handled;
     }
 

@@ -77,7 +77,6 @@ namespace ArsLexis
         State                    state_;
         long                     transferTimeout_;
         SocketAddress            address_;
-        mutable ChildLogger      log_;
         Socket                   socket_;
 
     protected:
@@ -117,9 +116,6 @@ namespace ArsLexis
 
         State state() const
         {return state_;}
-
-        Logger& log() const
-        {return log_;}
 
         enum Error
         {

@@ -879,4 +879,36 @@ char_t* StringCopyN(const char_t* str, int strLen)
     return newStr;
 }
 
+// return true if this is an empty string (NULL or consits of white-space
+// characters only
+bool StrEmpty(const char_t *str)
+{
+    if (NULL == str)
+        return true;
+    while (*str)
+    {
+        if (_T(' ') != *str)
+            return false;
+        ++str;
+    }
+    return true;
+}
+
+#ifdef DEBUG
+
+static void test_StrEmpty()
+{
+    assert(true == StrEmpty(NULL));
+    assert(true == StrEmpty(""));
+    assert(true == StrEmpty(" "));
+    assert(true == StrEmpty("          "));
+    assert(false == StrEmpty(" a"));
+}
+
+void test_TextUnitTestAll()
+{
+    test_StrEmpty();
+}
+
+#endif
 

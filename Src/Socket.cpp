@@ -1,3 +1,4 @@
+#include <Logging.hpp>
 #include <Socket.hpp>
 #include <SocketAddress.hpp>
 #include <NetLibrary.hpp>
@@ -9,7 +10,6 @@ namespace ArsLexis
 #pragma mark SocketBase
 
     SocketBase::SocketBase(NetLibrary& netLib):
-        log_(_T("SocketBase")),
         netLib_(netLib),
         socket_(invalidSocket)
     {}
@@ -20,7 +20,7 @@ namespace ArsLexis
         status_t error;
         int result=netLib_.socketClose(socket_, evtWaitForever, error);
         if (-1==result || errNone!=error)
-            log().error()<<_T("close(): NetLibSocketClose() returned error: ")<<error;
+            LogStrUlong(eLogError, _T("close(): NetLibSocketClose() returned error: "), error);
         socket_=invalidSocket;
     }
     
@@ -49,7 +49,7 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)
-            log().debug()<<_T("shutdown(): NetLibSocketShutdown() returned error: ")<<error;
+            LogStrUlong(eLogDebug, _T("shutdown(): NetLibSocketShutdown() returned error: "), error);
         return error;
     }
     
@@ -130,8 +130,8 @@ namespace ArsLexis
             assert(error);
         else
             assert(!error);
-        if (error)            
-            log().debug()<<_T("setOption(): NetLibSocketOptionSet() returned error: ")<<error;
+        if (error)
+            LogStrUlong(eLogDebug, _T("setOption(): NetLibSocketOptionSet() returned error: "), error);
         return error;
     }
     
@@ -146,8 +146,8 @@ namespace ArsLexis
             assert(error);
         else
             assert(!error);
-        if (error)            
-            log().warning()<<_T("getOption(): NetLibSocketOptionGet() returned error: ")<<error;
+        if (error)
+            LogStrUlong(eLogWarning, _T("getOption(): NetLibSocketOptionGet() returned error: "), error);
         return error;
     }
         

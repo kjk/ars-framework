@@ -221,12 +221,7 @@ namespace ArsLexis
              * Feature index that is used to store pointer to current @c Application instance.
              */
             featureInstancePointer,
-            
-            /**
-             * Used to store pointer to current @c RootLogger.
-             */
-            featureRootLoggerPointer,
-            
+
             featureAllocationLoggerPointer,
             
             /**

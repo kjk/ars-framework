@@ -10,7 +10,6 @@ namespace ArsLexis {
 
     class RichApplication: public Application {
 
-        mutable ArsLexis::RootLogger log_;
         ArsLexis::DIA_Support diaSupport_;
         
         typedef std::list<ArsLexis::String> CustomAlerts_t;
@@ -51,9 +50,6 @@ namespace ArsLexis {
         static void sendDisplayAlertEvent(uint_t alertId);
         
         void sendDisplayCustomAlertEvent(uint_t alertId, const ArsLexis::String& text1);
-        
-        ArsLexis::RootLogger& log() const
-        {return log_;}
     
         bool hasHighDensityFeatures() const
         {return hasHighDensityFeatures_;}

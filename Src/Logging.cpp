@@ -1,306 +1,300 @@
-#include <Logging.hpp>
-#include <algorithm>
-
 #ifdef _PALM_OS
 #include <Application.hpp>
-#endif // _PALM_OS
-
-#ifdef __MWERKS__
-# pragma far_code
-# pragma inline_bottom_up on
 #endif
 
+#include <Logging.hpp>
 
-namespace ArsLexis
+#define MAX_LOGGERS_COUNT 3
+
+enum LoggerType {
+    loggerTypeMemo,
+    loggerTypeFile,
+    loggerTypeDebugger
+};
+
+typedef struct LoggerInfoTag {
+    LoggerType      type;
+    // logging threshold for this logger
+    // log everything above this threshold
+    LogLevel        threshold;
+
+    // only for loggerTypeMemo
+    DmOpenRef       db;
+
+    // fileName and file are only for loggerTypeFile
+    const char_t *  fileName; 
+    HostFILEType *  file;
+} LoggerInfo;
+
+typedef struct LoggingGlobalsTag {
+    int             loggersCount;
+    LoggerInfo      loggers[MAX_LOGGERS_COUNT];
+    DynStr          curLine;
+} LoggingGlobals;
+
+// using globals so not safe for non-global situations. just be careful.
+// could use a feature to be global-safe
+LoggingGlobals *g_logging = NULL;
+
+static LoggingGlobals *GetLoggingGlobals(bool fCreateIfNotExists)
 {
+    if (NULL != g_logging)
+        return g_logging;
 
-    void Logger::log(const char_t* text, uint_t length, uint_t level)
+    if (!fCreateIfNotExists)
+        return NULL;
+
+    g_logging = (LoggingGlobals*)malloc(sizeof(LoggingGlobals));
+    if (NULL == g_logging)
+        return NULL;
+    g_logging->loggersCount = 0;
+    if (NULL == DynStrInit(&g_logging->curLine, 128))
     {
-        String full;
-        // 8=timestamp; 1=tab; 2=braces; 1=colon; 1=tab; 1=newline; 1=null
-        full.reserve(8+1+2+contextLength_+1+1+length+1+1);
-        char_t buffer[9];
-        tick_t timestamp=ticks();
-        tprintf(buffer, _T("%08lx"), timestamp);
-        full.append(buffer, 8).append(_T("\t["), 2).append(context_, contextLength_).append(_T("]:\t"), 3).append(text, length).append(1, _T('\n'));
-        logRaw(full, level);
+        free(g_logging);
+        g_logging = NULL;
+        return NULL;
     }
+    return g_logging;
+}
 
-#ifndef _WIN32_WCE    
-    Logger::LineAppender& Logger::LineAppender::operator<<(unsigned short ui)
-    {
-        if (log_)
-        {
-            char_t buffer[26];
-            int len=tprintf(buffer, _T("%hu (0x%04hx)"), ui, ui);
-            if (len>0)
-                line_.append(buffer, len);
-        }                
-        return *this;
-    }
+void InitLogging()
+{
+    // yes, nothing to do. we allocate g_logging lazily
+}
 
-#endif // )WIN32_WCE
+void DeinitLogging()
+{
+    LoggingGlobals *lg = GetLoggingGlobals(true);
+    if (NULL == lg)
+        return;
 
-    Logger::LineAppender& Logger::LineAppender::operator<<(unsigned long l)
-    {
-        if (log_)
-        {
-            char_t buffer[26];
-            int len=tprintf(buffer, _T("%lu (0x%08lx)"), l, l);
-            if (len>0)
-                line_.append(buffer, len);
-        }                
-        return *this;
-    }
-
-    Logger::LineAppender& Logger::LineAppender::operator<<(long l)
-    {
-        if (log_)
-        {
-            char_t buffer[26];
-            int len=tprintf(buffer, _T("%ld (0x%08lx)"), l, l);
-            if (len>0)
-                line_.append(buffer, len);
-        }                
-        return *this;
-    }
-
-    Logger::LineAppender& Logger::LineAppender::operator<<(short i)
-    {
-        if (log_)
-        {
-            char_t buffer[26];
-            int len=tprintf(buffer, _T("%hd (0x%04hx)"), i, i);
-            if (len>0)
-                line_.append(buffer, len);
-        }                
-        return *this;
-    }
-
-    Logger::LineAppender& Logger::LineAppender::operator<<(int i)
-    {
-#if defined(_PALM_OS)    
-        return *this<<static_cast<short>(i);
-#else
-        return *this<<static_cast<long>(i);
-#endif        
-    }
-
-    Logger::LineAppender& Logger::LineAppender::operator<<(unsigned int i)
-    {
-#if defined(_PALM_OS)    
-        return *this<<static_cast<unsigned short>(i);
-#else
-        return *this<<static_cast<unsigned long>(i);
-#endif        
-    }
-
-    Logger::LineAppender Logger::operator()(uint_t level)
-    {
-        return LineAppender(*this, level<=threshold_, level);
-    }
-    
-    Logger::LineAppender Logger::critical()
-    {
-        return LineAppender(*this, logCritical<=threshold_, logCritical);
-    }
-
-    Logger::LineAppender Logger::error()
-    {
-        return LineAppender(*this, logError<=threshold_, logError);
-    }
-    
-    Logger::LineAppender Logger::debug()
-    {
-        return LineAppender(*this, logDebug<=threshold_, logDebug);
-    }
-
-    Logger::LineAppender Logger::warning()
-    {
-        return LineAppender(*this, logWarning<=threshold_, logWarning);
-    }
-
-    Logger::LineAppender Logger::info()
-    {
-        return LineAppender(*this, logInfo<=threshold_, logInfo);
-    }
-
-#ifndef _MSC_VER
-    // This explicit specialization doesn't differ in any way from the one that would be generated.
-    // But it's here because it reduces size of code significantly.
-    template<>
-    Logger::LineAppender Logger::operator<< <const char_t*> (const char_t* val)
-    {
-        return LineAppender(*this, logLevelDefault<=threshold_, logLevelDefault)<<val;
-    }
-#endif  // _MSC_VER
-
-#pragma mark -
-
-#ifndef _PALM_OS
-		
-	namespace {
-		RootLogger* rootLoggerInstance=0;
-	}
-
-#endif // _PALM_OS
-
-    RootLogger::RootLogger(const char_t* context, LogSink* sink, uint_t sinkThreshold):
-        Logger(context)
-    {
-        if (sink)
-            addSink(sink, sinkThreshold);
-#ifdef _PALM_OS
-        Err err=FtrSet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32>(this));
-        if (err)
-            error()<<_T("Unable to set RootLogger instance pointer, error: ")<<err;
-#else
-        assert(rootLoggerInstance==0);
-        rootLoggerInstance=this;
-#endif // _PALM_OS
-    }
-
-    RootLogger::~RootLogger() throw()
+    for (int i=0; i<lg->loggersCount; i++)
     {
 #ifdef _PALM_OS
-        FtrUnregister(Application::creator(), Application::featureRootLoggerPointer);
+        if (loggerTypeFile == lg->loggers[i].type)
+        {
+            if (NULL != lg->loggers[i].file)
+            {
+                HostFFlush(lg->loggers[i].file);
+                HostFClose(lg->loggers[i].file);
+            }
+        }
+#endif
+        if (loggerTypeMemo == lg->loggers[i].type)
+        {
+
+            if (NULL != lg->loggers[i].db)
+            {
+                DmCloseDatabase(lg->loggers[i].db);
+                lg->loggers[i].db = NULL;
+            }
+        }
+
+        if (loggerTypeDebugger == lg->loggers[i].type)
+        {
+            // do nothing
+        }
+    }
+
+
+    if (NULL != lg)
+        free(lg);
+}
+
+void LogAddMemoLog(LogLevel threshold)
+{
+#if defined(_PALM_OS)
+    LoggingGlobals *lg = GetLoggingGlobals(true);
+    if (NULL == lg)
+        return;
+    if (lg->loggersCount >= MAX_LOGGERS_COUNT)
+    {
+        assert(false);
+        return;
+    }
+    LoggerInfo *loggerInfo = &(lg->loggers[lg->loggersCount]);
+
+    loggerInfo->db = DmOpenDatabaseByTypeCreator('DATA', 'memo', dmModeReadWrite);
+    if (NULL == loggerInfo->db)
+        return;
+    loggerInfo->type = loggerTypeMemo;
+    loggerInfo->threshold = threshold;
+    ++lg->loggersCount;
 #else
-        rootLoggerInstance=0;
-#endif // _PALM_OS
-        std::for_each(sinks_.begin(), sinks_.end(), ObjectDeleter<SinkWithThreshold>());        
-    }
+    // only available for Palm
+    assert(false);
+#endif
+}
 
-    RootLogger* RootLogger::instance() throw()
+void LogAddDebuggerLog(LogLevel threshold)
+{
+    LoggingGlobals *lg = GetLoggingGlobals(true);
+    if (NULL == lg)
+        return;
+    if (lg->loggersCount >= MAX_LOGGERS_COUNT)
     {
-#ifdef _PALM_OS
-        RootLogger* logger=0;
-        Err error=FtrGet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32*>(&logger));
-        if (error)
-            assert(false);
-        return logger;
+        assert(false);
+        return;
+    }
+    LoggerInfo *loggerInfo = &(lg->loggers[lg->loggersCount]);
+    loggerInfo->type = loggerTypeDebugger;
+    loggerInfo->threshold = threshold;
+    ++lg->loggersCount;
+}
+
+void LogAddFileLog(const char_t *fileName, LogLevel threshold)
+{
+#if defined(_PALM_OS)
+    LoggingGlobals *lg = GetLoggingGlobals(true);
+    if (NULL == lg)
+        return;
+    if (lg->loggersCount >= MAX_LOGGERS_COUNT)
+    {
+        assert(false);
+        return;
+    }
+    LoggerInfo *loggerInfo = &(lg->loggers[lg->loggersCount]);
+
+    loggerInfo->file = HostFOpen(fileName, "w");
+    if (NULL == loggerInfo->file)
+        return;
+
+    loggerInfo->type = loggerTypeFile;
+    loggerInfo->fileName = fileName;
+    loggerInfo->threshold = threshold;
+    ++lg->loggersCount;
 #else
-        return rootLoggerInstance;
-#endif // _PALM_OS
-    }
-    
-    void RootLogger::addSink(LogSink* newSink, uint_t threshold) throw()
-    {
-        assert(NULL!=newSink);
-        sinks_.push_back(new SinkWithThreshold(newSink, threshold));
-    }
+        // only available for Palm
+        assert(false);
+#endif
+}
 
-    void RootLogger::logRaw(const String& text, uint_t level)
+// return true if logging threshold of any of the loggers is lower than
+// requested level of logging i.e. true if we need to log a give level
+static bool FNeedsLogging(LoggingGlobals *lg, LogLevel level)
+{
+    for (int i=0; i<lg->loggersCount; i++)
     {
-        Sinks_t::iterator end=sinks_.end();
-        for (Sinks_t::iterator it=sinks_.begin(); it!=end; ++it)
-            if ((*it)->threshold>=level)
-                (*it)->sink->output(text);
+        if (lg->loggers[i].threshold >= level)
+            return true;
     }
+    return false;
+}
 
-#pragma mark -
-
-    FunctionLogger::FunctionLogger(const char_t* context, Logger& parent):
-        ChildLogger(context, parent)
+static void AddToLog(DynStr *log, const char_t *txt, bool fFirst)
+{
+    if (fFirst)
     {
-        log(_T(">>> Enter"));
-    }
-        
-
-    FunctionLogger::FunctionLogger(const char_t* context):
-        ChildLogger(context)
-    {
-        log(_T(">>> Enter"));
-    }
-    
-    FunctionLogger::~FunctionLogger() throw()
-    {
-        log(_T("<<< Exit"));
+        char_t buffer[12] = {0};
+        tick_t timestamp = ticks();
+        tprintf(buffer, _T("%08lx "), timestamp);
+        DynStrAppendCharP(log, buffer);
     }
 
-#pragma mark -
+    // don't care if fails to append
+    DynStrAppendCharP(log, txt);
+}
 
-#ifdef _PALM_OS
-
-    HostFileLogSink::HostFileLogSink(const char_t* fileName) throw():
-        file_(HostFOpen(fileName, "w"))
-    {}
-    
-    HostFileLogSink::~HostFileLogSink() throw()
+static void LogRaw(LoggingGlobals *lg, LogLevel level, char_t *txt)
+{
+    for (int i=0; i<lg->loggersCount; i++)
     {
-        if (file_)
+        if (lg->loggers[i].threshold >= level)
         {
-            HostFFlush(file_);
-            HostFClose(file_);
+            if (loggerTypeMemo == lg->loggers[i].type)
+            {
+#if defined(_PALM_OS)
+                if (0 != lg->loggers[i].db)
+                {
+                    // only log if we were able to open a database
+                    UInt16 index = dmMaxRecordIndex;
+                    UInt16 len = tstrlen(txt)+1;
+                    MemHandle handle = DmNewRecord(lg->loggers[i].db, &index, len);
+                    if (!handle)
+                    {
+                        DmCloseDatabase(lg->loggers[i].db);
+                        lg->loggers[i].db = NULL;
+                        return;
+                    }
+                    void* data = MemHandleLock(handle);
+                    if (data)
+                    {
+                        DmWrite(data, 0, txt, len);
+                        MemHandleUnlock(handle);
+                    }
+                    DmReleaseRecord(lg->loggers[i].db, index, true);
+                }
+#endif
+            }
+            if (loggerTypeFile == lg->loggers[i].type)
+            {
+#if defined(_PALM_OS)
+                assert(lg->loggers[i].file);
+                HostFPutS(txt, lg->loggers[i].file);
+                HostFFlush(lg->loggers[i].file);
+#endif
+            }
+
+            if (loggerTypeDebugger == lg->loggers[i].type)
+            {
+#if defined(_PALM_OS)
+                DbgMessage(txt);
+#elif defined(_WIN32_WCE)
+                OutputDebugString(txt);
+#else
+# error "Define version of DebuggerLogSink appropriate for your system."
+#endif            
+            }
         }
     }
-    
-    void HostFileLogSink::output(const String& str)
-    {
-        if (file_)
-        {
-            HostFPutS(str.c_str(), file_);
-            HostFFlush(file_);
-        }
-    }
+}
 
-#pragma mark -
+void Log(LogLevel level, const char_t *txt, bool fFinishLine)
+{
+    LoggingGlobals *lg = GetLoggingGlobals(true);
+    if (NULL == lg)
+    {
+        // no loggers created - ignore request
+        return;
+    }
+    if (!FNeedsLogging(lg, level))
+        return;
 
-    MemoLogSink::MemoLogSink() throw():
-        db_(NULL)
-    {
-        db_=DmOpenDatabaseByTypeCreator('DATA', 'memo', dmModeReadWrite);
-        if (NULL==db_)
-        {
-            Err error=DmGetLastErr();
-        }
-    }
-    
-    void MemoLogSink::closeDatabase() throw()
-    {
-        DmCloseDatabase(db_);
-        db_=NULL;
-    }
-    
-    MemoLogSink::~MemoLogSink() throw()
-    {
-        if (db_)
-            closeDatabase();
-    }
-    
-    void MemoLogSink::output(const String& str)
-    {
-        if (!db_)
-            return;
-        UInt16 index=dmMaxRecordIndex;
-        const char_t* text=str.c_str();
-        UInt16 len=StrLen(text)+1;
-        MemHandle handle=DmNewRecord(db_, &index, len);
-        if (!handle)
-        {
-            closeDatabase();
-            return;
-        }
-        void* data=MemHandleLock(handle);
-        if (data)
-        {
-            DmWrite(data, 0, text, len);
-            MemHandleUnlock(handle);
-        }
-        DmReleaseRecord(db_, index, true);
-    }
-    
-#endif // _PALM_OS
+    DynStr *logStr = &(lg->curLine);
+    bool fFirst = false;
+    if (0 == DynStrLen(logStr))
+        fFirst = true;
+    AddToLog(logStr, txt, fFirst);
 
+    if (fFinishLine)
+    {
+        DynStrAppendChar(logStr, _T('\n'));
+        LogRaw(lg, level, DynStrGetCStr(logStr));
+        DynStrTruncate(logStr, 0);
+    }
+}
+
+void LogUlong(LogLevel level, unsigned long num, bool fFinishLine)
+{
+    char_t buffer[26] = {0};
+    tprintf(buffer, _T("%lu (0x%08lx)"), num, num);
+    Log(level, buffer, fFinishLine);
+}
+
+void LogStrUlong(LogLevel level, const char_t *txt, unsigned long num)
+{
+    Log(level, txt, false);
+    LogUlong(level, num, true);
 }
 
 #if defined(_PALM_OS)
 
 void ArsLexis::cleanAllocationLogging()
 {
-    HostFILEType* file=0;
-    UInt32 creatorId=Application::creator();
-    Err error=FtrGet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32*>(&file));
-    if (errNone==error && 0!=file)
+    HostFILEType * file = NULL;
+    UInt32 creatorId = Application::creator();
+    Err error = FtrGet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32*>(&file));
+    if (errNone == error && NULL != file)
         HostFClose(file);
     FtrUnregister(creatorId, Application::featureAllocationLoggerPointer);
 }
@@ -312,23 +306,28 @@ void ArsLexis::cleanAllocationLogging()
 void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* fileName, int line)
 {
 #if defined(ARSLEXIS_DEBUG_MEMORY_ALLOCATION)
-    HostFILEType* file=0;
-    UInt32 creatorId=Application::creator();
-    Err error=FtrGet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32*>(&file));
-    if (errNone!=error)
+    HostFILEType *  file = NULL;
+    UInt32          creatorId = Application::creator();
+
+    Err  error = FtrGet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32*>(&file));
+    if (errNone != error)
     {
-        file=HostFOpen(ALLOCATION_LOG_PATH, "w");
+        file = HostFOpen(ALLOCATION_LOG_PATH, "w");
         if (file)
             FtrSet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32>(file));
     }
-    if (0!=file)
+    if (NULL == file)
+        return;
+
+    if (free)
+        HostFPrintF(file, "-\t0x%08lx\n", ptr);
+    else
     {
-        if (free)
-            HostFPrintF(file, "-\t0x%08lx\n", ptr);
-        else
-            HostFPrintF(file, "+\t0x%08lx\t%ld\t%s: %hd\n", ptr, size, 0==fileName?"(Unknown)":fileName, line);
-        HostFFlush(file);
+        if (NULL == fileName)
+            fileName = "(Unknown)";
+        HostFPrintF(file, "+\t0x%08lx\t%ld\t%s: %hd\n", ptr, size, fileName, line);
     }
+    HostFFlush(file);
 #endif    
 }
 

@@ -8,7 +8,6 @@
 #define __ARSLEXIS_SOCKET_HPP__
 
 #include <Debug.hpp>
-#include <Logging.hpp>
 #include <Utility.hpp>
 #include <NativeSocks.hpp>
 
@@ -31,16 +30,10 @@ namespace ArsLexis
      */
     class SocketBase: private NonCopyable
     {
-
-        mutable ChildLogger log_;
-        
         void close();
 
     protected:
-    
-        Logger& log() const
-        {return log_;}
-    
+
         /**
          * Stores reference to currently loaded NetLib.
          */

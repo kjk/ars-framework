@@ -45,14 +45,14 @@ namespace ArsLexis
                 sending_ = false;
                 error=socket().shutdown(netSocketDirOutput);
                 if (error)
-                    log().debug()<<_T("notifyWritable(): Socket::shutdown() returned error: ")<<error;
+                    LogStrUlong(eLogDebug, _T("notifyWritable(): Socket::shutdown() returned error: "), error);
             }
             else
                 registerEvent(SocketSelector::eventWrite);                
             error=notifyProgress();
         }
         else
-            log().error()<<_T("notifyWritable(): Socket::send() returned error: ")<<error;
+            LogStrUlong(eLogError, _T("notifyWritable(): Socket::send() returned error: "), error);
 
         return error;        
     }
@@ -64,7 +64,7 @@ namespace ArsLexis
         uint_t  curResponseSize;
 
         if (sending_) 
-            log().debug()<<_T("notifyReadable(): called while sending data, probably some connection error occured");
+            Log(eLogDebug, _T("notifyReadable(): called while sending data, probably some connection error occured"), true);
 
         status_t status = errNone;
         status_t error = getSocketErrorStatus(status);
@@ -72,7 +72,7 @@ namespace ArsLexis
             error = status;
         else 
         {
-            log().info()<<_T("notifyReadable(): getSocketErrorStatus() returned error (ignored): ")<<error;
+            LogStrUlong(eLogInfo, _T("notifyReadable(): getSocketErrorStatus() returned error (ignored): "), error);
             error = errNone;
         }
         if (errNone!=error)
@@ -102,7 +102,7 @@ namespace ArsLexis
         //if (chunkSize_ != dataSize)
         if (0 == dataSize)
         {   
-            log().info()<<_T("notifyReadable(): 0 == dataSize (server shut socket down?)");
+            Log(eLogInfo, _T("notifyReadable(): 0 == dataSize (server shut socket down?)"), true);
             // TODO: if we use chunkSize_ != dataSize condition, we also need
             // to notifyProgress();
             //error=notifyProgress();
@@ -118,7 +118,7 @@ namespace ArsLexis
         }
 Exit:
         if (errNone!=error)
-            log().error()<<_T("notifyReadable(): Socket::receive() returned error: ")<<error;
+            LogStrUlong(eLogError, _T("notifyReadable(): Socket::receive() returned error: "), error);
         return error;
     }
     
@@ -126,7 +126,7 @@ Exit:
     {
         status_t error=socket().shutdown(netSocketDirInput);
         if (error)
-            log().debug()<<_T("notifyFinished(): Socket::shutdown() returned error: ")<<error;
+            LogStrUlong(eLogDebug, _T("notifyFinished(): Socket::shutdown() returned error: "), error);
         return error;
     }
     
@@ -155,12 +155,12 @@ Exit:
             {
                 if (size <= 2048)
                 {
-                    log().info()<<_T("SimpleSocketConnection::open(): setting chunkSize to ")<<size;
+                    LogStrUlong(eLogInfo, _T("SimpleSocketConnection::open(): setting chunkSize to "), size);
                     setChunkSize(size);
                 }
             }
             else
-                log().info()<<_T("SimpleSocketConnection::open(): error (ignored) while querying maxTcpSegmentSize: ")<<ignore;
+                LogStrUlong(eLogInfo, _T("SimpleSocketConnection::open(): error (ignored) while querying maxTcpSegmentSize: "), ignore);
         }
         return error;
     }

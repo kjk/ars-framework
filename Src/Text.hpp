@@ -194,4 +194,10 @@ char_t *StringCopy2__(const char_t *curStr, int len, const char_t* file, int lin
 
 char_t *StringCopyN(const char_t *str, int strLen);
 
+bool StrEmpty(const char_t *str);
+
+#ifdef DEBUG
+void test_TextUnitTestAll();
+#endif
+
 #endif

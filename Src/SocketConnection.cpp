@@ -268,7 +268,6 @@ namespace ArsLexis
         manager_(manager),
         state_(stateUnresolved),
         transferTimeout_(evtWaitForever),
-        log_(_T("SocketConnection")),
         socket_(manager.netLib_)
     {
     }
@@ -287,27 +286,27 @@ namespace ArsLexis
         status_t error=socket_.open();
         if (error)
         {
-            log().debug()<<_T("open(): unable to open socket, ")<<error;
+            LogStrUlong(eLogDebug, _T("open(): unable to open socket, "), error);
             return error;
         }
 
         //error=socket_.setNonBlocking();
         if (error)
         {
-            log().info()<<_T("open(), can't setNonBlocking(), ")<<error;
+            LogStrUlong(eLogInfo, _T("open(), can't setNonBlocking(), "), error);
             return error;
         }
 
         error=socket_.connect(address_, transferTimeout());
         if (netErrWouldBlock==error)
         {
-            log().info()<<_T("open(), got netErrWouldBlock from connect(), changed to errNone");
+            Log(eLogInfo, _T("open(), got netErrWouldBlock from connect(), changed to errNone"), true);
             error=errNone;
         }
 
         if (netErrSocketBusy==error)
         {
-            log().info()<<_T("open(), got netErrSocketBusy from connect(), changed to errNone");
+            Log(eLogInfo, _T("open(), got netErrSocketBusy from connect(), changed to errNone"), true);
             error=errNone;
         }
         
@@ -325,7 +324,7 @@ namespace ArsLexis
         status_t status=errNone;
         status_t error=getSocketErrorStatus(status);
         if (errNone==error)
-            log().debug()<<_T("notifyException(): getSocketErrorStatus() returned status: ")<<status;
+            LogStrUlong(eLogDebug, _T("notifyException(): getSocketErrorStatus() returned status: "), status);
         return status;
     }
 
@@ -356,7 +355,7 @@ namespace ArsLexis
 #endif
             
         if (error)
-            log().info()<<_T("getSocketErrorStatus(): unable to query socket option, error: ")<<error;
+            LogStrUlong(eLogInfo, _T("getSocketErrorStatus(): unable to query socket option, error: "), error);
         else 
             out=status;
         out=status;
