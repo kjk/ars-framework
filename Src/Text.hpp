@@ -83,7 +83,7 @@ namespace ArsLexis
         WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
         outStream.assign(out);
         delete []out;*/
-        outStream.reserve(inText.length());
+        outStream.reserve(inTxt.length());
         std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
 #else
         outStream.assign(inTxt);
