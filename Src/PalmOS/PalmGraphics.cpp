@@ -7,20 +7,23 @@ static bool useFontScaling()
 {
     static bool checked = false;
     static bool useScaling = false;
-    if (!checked)
-    {
-        checked = true;
-        UInt32 val;
-        Err error = FtrGet(sysFtrCreator, sysFtrNumWinVersion, &val);
-        if (errNone != error || 4 > val)
-            return false;
-        
-        error = WinScreenGetAttribute(winScreenDensity, &val);
-        if (errNone != error || kDensityLow == val)
-            return false;
-        
+    if (checked)
+        return useScaling;
+
+    checked = true;
+
+    // http://www.palmos.com/dev/support/docs/palmos/CompatibilityApdx.html#997148
+    UInt32 val;
+    Err error = FtrGet(sysFtrCreator, sysFtrNumWinVersion, &val);
+    if ((errNone == error) && (val >= 5))
         useScaling = true;
-    }
+    else
+        return useScaling; // i.e. false
+
+    error = WinScreenGetAttribute(winScreenDensity, &val);
+    if (errNone != error || kDensityLow == val)
+        useScaling = false;
+    
     return useScaling;
 }
 
