@@ -119,6 +119,8 @@ public:
     
     bool isFirstInNavOrder() const { return definition_.isFirstInNavOrder(); }
     bool isLastInNavOrder() const {return definition_.isLastInNavOrder(); }
+    
+    Definition& definition() {return definition_;}
             
 protected:
 

@@ -135,6 +135,7 @@ Err Form::initialize()
     }
     else 
         error=memErrNotEnoughSpace;
+    
     return error;
 }
 
