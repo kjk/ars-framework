@@ -102,8 +102,13 @@ void PopupMenu::handleDraw(Graphics& graphics)
 {
     Rectangle bounds;
     this->bounds(bounds);
+    
     RectangleType r = toNative(bounds);
     WinEraseRectangle(&r, 0);
+    r.topLeft.x++;
+    r.topLeft.y++;
+    r.extent.x-=2;
+    r.extent.y-=2;
     WinDrawGrayRectangleFrame(simpleFrame, &r);
 
     bounds.explode(2, 2, -4, -4);
