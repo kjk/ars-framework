@@ -19,7 +19,8 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
     formatVersion_(0),
     payloadStart_(0),
     payloadLength_(0),
-    processedSoFar_(0)
+    processedSoFar_(0),
+    historyChange_(historyReplaceForward)
 {
 }
 
@@ -205,8 +206,25 @@ void iPediaConnection::finalize()
         if (form)
         {
             parser_->updateDefinition(form->definition());
-            form->setTerm(definitionForTerm_);
+            switch (historyChange_)
+            {
+                case historyMoveForward:
+                    form->history().moveForward();
+                    break;
+                
+                case historyMoveBack:
+                    form->history().moveBack();
+                    break;
+                
+                case historyReplaceForward:
+                    form->history().replaceForward(definitionForTerm_);
+                    break;
+                
+                default:
+                    assert(false);
+            }                    
             form->setDisplayMode(MainForm::showDefinition);
+            form->synchronizeWithHistory();
             form->update();
         }
     }

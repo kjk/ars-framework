@@ -9,8 +9,7 @@ using namespace ArsLexis;
 
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
-    displayMode_(showSplashScreen)//,
-//    historyPosition_(termHistory_.begin())
+    displayMode_(showSplashScreen)
 {
 }
 
@@ -53,7 +52,17 @@ void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
     bounds.x()=screenBounds.extent.x-26;
     bounds.y()=screenBounds.extent.y-14;
     object.setBounds(bounds);
+    
+    object.attach(backButton);
+    object.bounds(bounds);
+    bounds.y()=screenBounds.extent.y-13;
+    object.setBounds(bounds);
 
+    object.attach(forwardButton);
+    object.bounds(bounds);
+    bounds.y()=screenBounds.extent.y-13;
+    object.setBounds(bounds);
+        
     update();    
 }
 
@@ -158,9 +167,9 @@ void MainForm::handlePenUp(const EventType& event)
         definition_.hitTest(point); 
 }
 
-void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
+static void startLookupConnection(ArsLexis::Application& application, LookupHistory& history, const String& term, iPediaConnection::HistoryChange historyChange)
 {
-    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    iPediaApplication& app=static_cast<iPediaApplication&>(application);
     SocketConnectionManager* manager=0;
     Err error=app.getConnectionManager(manager);
     if (!error)
@@ -173,10 +182,38 @@ void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
         {
             iPediaConnection* conn=new iPediaConnection(*manager);
             conn->setTransferTimeout(app.ticksPerSecond()*15L);
-            conn->setTerm(newTerm);
+            switch (historyChange)
+            {
+                case iPediaConnection::historyMoveBack:
+                    conn->setTerm(history.previousTerm());
+                    break;
+                    
+                case iPediaConnection::historyMoveForward:
+                    conn->setTerm(history.nextTerm());
+                    break;
+                    
+                case iPediaConnection::historyReplaceForward:
+                    conn->setTerm(term);
+                    break;
+                    
+                default:
+                    assert(false);
+            }
+            conn->setHistoryChange(historyChange);
             resolver->resolveAndConnect(conn, "localhost:9000");
         }            
     }
+}
+
+void MainForm::startHistoryLookup(bool forward)
+{
+    ::startLookupConnection(application(), history(), String(), forward?iPediaConnection::historyMoveForward:iPediaConnection::historyMoveBack);
+}
+
+
+void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
+{
+    ::startLookupConnection(application(), history(), newTerm, iPediaConnection::historyReplaceForward);
 }
 
 void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
@@ -188,10 +225,9 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
     updateScrollBar();
 }
 
-
 void MainForm::lookupTerm(const ArsLexis::String& newTerm)
 {
-    if (newTerm!=term())
+    if (history().empty() || newTerm!=history().currentTerm())
         startLookupConnection(newTerm);
     else if (showDefinition!=displayMode())
     {
@@ -202,11 +238,27 @@ void MainForm::lookupTerm(const ArsLexis::String& newTerm)
 
 void MainForm::handleControlSelect(const ctlSelect& data)
 {
-    assert(data.controlID==goButton);
-    Field field(*this, termInputField);
-    const char* textPtr=field.text();
-    if (textPtr!=0)
-        lookupTerm(textPtr);
+    switch (data.controlID)
+    {
+        case goButton:
+            {
+                Field field(*this, termInputField);
+                const char* textPtr=field.text();
+                if (textPtr!=0)
+                    lookupTerm(textPtr);
+            }
+            break;
+            
+        case backButton:
+            startHistoryLookup(false);
+            break;
+        
+        case forwardButton:
+            startHistoryLookup(true);            break;
+        
+        default:
+            assert(false);
+    }
 }
 
 Boolean MainForm::handleEvent(EventType& event)
@@ -236,17 +288,29 @@ Boolean MainForm::handleEvent(EventType& event)
     return handled;
 }
 
-void MainForm::updateCurrentTermField()
+void MainForm::synchronizeWithHistory()
 {
     Field field(*this, currentTermField);
-    field.setText(term_.c_str());
-    field.draw();
-}
+    if (!history().empty())
+    {
+        field.setText(history().currentTerm().c_str());
+        field.show();
+    }
+    else
+        field.hide();
 
-void MainForm::setTerm(const ArsLexis::String& term)
-{
-    term_=term;
-    updateCurrentTermField();
+    UInt16 buttonsWidth=0;
+    Control control(*this, backButton);
+    if (history().hasPrevious())
+        control.show();
+    else 
+        control.hide();
+        
+    control.attach(forwardButton);
+    if (history().hasNext())
+        control.show();
+    else 
+        control.hide();
 }
 
 bool MainForm::handleKeyPress(const EventType& event)

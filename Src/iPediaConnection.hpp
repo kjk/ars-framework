@@ -41,6 +41,13 @@ protected:
 
 public:
 
+    enum HistoryChange
+    {
+        historyMoveBack,
+        historyMoveForward,
+        historyReplaceForward
+    };
+
     void open();
     
     iPediaConnection(ArsLexis::SocketConnectionManager& manager);
@@ -49,6 +56,13 @@ public:
     
     void setTerm(const ArsLexis::String& term)
     {term_=term;}
+    
+    void setHistoryChange(HistoryChange hc)
+    {historyChange_=hc;}
+
+private:
+    
+    HistoryChange historyChange_;
     
 };
 
