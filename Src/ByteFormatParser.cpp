@@ -29,7 +29,6 @@
 //params
 #define paramTextValue                      'text'
 #define paramJustification                  'just'
-#define paramStyle                          'styl'
 #define paramHyperlink                      'hypl'
 #define paramListNumber                     'lnum'
 #define paramListTotalCount                 'ltcn'
@@ -37,6 +36,7 @@
 #define paramStyleName                      'stnm'
 //param of StylesTable - one style entry
 #define paramStyleEntry                     'sten'
+#define paramStylesCount                    'stcn'
 
 
 //other (numbers)
@@ -57,6 +57,8 @@ ByteFormatParser::ByteFormatParser():
     version_(0),
     totalSize_(0),
     model_(NULL),
+    stylesCount_(0),
+    totalStylesCount_(0),
     headerParsed_(false)
 {
     inText_.clear();
@@ -70,8 +72,9 @@ ByteFormatParser::~ByteFormatParser()
 
 DefinitionModel* ByteFormatParser::releaseModel()
 {
-    return model_;
+    DefinitionModel* model = model_;
     model_ = NULL;
+    return model;
 }
 
 
@@ -91,18 +94,13 @@ void ByteFormatParser::reset()
     version_ = 0;
     totalSize_ = 0;
     headerParsed_ = false;
+    stylesCount_ = 0;
+    totalStylesCount_ = 0;
 
     delete model_;
     model_ = NULL;
 }
 
-/*
-void ByteFormatParser::replaceElements(Definition::Elements_t& el)
-{
-    el.swap(elems);
-}
- */
- 
 bool ByteFormatParser::parseParam()
 {
     if (currentElementParamsLength_ == 0)
@@ -190,20 +188,6 @@ bool ByteFormatParser::parseParam()
             }
             break;
 
-        case paramStyle:
-            switch(inText_[start_])
-            {
-                case _T('b'):
-                    currentElement_->setStyle(getStaticStyle(styleNameBold));
-                    break;
-                    
-                case _T('g'):
-                    currentElement_->setStyle(getStaticStyle(styleNameGray));
-                    break;
-                //TODO: add more styles?
-            }
-            break;
-
         case paramHyperlink:
             currentElement_->setHyperlink(String(inText_, start_, currentParamLength_), hyperlinkUrl);
             break;
@@ -225,21 +209,51 @@ bool ByteFormatParser::parseParam()
         case paramStyleEntry:
             if (typeStylesTableElement == currentElementType_)
             {
-                //TODO: parse style entry
-            
-            
-            
+                assert(stylesCount_ < totalStylesCount_);
+                if (stylesCount_ < totalStylesCount_)
+                {
+                    //TODO: parse style entry
+                    //<name> ';' <value>
+                    
+                
+                
+                
+                
+                    stylesCount_++;
+                }            
             }
             else
-                assert(false);
+            {
+                currentElement_->setStyle(parseStyle(&inText_[start_],currentParamLength_),DefinitionElement::ownStyle);
+            }    
             break;
 
 
         case paramStyleName:
-            //TODO: set style for element
-        
+            const DefinitionStyle* style = getStaticStyle(&inText_[start_],currentParamLength_);
+            if (NULL == style)
+            {
+                //TODO: set style for element from private table
+                
+                
+                
+                assert(NULL != style);
+            }        
+            currentElement_->setStyle(style);
             break;
+        
+        case paramStylesCount:
+            //TODO: free old styles
+
+
+            stylesCount_ = 0;
+            totalStylesCount_ = readUnaligned32(&inText_[start_]);
+            assert(totalStylesCount_ > 0);
+            //TODO: alloc memory for new styles
             
+            
+            break;
+        
         default:
             // unsupported param
             assert(false);
@@ -286,7 +300,7 @@ void ByteFormatParser::parseElementParams()
             break;
 
         case typeStylesTableElement:
-            //TODO: clear styles table?
+            // clear styles table? paramStylesCount will do this
             break;
             
         default:

@@ -123,7 +123,8 @@ DefinitionStyle* parseStyle(const char* style, ulong_t length)
 
 
 
-    return new DefinitionStyle();
+    //return new DefinitionStyle();
+    return NULL;
 }
 
 void DefinitionStyle::reset()
