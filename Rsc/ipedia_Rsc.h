@@ -1,0 +1,2 @@
+/* This is a temporary file that will be replaced by PilRC when
+   the main resource file for your project is compiled. */
