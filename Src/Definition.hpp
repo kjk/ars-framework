@@ -31,6 +31,7 @@ class Definition: private ArsLexis::NonCopyable
 public:
 
     typedef std::vector<DefinitionElement*> Elements_t;
+    typedef Elements_t::iterator ElementPosition_t;
     
     typedef Elements_t::const_iterator const_iterator;
     const_iterator begin() const
@@ -47,7 +48,6 @@ private:
      */
     Elements_t elements_;
     
-    typedef Elements_t::iterator ElementPosition_t;
 
     /**
      * @internal
@@ -253,6 +253,12 @@ public:
     void setRenderingProgressReporter(RenderingProgressReporter* reporter)
     {renderingProgressReporter_=reporter;}
     
+    const ElementPosition_t firstElementPosition()
+    { return elements_.begin();}
+
+    const ElementPosition_t lastElementPosition()
+    { return elements_.end();}
+
 private:
 
     void doRender(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
