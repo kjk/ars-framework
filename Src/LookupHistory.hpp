@@ -32,8 +32,6 @@ public:
     
     LookupHistory();
     
-    ~LookupHistory();
-    
     bool hasPrevious() const
     {return historyPosition_!=termHistory_.begin();}
     

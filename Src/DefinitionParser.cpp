@@ -349,7 +349,8 @@ bool DefinitionParser::detectHyperlink(uint_t end)
         }
         else
         {
-            if (hyperlinkExternal==hyperlinkType_)             {
+            if (hyperlinkExternal==hyperlinkType_) 
+            {
                 textPosition_=separatorPos;
                 ++unnamedLinksCount_;
                 char buffer[8];
@@ -371,7 +372,7 @@ bool DefinitionParser::detectHyperlink(uint_t end)
         if (pastLinkEnd==textPosition_)
         {
             lastElementEnd_=linkEndPos;
-            while (lastElementEnd_>lastElementStart_ && std::isspace(lastElementEnd_))
+            while (lastElementEnd_>lastElementStart_ && std::isspace(textLine_[lastElementEnd_-1]))
                 --lastElementEnd_;
             createTextElement();
         }

@@ -17,9 +17,6 @@ MainForm::MainForm(iPediaApplication& app):
     definition_.setHyperlinkHandler(&app.hyperlinkHandler());
 }
 
-MainForm::~MainForm()
-{}
-
 bool MainForm::handleOpen()
 {
     bool result=iPediaForm::handleOpen();

@@ -107,8 +107,6 @@ public:
     
     MainForm(iPediaApplication& app);
     
-    ~MainForm();
-
     enum DisplayMode
     {
         showSplashScreen,

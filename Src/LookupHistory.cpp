@@ -8,10 +8,6 @@ LookupHistory::LookupHistory():
 {
 }
 
-LookupHistory::~LookupHistory()
-{
-}
-    
 void LookupHistory::replaceAllNext(const ArsLexis::String& term)
 {
     if (historyPosition_!=termHistory_.end() && !termHistory_.empty())
