@@ -497,7 +497,7 @@ bool ExtendedList::handleEnter(const EventType& event)
 {
     assert(!trackingScrollbar_);
     Point penPos(event.screenX, event.screenY);
-    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
+//    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
     assert(bounds && penPos);
@@ -581,7 +581,7 @@ void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& pe
 void ExtendedList::handlePenUp(const EventType& event)
 {
     Point penPos(event.screenX, event.screenY);
-    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
+//    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
     int visW=visibleScrollBarWidth();
@@ -600,7 +600,7 @@ void ExtendedList::handlePenUp(const EventType& event)
 void ExtendedList::handlePenMove(const EventType& event)
 {
     Point penPos(event.screenX, event.screenY);
-    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
+//    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
     int visW=visibleScrollBarWidth();
