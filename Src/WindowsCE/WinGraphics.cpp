@@ -221,9 +221,9 @@ namespace ArsLexis
         SIZE size;
         //Boolean dontMind;
         //FntCharsInWidth(text, &w, &len, &dontMind);
-        GetTextExtentExPoint(handle_, text, length, 0, 
-                NULL, NULL, &size ); 
-        length = len;
+        GetTextExtentExPoint(handle_, text, length, width, 
+                &len, NULL, &size ); 
+        length=len;
         width = size.cx;
     }
 

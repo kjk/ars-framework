@@ -7,7 +7,13 @@
 
 WinFont::WinFont()
 {
-    this->fntWrapper = new FontWrapper((HFONT)GetStockObject(SYSTEM_FONT));
+    LOGFONT logfnt;
+    HFONT   fnt=(HFONT)GetStockObject(SYSTEM_FONT);
+    GetObject(fnt, sizeof(logfnt), &logfnt);
+    logfnt.lfHeight+=1;
+    int fontDy = logfnt.lfHeight;
+    HFONT fnt2=(HFONT)CreateFontIndirect(&logfnt);
+    this->fntWrapper = new FontWrapper(fnt2);
 }
 WinFont WinFont::getSymbolFont()
 {
