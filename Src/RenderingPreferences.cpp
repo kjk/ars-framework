@@ -45,7 +45,7 @@ void RenderingPreferences::calculateIndentation()
 
 Err RenderingPreferences::serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const
 {
-    Err error=errNone;
+    Err error;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, backgroundColor_)))
         goto OnError;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, bulletIndentation_)))
@@ -63,20 +63,22 @@ Err RenderingPreferences::serializeOut(ArsLexis::PrefsStoreWriter& writer, int u
         uniqueId+=StyleFormatting::reservedPrefIdCount;
     }
 OnError:
+    assert(errNone==error);
     return error;    
 }
 
 Err RenderingPreferences::serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId)
 {
-    Err error=errNone;
+    Err                  error;
     RenderingPreferences tmp;
-    UInt16 val;
+    UInt16               val;
+
     if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
         goto OnError;
     tmp.setBackgroundColor(val);        
     if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
         goto OnError;
-    bulletIndentation_=val;
+    tmp.setBulletIndentation(val);
     for (uint_t i=0; i<hyperlinkTypesCount_; ++i)
     {
         if (errNone!=(error=tmp.hyperlinkDecorations_[i].serializeIn(reader, uniqueId)))
@@ -96,7 +98,7 @@ OnError:
 
 Err RenderingPreferences::StyleFormatting::serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const
 {
-    Err error=errNone;
+    Err error;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, font.fontId())))
         goto OnError;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, font.effects().mask())))
@@ -109,9 +111,10 @@ OnError:
 
 Err RenderingPreferences::StyleFormatting::serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId)
 {
-    Err error=errNone;
+    Err             error;
     StyleFormatting tmp;
-    UInt16 val;
+    UInt16          val;
+
     if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
         goto OnError;
     tmp.font.setFontId(static_cast<FontID>(val));

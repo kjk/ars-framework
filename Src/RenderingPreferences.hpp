@@ -85,7 +85,10 @@ public:
     
     uint_t bulletIndentation() const
     {return bulletIndentation_;}
-    
+
+    void setBulletIndentation(uint_t bulletIndentation)
+    {bulletIndentation_=bulletIndentation;}
+
     ArsLexis::Color backgroundColor() const
     {return backgroundColor_;}
     

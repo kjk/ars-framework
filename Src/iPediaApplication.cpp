@@ -208,8 +208,9 @@ void iPediaApplication::loadPreferences()
     // PrefsStoreXXXX seem to be rather heavyweight objects (writer is >480kB), so it might be a good idea not to allocate them on stack.
     std::auto_ptr<PrefsStoreReader> reader(new PrefsStoreReader(appPrefDatabase, appFileCreator, sysFileTPreferences));
 
-    Err error=errNone;
+    Err         error;
     const char* text;
+
     if (errNone!=(error=reader->ErrGetStr(cookiePrefId, &text))) 
         goto OnError;
     prefs.cookie=text;
@@ -234,8 +235,9 @@ OnError:
 
 void iPediaApplication::savePreferences()
 {
+    Err   error;
     std::auto_ptr<PrefsStoreWriter> writer(new PrefsStoreWriter(appPrefDatabase, appFileCreator, sysFileTPreferences));
-    Err error=errNone;
+
     if (errNone!=(error=writer->ErrSetStr(cookiePrefId, preferences_.cookie.c_str())))
         goto OnError;
     if (errNone!=(error=writer->ErrSetStr(serialNumberPrefId, preferences_.serialNumber.c_str())))
