@@ -41,6 +41,14 @@ namespace {
         String::const_reverse_iterator it(text.rend()-start-length);
         return text.rend()-std::find_if(it, it+length, std::isspace);
     }
+    
+/*    
+    static uint_t findLastWhitespace(const String& text, uint_t start, uint_t length)
+    {
+        String::const_iterator it=text.begin()+length;
+        String::const_iterator first=text
+    }
+*/    
 
 }
 
@@ -117,8 +125,8 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         layoutContext.nextTextElement->calculateLayout(copy);
         if (0==copy.renderingProgress) 
         {
-            uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
-            assert(rangeLength!=(uint_t)-1);
+            uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length)-layoutContext.renderingProgress;
+            assert(rangeLength<((uint_t)-1)/2);
             length=rangeLength;
             width=graphics.textWidth(text, length);
         }
