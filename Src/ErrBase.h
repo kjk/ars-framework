@@ -74,9 +74,12 @@
 #endif
 
 #else
+
+#if defined(_PALM_OS)
 // this is for the old code in noah_palm project
 #include <ErrorBase.h>
 #define psErrorClass appErrorClass+0x0100  // PrefsStore
+#endif
 
 #endif // ARSLEXIS_USE_NEW_FRAMEWORK
 #endif
