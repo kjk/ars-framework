@@ -45,33 +45,33 @@ static Boolean fDetectViewer(UInt16 *cardNoOut, LocalID *dbIDOut)
     // NetFront
     Err error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'NF3T', true, cardNoOut, dbIDOut);
     if (!error)
-        goto NoError;
+        goto FoundBrowser;
     // xiino
     error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'PScp', true, cardNoOut, dbIDOut);
     if (!error)
-        goto NoError;
+        goto FoundBrowser;
     // Blazer browser on Treo 600
     error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'BLZ5', true, cardNoOut, dbIDOut);
     if (!error)
-        goto NoError;
+        goto FoundBrowser;
     // Blazer browser on Treo 180/270/300
     error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'BLZ1', true, cardNoOut, dbIDOut);
     if (!error)
-        goto NoError;
+        goto FoundBrowser;
     // WebBrowser 2.0
     error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'NF3P', true, cardNoOut, dbIDOut);
     if (!error)
-        goto NoError;
+        goto FoundBrowser;
     // Web Pro (Tungsten T) 
     error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'NOVR', true, cardNoOut, dbIDOut);
     if (!error)
-        goto NoError;
+        goto FoundBrowser;
     // Web Broser 1.0 (Palm m505)
     error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, sysFileCClipper, true, cardNoOut, dbIDOut);
     if (!error)
-        goto NoError;
+        goto FoundBrowser;
     return false;
-NoError:
+FoundBrowser:
     return true;
 }
 
