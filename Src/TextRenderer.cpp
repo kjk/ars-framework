@@ -315,9 +315,14 @@ void TextRenderer::drawFocusRing()
 {
     assert(hasFocus());
     assert(form()->application().runningOnTreo600());
-    RectangleType rect;
-    FrmGetObjectBounds(*form(), index(), &rect);
-    Err error = HsNavDrawFocusRing(*form(), id(), hsNavFocusRingNoExtraInfo, &rect, hsNavFocusRingStyleSquare, false);
+    Rectangle rect;
+    bounds(rect);
+    if (NULL != scrollBar_) 
+    {
+        rect += scrollBar_->bounds();
+    }
+    RectangleType r = toNative(rect);
+    Err error = HsNavDrawFocusRing(*form(), id(), hsNavFocusRingNoExtraInfo, &r, hsNavFocusRingStyleSquare, false);
     assert(errNone == error);
 }
 

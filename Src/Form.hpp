@@ -40,7 +40,7 @@ namespace ArsLexis
         
         //bool handleFocusTransfer(EventType& event);
         
-        void handleObjectFocusChange(const EventType& event);
+        bool handleObjectFocusChange(const EventType& event);
         
         void handleFocusOnEntry();
         

@@ -182,6 +182,8 @@ namespace ArsLexis
             extent.y = height;
             return *this;
         }
+        
+        Rectangle& operator+= (const Rectangle& rect); 
                       
     };
     

@@ -137,7 +137,23 @@ namespace ArsLexis
         focusedControlIndex_ = frmInvalidObjectId;
     }
     
-    void Form::handleObjectFocusChange(const EventType& event)
+    static void FocusField(FormType* form, UInt16 index, UInt16 id)
+    {
+        FieldType* field = static_cast<FieldType*>(FrmGetObjectPtr(form, index));
+        assert(NULL != field);
+        FrmSetFocus(form, index);
+        FldSetSelection(field, 0, FldGetTextLength(field));
+        FrmSetNavState(form, kFrmNavStateFlagsObjectFocusMode);
+        RectangleType r;
+        FrmGetObjectBounds(form, index, &r);
+        // BUG: Treo600 draws focus ring on flashing insertion point and after focus is lost it restores what was underneath
+        // (in this case part of cursor). That's why I make focus ring 2px wider than field.
+//        --r.topLeft.x;
+//        ++r.extent.x;
+        HsNavDrawFocusRing(form, id, hsNavFocusRingNoExtraInfo, &r, hsNavFocusRingStyleObjectTypeDefault, true);
+    }
+    
+    bool Form::handleObjectFocusChange(const EventType& event)
     {
         FormGadget* gadget;
         bool taking = (event.eType == frmObjectFocusTakeEvent);
@@ -151,16 +167,22 @@ namespace ArsLexis
             gadget->handleFocusChange(FormGadget::focusLosing);
         }
         if (frmInvalidObjectId == index)
-            return;
+            return false;
         if (taking)
             focusedControlIndex_ = index;
         FormObjectKind kind = FrmGetObjectType(form_, index);
+        if (taking && frmFieldObj == kind && application().runningOnTreo600())
+        {
+            FocusField(form_, index, data.objectID);
+            return true;
+        }
         if (frmGadgetObj != kind)
-            return;
+            return false;
         gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, index));
         assert(NULL != gadget);
         if (taking)
             gadget->handleFocusChange(FormGadget::focusTaking);
+        return false;
     }
     
     bool Form::handleEvent(EventType& event)
@@ -170,7 +192,7 @@ namespace ArsLexis
         {
             case frmObjectFocusTakeEvent:
             case frmObjectFocusLostEvent:
-                handleObjectFocusChange(event);                
+                handled = handleObjectFocusChange(event);                
                 break;
                 
             case winEnterEvent:
