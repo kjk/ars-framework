@@ -84,7 +84,7 @@ void MainForm::drawSplashScreen(Graphics& graphics, const ArsLexis::Rectangle& b
     
     Point point(rect.x(), rect.y()+20);
     
-    PalmFont font(largeFont);
+    Font font(largeFont);
     
     Graphics::FontSetter setFont(graphics, font);
     graphics.drawCenteredText("ArsLexis iPedia", point, rect.width());
@@ -289,11 +289,8 @@ void MainForm::handleControlSelect(const EventType& event)
     switch (event.data.ctlSelect.controlID)
     {
         case searchButton:
-            {
-                UInt32 timestamp=TimGetTicks();
-                 // If button held for more than ~300msec, perform full text search.
-                search(timestamp-lastPenDownTimestamp_>app.ticksPerSecond()/3);
-            }                
+             // If button held for more than ~300msec, perform full text search.
+            search(TimGetTicks()-lastPenDownTimestamp_>app.ticksPerSecond()/3);
             break;
             
         case backButton:
@@ -766,7 +763,7 @@ void MainForm::RenderingProgressReporter::reportProgress(uint_t percent)
     if (!afterTrigger_)
     {
         // Delay before we start displaying progress meter in milliseconds. Timespans < 300ms are typically perceived "instant"
-        // So we shouldn't distract user if the time is short enough.
+        // so we shouldn't distract user if the time is short enough.
         static const uint_t delay=100; 
         UInt32 ticksDiff=TimGetTicks()-ticksAtStart_;
         iPediaApplication& app=static_cast<iPediaApplication&>(form_.application());

@@ -46,7 +46,8 @@ public:
         serverErrorUnsupportedDevice,
         serverErrorInvalidAuthorization,
         serverErrorMalformedRequest,
-        serverErrorLast=serverErrorMalformedRequest
+        serverErrorTrialExpired,
+        serverErrorLast=serverErrorTrialExpired
     };
         
     struct LookupFinishedEventData

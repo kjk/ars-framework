@@ -20,7 +20,8 @@ namespace {
         serverFailureAlert,
         unsupportedDeviceAlert,
         invalidAuthorizationAlert,
-        malformedRequestAlert
+        malformedRequestAlert,
+        trialExpiredAlert
     };
 
 }

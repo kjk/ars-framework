@@ -24,6 +24,9 @@ except:
     print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
     g_fPsycoAvailable = False
 
+g_unregisteredLookupsLimit=10
+g_unregisteredLookupsDailyLimit=2    
+    
 g_articleCount = 0
 
 # if True we'll print debugging info
@@ -137,6 +140,7 @@ class iPediaServerError:
     unsupportedDevice=2
     invalidAuthorization=3
     malformedRequest=4
+    trialExpired=5
 
 class iPediaProtocol(basic.LineReceiver):
 
@@ -326,10 +330,11 @@ class iPediaProtocol(basic.LineReceiver):
             try:
                 db=self.getDatabase()
                 cursor=db.cursor()
-                cursor.execute("""select id from cookies where cookie='%s'""" % db.escape_string(self.cookie))
+                cursor.execute("""select cookies.id as cookieId, registered_users.id as userId from cookies left join registered_users on cookies.id=registered_users.cookie_id where cookie='%s'""" % db.escape_string(self.cookie))
                 row=cursor.fetchone()
                 if row:
                     self.cookieId=row[0]
+                    self.userId=row[1]
                     cursor.close()
                     return True
                 else:
@@ -438,7 +443,36 @@ class iPediaProtocol(basic.LineReceiver):
             self.error=iPediaServerError.serverFailure
             return False
         return True
-
+        
+    def checkLookupsLimit(self):
+        cursor=None
+        result=True
+        try:
+            db=self.getDatabase()
+            cursor=db.cursor()
+            assert None==self.userId
+            assert None!=self.cookieId
+            query="select count(*) from requests where not (requested_term is NULL) and cookie_id=%d" % self.cookieId
+            cursor.execute(query)
+            row=cursor.fetchone()
+            assert None!=row
+            if row[0]>=g_unregisteredLookupsLimit:
+                query="select count(*) from requests where not (requested_term is NULL) and cookie_id=%d and request_date>DATE_SUB(CURDATE(), INTERVAL 1 DAY)" % self.cookieId
+                cursor.execute(query)
+                row=cursor.fetchone()
+                assert None!=row
+                if row[0]>=g_unregisteredLookupsDailyLimit:
+                    self.error=iPediaServerError.trialExpired
+                    result=False
+            cursor.close()
+        except _mysql_exceptions.Error, ex:
+            print ex
+            if cursor:
+                cursor.close()
+            self.error=iPediaServerError.serverFailure
+            result=False
+        return result
+        
     def answer(self):
         global g_fVerbose
 
@@ -463,6 +497,9 @@ class iPediaProtocol(basic.LineReceiver):
             return self.finish()
             
         if self.serialNumber and not self.handleRegisterRequest():
+            return self.finish()
+            
+        if self.term and not self.userId and not self.checkLookupsLimit():
             return self.finish()
         
         if self.term and not self.handleDefinitionRequest():

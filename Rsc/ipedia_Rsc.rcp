@@ -118,6 +118,15 @@ BEGIN
     BUTTONS "OK"
 END
 
+ALERT ID trialExpiredAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Expired"
+    MESSAGE "Your unregistered trial version expired. Please register to remove daily requests limit."
+    BUTTONS "OK"
+END
+
 ALERT ID unsupportedDeviceAlert
     DEFAULTBUTTON 0
     ERROR
