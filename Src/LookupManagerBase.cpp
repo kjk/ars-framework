@@ -24,8 +24,15 @@ namespace ArsLexis {
         uint_t length = tstrlen(text);
         uint_t width = rect.width();
         graphics.charsInWidth(text, length, width);
-        uint_t height = graphics.fontHeight();
-        Point p(rect.x(), rect.y()+(rect.height()-height)/2);
+        uint_t fontDy = graphics.fontHeight();
+        uint_t rectDy = (uint_t)rect.dy();
+        uint_t fontYOffsetCentered;
+        if (rectDy > fontDy)
+            fontYOffsetCentered = (rect.dy()-fontDy)/2;
+        else
+            fontYOffsetCentered = 0;
+
+        Point p(rect.x(), rect.y()+fontYOffsetCentered);
         graphics.drawText(text, length, p);
         char_t buffer[32];
         bool drawMore=false;
