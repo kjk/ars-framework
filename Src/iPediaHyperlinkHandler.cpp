@@ -4,8 +4,9 @@
 #include "GenericTextElement.hpp"
 #include <Form.hpp>
 
-void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url)
+bool iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url)
 {
+    bool result=false;
     if (viewerDatabaseId_)
     {
         UInt16 urlLength=url.length();
@@ -21,18 +22,26 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
             {
                 //! @todo Handle error running www viewer.
             }
+            else 
+                result=true;
         }
         else
             ArsLexis::handleBadAlloc();
     }
+    return result;
 }
 
-void iPediaHyperlinkHandler::handleTermHyperlink(const ArsLexis::String& term)
+bool iPediaHyperlinkHandler::handleTermHyperlink(const ArsLexis::String& term)
 {
+    bool result=false;
     iPediaApplication& app=iPediaApplication::instance();
     LookupManager* lookupManager=app.getLookupManager();  
     if (lookupManager && !lookupManager->lookupInProgress())
+    {
+        result=true;
         lookupManager->lookupIfDifferent(term);
+    }
+    return result;        
 }
 
 
@@ -57,13 +66,11 @@ void iPediaHyperlinkHandler::handleHyperlink(Definition& definition, DefinitionE
             break;
     
         case hyperlinkExternal:
-            handleExternalHyperlink(props->resource);
-            makeClicked=true;
+            makeClicked=handleExternalHyperlink(props->resource);
             break;
             
         case hyperlinkTerm:            
-            handleTermHyperlink(props->resource);
-            makeClicked=true;
+            makeClicked=handleTermHyperlink(props->resource);
             break;
 
         case hyperlinkClicked:
@@ -74,8 +81,8 @@ void iPediaHyperlinkHandler::handleHyperlink(Definition& definition, DefinitionE
     }            
     if (makeClicked) 
     {
-        props->type=hyperlinkClicked;
         iPediaApplication& app=iPediaApplication::instance();
+        props->type=hyperlinkClicked;
         ArsLexis::Form* form=app.getOpenForm(mainForm);
         if (form) 
         {

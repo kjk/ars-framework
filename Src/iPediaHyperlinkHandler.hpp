@@ -9,8 +9,8 @@ class iPediaHyperlinkHandler: public Definition::HyperlinkHandler
     UInt16 viewerCardNo_;
     LocalID viewerDatabaseId_;
     
-    void handleExternalHyperlink(const ArsLexis::String& url);
-    void handleTermHyperlink(const ArsLexis::String& term);
+    bool handleExternalHyperlink(const ArsLexis::String& url);
+    bool handleTermHyperlink(const ArsLexis::String& term);
     
 public:
 
