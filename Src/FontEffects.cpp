@@ -4,11 +4,11 @@
 
 namespace ArsLexis
 {
-
+    #if defined(_PALM_OS)
     namespace {
         static StaticAssert<sizeof(FontEffects)==sizeof(uint_t)> sizeof_FontEffects_equals_sizeof_uint;
     }
-
+    #endif
     FontEffects& FontEffects::operator+=(const FontEffects& eff)
     {
         effects_.fx.weight=std::max(weight(), eff.weight());
