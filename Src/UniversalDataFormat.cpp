@@ -36,44 +36,44 @@ void UniversalDataFormat::normalize()
     }    
 }
 
-int UniversalDataFormat::getItemsCount()
+int UniversalDataFormat::getItemsCount() const
 {
     assert(headerSize_ == header_.size());
 
     return headerSize_;
 }
    
-int UniversalDataFormat::getItemElementsCount(int itemNo)
+int UniversalDataFormat::getItemElementsCount(int itemNo) const
 {
     assert(0 <= itemNo && itemNo < header_.size());
 
     return header_[itemNo].size();
 }
    
-const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo)
+const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo) const
 {
     assert(0 <= itemNo && itemNo < header_.size());
     assert(0 <= elemNo && elemNo < header_[itemNo].size());
 
     if (!fNormalized_)
-        normalize();
+        const_cast<UniversalDataFormat*>(this)->normalize();
     //get offset of data
     uint_t offset = header_[itemNo][elemNo];
     return data_.data() + offset;
 }
     
-ArsLexis::String UniversalDataFormat::getItemTextAsString(int itemNo, int elemNo)
+ArsLexis::String UniversalDataFormat::getItemTextAsString(int itemNo, int elemNo) const
 {
     return getItemText(itemNo, elemNo);
 }
 
 // -1 means error
-long UniversalDataFormat::getItemTextAsPositiveLong(int itemNo, int elemNo)
+long UniversalDataFormat::getItemTextAsPositiveLong(int itemNo, int elemNo) const
 {
     const ArsLexis::char_t* text = getItemText(itemNo, elemNo);
     long result;
-    ArsLexis::status_t error = ArsLexis::numericValue(text,text+StrLen(text),result);
-    if (error)
+    ArsLexis::status_t error = ArsLexis::numericValue(text, text+tstrlen(text), result);
+    if (errNone != error)
         return -1;
     return result;
 }

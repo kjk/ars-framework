@@ -32,15 +32,15 @@ public:
     
     ~UniversalDataFormat();
     
-    int getItemsCount();
+    int getItemsCount() const ;
     
-    int getItemElementsCount(int itemNo);
+    int getItemElementsCount(int itemNo) const;
     
-    const ArsLexis::char_t *getItemText(int itemNo, int elemNo);
+    const ArsLexis::char_t *getItemText(int itemNo, int elemNo) const;
     
-    ArsLexis::String getItemTextAsString(int intemNo, int elemNo);
+    ArsLexis::String getItemTextAsString(int intemNo, int elemNo) const;
   
-    long getItemTextAsPositiveLong(int itemNo, int elemNo);
+    long getItemTextAsPositiveLong(int itemNo, int elemNo) const;
     
     friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo);
 };
