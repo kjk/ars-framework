@@ -23,6 +23,56 @@ except:
     print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
     g_fPsycoAvailable = False
 
+MOST_VIEWED_COUNT = 25
+
+g_mostViewed = {}
+g_mostViewedSmallest = None
+
+def getSmallestCount(dictViewed):
+    smallest = None
+    for count in dictViewed.values():
+        if smallest == None:
+            smallest = count
+        else:
+            if count < smallest:
+                smallest = count
+    return smallest
+
+def removeSmallest(dictViewed):
+    smallestKey = None
+    smallestVal = None
+    for (key,val) in dictViewed.items():
+        if smallestKey == None:
+            smallestKey = key
+            smallestVal = val
+        elif val < smallestVal:
+            smallestKey = key
+            smallestVal = val
+    del dictViewed[smallestKey]
+
+def registerMostViewed(title,viewCount):
+    global g_mostViewedSmallest, g_mostViewed
+    if len(g_mostViewed) < MOST_VIEWED_COUNT:
+        g_mostViewed[title] = viewCount
+        g_mostViewedSmallest = getSmallestCount(g_mostViewed)
+        return
+    if viewCount <= g_mostViewedSmallest:
+        return
+    removeSmallest(g_mostViewed)
+    assert len(g_mostViewed)==MOST_VIEWED_COUNT-1
+    g_mostViewed[title] = viewCount
+
+def cmp_kv(a, b):
+    return cmp(b[1], a[1])
+
+def dumpMostViewed():
+    global g_mostViewed
+    l = g_mostViewed.items()
+    l.sort(cmp_kv)
+    print "Most viewed articles:"
+    for (key,val) in l:
+        print "%9d %s" % (val,key)
+
 CUR_ID = 0
 CUR_NAMESPACE = 1
 CUR_TITLE = 2
@@ -425,6 +475,9 @@ def convertFile(inName,limit):
     for sqlArgs in genINSERTArgs(inName):
         #print sqlArgs
         stats.addStats(sqlArgs)
+        title = sqlArgs[CUR_TITLE]
+        viewCount = int(sqlArgs[CUR_COUNTER])
+        registerMostViewed(title,viewCount)
         if not g_fJustStats:
             title = sqlArgs[CUR_TITLE]
             ns = int(sqlArgs[CUR_NAMESPACE])
@@ -456,6 +509,7 @@ def convertFile(inName,limit):
         foHash.close()
     endTiming()
     stats.dumpStats()
+    dumpMostViewed()
     dumpTiming()
 
 if __name__=="__main__":
@@ -465,8 +519,12 @@ if __name__=="__main__":
     else:
         limit = int(limit)
     print "limit=%d" % limit
-    fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
     g_fJustStats = fDetectRemoveCmdFlag("-juststats")
+
+    # TODO: for now always do "just stats"
+    g_fJustStats = True
+
+    fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
     if g_fPsycoAvailable and fUsePsyco:
         print "using psyco"
         psyco.full()
