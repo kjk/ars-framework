@@ -5,6 +5,7 @@
 #include <Utility.hpp>
 
 class PopupMenuModel;
+class Serializer;
 
 class HistoryCache: private NonCopyable 
 {
@@ -40,6 +41,10 @@ private:
     status_t readIndex();
     
     status_t writeIndex();
+    
+    status_t serializeIndexIn(Serializer& serialize);
+    
+    status_t serializeIndexOut(Serializer& serialize);
     
 public:
     

@@ -175,6 +175,10 @@ void HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
     
     if (actionNewSearch == lastAction_)
     {
+        assert(0 != cache.entriesCount());
+        if (0 == cache.entriesCount())
+            return;
+            
         currentHistoryIndex_ = cache.entriesCount() - 1;
         cache.setEntryTitle(currentHistoryIndex_, entryTitle);
     }

@@ -360,7 +360,7 @@ uint_t DataStore::maxAllowedFragmentLength(FragmentHeader& header) const
     assert(fragmentHeaders_.end() != it);
     ++it;
     if (fragmentHeaders_.end() == it)
-        return uint_t(-1);
+        return uint_t(-1) - sizeof(FragmentHeaderEntry);
     else
         return (*it)->start - header.start - sizeof(FragmentHeaderEntry);
 }
@@ -429,7 +429,7 @@ status_t DataStore::writeFragment(FragmentHeader& fragment, uint_t& startOffset,
     if (errNone != error)
         return error;
     
-    uint_t spaceLeft = maxAllowedFragmentLength(fragment)-startOffset;
+    uint_t spaceLeft = maxAllowedFragmentLength(fragment) - startOffset;
     File::Size toWrite=std::min(length, spaceLeft);
     error = file_.write(buffer, toWrite);
     if (errNone != error)

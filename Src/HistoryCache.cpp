@@ -78,22 +78,32 @@ status_t HistoryCache::readIndex()
     assert(NULL != dataStore);
     DataStoreReader reader(*dataStore);
 
-    volatile status_t err = reader.open(HISTORY_CACHE_INDEX_STREAM);
+    status_t err = reader.open(HISTORY_CACHE_INDEX_STREAM);
     if (errNone != err)
     {
 FreshIndex:    
         indexCapacity_ = 0;
         indexEntriesCount_ = 0;
+        delete [] indexEntries_;
         indexEntries_ = new_nt IndexEntry[maxCacheEntries];
         if (NULL == indexEntries_)
             return memErrNotEnoughSpace;
         indexCapacity_ = maxCacheEntries;
         return errNone;        
     }
-    ulong_t cap = maxCacheEntries;
-    ulong_t count;
     Serializer serialize(reader);
+    err = serializeIndexIn(serialize);
+    if (errNone != err)
+        goto FreshIndex;
+    return err;
+}
+
+status_t HistoryCache::serializeIndexIn(Serializer& serialize)
+{
+    volatile status_t err = errNone;
     ErrTry {
+        ulong_t cap = maxCacheEntries;
+        ulong_t count;
         serialize(count, serialIdIndexVersion);
         serialize(count, serialIdItemsCount);
         if (count > maxCacheEntries)
@@ -115,8 +125,6 @@ FreshIndex:
     {
         err = ex;
     } ErrEndCatch
-    if (errNone != err)
-        goto FreshIndex;
     return err;
 }
 
@@ -125,13 +133,19 @@ status_t HistoryCache::writeIndex()
     assert(NULL != dataStore);
     DataStoreWriter writer(*dataStore);
     
-    volatile status_t err = writer.open(HISTORY_CACHE_INDEX_STREAM);
+    status_t err = writer.open(HISTORY_CACHE_INDEX_STREAM);
     if (errNone != err)
         return err;
      
-    ulong_t indexVersion = 1;
     Serializer serialize(writer);
+    return serializeIndexOut(serialize);
+}
+
+status_t HistoryCache::serializeIndexOut(Serializer& serialize)
+{
+    volatile status_t err = errNone;
     ErrTry {
+        ulong_t indexVersion = 1;
         serialize(indexVersion, serialIdIndexVersion);      
         serialize(indexEntriesCount_, serialIdItemsCount);
         for (ulong_t i = 0; i < indexEntriesCount_; ++i)
@@ -146,7 +160,7 @@ status_t HistoryCache::writeIndex()
     {
         err = ex;
     } ErrEndCatch
-    return err;
+    return err;    
 }
 
 ulong_t HistoryCache::entryIndex(const char_t* entry) const

@@ -164,6 +164,7 @@ void Definition::clear()
     elements_.clear();
     selectionStartElement_=elements_.end();
     selectionEndElement_=elements_.end();
+    elementsOwner_ = true;
     bounds_.clear();
 }
 
@@ -1256,8 +1257,8 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
 status_t Definition::setElements(const Elements_t& elems, bool owner)
 {
     clear();
-    volatile status_t err = errNone;
-    ErrTry {
+//    volatile status_t err = errNone;
+//    ErrTry {
         elements_ = elems;
         selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
             inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
@@ -1265,11 +1266,12 @@ status_t Definition::setElements(const Elements_t& elems, bool owner)
         trackingSelection_ = false;
         selectionIsHyperlink_ = false;
         elementsOwner_ = owner;
-    }
-    ErrCatch(ex) {
-        err = ex;
-    } ErrEndCatch
-    return err;
+//    }
+//    ErrCatch(ex) {
+//        err = ex;
+//    } ErrEndCatch
+//    return err;
+    return errNone;
 }
 
 #if defined(_PALM_OS)
