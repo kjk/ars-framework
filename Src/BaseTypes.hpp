@@ -9,13 +9,18 @@ typedef unsigned short ushort_t;
 typedef unsigned long ulong_t;
 
 #if defined(_WIN32_WCE) || defined(_WIN32)
+#pragma warning (disable : 4786)
 
 #include <windows.h>
 #include <tchar.h>
 
 namespace ArsLexis
 {
-    
+    struct EventType
+    {
+        int type;
+    };
+
     typedef DWORD tick_t;
 
     typedef TCHAR char_t;
@@ -70,4 +75,4 @@ namespace ArsLexis
 # define chrNull _T('\0')
 #endif
 
-#endif
+#endif // __ARSLEXIS_BASE_TYPES_HPP__

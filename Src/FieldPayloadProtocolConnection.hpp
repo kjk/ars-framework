@@ -2,6 +2,7 @@
 #define __ARSLEXIS_FIELD_PAYLOAD_PROTOCOL_CONNECTION_HPP__
 
 #include <SimpleSocketConnection.hpp>
+#include <BaseTypes.hpp>
 
 namespace ArsLexis
 {
@@ -17,7 +18,7 @@ namespace ArsLexis
             virtual ~PayloadHandler()
             {}
             
-            virtual Err handleIncrement(const String& payload, ulong_t& length, bool finish)=0;
+            virtual status_t handleIncrement(const String& payload, ulong_t& length, bool finish)=0;
             
         };
         
@@ -27,13 +28,13 @@ namespace ArsLexis
         ulong_t payloadLengthLeft_;
         ulong_t payloadLength_;
         
-        Err processResponseIncrement(bool finish=false);
+        status_t processResponseIncrement(bool finish=false);
         
-        Err processLine(uint_t lineEnd);
+        status_t processLine(uint_t lineEnd);
         
     protected:
     
-        virtual Err handleField(const String& name, const String& value)
+        virtual status_t handleField(const String& name, const String& value)
         {return errResponseMalformed;}
         
         PayloadHandler* releasePayloadHandler()
@@ -50,9 +51,9 @@ namespace ArsLexis
         
         void startPayload(PayloadHandler* payloadHandler, ulong_t length);
         
-        Err notifyProgress();
+        status_t notifyProgress();
         
-        Err notifyFinished();
+        status_t notifyFinished();
         
         bool inPayload() const
         {return payloadHandler_!=0;}
@@ -74,13 +75,13 @@ namespace ArsLexis
         
         ~FieldPayloadProtocolConnection();
         
-        static void appendField(String& out, const char* name, uint_t nameLength, const char* value=0, uint_t valueLength=0);
+        static void appendField(String& out, const char_t* name, uint_t nameLength, const char_t* value=0, uint_t valueLength=0);
         
         static void appendField(String& out, const String& name, const String& value)
         {appendField(out, name.data(), name.length(), value.data(), value.length());}
         
-        static void appendField(String& out, const char* name, const char* value=0)
-        {appendField(out, name, StrLen(name), value, (value?StrLen(value):0));}
+        static void appendField(String& out, const char_t* name, const char_t* value=0)
+        {appendField(out, name, tstrlen(name), value, (value?tstrlen(value):0));}
         
     };
 

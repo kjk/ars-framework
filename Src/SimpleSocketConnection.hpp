@@ -4,6 +4,10 @@
 #include <SocketConnection.hpp>
 #include <BaseTypes.hpp>
 
+#ifdef _WIN32_WCE
+#pragma warning ( disable : 4068)
+#endif
+
 namespace ArsLexis 
 {
     

@@ -1,4 +1,5 @@
 #include <Logging.hpp>
+#include <algorithm>
 
 #ifdef _PALM_OS
 #include <Application.hpp>
@@ -31,7 +32,24 @@ namespace ArsLexis
         }                
         return *this;
     }
+
 #endif // )WIN32_WCE
+
+#ifdef _WIN32_WCE
+
+    Logger::LineAppender& Logger::LineAppender::operator<<(long l)
+    {
+        if (log_)
+        {
+            char_t buffer[26];
+            int len=tprintf(buffer, _T("%d (0x%04dx)"), l, l);
+            if (len>0)
+                line_.append(buffer, len);
+        }                
+        return *this;
+    }
+
+#endif
 
     Logger::LineAppender& Logger::LineAppender::operator<<(short i)
     {

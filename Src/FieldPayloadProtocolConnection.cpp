@@ -6,8 +6,8 @@ namespace ArsLexis
 
     namespace {
 
-#define fieldSeparator ": "
-#define lineSeparator "\n"
+#define fieldSeparator _T(": ")
+#define lineSeparator _T("\n")
 
         static const uint_t fieldSeparatorLength=2;
         static const uint_t lineSeparatorLength=1;
@@ -19,7 +19,7 @@ namespace ArsLexis
         delete payloadHandler_;
     }
 
-    void FieldPayloadProtocolConnection::appendField(String& out, const char* name, uint_t nameLength, const char* value, uint_t valueLength)
+    void FieldPayloadProtocolConnection::appendField(String& out, const char_t* name, uint_t nameLength, const char_t* value, uint_t valueLength)
     {
         uint_t length=out.length()+nameLength+lineSeparatorLength;
         if (valueLength)
@@ -38,18 +38,18 @@ namespace ArsLexis
         payloadHandler_=payloadHandler;
     }
 
-    Err FieldPayloadProtocolConnection::notifyProgress()
+    status_t FieldPayloadProtocolConnection::notifyProgress()
     {
-        Err error=errNone;
+        status_t error=errNone;
         if (!(sending() || response().empty()))
             error=processResponseIncrement();
         return error;
     }
 
-    Err FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
+    status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
     {
         bool goOn=false;
-        Err error=errNone;
+        status_t error=errNone;
         String& resp=response();
         do 
         {
@@ -96,7 +96,7 @@ namespace ArsLexis
         return error;
     }
  
-    Err FieldPayloadProtocolConnection::processLine(uint_t lineEnd)
+    status_t FieldPayloadProtocolConnection::processLine(uint_t lineEnd)
     {
         String name, value;
         const String& resp=response();
@@ -112,9 +112,9 @@ namespace ArsLexis
         return (name.length()?handleField(name, value):errNone);
     }
     
-    Err FieldPayloadProtocolConnection::notifyFinished()
+    status_t FieldPayloadProtocolConnection::notifyFinished()
     {
-        Err error=SimpleSocketConnection::notifyFinished();
+        status_t error=SimpleSocketConnection::notifyFinished();
         if (!error)
             error=processResponseIncrement(true);
         return error;    

@@ -7,7 +7,7 @@
 namespace ArsLexis {
     
     class Graphics;
-    class Rectangle;
+    struct Rectangle;
 
     class LookupProgressReportingSupport {
         String statusText_;
@@ -16,7 +16,7 @@ namespace ArsLexis {
         
     public:
         
-        static const uint_t percentProgressDisabled=(uint_t)-1;
+        static const uint_t percentProgressDisabled;
     
         LookupProgressReportingSupport():
             percentProgress_(percentProgressDisabled),

@@ -6,6 +6,10 @@
 #include <Utility.hpp>
 #include <list>
 
+#ifdef _WIN32_WCE
+#pragma warning ( disable : 4068)
+#endif
+
 namespace ArsLexis
 {
 

@@ -1,9 +1,11 @@
 #include <LookupManagerBase.hpp>
 #include <Graphics.hpp>
+#include <BaseTypes.hpp>
 
 namespace ArsLexis {
-
-    void LookupProgressReportingSupport::showProgress(Graphics& graphics, const Rectangle& bounds) const
+    const uint_t LookupProgressReportingSupport::percentProgressDisabled=(uint_t)-1;
+    
+        void LookupProgressReportingSupport::showProgress(Graphics& graphics, const Rectangle& bounds) const
     {
         graphics.erase(bounds);
         Rectangle rect(bounds);
@@ -11,7 +13,7 @@ namespace ArsLexis {
         Graphics::FontSetter setFont(graphics, Font());
         uint_t length=statusText_.length();
         uint_t width=rect.width();
-        const char* text=statusText_.c_str();
+        const char_t* text=statusText_.c_str();
         graphics.charsInWidth(text, length, width);
         uint_t height=graphics.fontHeight();
         Point p(rect.x(), rect.y()+(rect.height()-height)/2);
