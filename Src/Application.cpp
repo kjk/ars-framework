@@ -164,6 +164,8 @@ namespace ArsLexis
             if (!error)
                 form->activate();
                 // No, that isn't a leak. Form will delete itself when it receives frmCloseEvent or user dismisses it (popup).
+            else
+                delete form;
         }            
     }
     

@@ -6,6 +6,8 @@
 #include "SearchResultsForm.hpp"
 #include "LookupManager.hpp"
 
+#include <PrefsStore.hpp>
+
 IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 
 using namespace ArsLexis;
@@ -67,8 +69,10 @@ iPediaApplication::~iPediaApplication()
 
 Err iPediaApplication::normalLaunch()
 {
+    loadPreferences();
     gotoForm(mainForm);
     runEventLoop();
+    savePreferences();
     return errNone;
 }
 
@@ -154,3 +158,56 @@ bool iPediaApplication::handleApplicationEvent(EventType& event)
         handled=Application::handleApplicationEvent(event);
     return handled;
 }
+
+namespace {
+
+    enum PreferenceId 
+    {
+        cookiePrefId,
+        serialNumberPrefId,
+        serialNumberRegFlagPrefId
+    };
+
+    // These globals will be removed by dead code elimination.
+    Metrowerks::compile_assert<(sizeof(uint_t) == sizeof(UInt16))> uint_t_the_same_size_as_UInt16;
+    Metrowerks::compile_assert<(sizeof(bool) == sizeof(Boolean))> bool_the_same_size_as_Boolean;
+    
+}
+
+void iPediaApplication::loadPreferences()
+{
+    Preferences prefs;
+    // PrefsStoreXXXX seem to be rather heavyweight objects (writer is >480kB), so it might be a good idea not to allocate them on stack.
+    std::auto_ptr<PrefsStoreReader> reader(new PrefsStoreReader(appPrefDatabase, appFileCreator, sysFileTPreferences));
+
+    Err error=errNone;
+    const char* text;
+    if (errNone!=(error=reader->ErrGetStr(cookiePrefId, &text))) 
+        return;
+    prefs.cookie=text;
+    if (errNone!=(error=reader->ErrGetStr(serialNumberPrefId, &text))) 
+        return;
+    prefs.serialNumber=text;
+    if (errNone!=(error=reader->ErrGetBool(serialNumberRegFlagPrefId, reinterpret_cast<Boolean*>(&prefs.serialNumberRegistered))))
+        return;
+    preferences_=prefs;    
+}
+
+void iPediaApplication::savePreferences()
+{
+    std::auto_ptr<PrefsStoreWriter> writer(new PrefsStoreWriter(appPrefDatabase, appFileCreator, sysFileTPreferences));
+    Err error=errNone;
+    if (errNone!=(error=writer->ErrSetStr(cookiePrefId, preferences_.cookie.c_str())))
+        goto OnError;
+    if (errNone!=(error=writer->ErrSetStr(serialNumberPrefId, preferences_.serialNumber.c_str())))
+        goto OnError;
+    if (errNone!=(error=writer->ErrSetBool(serialNumberRegFlagPrefId, preferences_.serialNumberRegistered)))
+        goto OnError;
+    if (errNone!=(error=writer->ErrSavePreferences()))
+        goto OnError;
+    return;        
+OnError:
+    //! @todo Diplay alert that saving failed?
+    return;
+}
+

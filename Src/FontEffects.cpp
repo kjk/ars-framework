@@ -4,11 +4,6 @@
 namespace ArsLexis
 {
 
-    FontEffects::FontEffects()
-    {
-        effects_.all=0;
-    }
-    
     FontEffects& FontEffects::operator+=(const FontEffects& eff)
     {
         effects_.fx.weight=std::max(weight(), eff.weight());

@@ -328,7 +328,14 @@ namespace ArsLexis
         {
             AppClass* volatile app=static_cast<AppClass*>(getInstance(AppClass::creatorId));
             if (app)
-                error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
+            {
+                ErrTry {
+                    error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
+                } 
+                ErrCatch (ex) {
+                    error=ex;
+                } ErrEndCatch
+            }
             else
             {
                 if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))

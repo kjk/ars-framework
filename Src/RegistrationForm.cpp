@@ -1,5 +1,5 @@
 #include "RegistrationForm.hpp"
-#include "FormObject.hpp"
+#include <FormObject.hpp>
 #include "iPediaApplication.hpp"
 
 using ArsLexis::Rectangle;

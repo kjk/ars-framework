@@ -20,6 +20,12 @@ public:
     RegistrationForm(iPediaApplication& app):
         iPediaForm(app, registrationForm)
     {}    
+    
+    Err initialize()
+    {
+        iPediaForm::initialize();
+        return memErrInvalidParam;
+    }        
 
 };
 

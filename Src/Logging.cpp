@@ -1,6 +1,5 @@
 #include <Logging.hpp>
 #include <Application.hpp>
-#include <limits>
 
 namespace ArsLexis
 {

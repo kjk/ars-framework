@@ -12,4 +12,6 @@
 
 #define appVersion                      "0.5"
 
+#define appPrefDatabase     appName " Prefs"
+
 #endif /* IPEDIA_H_ */

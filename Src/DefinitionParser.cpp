@@ -560,9 +560,9 @@ void DefinitionParser::manageListNesting(const String& newNesting)
                     }                    
                 }
                 else if (bulletChar==elementType)
-                    element=ElementPtr(new BulletElement());
+                    element.reset(new BulletElement());
                 else 
-                    element=ElementPtr(new IndentedParagraphElement());
+                    element.reset(new IndentedParagraphElement());
                 appendElement(element.get());
                 pushParent(element.release());
                 continueList=false;
@@ -686,7 +686,8 @@ Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool 
                     
                 if (listElementLine==previousLineType_ && listElementLine!=lineType_)
                     manageListNesting(String());
-                    
+
+                ElementPtr ptr;  
                 switch (lineType_)
                 {
                     case headerLine:
@@ -698,11 +699,13 @@ Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool 
                         break;                    
                     
                     case horizontalBreakLine:
-                        appendElement(new HorizontalLineElement());
+                        ptr.reset(new HorizontalLineElement());
+                        appendElement(ptr.get());
                         break;
                         
                     case emptyLine:
-                        appendElement(new LineBreakElement());
+                        ptr.reset(new LineBreakElement());
+                        appendElement(ptr.get());
                         break;
                         
                     case listElementLine:
@@ -716,6 +719,7 @@ Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool 
                     default:
                         assert(false);        
                 }
+                ptr.release();
                 parsePosition_=lineEnd_+1;
             }
         } while (goOn);

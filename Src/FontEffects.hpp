@@ -21,12 +21,13 @@ namespace ArsLexis
                 uint_t subscript:1;
                 uint_t underline:2;
             } fx;
-            uint_t all;
+            uint_t mask;
         } effects_;
         
     public:
 
-        FontEffects();
+        FontEffects(uint_t mask=0)
+        {effects_.mask=mask;}
 
         enum Weight
         {
@@ -87,16 +88,22 @@ namespace ArsLexis
         FontEffects& operator+=(const FontEffects& eff);
         
         bool empty() const
-        {return (0==effects_.all);}
+        {return (0==effects_.mask);}
 
         bool operator==(const FontEffects& eff) const
-        {return effects_.all==eff.effects_.all;}
+        {return effects_.mask==eff.effects_.mask;}
 
         bool operator!=(const FontEffects& eff) const
-        {return effects_.all!=eff.effects_.all;}
+        {return effects_.mask!=eff.effects_.mask;}
         
         void clear()
-        {effects_.all=0;}
+        {effects_.mask=0;}
+        
+        uint_t mask() const
+        {return effects_.mask;}
+        
+        void setMask(uint_t mask)
+        {effects_.mask=mask;}
 
     };
 

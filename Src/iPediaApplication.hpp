@@ -26,6 +26,9 @@ class iPediaApplication: public ArsLexis::Application
     
     void detectViewer();
     
+    void loadPreferences();
+    void savePreferences();
+    
 protected:
 
     Err handleSystemNotify(SysNotifyParamType& notify);
