@@ -115,6 +115,8 @@ namespace ArsLexis
          */
         const UInt32 creatorId_;
         
+        UInt32 romVersion_;
+        
     protected:
     
         /**
@@ -151,7 +153,7 @@ namespace ArsLexis
          * @param requiredVersion version needed to run this application.
          * @param alertId if version is lower than @c requiredVersion, this alert will be shown.
          */
-        static Err checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId=frmInvalidObjectId);
+        Err checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId=frmInvalidObjectId);
         
         /**
          * Creates and activates a new @c Form object.
@@ -263,6 +265,15 @@ namespace ArsLexis
         
         static void popupForm(UInt16 formId)
         {FrmPopupForm(formId);}
+        
+        UInt32 romVersion() const
+        {return romVersion_;}
+        
+        UInt16 romVersionMajor() const
+        {return sysGetROMVerMajor(romVersion());}
+        
+        UInt16 romVersionMinor() const
+        {return sysGetROMVerMinor(romVersion());}
 
     };
     

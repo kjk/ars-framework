@@ -10,6 +10,7 @@ class MainForm: public iPediaForm
     
     void handleScrollRepeat(const sclRepeat& data);
     void handlePenUp(const EventType& event);
+    void handleControlSelect(const ctlSelect& data);
     
 protected:
 
@@ -20,6 +21,7 @@ protected:
     Err initialize();
     
     Boolean handleEvent(EventType& event);
+    
 
 public:
     

@@ -1,5 +1,8 @@
 #include "MainForm.hpp"
 #include "DefinitionParser.hpp"
+#include "iPediaApplication.hpp"
+#include "SimpleSocketConnection.hpp"
+#include "SocketAddress.hpp"
 
 void MainForm::resize(const RectangleType& screenBounds)
 {
@@ -39,9 +42,10 @@ void MainForm::draw(UInt16 updateCode)
     WinPaintLine(rect.x(), rect.height()-18, rect.width(), rect.height()-18);
 
     rect.explode(2, 18, -12, -36);
-    //! @todo Obtain RenderingPreferences from Application object and do the following right way...
-    RenderingPreferences* prefs=0;
-    definition_.render(rect, *prefs);
+
+    const iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    definition_.render(rect, app.renderingPreferences());
+    
     UInt16 index=getObjectIndex(definitionScrollBar);
     ScrollBarType* scrollBar=static_cast<ScrollBarType*>(FrmGetObjectPtr(*this, index));
     SclSetScrollBar(scrollBar, definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
@@ -207,12 +211,34 @@ void MainForm::handlePenUp(const EventType& event)
         definition_.hitTest(point); 
 }
 
+void MainForm::handleControlSelect(const ctlSelect& data)
+{
+    assert(data.controlID==goButton);
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    using namespace ArsLexis;
+    SocketConnectionManager* manager=0;
+    Err error=app.getConnectionManager(manager);
+    if (!error)
+    {
+        assert(manager);
+        SimpleSocketConnection* connection=new SimpleSocketConnection(*manager);
+        connection->setTransferTimeout(app.ticksPerSecond()*15L);
+        error=connection->open(INetSocketAddress(0xcf2c860b, 80), "GET / HTTP/1.0\r\n\r\n");
+        if (!(errNone==error || netErrWouldBlock==error))
+            delete connection;
+    }
+}
+
 
 Boolean MainForm::handleEvent(EventType& event)
 {
     Boolean handled=false;
     switch (event.eType)
     {
+        case ctlSelectEvent:
+            handleControlSelect(event.data.ctlSelect);
+            break;
+        
         case penUpEvent:
             handlePenUp(event);
             break;

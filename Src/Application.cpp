@@ -46,10 +46,13 @@ namespace ArsLexis
         formEventHandlerThunk_(Form::routeEventToForm),
         cardNo_(0),
         databaseId_(0),
-        creatorId_(creatorId)
+        creatorId_(creatorId),
+        romVersion_(0)
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);
         assert(!error);
+        error=FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion_);
+        assert(!error);        
     }
     
     Err Application::initialize()
@@ -68,23 +71,19 @@ namespace ArsLexis
     
     Err Application::checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId)
     {
-        UInt32 romVersion=0;
-        Err error=FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion);
-        if (!error)
+        Err error=errNone;
+        if (romVersion() < requiredVersion)
         {
-            if (romVersion < requiredVersion)
+            if ((launchFlags & 
+                (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
+                (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp))
             {
-                if ((launchFlags & 
-                    (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
-                    (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp))
-                {
-                    if (frmInvalidObjectId!=alertId)
-                        FrmAlert (alertId);
-                    if (romVersion < kPalmOS20Version)
-                        AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
-                }
-                error=sysErrRomIncompatible;
+                if (frmInvalidObjectId!=alertId)
+                    FrmAlert (alertId);
+                if (romVersion() < kPalmOS20Version)
+                    AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
             }
+            error=sysErrRomIncompatible;
         }
         return error;
     }

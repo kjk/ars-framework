@@ -6,20 +6,20 @@
 #include "DynamicInputAreas.hpp"
 #include "NetLibrary.hpp"
 #include "SocketConnection.hpp"
+#include "RenderingPreferences.hpp"
 
 class iPediaApplication: public ArsLexis::Application 
 {
     ArsLexis::DIA_Support diaSupport_;
     Boolean diaNotifyRegistered_;
     
-    typedef std::auto_ptr<ArsLexis::NetLibrary> NetLibPtr;
-    NetLibPtr netLib_;
-    typedef std::auto_ptr<ArsLexis::SocketConnectionManager> ConnectionManagerPtr;
-    ConnectionManagerPtr connectionManager_;
+    ArsLexis::NetLibrary* netLib_;
+    ArsLexis::SocketConnectionManager* connectionManager_;
     
-    Err getNetLib(ArsLexis::NetLibrary*& netLib);
+    Err getNetLibrary(ArsLexis::NetLibrary*& netLib);
     
     UInt16 ticksPerSecond_;
+    RenderingPreferences renderingPrefs_;
 
 protected:
 
@@ -45,6 +45,14 @@ public:
     ~iPediaApplication();
     
     Err initialize();
+    
+    Err getConnectionManager(ArsLexis::SocketConnectionManager*& manager);
+    
+    UInt16 ticksPerSecond() const
+    {return ticksPerSecond_;}
+    
+    const RenderingPreferences& renderingPreferences() const
+    {return renderingPrefs_;}
     
 };
 

@@ -19,7 +19,7 @@ namespace ArsLexis
     
         void registerEvent(SocketConnection& connection, SocketSelector::EventType event);
         
-        void unregisterEvent(SocketConnection& connection, SocketSelector::EventType event);
+        void unregisterEvents(SocketConnection& connection);
         
         void removeConnection(SocketConnection& connection);
         
@@ -32,7 +32,7 @@ namespace ArsLexis
         Boolean active() const
         {return selector_.active();}
         
-        Err runUntilEvent(Int32 timeout=evtWaitForever);
+        Err manageConnectionEvents(Int32 timeout=evtWaitForever);
         
         friend class SocketConnection;
     };
@@ -40,11 +40,12 @@ namespace ArsLexis
     class SocketConnection
     {
         SocketConnectionManager& manager_;
-        Socket socket_;
         
     protected:
+
+        Socket socket_;
     
-//        Err errorStatus();
+        Err socketStatus() const;
     
         virtual void notifyWritable()
         {}
@@ -57,6 +58,10 @@ namespace ArsLexis
         virtual void abortConnection()
         {delete this;}
         
+        Err open(const SocketAddress& address, Int32 timeout=evtWaitForever);
+        
+        SocketConnection(SocketConnectionManager& manager);
+        
     public:
         
         void registerEvent(SocketSelector::EventType event)
@@ -64,11 +69,7 @@ namespace ArsLexis
             manager_.registerEvent(*this, event);
         }
         
-        SocketConnection(SocketConnectionManager& manager);
-        
         virtual ~SocketConnection();
-        
-        Err open(const SocketAddress& address, Int32 timeout=evtWaitForever);
         
         friend class SocketConnectionManager;
     };

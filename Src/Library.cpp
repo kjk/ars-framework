@@ -13,7 +13,8 @@ namespace ArsLexis
     {
         assert(!refNum_);
         assert(!loaded_);
-        Err error=SysLibFind(name, &refNum_);        if (sysErrLibNotFound==error)
+        Err error=SysLibFind(name, &refNum_);
+        if (sysErrLibNotFound==error)
         {
             error=SysLibLoad(type, creator, &refNum_);
             if (!error)

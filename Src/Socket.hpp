@@ -82,7 +82,7 @@ namespace ArsLexis
         
         Err setOption(UInt16 level, UInt16 option, void* optionValue, UInt16 valueLength, Int32 timeout=evtWaitForever);
         
-        Err getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout=evtWaitForever);
+        Err getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout=evtWaitForever) const;
                 
     };
 

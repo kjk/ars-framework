@@ -2,8 +2,6 @@
 #include "iPediaApplication.hpp"
 #include "SysUtils.hpp"
 #include "MainForm.hpp"
-#include "SocketAddress.hpp"
-
 
 IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 
@@ -11,6 +9,8 @@ using namespace ArsLexis;
 
 iPediaApplication::iPediaApplication():
     diaNotifyRegistered_(false),
+    netLib_(0),
+    connectionManager_(0),
     ticksPerSecond_(SysTicksPerSecond())
 {
 }
@@ -34,6 +34,14 @@ iPediaApplication::~iPediaApplication()
 {
     if (diaNotifyRegistered_) 
         unregisterNotify(diaSupport_.notifyType());
+    
+    // Hard to believe, but seems that destructors are in some way accessed even if objects==0. 
+    // This causes bus error in non-normal launch (SocketConnectionManager is in 2nd segment).
+    // That's why I have to use these ifs below...
+    if (connectionManager_)
+        delete connectionManager_;
+    if (netLib_)        
+        delete netLib_;
 }
 
 
@@ -42,21 +50,18 @@ static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStage
 Err iPediaApplication::normalLaunch()
 {
     setEventTimeout(0);
-    NetLibrary* netLib;
+    
+/*    
+    NetLibrary* netLib=0;
     getNetLib(netLib);
     if (netLib)
     {
-        SocketConnection* connection=new SocketConnection(*connectionManager_);
-        Err error=connection->open(INetSocketAddress(0x7f000001, 80));
-//        Err error=connection->open(INetSocketAddress(0x12345678, 80));
-        if (!error || netErrWouldBlock==error)
-        {
-            connection->registerEvent(SocketSelector::eventWrite);
-//            connection->registerEvent(SocketSelector::eventException);
-        }
-        else
+        SimpleSocketConnection* connection=new SimpleSocketConnection(*connectionManager_);
+        Err error=connection->open(INetSocketAddress(0xcf2c860b, 80), "GET / HTTP/1.0\r\n\r\n");
+        if (!(errNone==error || netErrWouldBlock==error))
             delete connection;
     }
+*/
 
     gotoForm(mainForm);
     runEventLoop();
@@ -79,39 +84,34 @@ Err iPediaApplication::handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launch
     return error;
 }
 
-Err iPediaApplication::getNetLib(NetLibrary*& netLib)
+Err iPediaApplication::getNetLibrary(NetLibrary*& netLib)
 {
     Err error=errNone;
-    if (!netLib_.get())
+    if (!netLib_)
     {
-        NetLibPtr tmp(new NetLibrary);
-        if (tmp.get())
+        NetLibrary* tmp=new NetLibrary;
+        UInt16 ifError=0;
+        error=tmp->initialize(ifError);
+        if (!error)
         {
-            UInt16 ifError=0;
-            error=tmp->initialize(ifError);
-            if (!error)
-            {
-                assert(!ifError);
-                netLib_=tmp;
-                connectionManager_=ConnectionManagerPtr(new SocketConnectionManager(*netLib_));
-            }
+            assert(!ifError);
+            netLib_=tmp;
+            connectionManager_=new SocketConnectionManager(*netLib_);
         }
-        else
-            error=memErrNotEnoughSpace;
     }
     if (!error)
-        netLib=netLib_.get();
+        netLib=netLib_;
     return error;
 }
 
 void iPediaApplication::waitForEvent(EventType& event)
 {
-    if (connectionManager_.get() && connectionManager_->active())
+    if (connectionManager_ && connectionManager_->active())
     {
         setEventTimeout(0);
         Application::waitForEvent(event);
         if (nilEvent==event.eType)
-            connectionManager_->runUntilEvent(ticksPerSecond_/20);
+            connectionManager_->manageConnectionEvents(ticksPerSecond_/20);
     }
     else
     {
@@ -141,4 +141,14 @@ Form* iPediaApplication::createForm(UInt16 formId)
             assert(false);
     }
     return form;            
+}
+
+Err iPediaApplication::getConnectionManager(SocketConnectionManager*& manager)
+{
+    NetLibrary* netLib=0;
+    Err error=getNetLibrary(netLib);
+    if (!error)
+        assert(connectionManager_!=0);
+    manager=connectionManager_;
+    return error;
 }

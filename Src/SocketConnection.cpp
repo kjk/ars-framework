@@ -19,11 +19,13 @@ namespace ArsLexis
         selector_.registerSocket(connection.socket_, event);
     }
     
-    void SocketConnectionManager::unregisterEvent(SocketConnection& connection, SocketSelector::EventType event)
+    void SocketConnectionManager::unregisterEvents(SocketConnection& connection)
     {
         NetSocketRef ref=connection.socket_;
         assert(connections_.size()>ref && &connection==connections_[ref]);
-        selector_.unregisterSocket(connection.socket_, event);
+        selector_.unregisterSocket(connection.socket_, SocketSelector::eventRead);
+        selector_.unregisterSocket(connection.socket_, SocketSelector::eventWrite);
+        selector_.unregisterSocket(connection.socket_, SocketSelector::eventException);
     }
     
     void SocketConnectionManager::removeConnection(SocketConnection& connection)
@@ -47,12 +49,13 @@ namespace ArsLexis
     }
 
 
-    Err SocketConnectionManager::runUntilEvent(Int32 timeout)
+    Err SocketConnectionManager::manageConnectionEvents(Int32 timeout)
     {
         Err error=selector_.select(timeout);
         if (!error)
         {
-            assert(selector_.eventsCount()>0);
+            UInt16 eventsCount=selector_.eventsCount();
+            assert(eventsCount>0);
             UInt16 connCount=connections_.size();
             for (UInt16 i=0; i<connCount; ++i)
             {
@@ -61,25 +64,29 @@ namespace ArsLexis
                 {
                     if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
                     {
-                        unregisterEvent(*conn, SocketSelector::eventRead);
+                        unregisterEvents(*conn);
                         conn->notifyReadable();
+                        if (!--eventsCount)
+                            break;
                     }
                     if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
                     {
-                        unregisterEvent(*conn, SocketSelector::eventWrite);
+                        unregisterEvents(*conn);
                         conn->notifyWritable();
+                        if (!--eventsCount)
+                            break;
                     } 
                     // There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
                     // Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
                     if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventException))
                     {
-                        unregisterEvent(*conn, SocketSelector::eventException);
+                        unregisterEvents(*conn);
                         conn->notifyException();
+                        if (!--eventsCount)
+                            break;
                     }                        
                 }
             }
-//            if (selector_.checkStandardEvent())
-//                break;
         }
         return error;
     }
@@ -112,8 +119,21 @@ namespace ArsLexis
 
     void SocketConnection::notifyException()
     {
-        
-        abortConnection();
+        Err error=socketStatus();
+        if (error!=errNone)
+            abortConnection();
+    }
+
+    Err SocketConnection::socketStatus() const
+    {
+        NetSocketRef socketRef=socket_;
+        assert(socketRef!=0);
+        Err status=errNone;
+        UInt16 size=sizeof(status);
+        // PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
+        // Nevertheless status is also filled in these cases and seems right...
+        Err error=socket_.getOption(netSocketOptLevelSocket, netSocketOptSockErrorStatus, &status, size);
+        return status;
     }
 
 }

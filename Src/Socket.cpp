@@ -95,7 +95,7 @@ namespace ArsLexis
         return error;
     }
     
-    Err SocketBase::getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout)
+    Err SocketBase::getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout) const
     {
         assert(socket_!=0);
         Err error=errNone;
@@ -144,17 +144,10 @@ namespace ArsLexis
             outputFDs_[i]=inputFDs_[i];
 
         Err error=errNone;
+        // Seems NetLibSelect() is really badly screwed in PalmOS - see strange error behaviour in the following if-else...
         Int16 eventsCount=NetLibSelect(netLib_, width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, &error);
         if (-1==eventsCount)
         {
-            // The following is workaround for probable PalmOS 5+ bug - NetLibSelect returns -1 without any error code (seems to do so when there are some events in the queue)
-//            if (!error) 
-//            {
-//                eventsCount_=1;
-//                netFDSet(sysFileDescStdIn, &outputFDs_[eventRead]);
-//            }
-//            assert(error);
-//            else
             if (!error)
                 error=netErrTimeout;
             eventsCount_=0;
@@ -162,15 +155,9 @@ namespace ArsLexis
         else
         {
             assert(!error);
-            // This also seems to be a bug in PalmOS 5+. We have to simulate input event by incrementing eventsCount.
-//            if (0==eventsCount)
-//            {
-//                eventsCount_=1;
-//                netFDSet(sysFileDescStdIn, &outputFDs_[eventRead]);
-//            }
-            assert(eventsCount>0);
-//            else
-                eventsCount_=eventsCount;
+            eventsCount_=eventsCount;
+            if (0==eventsCount_)
+                error=netErrTimeout;
         }            
         return error;
     }

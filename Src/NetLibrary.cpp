@@ -1,4 +1,5 @@
 #include "NetLibrary.hpp"
+#include "Application.hpp"
 
 #define netLibName "Net.lib"
 
@@ -14,7 +15,15 @@ namespace ArsLexis
     {
         Err error=Library::initialize(netLibName, netCreator);
         if (!error)
-            error=NetLibOpenConfig(refNum(), configIndex, openFlags, &ifError);
+        {
+            Application& app=Application::instance();
+            //! @bug NetLibOpenConf() return netErrUnimplemented on Cobalt Simulator.
+            //! To workaround it we call implemented NetLibOpen() instead...
+            if (app.romVersionMajor()>5)
+                error=NetLibOpen(refNum(), &ifError);
+            else
+                error=NetLibOpenConfig(refNum(), configIndex, openFlags, &ifError);
+        }
         if (netErrAlreadyOpen==error)
             error=errNone;
         return error;      
