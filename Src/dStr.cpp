@@ -162,7 +162,7 @@ dStr *dStrAppendStr(dStr *dstr, dStr *toAppend)
 // Return pointer to itself or NULL if we had to re-allocate the buffer
 // but failed.
 // THE ORIGINAL dStr - the client has to do it by himself.
-dStr *dStrAppend(dStr *dstr, char_t *buf, UInt32 bufSize)
+dStr *dStrAppend(dStr *dstr, char_t *data, UInt32 dataSize)
 {
     UInt32  newRequiredSize;
     char_t *  curEnd;
@@ -170,10 +170,10 @@ dStr *dStrAppend(dStr *dstr, char_t *buf, UInt32 bufSize)
     char_t *  newStr;
     UInt32  newLen;
 
-    if ( bufSize > DSTR_LEFT(dstr) )
+    if ( dataSize > DSTR_LEFT(dstr) )
     {
         // need to re-allocate the buffer
-        newLen = dstr->strLen+1+bufSize;
+        newLen = dstr->strLen+1+dataSize;
         if (0 != dstr->reallocIncrement)
         {
             // if reallocIncrement wants us to alloc bigger buffer, do it
@@ -182,12 +182,13 @@ dStr *dStrAppend(dStr *dstr, char_t *buf, UInt32 bufSize)
                 newLen = dstr->bufSize + dstr->reallocIncrement;
             }
         }
-        newStr = (Char*)MemPtrNew(dstr->strLen+1+bufSize);
+        newStr = (Char*)MemPtrNew(newLen);
         if (NULL == newStr)
             return NULL;
         MemMove(newStr, DSTR_STR(dstr), dStrLen(dstr));
         MemPtrFree(DSTR_STR(dstr));
-        dstr->str = newStr;
+        dstr->str     = newStr;
+        dstr->bufSize = newLen;
     }
 
     // here we're sure we have enough space

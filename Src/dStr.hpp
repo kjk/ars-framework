@@ -51,7 +51,7 @@ void     dStrTruncate(dStr *dstr, UInt32 len);
 char_t * dStrGetCStr(dStr *dstr);
 char_t * dStrGetData(dStr *dstr);
 UInt32   dStrLen(dStr *dstr);
-dStr *   dStrAppend(dStr *dstr, char_t *buf, UInt32 bufSize);
+dStr *   dStrAppend(dStr *dstr, char_t *data, UInt32 dataSize);
 dStr *   dStrAppendCharP(dStr *dstr, char_t *str);
 dStr *   dStrAppendChar(dStr *dstr, char_t c);
 void     dStrDelete(dStr *dstr);
