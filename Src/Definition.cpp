@@ -12,7 +12,6 @@
 
 using namespace ArsLexis;
 
-
 Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     element_(element)
 {
@@ -888,8 +887,9 @@ bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPrefe
         }
         if (0 != items)
         {
+            int top = firstShownLine();
             scroll(graphics, prefs, items);
-            return true;
+            return firstShownLine() != top;
         }
     }
     if (usesHyperlinkNavigation())
