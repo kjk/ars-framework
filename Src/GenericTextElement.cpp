@@ -78,20 +78,24 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         length=rangeLength;
     }
 
-    if (!render)
-        layoutContext.extendHeight(lineHeight, baseLine);
-    
     uint_t width=graphics.textWidth(text, length);
+
+    uint_t charsToDraw=length;
+    while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
+        --charsToDraw;
+    uint_t dispWidth=graphics.textWidth(text, charsToDraw);
+    if (dispWidth>layoutContext.availableWidth())
+        return;
 
     if (render)
     {
-        uint_t charsToDraw=length;
-        while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
-            --charsToDraw;
         graphics.drawText(text, charsToDraw, Point(left, top));
         if (isHyperlink())
             defineHotSpot(*definition, ArsLexis::Rectangle(left, top, width, lineHeight));
     }
+
+    if (!render)
+        layoutContext.extendHeight(lineHeight, baseLine);
 
     left+=width;    
     text+=length;
