@@ -12,6 +12,7 @@
 
 using namespace ArsLexis;
 
+
 Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     element_(element)
 {
@@ -352,7 +353,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
         {
             ElementPosition_t next = current;
             ++next;
-            if (last != next && (*next)->isTextElement())
+            if (elements_.end() != next && (*next)->isTextElement())
                 renderContext.nextTextElement = static_cast<GenericTextElement*>(*next);
             else
                 renderContext.nextTextElement = 0;
