@@ -24,6 +24,12 @@ BEGIN
 #endif
     END
 
+    PULLDOWN "Go"
+    BEGIN
+        MENUITEM "Forward" ID forwardMenuItem  "F"
+        MENUITEM "Back" ID backMenuItem  "B"
+    END
+
     PULLDOWN "Edit"
     BEGIN
         MENUITEM "Copy"ID copyMenuItem "C"
@@ -36,12 +42,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "ArsLexis website"        ID arslexisWebsiteMenuItem   "W"
         MENUITEM "About" ID aboutMenuItem  "A"
-    END
-
-    PULLDOWN "Go"
-    BEGIN
-        MENUITEM "Forward" ID forwardMenuItem  "F"
-        MENUITEM "Back" ID backMenuItem  "B"
     END
 
 END	
