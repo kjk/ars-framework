@@ -48,7 +48,7 @@ public:
     /**
      * @todo Implement RenderingPreferences::synchronize()
      */
-    SynchronizationResult synchronize(const RenderingPreferences& preferences)
+    SynchronizationResult synchronize(const RenderingPreferences&)
     {return noChange;}
     
     BulletType bulletType() const

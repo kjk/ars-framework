@@ -36,8 +36,6 @@ protected:
     
     bool handleWindowEnter(const struct _WinEnterEventType& data);
     
-    bool handleWindowExit(const struct _WinExitEventType& data);
-
     bool handleEvent(EventType& event);
     
     bool handleMenuCommand(UInt16 itemId);

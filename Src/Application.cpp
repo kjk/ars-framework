@@ -199,7 +199,7 @@ namespace ArsLexis
         return SysNotifyUnregister(cardNumber(), databaseId(), notifyType, priority);
     }
 
-    Err Application::handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
+    Err Application::handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16)
     {
         Err error=errNone;
         if (sysAppLaunchCmdNormalLaunch==cmd)
@@ -219,6 +219,19 @@ namespace ArsLexis
     void Application::waitForEvent(EventType& event)
     {
         EvtGetEvent(&event, eventTimeout_);
+    }
+    
+    void Application::sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength)
+    {
+        EventType event;
+        MemSet(&event, sizeof(event), 0);
+        event.eType=static_cast<eventsEnum>(eventId);
+        if (eventData && dataLength)
+        {
+            assert(dataLength<=sizeof(event.data));
+            MemMove(&event.data, eventData, dataLength);
+        }
+        EvtAddEventToQueue(&event);
     }
    
 }

@@ -10,13 +10,15 @@ using namespace ArsLexis;
 iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
     FieldPayloadProtocolConnection(manager),
     transactionId_(random((UInt32)-1)),
-    definitionNotFound_(false),
-    registering_(false),
     formatVersion_(0),
     definitionParser_(0),
+    searchResultsHandler_(0),
     payloadType_(payloadNone),
     historyChange_(historyReplaceForward),
-    serverError_(serverErrorNone)
+    serverError_(serverErrorNone),
+    notFound_(false),
+    registering_(false),
+    performFullTextSearch_(false)
 {
 }
 
@@ -35,10 +37,12 @@ iPediaConnection::~iPediaConnection()
 #define cookieField                 "Cookie"
 #define registerField               "Register"
 #define formatVersionField      "Format-Version"
-#define definitionForField         "Definition-For"
+#define resultsForField             "Results-For"
 #define definitionField              "Definition"
 #define errorField                   "Error"
-#define definitionNotFoundField "Definition-Not-Found"
+#define notFoundField              "Not-Found"
+#define searchField                 "Search"
+#define searchResultsField       "Search-Results"
 
 void iPediaConnection::prepareRequest()
 {
@@ -55,7 +59,7 @@ void iPediaConnection::prepareRequest()
         appendField(request, cookieField, app.preferences().cookie);
         
     if (!term_.empty())
-        appendField(request, getDefinitionField, term_);
+        appendField(request, (performFullTextSearch_?searchField:getDefinitionField), term_);
         
     registering_=!(app.preferences().serialNumberRegistered || chrNull==app.preferences().serialNumber[0]);
     if (registering_)
@@ -77,10 +81,12 @@ Err iPediaConnection::handleField(const String& name, const String& value)
     Err error=errNone;
     if (0==name.find(transactionIdField))
     {
-        //! @todo Handle transactionid field.
+        error=numericValue(value, numValue, 16);
+        if (error || (numValue!=transactionId_))
+            error=errResponseMalformed;
     }
-    else if (0==name.find(definitionNotFoundField))
-        definitionNotFound_=true;
+    else if (0==name.find(notFoundField))
+        notFound_=true;
     else if (0==name.find(formatVersionField))
     {
         error=numericValue(value, numValue);
@@ -89,8 +95,8 @@ Err iPediaConnection::handleField(const String& name, const String& value)
         else
             error=errResponseMalformed;
     }
-    else if (0==name.find(definitionForField))
-        definitionForTerm_=value;
+    else if (0==name.find(resultsForField))
+        resultsFor_=value;
     else if (0==name.find(definitionField))
     {
         error=numericValue(value, numValue);
@@ -99,6 +105,18 @@ Err iPediaConnection::handleField(const String& name, const String& value)
             DefinitionParser* parser=new DefinitionParser();
             startPayload(parser, numValue);
             payloadType_=payloadDefinition;
+        }
+        else
+            error=errResponseMalformed;
+    }
+    else if (0==name.find(searchResultsField))
+    {
+        error=numericValue(value, numValue);
+        if (!error)
+        {
+            SearchResultsHandler* handler=new SearchResultsHandler();
+            startPayload(handler, numValue);
+            payloadType_=payloadSearchResults;
         }
         else
             error=errResponseMalformed;
@@ -154,7 +172,7 @@ Err iPediaConnection::notifyFinished()
                             break;
                         
                         case historyReplaceForward:
-                            form->history().replaceForward(definitionForTerm_);
+                            form->history().replaceForward(resultsFor_);
                             break;
                         
                         default:
@@ -165,11 +183,14 @@ Err iPediaConnection::notifyFinished()
                     form->update();
                 }
             }
+            if (searchResultsHandler_!=0)
+            {
+            }
 
             if (registering_ && !serverError_)
                 app.preferences().serialNumberRegistered=true;
             
-            if (definitionNotFound_)
+            if (notFound_)
                 app.sendDisplayAlertEvent(definitionNotFoundAlert);
         }
         else
@@ -221,11 +242,20 @@ void iPediaConnection::handleServerError()
 
 void iPediaConnection::notifyPayloadFinished()
 {
-    assert(payloadNone!=payloadType_);
-    if (payloadDefinition==payloadType_)
+    switch (payloadType_)
     {
-        delete definitionParser_;
-        definitionParser_=static_cast<DefinitionParser*>(releasePayloadHandler());
+        case payloadDefinition:
+            delete definitionParser_;
+            definitionParser_=static_cast<DefinitionParser*>(releasePayloadHandler());
+            break;
+        
+        case payloadSearchResults:
+            delete searchResultsHandler_;
+            searchResultsHandler_=static_cast<SearchResultsHandler*>(releasePayloadHandler());
+            break;
+            
+        default:
+            assert(false);
     }
     payloadType_=payloadNone;
     FieldPayloadProtocolConnection::notifyPayloadFinished();

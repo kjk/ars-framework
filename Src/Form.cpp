@@ -38,7 +38,7 @@ namespace ArsLexis
         application_(app),
         id_(id),
         form_(0), 
-        deleteOnClose(true)
+        deleteOnClose_(true)
     {
     }
     
@@ -58,7 +58,7 @@ namespace ArsLexis
     
     Form::~Form() 
     {
-        if (deleteOnClose) 
+        if (deleteOnClose_) 
             FrmDeleteForm(form_);
         application_.unregisterForm(*this);
     }
@@ -111,7 +111,7 @@ namespace ArsLexis
     
     bool Form::handleOpen()
     {
-        deleteOnClose=false;
+        deleteOnClose_=false;
         update();
         return true;
     }
@@ -124,7 +124,7 @@ namespace ArsLexis
 
     void Form::returnToForm(UInt16 formId)
     {
-        deleteOnClose=false;
+        deleteOnClose_=false;
         handleClose();        
         FrmReturnToForm(formId);
     }
@@ -135,6 +135,31 @@ namespace ArsLexis
         RectangleType native=toNative(bounds);
         WinSetBounds(windowHandle(), &native);
     }        
+
+
+    void Form::setTitle(const String& title)
+    {
+        assert(form_!=0);
+        title_=title;
+        FrmSetTitle(form_, const_cast<char*>(title_.c_str()));            
+    }
+    
+    const String& Form::title() const
+    {
+        assert(form_!=0);
+        if (title_.empty())
+            title_.assign(FrmGetTitle(form_));
+        return title_;
+    }
+    
+    bool Form::handleWindowExit(const struct _WinExitEventType& data)
+    {
+        const FormType* form=*this;
+        if (data.exitWindow==static_cast<const void*>(form))
+            releaseFocus();
+        return false;
+    }
+    
 
 }
 

@@ -178,7 +178,7 @@ namespace ArsLexis
          * Called from @c handleLaunchCode() in case when application is run with @c sysAppLaunchCmdNotify code.
          * Override it to perform some useful stuff.
          */
-        virtual Err handleSystemNotify(SysNotifyParamType& notify)
+        virtual Err handleSystemNotify(SysNotifyParamType&)
         {return errNone;}
         
         /**
@@ -279,7 +279,7 @@ namespace ArsLexis
          * @note This function is designed so that it should be the only code called from @c PilotMain() function,
          * unless you know what you're doing.
          */
-        template<class AppClass, UInt32 creatorId, UInt16 alertId> 
+        template<class AppClass, UInt16 alertId> 
         static Err main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
         
         static void gotoForm(UInt16 formId)
@@ -309,15 +309,17 @@ namespace ArsLexis
             appFirstAvailableEvent=firstUserEvent
         };
 
+        static void sendEvent(UInt16 eventId, const void* eventData=0, UInt16 dataLength=0);
+
     };
     
-    template<class AppClass, UInt32 creatorId, UInt16 alertId> 
+    template<class AppClass, UInt16 alertId> 
     Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     {
         Err error=Application::checkRomVersion(AppClass::requiredRomVersion, launchFlags, alertId);
         if (!error)
         {
-            AppClass* volatile app=static_cast<AppClass*>(getInstance(creatorId));
+            AppClass* volatile app=static_cast<AppClass*>(getInstance(AppClass::creatorId));
             if (app)
                 error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
             else

@@ -13,11 +13,11 @@ void ArsLexis::handleBadAlloc()
     ErrThrow(memErrNotEnoughSpace);    
 }
 
-void ArsLexis::logAllocation(void* ptr, bool free, const char* file, int line)
+void ArsLexis::logAllocation(void*, bool, const char*, int)
 {
 }
 
 UInt32 PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
-    return ArsLexis::Application::main<iPediaApplication, appFileCreator, romIncompatibleAlert>(cmd, cmdPBP, launchFlags);
+    return ArsLexis::Application::main<iPediaApplication, romIncompatibleAlert>(cmd, cmdPBP, launchFlags);
 }

@@ -36,12 +36,12 @@ void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
     object.attach(termInputField);
     object.bounds(bounds);
     bounds.y()=screenBounds.extent.y-14;
-    bounds.width()=screenBounds.extent.x-63;
+    bounds.width()=screenBounds.extent.x-55;
     object.setBounds(bounds);
 
     object.attach(searchButton);
     object.bounds(bounds);
-    bounds.x()=screenBounds.extent.x-42;
+    bounds.x()=screenBounds.extent.x-34;
     bounds.y()=screenBounds.extent.y-14;
     object.setBounds(bounds);
     
@@ -414,12 +414,4 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
         object.focus();
     }
     return iPediaForm::handleWindowEnter(data);
-}
-
-bool MainForm::handleWindowExit(const struct _WinExitEventType& data)
-{
-    const FormType* form=*this;
-    if (data.exitWindow==static_cast<const void*>(form))
-        releaseFocus();
-    return iPediaForm::handleWindowExit(data);
 }

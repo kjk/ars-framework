@@ -25,6 +25,10 @@ protected:
     
     void resize(const ArsLexis::Rectangle& screenBounds);
     
+    bool handleMenuCommand(UInt16 menuItem);
+
+    bool handleWindowEnter(const struct _WinEnterEventType& data);
+    
 public:
 
     explicit SearchResultsForm(iPediaApplication& app);

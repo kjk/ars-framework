@@ -2,6 +2,7 @@
 #define __ARSLEXIS_FORM_HPP__
 
 #include "Debug.hpp"
+#include "BaseTypes.hpp"
 #include "Geometry.hpp"
 
 namespace ArsLexis 
@@ -14,7 +15,8 @@ namespace ArsLexis
         Application& application_;
         UInt16 id_;
         FormType* form_;
-        bool deleteOnClose;
+        bool deleteOnClose_;
+        mutable String title_;
         
         static Boolean routeEventToForm(EventType* event);
         
@@ -49,15 +51,14 @@ namespace ArsLexis
         virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
         {FrmDrawForm(form_);}
         
-        virtual bool handleWindowEnter(const struct _WinEnterEventType& data)
+        virtual bool handleWindowEnter(const struct _WinEnterEventType&)
         {return false;}
         
-        virtual bool handleWindowExit(const struct _WinExitEventType& data)
-        {return false;}
+        virtual bool handleWindowExit(const struct _WinExitEventType& data);
         
         virtual bool handleEvent(EventType& event);
         
-        virtual bool handleMenuCommand(UInt16 itemId)
+        virtual bool handleMenuCommand(UInt16)
         {return false;}
             
     public:
@@ -134,6 +135,9 @@ namespace ArsLexis
         
         void releaseFocus()
         {FrmSetFocus(form_, noFocus);}
+        
+        void setTitle(const String& title);
+        const String& title() const;
 
         friend class Application;
     };

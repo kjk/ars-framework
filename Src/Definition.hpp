@@ -222,7 +222,7 @@ public:
     void setHyperlinkHandler(HyperlinkHandler* handler)
     {hyperlinkHandler_=handler;}
     
-    void goToBookmark(const ArsLexis::String& bookmark)
+    void goToBookmark(const ArsLexis::String&)
     {}
     
     void selectionToText(ArsLexis::String& out) const;

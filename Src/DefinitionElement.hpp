@@ -18,7 +18,7 @@ protected:
     
 public:
     
-    virtual bool requiresNewLine(const RenderingPreferences& preferences) const
+    virtual bool requiresNewLine(const RenderingPreferences&) const
     {return false;}
     
     virtual void calculateLayout(LayoutContext& mc)=0;
@@ -31,7 +31,7 @@ public:
     virtual ~DefinitionElement()
     {}
     
-    virtual void performAction(Definition& definition)
+    virtual void performAction(Definition&)
     {}
     
     void setParent(DefinitionElement* parent)

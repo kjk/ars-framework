@@ -45,6 +45,7 @@ protected:
 public:
 
     static const UInt32 requiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStageDevelopment,0);
+    static const UInt32 creatorId=appFileCreator;
     
     const ArsLexis::DIA_Support& getDIASupport() const
     {return diaSupport_;}
@@ -97,6 +98,11 @@ public:
     enum Event
     {
         appDisplayAlertEvent=appFirstAvailableEvent,
+        appLookupStartedEvent,
+        appLookupEventFirst=appLookupStartedEvent,
+        appLookupProgressEvent,
+        appLookupFinishedEvent,
+        appLookupEventLast=appLookupFinishedEvent,
         appFirstAvailableEvent
     };
     
@@ -111,7 +117,11 @@ public:
     const ArsLexis::String& searchResults() const
     {return searchResults_;}
     
-    void sendDisplayAlertEvent(UInt16 alertId);
+    void sendDisplayAlertEvent(UInt16 alertId)
+    {
+        DisplayAlertEventData data={alertId};
+        sendEvent(appDisplayAlertEvent, &data, sizeof(data));
+    }
     
     ArsLexis::Logger& log() const
     {return log_;}

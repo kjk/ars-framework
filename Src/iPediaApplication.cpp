@@ -175,16 +175,6 @@ Err iPediaApplication::getResolver(Resolver*& resolver)
     return error;
 }
 
-void iPediaApplication::sendDisplayAlertEvent(UInt16 alertId)
-{
-    EventType event;
-    MemSet(&event, sizeof(event), 0);
-    event.eType=static_cast<eventsEnum>(appDisplayAlertEvent);
-    DisplayAlertEventData& data=reinterpret_cast<DisplayAlertEventData&>(event.data);
-    data.alertId=alertId;
-    EvtAddEventToQueue(&event);
-}
-
 bool iPediaApplication::handleApplicationEvent(EventType& event)
 {
     bool handled=false;

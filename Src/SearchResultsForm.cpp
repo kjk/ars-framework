@@ -5,6 +5,7 @@ using ArsLexis::String;
 using ArsLexis::FormObject;
 using ArsLexis::List;
 using ArsLexis::Rectangle;
+using ArsLexis::Control;
 
 void SearchResultsForm::prepareListChoices()
 {
@@ -23,7 +24,6 @@ void SearchResultsForm::prepareListChoices()
         }
     }
 }
-
 
 SearchResultsForm::SearchResultsForm(iPediaApplication& app):
     iPediaForm(app, searchResultsForm),
@@ -51,18 +51,31 @@ bool SearchResultsForm::handleOpen()
 
 void SearchResultsForm::resize(const ArsLexis::Rectangle& screenBounds)
 {
-    Rectangle rect(2, 2, screenBounds.width()-4, screenBounds.height()-4);
-    setBounds(rect);
+    setBounds(screenBounds);
     
     FormObject object(*this, searchResultsList);
+    Rectangle rect;
     object.bounds(rect);
-    rect.height()=screenBounds.height()-36;
-    rect.width()=screenBounds.width()-8;
+    rect.height()=screenBounds.height()-34;
+    rect.width()=screenBounds.width()-4;
+    object.setBounds(rect);
+
+    object.attach(refineSearchInputField);
+    object.bounds(rect);
+    rect.y()=screenBounds.height()-14;
+    rect.width()=screenBounds.width()-74;
     object.setBounds(rect);
 
     object.attach(cancelButton);
     object.bounds(rect);
-    rect.y()=screenBounds.height()-18;
+    rect.y()=screenBounds.height()-14;
+    rect.x()=screenBounds.width()-34;
+    object.setBounds(rect);
+
+    object.attach(refineSearchButton);
+    object.bounds(rect);
+    rect.y()=screenBounds.height()-14;
+    rect.x()=screenBounds.width()-69;
     object.setBounds(rect);
     
     update();
@@ -90,3 +103,38 @@ bool SearchResultsForm::handleEvent(EventType& event)
     return handled;
 }
 
+bool SearchResultsForm::handleMenuCommand(UInt16 menuItem)
+{
+    bool handled=false;
+    Control control(*this);
+    switch (menuItem)
+    {
+        case refineSearchMenuItem:
+            control.attach(refineSearchButton);
+            break;
+       
+        case cancelSearchMenuItem:
+            control.attach(cancelButton);
+            break;
+        
+        default:
+            assert(false);            
+    }
+    if (control.valid())
+    {
+        control.hit();
+        handled=true;
+    }
+    return handled;
+}
+
+bool SearchResultsForm::handleWindowEnter(const struct _WinEnterEventType& data)
+{
+    const FormType* form=*this;
+    if (data.enterWindow==static_cast<const void*>(form))
+    {
+        FormObject object(*this, refineSearchInputField);
+        object.focus();
+    }
+    return iPediaForm::handleWindowEnter(data);
+}

@@ -11,7 +11,7 @@ protected:
 
     bool handleEvent(EventType& event);
     
-    virtual void resize(const ArsLexis::Rectangle& screenBounds)
+    virtual void resize(const ArsLexis::Rectangle&)
     {}
 
 public:

@@ -81,7 +81,7 @@ namespace ArsLexis
             errFirstAvailable
         };
     
-        virtual void handleError(Err error)
+        virtual void handleError(Err)
         {abortConnection();}
         
         void setTransferTimeout(Int32 timeout)

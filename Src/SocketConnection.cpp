@@ -32,6 +32,7 @@ namespace ArsLexis
     {
         NetSocketRef ref=connection.socket_;
         assert(connections_.size()>ref && &connection==connections_[ref]);
+        unregisterEvents(connection);
         connections_[ref]=0;
     }
     
