@@ -66,13 +66,12 @@ ByteFormatParser::ByteFormatParser():
 
 ByteFormatParser::~ByteFormatParser()
 {
-    std::for_each(elems.begin(), elems.end(), ObjectDeleter<DefinitionElement>());
+    DestroyElements(elems);
 }
 
 void ByteFormatParser::reset()
 {
-    std::for_each(elems.begin(), elems.end(), ObjectDeleter<DefinitionElement>());
-    elems.clear();
+    DestroyElements(elems);
     stack_.clear();
     start_ = 0;
     inLength_ = 0;
