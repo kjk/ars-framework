@@ -646,6 +646,8 @@ void ExtendedList::handlePenMove(const EventType& event)
 //                    log().debug()<<"handlePenMove() scheduling scrolling at time: "<<scheduledNilEventTicks_;
                     EvtSetNullEventTick(scheduledNilEventTicks_);
                 }
+                else if (time == scheduledNilEventTicks_)
+                    EvtSetNullEventTick(time + 1);
             }
             else
             {
@@ -773,6 +775,8 @@ bool ExtendedList::scroll(WinDirectionType direction, uint_t items)
     else 
     {
         uint_t visible =height() / itemHeight_;
+        if (visible > itemsCount)
+            return false;
         uint_t newTopItem = topItem + items;
         if (newTopItem + visible >= itemsCount)
             newTopItem = itemsCount - visible;

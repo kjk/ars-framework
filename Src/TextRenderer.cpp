@@ -181,6 +181,9 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
             scheduledNilEventTicks_ = time + form()->application().ticksPerSecond()/7;
             EvtSetNullEventTick(scheduledNilEventTicks_);
         }
+        else if (time >= scheduledNilEventTicks_)        {
+            EvtSetNullEventTick(time+1);
+        } 
     }
     else
         scheduledScrollDirection_ = scheduledScrollAbandoned;
