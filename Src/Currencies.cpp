@@ -193,5 +193,5 @@ namespace ArsLexis{
 }
 
 namespace {
-    static ArsLexis::StaticAssert<ArsLexis::currenciesCount == ARRAY_SIZE(ArsLexis::currencies)> global_and_local_currencies_count_equal;
+    static const ArsLexis::StaticAssert<ArsLexis::currenciesCount == ARRAY_SIZE(ArsLexis::currencies)> global_and_local_currencies_count_equal = {};
 }

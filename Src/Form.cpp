@@ -65,9 +65,9 @@ namespace ArsLexis
         deleteOnClose_(true),
         deleteAfterEvent_(false),
         controlsAttached_(false),
-        trackingGadget_(0)
-    {
-    }
+        trackingGadget_(0),
+        focusControlId_(frmInvalidObjectId)
+    {}
     
     void Form::attachControls()
     {
@@ -154,9 +154,16 @@ namespace ArsLexis
         return true;
     }
     
-    bool Form::handleWindowEnter(const struct _WinEnterEventType&)
+    bool Form::handleWindowEnter(const struct _WinEnterEventType& data)
     {
+        assert(NULL != form_);
         assert(controlsAttached_);
+        if (static_cast<const void*>(form_) == data.enterWindow && frmInvalidObjectId != focusControlId_)
+        {
+            FormObject object(*this, focusControlId_);
+            object.focus();
+            update();
+        }
         return false;
     }
     

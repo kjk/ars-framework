@@ -24,6 +24,7 @@ namespace ArsLexis
         bool deleteAfterEvent_:1;
         bool controlsAttached_:1;
         mutable String title_;
+        UInt16 focusControlId_;
         
         FormGadget* trackingGadget_;
         
@@ -92,6 +93,8 @@ namespace ArsLexis
         {return id_;}
         
         UInt16 showModal();
+        
+        void setFocusControlId(UInt16 focusControlId) {focusControlId_ = focusControlId;}
         
         /**
          * Queues @c frmUpdateEvent for this form.

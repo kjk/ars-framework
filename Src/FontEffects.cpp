@@ -2,11 +2,13 @@
 #include <algorithm>
 #include <Utility.hpp>
 
+#pragma pcrelconstdata on
+
 namespace ArsLexis
 {
 
     namespace {
-        static StaticAssert<sizeof(FontEffects)==sizeof(uint_t)> sizeof_FontEffects_equals_sizeof_uint;
+        static const StaticAssert<sizeof(FontEffects) == sizeof(uint_t)> sizeof_FontEffects_equals_sizeof_uint = {};
     }
 
     FontEffects& FontEffects::operator+=(const FontEffects& eff)

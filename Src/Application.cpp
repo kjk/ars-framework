@@ -47,7 +47,7 @@ namespace ArsLexis
     }
 
     namespace {
-        static StaticAssert<sizeof(Application*)<=sizeof(UInt32)> may_store_app_pointer_as_feature;
+        static const StaticAssert<sizeof(Application*)<=sizeof(UInt32)> may_store_app_pointer_as_feature = {};
     }
     
     Err Application::setInstance(UInt32 creatorId, Application* app) throw()
