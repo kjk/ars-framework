@@ -130,7 +130,8 @@ static status_t readUniversalDataFromReader(ArsLexis::Reader& reader, UniversalD
         ArsLexis::status_t error=reader.readLine(eof, line);
         if (errNone!=error)
             return error;
-        if (errNone!=(error=parseUniversalDataFormatTextLine(line, out, lineNo)))
+        error = parseUniversalDataFormatTextLine(line, out, lineNo);
+        if (errNone!=error)
             return error;
     }
     return errNone;
@@ -142,5 +143,6 @@ void readUniversalDataFromStream(const char_t* streamName, UniversalDataFormat& 
     status_t error = openDataStoreReader(streamName, reader);
     if (errNone != error)
         return;
+    out.reset();
     readUniversalDataFromReader(*reader, out);
 }

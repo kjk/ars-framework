@@ -82,5 +82,14 @@ void UniversalDataFormat::swap(UniversalDataFormat& udf)
 {
     std::swap(headerSize_, udf.headerSize_);
     std::swap(fNormalized_, udf.fNormalized_);
-    header_.swap(udf.header_);    data_.swap(udf.data_);
+    header_.swap(udf.header_);
+    data_.swap(udf.data_);
+}
+
+void UniversalDataFormat::reset()
+{
+    headerSize_ = 0;
+    fNormalized_ = false;
+    header_.clear();
+    data_.assign(1,_T('\0'));
 }

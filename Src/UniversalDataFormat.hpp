@@ -50,6 +50,8 @@ public:
     
     void swap(UniversalDataFormat& udf);
     
+    void reset();
+    
     friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo);
 };
 
