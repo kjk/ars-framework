@@ -5,7 +5,7 @@
 #include <BaseTypes.hpp>
 #include <Utility.hpp>
 
-class Rectangle;
+class ArsRectangle;
 
 class Window: private NonCopyable
 {
@@ -25,7 +25,7 @@ public:
     
     virtual ~Window();
     
-    Err create(const Rectangle& bounds, FrameType frame, bool modal, bool focusable);
+    Err create(const ArsRectangle& bounds, FrameType frame, bool modal, bool focusable);
     
     bool modal() const {return WinModal(handle());}
     

@@ -336,7 +336,7 @@ void Form::returnToForm(UInt16 formId)
     returnToFormId_ = formId;    
 }
 
-void Form::setBounds(const Rectangle& bounds)
+void Form::setBounds(const ArsRectangle& bounds)
 {
     assert(form_!=0);
     RectangleType native=toNative(bounds);
@@ -357,7 +357,7 @@ void Form::setTitle(const char_t* title)
     if (visible())
     {
         Graphics graph(windowHandle());
-        Rectangle rect(bounds());
+        ArsRectangle rect(bounds());
         rect.height()=18;
         graph.erase(rect);
     }        
@@ -514,7 +514,7 @@ bool Form::handleExtendedEvent(EventType& event)
 }
 
 
-UInt16 Form::createGadget(UInt16 id, const Rectangle& rect)
+UInt16 Form::createGadget(UInt16 id, const ArsRectangle& rect)
 {
     FormGadgetType* g = FrmNewGadget(&form_, id, rect.x(), rect.y(), rect.width(), rect.height());
     if (NULL == g)
@@ -524,7 +524,7 @@ UInt16 Form::createGadget(UInt16 id, const Rectangle& rect)
     return index;
 }
 
-UInt16 Form::createList(UInt16 id, const Rectangle& rect, FontID font, Int16 visibleItems, Int16 triggerId)
+UInt16 Form::createList(UInt16 id, const ArsRectangle& rect, FontID font, Int16 visibleItems, Int16 triggerId)
 {
     void* f = form_;
     Err error = LstNewList(&f, id, rect.x(), rect.y(), rect.width(), rect.height(), font, visibleItems, triggerId);

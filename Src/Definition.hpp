@@ -169,7 +169,7 @@ private:
      * @internal
      * Bounds that definition is displayed within.
      */
-    Rectangle bounds_;
+    ArsRectangle bounds_;
     
     LinePosition_t lineAtHeight(Coord_t height);
     
@@ -188,7 +188,7 @@ public:
      */
     class HotSpot: private NonCopyable
     {
-        typedef std::list<Rectangle> Rectangles_t;
+        typedef std::list<ArsRectangle> Rectangles_t;
         
         /**
          * @internal 
@@ -204,9 +204,9 @@ public:
      
      public:
      
-        HotSpot(const Rectangle& rect, DefinitionElement& element);
+        HotSpot(const ArsRectangle& rect, DefinitionElement& element);
         
-        void addRectangle(const Rectangle& rect);
+        void addRectangle(const ArsRectangle& rect);
         
         bool hitTest(const Point& point) const;
         
@@ -218,7 +218,7 @@ public:
          * @c validArea rectangle, it's removed from the @c HotSpot.
          * @param delta coordinates to move rectangles by.
          */
-        void move(const Point& delta, const Rectangle& validArea);
+        void move(const Point& delta, const ArsRectangle& validArea);
         
         bool valid() const
         {return !rectangles_.empty();}
@@ -234,7 +234,7 @@ public:
     /**
      * Renders (paints) this @c Definition into bounds.
      */
-    ArsLexis::status_t render(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate = false);
+    ArsLexis::status_t render(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate = false);
     
     uint_t totalLinesCount() const
     {return lines_.size();}
@@ -260,9 +260,9 @@ public:
      */
     void addHotSpot(HotSpot* hotSpot);
     
-    const Rectangle& bounds() const {return bounds_;}
+    const ArsRectangle& bounds() const {return bounds_;}
     
-    void bounds(Rectangle& out) const {out = bounds_;}
+    void bounds(ArsRectangle& out) const {out = bounds_;}
     
     bool mouseDown(Graphics& graphics, const Point& point);
     
@@ -397,7 +397,7 @@ private:
     
     bool trackTextSelection(Graphics& graphics, const Point& point, uint_t clickCount);
 
-    void doRender(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate);
+    void doRender(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate);
 
 
     HyperlinkHandlerBase* hyperlinkHandler_;

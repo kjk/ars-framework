@@ -44,25 +44,25 @@ struct Point
     
 };
 
-struct Rectangle
+struct ArsRectangle
 {
     typedef NativeRectangle_t Native_t;
     
     Point topLeft;
     Point extent;
     
-    Rectangle() {}
+    ArsRectangle() {}
     
-    Rectangle(const Point& tl, const Point& ex): topLeft(tl), extent(ex) {}
+    ArsRectangle(const Point& tl, const Point& ex): topLeft(tl), extent(ex) {}
     
-    Rectangle(Coord_t x, Coord_t y, Coord_t width, Coord_t height):
+    ArsRectangle(Coord_t x, Coord_t y, Coord_t width, Coord_t height):
         topLeft(x, y), extent(width, height) {}
         
-    Rectangle(const NativeRectangle_t& nativeRect);
+    ArsRectangle(const NativeRectangle_t& nativeRect);
     
     void toNative(NativeRectangle_t& nativeRect) const;   
     
-    Rectangle& operator=(const NativeRectangle_t& nativeRect);         
+    ArsRectangle& operator=(const NativeRectangle_t& nativeRect);         
     
     Coord_t x() const
     {return topLeft.x;}
@@ -112,7 +112,7 @@ struct Rectangle
             point(p)
         {}
         
-        bool operator() (const Rectangle& rect) const
+        bool operator() (const ArsRectangle& rect) const
         {return rect.hitTest(point);}
         
     };
@@ -126,24 +126,24 @@ struct Rectangle
     void clear()
     {width()=0; height()=0;}
     
-    Rectangle& operator &= (const Rectangle& rect);
+    ArsRectangle& operator &= (const ArsRectangle& rect);
 
-    Rectangle operator & (const Rectangle& rect)
+    ArsRectangle operator & (const ArsRectangle& rect)
     {
-        Rectangle result(*this);
+        ArsRectangle result(*this);
         result &=rect;
         return result;
     }
         
-    bool operator && (const Rectangle& rect) const
+    bool operator && (const ArsRectangle& rect) const
     {
-        Rectangle tmp(*this);
+        ArsRectangle tmp(*this);
         return (tmp &= rect);
     }
     bool operator && (const Point& point) const
     {return hitTest(point);}
     
-    Rectangle& explode(Coord_t deltaLeft, Coord_t deltaTop, Coord_t deltaWidth, Coord_t deltaHeight)
+    ArsRectangle& explode(Coord_t deltaLeft, Coord_t deltaTop, Coord_t deltaWidth, Coord_t deltaHeight)
     {
         x()+=deltaLeft;
         y()+=deltaTop;
@@ -152,26 +152,26 @@ struct Rectangle
         return *this;
     }
 
-    Rectangle& operator+= (const Point& offset)
+    ArsRectangle& operator+= (const Point& offset)
     {
         topLeft+=offset;
         return *this;
     }
     
-    bool operator==(const Rectangle& rect) const
+    bool operator==(const ArsRectangle& rect) const
     {return (topLeft==rect.topLeft) && (extent==rect.extent);}
     
-    bool operator!=(const Rectangle& rect) const
+    bool operator!=(const ArsRectangle& rect) const
     {return (topLeft!=rect.topLeft) || (extent!=rect.extent);}
 
-    Rectangle& assign(const Point& tl, const Point& ext) 
+    ArsRectangle& assign(const Point& tl, const Point& ext) 
     {
         topLeft = tl;
         extent = ext;
         return *this;
     }
     
-    Rectangle& assign(Coord_t x, Coord_t y, Coord_t width, Coord_t height)
+    ArsRectangle& assign(Coord_t x, Coord_t y, Coord_t width, Coord_t height)
     {   
         topLeft.x = x;
         topLeft.y = y;
@@ -180,23 +180,23 @@ struct Rectangle
         return *this;
     }
     
-    Rectangle& operator+= (const Rectangle& rect); 
+    ArsRectangle& operator+= (const ArsRectangle& rect); 
     
     void center(Point& point) const;
                   
 };
 
-inline bool operator && (const Point& p, const Rectangle& r)
+inline bool operator && (const Point& p, const ArsRectangle& r)
 {return (r && p);}
 
-inline Rectangle operator+(const Rectangle& r, const Point& p)
+inline ArsRectangle operator+(const ArsRectangle& r, const Point& p)
 {
-    Rectangle tmp(r);
+    ArsRectangle tmp(r);
     tmp+=p;
     return tmp;
 }        
 
-inline Rectangle operator+(const Point& p, const Rectangle& r)
+inline ArsRectangle operator+(const Point& p, const ArsRectangle& r)
 {return r+p;}
 
 #endif

@@ -8,7 +8,7 @@ class GenericTextElement: public DefinitionElement
 
     ArsLexis::String text_;
 
-    void drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rectangle& area, bool hyperlink);
+    void drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsRectangle& area, bool hyperlink);
 
 
 protected:

@@ -1,6 +1,6 @@
 #include <Geometry.hpp>
 
-Rectangle& Rectangle::operator &= (const Rectangle& rect)
+ArsRectangle& ArsRectangle::operator &= (const ArsRectangle& rect)
 {
     using namespace std;
     Coord_t x1=min(x()+width(), rect.x()+rect.width());
@@ -17,12 +17,12 @@ Rectangle& Rectangle::operator &= (const Rectangle& rect)
     return *this;
 }
 
-bool Rectangle::hitTest(const Point& point) const
+bool ArsRectangle::hitTest(const Point& point) const
 {
     return (point.x>=x() && point.x<x()+width() && point.y>=y() && point.y<y()+height());
 }
 
-Rectangle& Rectangle::operator+= (const Rectangle& rect) 
+ArsRectangle& ArsRectangle::operator+= (const ArsRectangle& rect) 
 {
     using namespace std;
     Coord_t d0 = min(topLeft.x, rect.topLeft.x);
@@ -37,7 +37,7 @@ Rectangle& Rectangle::operator+= (const Rectangle& rect)
 }
 
 
- void Rectangle::center(Point& p) const
+ void ArsRectangle::center(Point& p) const
  {
     p.x = topLeft.x + extent.x / 2; 
     p.y = topLeft.y + extent.y / 2;

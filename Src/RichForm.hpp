@@ -21,7 +21,7 @@ protected:
 
     bool handleEvent(EventType& event);
     
-    virtual void resize(const Rectangle&);
+    virtual void resize(const ArsRectangle&);
 
     WindowFormatType windowFormat() const;
     

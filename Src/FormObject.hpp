@@ -63,16 +63,16 @@ public:
     FormObjectKind type() const
     {return FrmGetObjectType(*form_, index_);}
 
-    void bounds(Rectangle& rect) const;
+    void bounds(ArsRectangle& rect) const;
 
-    Rectangle bounds() const
+    ArsRectangle bounds() const
     {
-        Rectangle rect;
+        ArsRectangle rect;
         bounds(rect);
         return rect;
     }
 
-    void setBounds(const Rectangle& rect);
+    void setBounds(const ArsRectangle& rect);
     
     void focus();
     
@@ -84,7 +84,7 @@ public:
     
     void draw();
 
-    void anchor(const Rectangle& boundingBox, FormObjectAnchorStyle horizAnchor=anchorNot, Coord rightMargin=0, FormObjectAnchorStyle vertAnchor=anchorNot, Coord bottomMargin=0);
+    void anchor(const ArsRectangle& boundingBox, FormObjectAnchorStyle horizAnchor=anchorNot, Coord rightMargin=0, FormObjectAnchorStyle vertAnchor=anchorNot, Coord bottomMargin=0);
     
     bool hasFocus() const;
     
@@ -339,7 +339,7 @@ public:
     
         CustomDrawHandler();
     
-        virtual void drawItem(Graphics& graphics, List& list, uint_t item, const Rectangle& itemBounds)=0;
+        virtual void drawItem(Graphics& graphics, List& list, uint_t item, const ArsRectangle& itemBounds)=0;
         
         virtual uint_t itemsCount() const=0;
         

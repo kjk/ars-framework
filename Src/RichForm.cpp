@@ -36,7 +36,7 @@ RichForm::RichForm(RichApplication& app, uint_t formId, bool disableDiaTrigger):
 RichForm::~RichForm()
 {}
 
-void RichForm::resize(const Rectangle&)
+void RichForm::resize(const ArsRectangle&)
 {}
 
 WindowFormatType RichForm::windowFormat() const

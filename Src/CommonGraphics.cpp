@@ -5,6 +5,9 @@
 #pragma pcrelconstdata on
 #endif
 
+using ArsLexis::char_t;
+using ArsLexis::String;
+
 typedef Graphics::Color_t (Graphics::* ColorSetterMethod_t)(Graphics::Color_t);
 static ColorSetterMethod_t colorSetters[]={&Graphics::setTextColor, &Graphics::setForegroundColor, &Graphics::setBackgroundColor};
 
@@ -25,6 +28,7 @@ void Graphics::drawCenteredText(const char_t* str, const Point& topLeft, uint_t 
     drawText(str, len, point);
 }
 
+// TODO: is it uint_t lengthOut or uint_t &lengthOut ???
 void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t lengthOut, uint_t& widthInOut, bool fFullWords)
 {
     uint_t width = widthInOut;
@@ -103,12 +107,12 @@ void Graphics::stripToWidthWithEllipsis(String& textInOut, uint_t& lengthInOut, 
 
 static const int drawTextInBoundsUseLinesValue = -1;
 
-void Graphics::drawTextInBounds(const String& text, const Rectangle& itemBounds, int totalLines, bool allowCenter)
+void Graphics::drawTextInBounds(const String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter)
 {
     drawTextInBoundsInternal(text, itemBounds,totalLines,allowCenter,drawTextInBoundsUseLinesValue);
 }
 
-void Graphics::drawTextInBoundsInternal(const String& text, const Rectangle& itemBounds, int totalLines, bool allowCenter, int lines)
+void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter, int lines)
 {
     if (drawTextInBoundsUseLinesValue == lines)
         lines = totalLines;
@@ -141,7 +145,7 @@ void Graphics::drawTextInBoundsInternal(const String& text, const Rectangle& ite
                 widthFull = true;
         }
         
-        Rectangle newBounds = itemBounds;
+        ArsRectangle newBounds = itemBounds;
         if (length == text.length() && totalLines == lines)
         {
             //all text in first line - center ?

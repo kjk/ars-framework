@@ -9,12 +9,12 @@ LookupProgressReporter::~LookupProgressReporter()
 DefaultLookupProgressReporter::~DefaultLookupProgressReporter()
 {}
 
-void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds, bool clearBkg)
+void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const ArsRectangle& bounds, bool clearBkg)
 {
     if (clearBkg) 
         graphics.erase(bounds);
 
-    Rectangle rect(bounds);
+    ArsRectangle rect(bounds);
     rect.explode(2, 2, -4, -4);
     Graphics::FontSetter setFont(graphics, Font());
 #ifdef _WIN32        

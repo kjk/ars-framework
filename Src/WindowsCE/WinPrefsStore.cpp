@@ -10,9 +10,6 @@
 
 #include "WinPrefsStore.hpp"
 
-namespace ArsLexis 
-{
-
 static String GetDbPath(const char_t *dbName)
 {
     String dirPath;
@@ -339,5 +336,3 @@ status_t PrefsStoreWriter::ErrSavePreferences()
     }
     return errNone;
 }
-
-} // namespace ArsLexis

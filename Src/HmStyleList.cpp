@@ -35,7 +35,7 @@ HmStyleList::HmStyleList(Form& form, UInt16 id):
 HmStyleList::~HmStyleList()
 {}
 
-void HmStyleList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t item, bool selected)
+void HmStyleList::drawItemBackground(Graphics& graphics, ArsRectangle& bounds, uint_t item, bool selected)
 {
     const uint_t itemsCount = this->itemsCount();
     graphics.erase(bounds);
@@ -46,7 +46,7 @@ void HmStyleList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint
     WinSetForeColorRGB(&oldColor, NULL);
 }
 
-void HmStyleList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
+void HmStyleList::drawScrollBar(Graphics& graphics, const ArsRectangle& bounds)
 {
     RGBColorType oldBgColor;
     WinSetBackColorRGB(&listBackgroundColor, &oldBgColor);
@@ -91,7 +91,7 @@ void HmStyleList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
     WinPaintRectangle(&rect, 0);
     WinSetBackColorRGB(&foregroundColor, NULL);
     WinSetPatternType(blackPattern);
-    graphics.erase(Rectangle(traktorX, traktorY, traktorWidth, traktorHeight));
+    graphics.erase(ArsRectangle(traktorX, traktorY, traktorWidth, traktorHeight));
 
     if (screenIsDoubleDensity())
         WinSetCoordinateSystem(coordSystem);

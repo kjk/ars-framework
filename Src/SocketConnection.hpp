@@ -115,7 +115,7 @@ public:
     State state() const
     {return state_;}
 
-    enum Error
+    enum SockError
     {
         errResponseTooLong=sockConnErrorClass,  // 0x8200
         errResponseMalformed,  // 0x8201

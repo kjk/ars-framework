@@ -26,9 +26,9 @@ void StringListForm::SetStringList(int stringCount, char_t *strList[])
     strList_ = strList;
 }
 
-void StringListForm::resize(const Rectangle& screenBounds)
+void StringListForm::resize(const ArsRectangle& screenBounds)
 {
-    Rectangle rect(bounds());
+    ArsRectangle rect(bounds());
     if (screenBounds==rect)
         return;
 

@@ -35,8 +35,8 @@ typedef struct DynStrTag {
 #define DYNSTR_STR(dstr) (dstr->str)
 
 DynStr *   DynStrInit(DynStr* dstr, UInt32 bufSize);
-DynStr *   DynStrNew__(UInt32 bufSize, const char_t* file, int line);
-DynStr *   DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* file, int line);
+DynStr *   DynStrNew__(UInt32 bufSize, const char* file, int line);
+DynStr *   DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char* file, int line);
 
 #define DynStrNew(size) DynStrNew__((size), __FILE__, __LINE__)
 #define DynStrFromCharP(str, initBufSize) DynStrFromCharP__((str), (initBufSize), __FILE__, __LINE__)

@@ -6,6 +6,9 @@
 
 class INetSocketAddress;
 
+using ArsLexis::char_t;
+using ArsLexis::status_t;
+
 class NetLibrary
 #if defined(_PALM_OS)    
     :private Library

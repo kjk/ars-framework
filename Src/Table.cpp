@@ -12,7 +12,7 @@ Table::~Table() {}
 void Table::adjustVisibleItems()
 {
 /*
-    Rectangle rect;
+    ArsRectangle rect;
     bounds(rect);
     UInt16 lastVisibleRow = rect.height()/rowHeight(0) - 1;
     UInt16 maxRowsInTable = rowsCount() - 1;
@@ -30,7 +30,7 @@ void Table::adjustVisibleItems()
 
 uint_t Table::viewCapacity() const 
 {
-    Rectangle rect;
+    ArsRectangle rect;
     bounds(rect);
     return rect.height()/itemHeight();
 }

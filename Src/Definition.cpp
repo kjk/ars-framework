@@ -18,7 +18,7 @@ void DestroyElements(Definition::Elements_t& elems)
     elems.clear();
 }
 
-Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
+Definition::HotSpot::HotSpot(const ArsRectangle& rect, DefinitionElement& element):
     element_(element)
 {
     rectangles_.push_back(rect);
@@ -26,7 +26,7 @@ Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
 
 bool Definition::HotSpot::hitTest(const Point& point) const
 {
-    return rectangles_.end()!=std::find_if(rectangles_.begin(), rectangles_.end(), Rectangle::HitTest(point));
+    return rectangles_.end()!=std::find_if(rectangles_.begin(), rectangles_.end(), ArsRectangle::HitTest(point));
 }
 
 Definition::HotSpot::~HotSpot()
@@ -34,13 +34,13 @@ Definition::HotSpot::~HotSpot()
     element_.invalidateHotSpot();
 }
 
-void Definition::HotSpot::move(const Point& delta, const Rectangle& validArea)
+void Definition::HotSpot::move(const Point& delta, const ArsRectangle& validArea)
 {
     Rectangles_t::iterator end=rectangles_.end();
     Rectangles_t::iterator it=rectangles_.begin();
     while (it!=end)
     {
-        Rectangle& rect=*it;
+        ArsRectangle& rect=*it;
         rect+=delta;
         Rectangles_t::iterator next=it;
         ++next;
@@ -53,7 +53,7 @@ void Definition::HotSpot::move(const Point& delta, const Rectangle& validArea)
 namespace {
 
     inline 
-        static bool operator<(const Rectangle& rect1, const Rectangle& rect2) {
+        static bool operator<(const ArsRectangle& rect1, const ArsRectangle& rect2) {
          if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
             return true;
         else
@@ -62,7 +62,7 @@ namespace {
     
 }
 
-void Definition::HotSpot::addRectangle(const Rectangle& rect)
+void Definition::HotSpot::addRectangle(const ArsRectangle& rect)
 {
     rectangles_.insert(std::lower_bound(rectangles_.begin(), rectangles_.end(), rect), rect);
 }
@@ -78,14 +78,14 @@ bool Definition::HotSpot::center(Point& point) const
 {
     if (rectangles_.empty())
         return false;
-    Rectangle r;
+    ArsRectangle r;
     r.topLeft.x = INT_MAX;
     r.topLeft.y = INT_MAX;
     Rectangles_t::const_iterator end = rectangles_.end();
     Rectangles_t::const_iterator it = rectangles_.begin();
     while (it != end)
     {
-        const Rectangle& o = *it++;
+        const ArsRectangle& o = *it++;
         if (o.topLeft.x < r.topLeft.x)
             r.topLeft.x = o.topLeft.x;
         if (o.topLeft.y < r.topLeft.y)
@@ -297,7 +297,7 @@ void Definition::scroll(Graphics& graphics, int delta)
             unionHeight += lines_[index].height;
         }
 
-        Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
+        ArsRectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
 
         Graphics::State_t state = graphics.pushState();
@@ -309,7 +309,7 @@ void Definition::scroll(Graphics& graphics, int delta)
         {
             pointDelta.y =- int(unionTop);
             graphics.copyArea(unionRect, bounds_.topLeft);
-            graphics.erase(Rectangle(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
+            graphics.erase(ArsRectangle(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
             moveHotSpots(pointDelta);
             renderLineRange(graphics, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight, elements_.end(), elements_.end());
         }
@@ -322,7 +322,7 @@ void Definition::scroll(Graphics& graphics, int delta)
             }
                 
             graphics.copyArea(unionRect, bounds_.topLeft + pointDelta);
-            graphics.erase(Rectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
+            graphics.erase(ArsRectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
             renderLineRange(graphics, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
@@ -431,7 +431,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
         DefinitionElement::justifyLeft;
 
     if (elements_.end() == begin)
-        renderContext.graphics.erase(Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+        renderContext.graphics.erase(ArsRectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
 
     while (!lineFinished && current != last)
     {
@@ -591,7 +591,7 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::doRender(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate)
+void Definition::doRender(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate)
 {
     if (bounds.width() != bounds_.width() || forceRecalculate || lines_.empty())
     {
@@ -619,7 +619,7 @@ void Definition::doRender(Graphics& graphics, const Rectangle& bounds, bool forc
     renderLayout(graphics, elements_.end(), elements_.end());
 }
 
-status_t Definition::render(Graphics& graphics, const Rectangle& bounds, bool forceRecalculate)
+status_t Definition::render(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate)
 {
     volatile status_t error=errNone;
     ErrTry {
@@ -643,7 +643,7 @@ void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, Eleme
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;
     if (elements_.end() == begin)
-        graphics.erase(Rectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
+        graphics.erase(ArsRectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
         
     graphics.popState(state);
 }

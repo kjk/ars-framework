@@ -35,7 +35,7 @@ status_t FieldPayloadProtocolConnection::notifyProgress()
         error = processResponseIncrement();
 #ifdef DEBUG
     if (errNone != error)
-        LogStrUlong(eLogDebug, "FieldPayloadProtocolConnection::notifyProgress() has error", error);
+        LogStrUlong(eLogDebug, _T("FieldPayloadProtocolConnection::notifyProgress() has error"), error);
 #endif
     return error;
 }
@@ -216,7 +216,7 @@ status_t FieldPayloadProtocolConnection::notifyFinished()
         error = processResponseIncrement(true);
 #ifdef DEBUG
         if (errNone != error)
-            LogStrUlong(eLogDebug, "FieldPayloadProtocolConnection::notifyFinished() has error", error);
+            LogStrUlong(eLogDebug, _T("FieldPayloadProtocolConnection::notifyFinished() has error"), error);
 #endif
     return error;    
 }

@@ -34,7 +34,7 @@ public:
     
     uint_t maxTextWidth() const;
     
-    void drawItem(Graphics& graphics, List& list, uint_t item, const Rectangle& itemBounds);
+    void drawItem(Graphics& graphics, List& list, uint_t item, const ArsRectangle& itemBounds);
     
     uint_t itemsCount() const;
     

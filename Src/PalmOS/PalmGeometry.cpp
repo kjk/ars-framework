@@ -19,19 +19,19 @@ Point& Point::operator=(const NativePoint_t& nativePoint)
     return *this;
 }
 
-Rectangle& Rectangle::operator=(const NativeRectangle_t& nativeRect)
+ArsRectangle& ArsRectangle::operator=(const NativeRectangle_t& nativeRect)
 {
     topLeft=nativeRect.topLeft;
     extent=nativeRect.extent;
     return *this;        
 }
 
-Rectangle::Rectangle(const NativeRectangle_t& nativeRect)
+ArsRectangle::ArsRectangle(const NativeRectangle_t& nativeRect)
 {
     operator=(nativeRect);
 }
     
-void Rectangle::toNative(NativeRectangle_t& nativeRect) const
+void ArsRectangle::toNative(NativeRectangle_t& nativeRect) const
 {
     nativeRect.topLeft.x=x();
     nativeRect.topLeft.y=y();

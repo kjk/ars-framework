@@ -53,7 +53,7 @@ void DefinitionElement::invalidateHotSpot()
     hyperlink_->hotSpot=0;
 }
 
-void DefinitionElement::defineHotSpot(Definition& definition, const Rectangle& bounds)
+void DefinitionElement::defineHotSpot(Definition& definition, const ArsRectangle& bounds)
 {
     assert(isHyperlink());
     if (!hyperlink_->hotSpot)

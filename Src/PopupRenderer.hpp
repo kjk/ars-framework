@@ -20,7 +20,7 @@ public:
     
     void close();
     
-    Err run(UInt16 id, const Rectangle& rect);
+    Err run(UInt16 id, const ArsRectangle& rect);
     
     bool handleEventInForm(EventType& event);
     

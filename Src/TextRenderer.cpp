@@ -49,7 +49,7 @@ TextRenderer::~TextRenderer() {
 void TextRenderer::checkDrawingWindow()
 {
     Form* form = this->form();
-    Rectangle bounds;
+    ArsRectangle bounds;
     form->bounds(bounds);
     if (NULL != drawingWindow_ && drawingWindowBounds_ == bounds)
         return;
@@ -80,7 +80,7 @@ void TextRenderer::updateForm(Graphics& graphics)
 {
     if (!drawingWindowIsOffscreen_)
         return;
-    Rectangle bounds;
+    ArsRectangle bounds;
     this->bounds(bounds);
     //bounds.explode(1, 1, -2, -2);
     Graphics formWindow(form()->windowHandle()); //form()->windowHandle(); WinGetDrawWindow()
@@ -110,14 +110,14 @@ void TextRenderer::drawProxy()
         renderingErrorListener_->handleRenderingError(*this, lastRenderingError_);
 }
 
-void TextRenderer::drawRendererInBounds(Graphics& graphics, const Rectangle& bounds)
+void TextRenderer::drawRendererInBounds(Graphics& graphics, const ArsRectangle& bounds)
 {
     lastRenderingError_ = definition_.render(graphics, bounds, false);
 }
 
 void TextRenderer::handleDraw(Graphics& graphics)
 {
-    Rectangle bounds;
+    ArsRectangle bounds;
     this->bounds(bounds);
     bounds.explode(1, 1, -2, -2);
     drawRendererInBounds(graphics, bounds);
@@ -194,7 +194,7 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
 {
     UInt16 tapCount = 0;
     Point p(event.screenX, event.screenY);
-    Rectangle bounds;
+    ArsRectangle bounds;
     this->bounds(bounds);
     bounds.explode(1, 1, -2, -2);
     if (penUpEvent == event.eType)
@@ -291,7 +291,7 @@ void TextRenderer::handleNilEvent()
         {
         ActivateGraphics activate(graphics);
         definition_.scroll(graphics, i);
-        Rectangle bounds;
+        ArsRectangle bounds;
         this->bounds(bounds);
         bounds.explode(1, 1, -2, -2);
         Point p(bounds.topLeft);
@@ -354,7 +354,7 @@ void TextRenderer::drawFocusRing()
 {
     assert(hasFocus());
     assert(form()->application().runningOnTreo600());
-    Rectangle rect;
+    ArsRectangle rect;
     bounds(rect);
     if (NULL != scrollBar_) 
     {

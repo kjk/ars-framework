@@ -42,7 +42,7 @@ Int16 PopupMenu::popup(UInt16 id, const Point& point)
     if (NULL == model_)
         return noListSelection;
         
-    Rectangle rect;
+    ArsRectangle rect;
     rect.topLeft = point;
     uint_t fontHeight;
     {
@@ -54,7 +54,7 @@ Int16 PopupMenu::popup(UInt16 id, const Point& point)
     rect.height() = fontHeight * model_->count + 2;
     rect.width() = model_->maxTextWidth() + 2;
     
-    Rectangle formBounds;
+    ArsRectangle formBounds;
     list.form()->bounds(formBounds);
     
     int maxHeight = formBounds.height() - 20;
@@ -175,7 +175,7 @@ uint_t PopupMenuModel::maxTextWidth() const
     return width;
 }
 
-void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, const Rectangle& itemBounds)
+void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, const ArsRectangle& itemBounds)
 {
     assert(index < count);
     const Item& item = items[index];

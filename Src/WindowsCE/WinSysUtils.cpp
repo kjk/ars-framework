@@ -28,7 +28,7 @@ int RectDy(RECT *rect)
 }
 
 // TODO: implement. Used by iPediaConnection
-ulong_t ArsLexis::random(ulong_t range)
+ulong_t random(ulong_t range)
 {
     ulong_t result = Random();
     return result;
@@ -37,7 +37,7 @@ ulong_t ArsLexis::random(ulong_t range)
 // must be defined elsewhere e.g. iPediaApplication.cpp
 extern HWND g_hwndForEvents;
 
-void ArsLexis::sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
+void sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
 {
     assert(dataSize<=sizeof(EventData));
     EventData i;
@@ -45,17 +45,17 @@ void ArsLexis::sendEvent(uint_t event, const void* data, uint_t dataSize, bool u
     PostMessage(g_hwndForEvents, event, i.wParam, i.lParam);
 }
 
-void ArsLexis::sendEvent(uint_t event, short wph, short wpl, int lp)
+void sendEvent(uint_t event, short wph, short wpl, int lp)
 {
     PostMessage(g_hwndForEvents, event, (wph<<16)|wpl, lp);
 }
 
-void ArsLexis::localizeNumber(char_t* begin, char_t* end)
+void localizeNumber(char_t* begin, char_t* end)
 {
    
 }
 
-void ArsLexis::processReadyUiEvents()
+void processReadyUiEvents()
 {
 
 }

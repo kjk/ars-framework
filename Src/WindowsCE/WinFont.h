@@ -3,8 +3,6 @@
 #include <windows.h>
 #include "FontEffects.hpp"
 
-namespace ArsLexis {
-
 HFONT getFont(int height, FontEffects effects);
 
 class WinFont  
@@ -49,7 +47,5 @@ public:
         return handle_;
     }
 };
-
-} // namespace ArsLexis
 
 #endif

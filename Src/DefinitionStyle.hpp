@@ -2,9 +2,18 @@
 #define __ARSLEXIS_DEFINITION_STYLE_HPP__
 
 #if defined(_PALM_OS)
-# include <PalmOS/PalmDefinitionStyle.hpp>
+ #include <PalmOS/PalmDefinitionStyle.hpp>
 #else
-# error "Define DefinitionStyle for your build target."
+ // same as defined in <PalmOS.h>
+ typedef enum 
+ {
+     noUnderline, 
+     grayUnderline, 
+     solidUnderline, 
+     colorUnderline 
+ } UnderlineModeType;
+ #include <WindowsCE\WinDefinitionStyle.hpp>
+ //#error "Define DefinitionStyle for your build target."
 #endif
 
 enum 

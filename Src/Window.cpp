@@ -15,7 +15,7 @@ Window::~Window()
         dispose();
 }
 
-Err Window::create(const Rectangle& bounds, FrameType frame, bool modal, bool focusable)
+Err Window::create(const ArsRectangle& bounds, FrameType frame, bool modal, bool focusable)
 {
     assert(!valid());
     RectangleType rect = toNative(bounds);

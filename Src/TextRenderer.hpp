@@ -11,7 +11,7 @@ class TextRenderer: public FormGadget
     ScrollBar* scrollBar_;
     WinHandle drawingWindow_;
     bool drawingWindowIsOffscreen_;
-    Rectangle drawingWindowBounds_;
+    ArsRectangle drawingWindowBounds_;
     Err lastRenderingError_;
     
     void checkDrawingWindow();
@@ -143,7 +143,7 @@ protected:
 
     void drawProxy();
 
-    void drawRendererInBounds(Graphics& graphics, const Rectangle& bounds);
+    void drawRendererInBounds(Graphics& graphics, const ArsRectangle& bounds);
 
     void handleDraw(Graphics& graphics);
     

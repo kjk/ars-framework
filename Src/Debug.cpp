@@ -89,7 +89,7 @@ void* operator new[](size_t size, const char* file, int line)
     return ptr;
 }
 
-void* malloc__(size_t size, const char* file, int line)
+void* malloc__(size_t size, const ArsLexis::char_t* file, int line)
 {
     if (0 == size)
         size = 1;

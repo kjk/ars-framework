@@ -21,7 +21,7 @@ protected:
     
     uint_t indentation() const;
     
-    void defineHotSpot(Definition& definition, const Rectangle& bounds);
+    void defineHotSpot(Definition& definition, const ArsRectangle& bounds);
     
     void invalidateHotSpot();
     

@@ -7,17 +7,15 @@
 #include <map>
 #include <list>
 
-namespace ArsLexis 
-{
-    // tried to set the item with an id of existing item
+// tried to set the item with an id of existing item
 #define psErrDuplicateId        psErrorClass+1
-    // didn't find an item with a given id
+// didn't find an item with a given id
 #define psErrItemNotFound       psErrorClass+2
-    // preferences database doesn't exist
+// preferences database doesn't exist
 #define psErrNoPrefDatabase     psErrorClass+3
-    // the type of an item with a given id is different than requested type
+// the type of an item with a given id is different than requested type
 #define psErrItemTypeMismatch   psErrorClass+4
-    // preferences record is corrupted
+// preferences record is corrupted
 #define psErrDatabaseCorrupted  psErrorClass+5
     
 enum PrefItemType {
@@ -84,6 +82,5 @@ public:
     status_t ErrSavePreferences();
     ~PrefsStoreWriter();
 };
-} // namespace ArsLexis
 
 #endif

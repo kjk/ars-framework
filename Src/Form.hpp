@@ -149,21 +149,21 @@ public:
     bool visible() const
     {return FrmVisible(form_);}
     
-    void bounds(Rectangle& out) const
+    void bounds(ArsRectangle& out) const
     {
         RectangleType rect;
         FrmGetFormBounds(form_, &rect);
         out=rect;
     }
     
-    Rectangle bounds() const
+    ArsRectangle bounds() const
     {
-        Rectangle rect;
+        ArsRectangle rect;
         bounds(rect);
         return rect;
     }
     
-    void setBounds(const Rectangle& bounds);
+    void setBounds(const ArsRectangle& bounds);
 
     UInt16 focusedObject() const
     {return FrmGetFocus(form_);}
@@ -201,9 +201,9 @@ public:
     friend class PopupRenderer;
     
     // @return index of new gadget or frmInvalidObjectId on failure.
-    UInt16 createGadget(UInt16 id, const Rectangle& rect);
+    UInt16 createGadget(UInt16 id, const ArsRectangle& rect);
     
-    UInt16 createList(UInt16 id, const Rectangle& rect, FontID font, Int16 visibleItems, Int16 triggerId = 0);
+    UInt16 createList(UInt16 id, const ArsRectangle& rect, FontID font, Int16 visibleItems, Int16 triggerId = 0);
     
     void removeObject(UInt16 index) {FrmRemoveObject(&form_, index);}
     

@@ -38,7 +38,7 @@ void PopupRenderer::close()
     running_ = false;
 }
 
-Err PopupRenderer::run(UInt16 id, const Rectangle& rect)
+Err PopupRenderer::run(UInt16 id, const ArsRectangle& rect)
 {
     assert(!running_);
     Err error;
@@ -97,7 +97,7 @@ bool PopupRenderer::handleEventInForm(EventType& event)
 
 void PopupRenderer::handleDraw(Graphics& graphics)
 {
-    Rectangle bounds;
+    ArsRectangle bounds;
     this->bounds(bounds);
     
     RectangleType r = toNative(bounds);

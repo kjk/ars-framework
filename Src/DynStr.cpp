@@ -113,7 +113,7 @@ DynStr * DynStrInit(DynStr* dstr, UInt32 bufSize)
     return dstr;
 }
 
-DynStr * DynStrNew__(UInt32 bufSize, const char_t* file, int line)
+DynStr * DynStrNew__(UInt32 bufSize, const char* file, int line)
 {
     return DynStrFromCharP__(_T(""), bufSize, file, line);
 }
@@ -123,7 +123,7 @@ void   DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment)
     dstr->reallocIncrement = increment;
 }
 
-DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* file, int line)
+DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char* file, int line)
 {
     UInt32 strLen  = tstrlen(str);
     UInt32 bufSize = (strLen+1)*sizeof(char_t);
@@ -132,7 +132,9 @@ DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* f
     if (bufSize < initBufSize)
         bufSize = initBufSize;
 
-    dstr = (DynStr*)malloc__(sizeof(DynStr), file, line);
+    //TODO: need to figure this for wince
+    //dstr = (DynStr*)malloc__(sizeof(DynStr), file, line);
+    dstr = (DynStr*)malloc(sizeof(DynStr));
     if (NULL == dstr)
         return NULL;
 
@@ -277,10 +279,10 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
             return NULL;
         if (NULL != dstr->str)
         {
-            memmove(newStr, dstr->str, DynStrLen(dstr));
+            memmove(newStr, dstr->str, dstr->strLen*sizeof(char_t));
             free(dstr->str);
         }
-        dstr->str     = newStr;
+        dstr->str     = (char_t*)newStr;
         dstr->bufSize = newBufSize;
     }
 
@@ -289,7 +291,7 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
 
     if (NULL != dstr->str)
     {
-        curEnd = dstr->str + dstr->strLen;
+        curEnd = (char*)(dstr->str + dstr->strLen);
         memmove(curEnd, data, dataSize);
     }
     newStrLen = dstr->strLen + dataSize;
@@ -327,7 +329,7 @@ char_t * DynStrCharPCopy(DynStr *dstr)
 // start has to be within string <0 - strLen-1>
 void DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len)
 {
-    Char *  str = dstr->str;
+    char *  str = (char*)dstr->str;
     UInt32  toMove;
 
     if (0==len)
@@ -355,12 +357,12 @@ DynStr * DynStrAppendChar(DynStr *dstr, char_t c)
     return DynStrAppendData(dstr, (const char*)&c, sizeof(char_t));
 }
 
-#define uriUnescapedChars "-_.!~*'()"
+#define uriUnescapedChars _T("-_.!~*'()")
 
-static Boolean isUriUnescapedChar(char_t c)
+static bool isUriUnescapedChar(char_t c)
 {
     int i;
-    for (i=0; i<sizeof(uriUnescapedChars)-1; i++)
+    for (i=0; i<(sizeof(uriUnescapedChars)-1)/sizeof(char_t); i++)
     {
         if (c == uriUnescapedChars[i])
         {
@@ -370,9 +372,9 @@ static Boolean isUriUnescapedChar(char_t c)
     return false;
 }
 
-static void CharToHexString(char c, char* buffer)
+static void CharToHexString(char_t c, char_t* buffer)
 {
-    const char* numbers="0123456789ABCDEF";
+    const char_t* numbers=_T("0123456789ABCDEF");
     buffer[0]=numbers[c / 16];
     buffer[1]=numbers[c % 16];
 }
@@ -406,7 +408,7 @@ DynStr *DynStrUrlEncode(DynStr *toEncode)
         }
         else
         {
-            buffer[0] = '%';
+            buffer[0] = _T('%');
             CharToHexString(c, &(buffer[1]) );
             result = DynStrAppendCharPBuf(encodedUrl, buffer, 3);
         }
@@ -476,7 +478,7 @@ static void test_DynStrAppendToNull()
 
 static void test_DynStrRemoveStartLen()
 {
-    char    *str = NULL;
+    char_t    *str = NULL;
 
     DynStr *dstr = DynStrFromCharP(_T("hello"), 32);
     assert( 5 == DynStrLen(dstr) );

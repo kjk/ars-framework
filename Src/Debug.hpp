@@ -34,7 +34,7 @@ namespace ArsLexis
      */
     void handleBadAlloc();
     
-    void logAllocation(void* ptr, size_t size, bool free, const char* file, int line);
+    void logAllocation(void* ptr, size_t size, bool free, const ArsLexis::char_t* file, int line);
     
     void cleanAllocationLogging();
     
@@ -51,17 +51,17 @@ enum NewDontThrowTag {newDontThrow};
  */
 void* operator new(size_t size);
 
-void* operator new(size_t size, const char* file, int line);
+void* operator new(size_t size, const ArsLexis::char_t* file, int line);
 
 void operator delete(void *ptr);
 
 void* operator new[](size_t size);
 
-void* operator new[](size_t size, const char* file, int line);
+void* operator new[](size_t size, const ArsLexis::char_t* file, int line);
 
 void operator delete[](void *ptr);
 
-void* malloc__(size_t size, const char* file, int line);
+void* malloc__(size_t size, const ArsLexis::char_t* file, int line);
 
 void* malloc__(size_t size);
 
@@ -75,7 +75,7 @@ inline void* operator new(size_t size, NewDontThrowTag)
     return malloc__(size);
 }
 
-inline void* operator new(size_t size, NewDontThrowTag, const char* file, int line)
+inline void* operator new(size_t size, NewDontThrowTag, const ArsLexis::char_t* file, int line)
 {
     return malloc__(size, file, line);
 }
@@ -85,7 +85,7 @@ inline void* operator new[](size_t size, NewDontThrowTag)
     return malloc__(size);
 }
 
-inline void* operator new[](size_t size, NewDontThrowTag, const char* file, int line)
+inline void* operator new[](size_t size, NewDontThrowTag, const ArsLexis::char_t* file, int line)
 {
     return malloc__(size, file, line);
 }
@@ -100,12 +100,12 @@ inline void operator delete[](void* p, NewDontThrowTag)
     ::operator delete(p);
 }
 
-inline void operator delete(void* p, NewDontThrowTag, const char*, int)
+inline void operator delete(void* p, NewDontThrowTag, const ArsLexis::char_t*, int)
 {
     ::operator delete(p);
 }
 
-inline void operator delete[](void* p, NewDontThrowTag, const char*, int)
+inline void operator delete[](void* p, NewDontThrowTag, const ArsLexis::char_t*, int)
 {
     ::operator delete(p);
 }

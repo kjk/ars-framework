@@ -25,7 +25,7 @@ public:
         
         virtual ~ItemRenderer();
         
-        virtual void drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const Rectangle& itemBounds)=0;
+        virtual void drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const ArsRectangle& itemBounds)=0;
         
         virtual uint_t itemsCount() const=0;
         
@@ -122,17 +122,17 @@ protected:
 
     void handleDraw(Graphics& graphics);
     
-    virtual void drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t item, bool selected);
+    virtual void drawItemBackground(Graphics& graphics, ArsRectangle& bounds, uint_t item, bool selected);
     
-    virtual void drawItem(Graphics& graphics, const Rectangle& bounds, uint_t item, bool selected);
+    virtual void drawItem(Graphics& graphics, const ArsRectangle& bounds, uint_t item, bool selected);
     
-    virtual void drawBackground(Graphics& graphics, const Rectangle& bounds);
+    virtual void drawBackground(Graphics& graphics, const ArsRectangle& bounds);
     
     void setScrollBarWidth(uint_t width) {scrollBarWidth_ = width;}
     
     void setScrollButtonHeight(uint_t height) {scrollButtonHeight_ = height;}
     
-    virtual void drawScrollBar(Graphics& graphics, const Rectangle& bounds);
+    virtual void drawScrollBar(Graphics& graphics, const ArsRectangle& bounds);
     
     bool handleEvent(EventType& event);
     
@@ -148,11 +148,11 @@ protected:
 
 private:
 
-    void drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item, bool showScrollbar);
+    void drawItemProxy(Graphics& graphics, const ArsRectangle& listBounds, uint_t item, bool showScrollbar);
     
-    void handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp, bool enter);
+    void handlePenInScrollBar(const ArsRectangle& bounds, const Point& penPos, bool penUp, bool enter);
     
-    void handlePenInItemsList(const Rectangle& bounds, const Point& penPos, bool penUp);
+    void handlePenInItemsList(const ArsRectangle& bounds, const Point& penPos, bool penUp);
     
     void handlePenUp(const EventType& event);
     
@@ -198,7 +198,7 @@ public:
     
     ~BasicStringItemRenderer();
     
-    void drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const Rectangle& itemBounds);
+    void drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const ArsRectangle& itemBounds);
      
 protected:
 

@@ -10,7 +10,7 @@
 # include <WindowsCE/WinSysUtils.hpp>
 #endif
 
-class Point;
+struct Point;
 
 void sendEvent(uint_t event, const void* data = NULL, uint_t dataSize = 0, bool unique = false, const Point* point = NULL);
 
