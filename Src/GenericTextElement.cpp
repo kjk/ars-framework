@@ -105,7 +105,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
     uint_t width=graphics.textWidth(text, length);
 
-    if (text_.length()==layoutContext.renderingProgress+length && 
+    if (text_.length()==layoutContext.renderingProgress+length &&
         !ArsLexis::isSpace(text_[text_.length()-1]) &&
         layoutContext.nextTextElement && 
         !layoutContext.nextTextElement->breakBefore(layoutContext.preferences) &&
@@ -117,7 +117,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         copy.usedHeight=layoutContext.usedHeight;
         copy.usedWidth=layoutContext.usedWidth+width;
         layoutContext.nextTextElement->calculateLayout(copy);
-        if (0==copy.renderingProgress) 
+        if (0==copy.renderingProgress && !layoutContext.isFirstInLine()) 
         {
             uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
             assert(rangeLength<((uint_t)-1)/2);
