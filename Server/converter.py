@@ -12,7 +12,7 @@ def replaceRegExp(text, regExp, repl):
 	
 def replaceTagList(text, tagList, repl):
 	for tag in tagList:
-		text=replaceRegExp(text, re.compile('<(/)?%s>' % tag, re.I), repl)
+		text=replaceRegExp(text, re.compile(r'<(/)?%s(\s+.*?)?>' % tag, re.I), repl)
 	return text
 
 def convertDefinition(text):
@@ -20,14 +20,23 @@ def convertDefinition(text):
 	text=replaceRegExp(text, re.compile("<!--.*?-->", re.S), '')
 	text=replaceRegExp(text, re.compile("<div.*?</div>", re.I+re.S), '')
 	text=replaceRegExp(text, re.compile("<table.*?</table>", re.I+re.S), '')
+	text=replaceRegExp(text, re.compile("<caption.*?</caption>", re.I+re.S), '')
+	text=replaceRegExp(text, re.compile("<tbody.*?</tbody>", re.I+re.S), '')
+	text=replaceRegExp(text, re.compile("<thead.*?</thead>", re.I+re.S), '')
+	# The following two lines would seem redundant, but lots of wikipedia articles have screwed tables and it renders really ugly then...
+	text=replaceRegExp(text, re.compile("<tr.*?</tr>", re.I+re.S), '') 
+	text=replaceRegExp(text, re.compile("<td.*?</td>", re.I+re.S), '') 
 	text=replaceRegExp(text, re.compile("<script.*?</script>", re.I+re.S), '')
 	text=replaceTagList(text, ['b', 'strong'], "'''")
 	text=replaceTagList(text, ['em', 'i', 'cite'], "''")
 	text=replaceTagList(text, ['hr'], '----')
-	text=replaceTagList(text, ['dfn', 'code', 'samp', 'kbd', 'var', 'abbr', 'acronym', 'blockquote', 'q', 'p', 'pre', 'ins', 'del', 'dir', 'menu', 'img', 'object', 'big', 'span', 'applet', 'font', 'basefont'], '')
+	text=replaceTagList(text, ['dfn', 'code', 'samp', 'kbd', 'var', 'abbr', 'acronym', 'blockquote', 'q', 'p', 'pre', 'ins', 'del', 'dir', 'menu', 'img', 'object', 'big', 'span', 'applet', 'font', 'basefont', 'tr', 'td', 'table', 'center'], '')
+	text=replaceRegExp(text, re.compile(r"\[\[((\w\w\w?(-\w\w)?)|(simple)|(image)|(media)):.*?\]\]", re.I+re.S), '')
+	text=text.strip()
+	text+='\n'
 	return text
 
-query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 """
+query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 and cur_title='Computer_science' """
 
 if len(sys.argv)>1:
 	query+=""" and cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
