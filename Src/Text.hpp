@@ -137,10 +137,13 @@ namespace ArsLexis
 
     char_t *StringCopy(const String& str);
 
+    char_t *StringCopyN(const char_t *str, int strLen);
+
     void FreeStringsFromCharPtrList(CharPtrList_t& strList);
 
     int AddLinesToList(const String& txt, CharPtrList_t& strList);
 
+    char_t **StringListFromString(const String& str, const String& sep, int& stringCount);
     
     void strip(String& str);
     

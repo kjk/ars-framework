@@ -401,7 +401,19 @@ char_t *StringCopy(const String& str)
     if (NULL==newStr)
         return NULL;
 
-    memcpy(newStr, curStr, (len+1)*sizeof(char_t));
+    memcpy(newStr, curStr, len*sizeof(char_t));
+    newStr[len] = chrNull;
+    return newStr;
+}
+
+char_t *StringCopyN(const char_t *str, int strLen)
+{
+    using namespace std;
+    char_t *newStr = new char_t[strLen+1];
+    if (NULL==newStr)
+        return NULL;
+    memcpy(newStr, str, strLen*sizeof(char_t));
+    newStr[strLen] = chrNull;
     return newStr;
 }
 
@@ -460,22 +472,72 @@ void strip(String& str)
 std::vector<ArsLexis::String> split(const String& str, const String& spliter = _T(" "))
 {
     std::vector<ArsLexis::String> vec;
-    uint_t i = 0;
-    while (i < str.length())
+    String::size_type curPos = 0;
+    String::size_type spliterPos;
+    while (String::npos != spliterPos)
     {
-        uint_t j = str.find(spliter,i);
-        if (j < str.length())
+        spliterPos = str.find(spliter,curPos);
+        if (String::npos != spliterPos)
         {
-            vec.push_back(String(str,i,j-i));
-            i = j + spliter.length();
+            vec.push_back(String(str,curPos,spliterPos-curPos));
+            curPos = spliterPos + spliter.length();
         }    
         else
         {
-            vec.push_back(String(str,i));
-            i = str.length();
+            vec.push_back(String(str,curPos));
         }
     }
     return vec;
+}
+
+// Given a String str returns an array of pointers to strings (a string list).
+// Returns the 
+char_t **StringListFromString(const String& str, const String& sep, int& stringCount)
+{
+    char_t **strList = NULL;
+
+    String::size_type curPos;
+    String::size_type sepPos;
+    int stringCountTmp = 0;
+    int strLen;
+    int strStart;
+    const char_t *origStr = str.c_str();
+
+    // phase == 0 -> we calculate number of strings
+    // phase == 1 -> we put copies of string into strList
+    for (int phase=0; phase<=1; phase++)
+    {
+        curPos = 0;
+        sepPos = 0;
+        if (1==phase)
+        {
+            assert(0!=stringCountTmp);
+            stringCount = stringCountTmp;
+            strList = new char_t *[stringCount];
+            stringCountTmp = 0;
+        }
+
+        while (String::npos != sepPos)
+        {
+            strStart = curPos;
+            sepPos = str.find(sep,curPos);
+            if (String::npos != sepPos)
+            {
+                strLen = sepPos - curPos;
+                curPos = sepPos + sep.length();
+            }    
+            else
+            {
+                strLen = str.length() - curPos;
+            }
+            if (1==phase)
+            {
+                strList[stringCountTmp] = StringCopyN(&origStr[strStart], strLen);
+            }
+            stringCountTmp += 1;
+        }
+    }
+    return strList;
 }
    
 String join(const std::vector<ArsLexis::String>& vec, const String& joiner = _T(" "))

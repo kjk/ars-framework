@@ -51,7 +51,7 @@ namespace ArsLexis {
             DisplayAlertEventData(uint_t aid):
                 alertId(aid) {}
         };
-    
+
         static void sendDisplayAlertEvent(uint_t alertId);
         
         void sendDisplayCustomAlertEvent(uint_t alertId, const ArsLexis::String& text1);

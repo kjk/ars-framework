@@ -268,6 +268,12 @@ namespace ArsLexis
         void setChoices(const char* choices[], uint_t choicesCount)
         {LstSetListChoices(object(), const_cast<char**>(choices), choicesCount);}
         
+
+        void setChoices(char* choices[], uint_t choicesCount)
+        {
+            LstSetListChoices(object(), const_cast<char**>(choices), choicesCount);
+        }
+
         uint_t visibleItemsCount() const
         {return LstGetVisibleItems(object());}
         
