@@ -115,10 +115,7 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     UInt32 version;
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
     if (errNone==error && 4<=version)
-    {
         hasHighDensityFeatures_=true;
-        setDoubleBuffer(true);
-    }
     setRgbColor(listBackground_, 255, 255, 255);
     setRgbColor(itemBackground_, 70, 163, 255);
     setRgbColor(selectedItemBackground_, 0, 107, 215);
@@ -164,10 +161,10 @@ void ExtendedList::draw(Graphics& graphics)
     if (!windowSettingsChecked_)
     {
         windowSettingsChecked_=true;
-//        WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
-//        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foreground_);
-//        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackground_);
-//        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuForeground), &selectedItemBackground_);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foreground_);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackground_);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuForeground), &selectedItemBackground_);
         if (rgbEqual(itemBackground_, selectedItemBackground_))
         {
             saturate(selectedItemBackground_, 64);
@@ -180,6 +177,7 @@ void ExtendedList::draw(Graphics& graphics)
             Err error=WinScreenGetAttribute(winScreenDensity, &attr);
             if (errNone==error && kDensityDouble==attr)
                 screenIsDoubleDensity_=true;
+            setDoubleBuffer(true);
         }
     }
     Rectangle listBounds;
@@ -284,8 +282,9 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
     }
     if (redraw==ro)
     {
-        if (scrolled)
-            draw();
+//        if (scrolled)
+        draw();
+/*        
         else 
         {
             Graphics graphics(form()->windowHandle());
@@ -302,6 +301,7 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
             WinSetTextColorRGB(&oldText, 0);
             WinSetForeColorRGB(&oldFore, 0);
         }
+        */
     }
 }
 
@@ -514,19 +514,18 @@ void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& pe
     }
     if (trackingScrollbar_)
     {
+        Rectangle margin(scrollBar.x(), scrollBar.y()+scrollButtonHeight_, scrollBar.width(), scrollBar.height()-2*scrollButtonHeight_);
+        margin.explode(-10, -10, 20, 20);
         int prevTopItem=topItem_;
-        if ((scrollBar && penPos) && height>=scrollButtonHeight_ && height<=scrollBar.height()-scrollButtonHeight_)
+//        if ((scrollBar && penPos) && height>=scrollButtonHeight_ && height<=scrollBar.height()-scrollButtonHeight_)
+        if (margin && penPos)
         {
             long traktorTrackHeight=bounds.height()-(2*scrollButtonHeight_);
             long traktorPos=height-scrollButtonHeight_;
             long traktorHeight=(viewCapacity*traktorTrackHeight)/itemsCount;
             long newTopItem=((traktorPos-traktorHeight/2)*long(itemsCount-viewCapacity))/(traktorTrackHeight-traktorHeight);
             newTopItem=std::min(std::max(0L, newTopItem), long(itemsCount-viewCapacity));
-            if (topItem_!=newTopItem)
-            {
-                topItem_=newTopItem;
-                draw();
-            }
+            topItem_=newTopItem;
         }
         else
             topItem_=topItemBeforeTracking_;
