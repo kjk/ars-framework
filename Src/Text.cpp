@@ -284,12 +284,12 @@ void ArsLexis::removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& o
 int ArsLexis::formatNumber(long num, char_t* buf, int bufSize)
 {
     char thousand=',';
-   
-    #if defined(_PALM_OS)
+ 
+#if defined(_PALM_OS)
     char dontMind;
     NumberFormatType nf=static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
     LocGetNumberSeparators(nf, &thousand, &dontMind);
-    #endif 
+#endif 
    
     char_t buffer[32];
     int len = tprintf(buffer, _T("%ld"), num);
