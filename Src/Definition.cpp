@@ -344,9 +344,16 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
     ElementPosition_t last = elements_.end();
     ElementPosition_t current = line->firstElement;
     bool lineFinished = false;  
-    DefinitionElement::Justification justify = (last!=current?(*current)->justification():DefinitionElement::justifyLeft);
+
+    DefinitionElement::Justification justify;
+    if (last!=current)
+        justify = (*current)->justification();
+    else
+        DefinitionElement::justifyLeft;
+
     if (elements_.end() == begin)
         renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+
     while (!lineFinished && current != last)
     {
         if (current>=selectionStartElement_ && current<=selectionEndElement_)
@@ -379,7 +386,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
             (*current)->calculateLayout(lc);
             renderContext.left += lc.availableWidth();
         }
-        
+
         (*current)->render(renderContext);
         if (renderContext.isElementCompleted())
         {
