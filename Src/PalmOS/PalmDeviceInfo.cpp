@@ -243,9 +243,9 @@ bool isTreo600()
         return false;
 
     FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
-    // H201 is Treo 600 simulator - I need this to test 
     // H101 is Treo 600
-    // H102 is ???
+    // H201 is Treo 600 simulator - I need this to test 
+    // H102 is Treo 650
     // H202 is Treo 650 simulator
     if (('H101' == id) || ('H102' == id) || ('H201' == id) || ('H202' == id))
         return true;
