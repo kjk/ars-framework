@@ -3,7 +3,7 @@
 namespace ArsLexis 
 {
 
-    fontID getBoldFont(fontID normal)
+    FontID getBoldFont(FontID normal)
     {
         fontID result=normal;
         switch (normal)

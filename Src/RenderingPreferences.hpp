@@ -1,6 +1,8 @@
 #ifndef __RENDERING_PREFERENCES_HPP__
 #define __RENDERING_PREFERENCES_HPP__
 
+#include "Debug.hpp"
+
 enum HyperlinkType
 {
     hyperlinkBookmark,
@@ -25,8 +27,7 @@ public:
         bulletDiamond
     };
     
-    RenderingPreferences()
-    {}
+    RenderingPreferences();
 
     /**
      * @return @c true if layout changed and we need to recalculate it.
@@ -77,6 +78,12 @@ public:
         assert(style<2);
         return styles_[style];
     }
+    
+    UInt16 standardIndentation() const
+    {return 20;}
+    
+    UnderlineModeType standardUnderline() const
+    {return solidUnderline;}
 
 private:
     

@@ -35,7 +35,7 @@ iPediaApplication::~iPediaApplication()
 }
 
 
-static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,0,0,sysROMStageDevelopment,0);
+static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStageDevelopment,0);
 
 Err iPediaApplication::normalLaunch()
 {

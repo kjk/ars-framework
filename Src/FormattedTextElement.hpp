@@ -8,6 +8,10 @@ class FormattedTextElement: public GenericTextElement
 {
     FormattingProperties formatting_;
     
+protected:
+
+    void applyFormatting(const RenderingPreferences& preferences);
+    
 public:
 
     FormattedTextElement(const ArsLexis::String& text=ArsLexis::String());

@@ -101,8 +101,10 @@ class DefinitionParser
     ArsLexis::String text_;
     UInt16 parsePosition_;
     UInt16 lineEnd_;
+    UInt16 lastElementStart_;
+    UInt16 lastElementEnd_;
     
-    void parseText(UInt16 length, ElementStyle style);
+    void parseText(UInt16 end, ElementStyle style);
     
     void parse();
     
@@ -126,9 +128,13 @@ class DefinitionParser
     LineType lineType_;
     LineType previousLineType_;
 
-    Boolean continuationAllowed() const
-    {return previousLineType_==listElementLine || previousLineType_==textLine || previousLineType_==indentedLine;}
+    ElementStyle currentStyle_;
     
+    static Boolean lineAllowsContinuation(LineType lineType)
+    {
+        return listElementLine==lineType || textLine==lineType || indentedLine==lineType;
+    }
+
 
     void parseHeaderLine();
     
@@ -141,6 +147,12 @@ class DefinitionParser
     void parseListElementLine();
     
     void detectLineType();
+    
+    Boolean detectHTMLTag(UInt16 textEnd);
+    
+    Boolean detectStrongTag(UInt16 textEnd);
+    
+    void createTextElement();
     
 public:
 

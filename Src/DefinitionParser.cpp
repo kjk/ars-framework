@@ -94,17 +94,19 @@ void DefinitionParser::reset()
     lineEnd_=0;
     lineType_=emptyLine;
     previousLineType_=emptyLine;
+    lastElementStart_=0;
+    lastElementEnd_=0;
+    text_.clear();
 }
     
     
 void DefinitionParser::parse(const String& text, Definition& definition)
 {
-    reset();
     text_=text;
     parse();
     definition.swap(definition_);
     definition_.clear();
-    text_.clear();
+    reset();
 }
 
 static const char entityReferenceStart='&';
@@ -153,6 +155,8 @@ static const char strongChar='\'';
 static const char htmlTagStart='<';
 static const char horizontalLineChar='-';
 static const char definitionListChar=';';
+static const char linkOpenChar='[';
+static const char linkCloseChar=']';
 
 #define horizontalLineString "----"
 #define sectionString "=="
@@ -160,14 +164,98 @@ static const char definitionListChar=';';
 #define subSubSectionString "===="
 #define listCharacters "*#"
 
+#define emphasizeText "''"
+#define strongText "'''"
+#define veryStrongText "''''"
 
+#define nowikiText "nowiki"
+#define teleTypeText "tt"
+#define lineBreakText "br"
+#define smallText "small"
+#define strikeOutText "strike"
+#define underlineText "u"
+#define subscriptText "sub"
+#define superscriptText "sup"
 
-void DefinitionParser::parseText(UInt16 length, ElementStyle style)
+Boolean DefinitionParser::detectStrongTag(UInt16 end)
 {
-    
-
+    Boolean isStrongTag=false;
+    if (text_.find(emphasizeText, parsePosition_)==parsePosition_)
+    {
+        createTextElement();
+        if (text_.find(strongText, parsePosition_)==parsePosition_)
+        {
+            isStrongTag=true;
+            if (text_.find(veryStrongText, parsePosition_)==parsePosition_)
+            {
+                parsePosition_+=StrLen(veryStrongText);
+                openVeryStrong_=!openVeryStrong_;
+            }
+            else
+            {
+                parsePosition_+=StrLen(strongText);
+                openStrong_=!openStrong_;
+            }
+        }
+        else
+        {
+            isStrongTag=true;
+            parsePosition_+=StrLen(emphasizeText);
+            openEmphasize_=!openEmphasize_;
+        }
+    }
+    return isStrongTag;
 }
 
+//! @todo Implement DefinitionParser::detectHTMLTag()
+Boolean DefinitionParser::detectHTMLTag(UInt16 end)
+{
+    return false;
+}
+
+//! @todo Detect presence of hyperlinks in DefinitionParser::parseText()
+void DefinitionParser::parseText(UInt16 end, ElementStyle style)
+{
+    currentStyle_=style;
+    lastElementStart_=parsePosition_;
+    while (parsePosition_<end)
+    {
+        char chr=text_[parsePosition_];
+        Boolean specialChar=false;
+        lastElementEnd_=parsePosition_;
+        if ((htmlTagStart==chr && detectHTMLTag(end)) ||
+            (strongChar==chr && detectStrongTag(end)))
+        {
+            lastElementStart_=parsePosition_;
+            specialChar=true;
+        }
+                
+        if (!specialChar)
+            ++parsePosition_;
+    }
+    lastElementEnd_=parsePosition_;
+    createTextElement();
+}
+
+void DefinitionParser::createTextElement()
+{
+    if (lastElementStart_<lastElementEnd_)
+    {
+        String text(text_, lastElementStart_, lastElementEnd_-lastElementStart_);
+        decodeHTMLCharacterEntityRefs(text);
+        GenericTextElement* textElement=0;
+        if (isPlainText())
+            textElement=new GenericTextElement(text);
+        else
+        {
+            FormattedTextElement* element=new FormattedTextElement(text);
+            applyCurrentFormatting(element);
+            textElement=element;
+        } 
+        appendElement(textElement);
+        textElement->setStyle(currentStyle_);
+    }
+}
 
 void DefinitionParser::startNewNumberedList(ListNumberElement* firstElement)
 {
@@ -195,7 +283,7 @@ void DefinitionParser::finishCurrentNumberedList()
         numListsStack_.pop_back();
     }
     else
-        currentNumberedList_.empty();
+        currentNumberedList_.clear();
 }
 
 void DefinitionParser::manageListNesting(const String& newNesting)
@@ -209,49 +297,55 @@ void DefinitionParser::manageListNesting(const String& newNesting)
             lastListNesting_[firstDiff]==newNesting[firstDiff])
             firstDiff++;
             
-        
-        for (UInt16 i=lastNestingDepth-1; i>=firstDiff; --i)
+        if (lastNestingDepth>0)
         {
-            popParent();
-            char listType=lastListNesting_[firstDiff];
-            if (numberedListChar==listType)
-                finishCurrentNumberedList();
-        }
-
-        Boolean continueList=false;
-        if (firstDiff==newNestingDepth) // Means we have just finished a sublist and next element will be another point in current list, not a sublist
-        {
-            assert(firstDiff>0);   
-            popParent();            // We need to pop previous sibling from parents stack
-            --firstDiff;                
-            continueList=true;    // Mark that next created element should be continuation of existing list, not start of new one
-        }
-        for (UInt16 i=firstDiff; i<newNestingDepth; ++i)
-        {
-            char elementType=newNesting[firstDiff-1];
-            DefinitionElement* element=0;
-            if (numberedListChar==elementType)
+            for (UInt16 i=lastNestingDepth; i>firstDiff; --i)
             {
-                if (continueList)
+                char listType=lastListNesting_[i-1];
+                if (numberedListChar==listType)
+                    finishCurrentNumberedList();
+                popParent();
+            }
+        }
+        
+        if (newNestingDepth>0)
+        {
+            Boolean continueList=false;
+            if (firstDiff==newNestingDepth) // Means we have just finished a sublist and next element will be another point in current list, not a sublist
+            {
+                assert(firstDiff>0); 
+                popParent();  
+                --firstDiff;                
+                continueList=true;    // Mark that next created element should be continuation of existing list, not start of new one
+            }
+            for (UInt16 i=firstDiff; i<newNestingDepth; ++i)
+            {
+                char elementType=newNesting[firstDiff];
+                DefinitionElement* element=0;
+                if (numberedListChar==elementType)
                 {
-                    assert(!currentNumberedList_.empty());
-                    ListNumberElement* listElement=new ListNumberElement(currentNumberedList_.back()->number()+1);
-                    currentNumberedList_.push_back(listElement);
-                    element=listElement;
+                    if (continueList)
+                    {
+                        assert(!currentNumberedList_.empty());
+                        ListNumberElement* listElement=new ListNumberElement(currentNumberedList_.back()->number()+1);
+                        currentNumberedList_.push_back(listElement);
+                        element=listElement;
+                    }
+                    else
+                    {
+                        ListNumberElement* listElement=new ListNumberElement(1);
+                        startNewNumberedList(listElement);
+                        element=listElement;
+                    }                    
                 }
                 else
-                {
-                    ListNumberElement* listElement=new ListNumberElement(1);
-                    startNewNumberedList(listElement);
-                    element=listElement;
-                }                    
+                    element=new BulletElement();
+                appendElement(element);
+                pushParent(element);
+                continueList=false;
             }
-            else
-                element=new BulletElement();
-            appendElement(element);
-            pushParent(element);
-            continueList=false;
         }
+        lastListNesting_=newNesting;
     }
 }
 
@@ -303,13 +397,13 @@ void DefinitionParser::detectLineType()
 
 void DefinitionParser::parseTextLine()
 {
-    if (!continuationAllowed())
+    if (!lineAllowsContinuation(previousLineType_))
     {
         ParagraphElement* para=new ParagraphElement();
         appendElement(para);
         pushParent(para);
     }
-    parseText(lineEnd_-parsePosition_, styleDefault);                
+    parseText(lineEnd_, styleDefault);                
 }
 
 void DefinitionParser::parse()
@@ -319,7 +413,7 @@ void DefinitionParser::parse()
     {
         detectLineType();
 
-        if (continuationAllowed() && textLine!=lineType_)
+        if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ && listElementLine!=previousLineType_)
             popParent(); 
             
         if (listElementLine==previousLineType_ && listElementLine!=lineType_)
@@ -375,8 +469,9 @@ void DefinitionParser::parseHeaderLine()
     ParagraphElement* para=new ParagraphElement();
     appendElement(para);
     pushParent(para);
-    parseText(lineEnd-parsePosition_, styleHeader);
-    popParent();   
+    parseText(lineEnd, styleHeader);
+    if (!lineAllowsContinuation(headerLine))
+        popParent();
 }
 
 void DefinitionParser::parseListElementLine()
@@ -388,10 +483,30 @@ void DefinitionParser::parseListElementLine()
     String elementDesc(text_, parsePosition_, start-parsePosition_);
     manageListNesting(elementDesc);
     parsePosition_=start;
-    parseText(lineEnd_-parsePosition_, styleDefault);
+    parseText(lineEnd_, styleDefault);
+    if (!lineAllowsContinuation(listElementLine))
+        popParent();
 }
 
 void DefinitionParser::parseIndentedLine()
 {
-    
+    using ArsLexis::isWhitespace;
+    assert(indentLineChar==text_[parsePosition_]);
+    ++parsePosition_;
+    while (parsePosition_<lineEnd_ && isWhitespace(text_[parsePosition_]))
+        ++parsePosition_;
+    UInt16 lineEnd=lineEnd_;
+    while (lineEnd>parsePosition_ && isWhitespace(text_[lineEnd-1]))
+        --lineEnd;
+    IndentedParagraphElement* para=new IndentedParagraphElement();
+    appendElement(para);
+    pushParent(para);
+    parseText(lineEnd, styleDefault);
+    if (!lineAllowsContinuation(indentedLine))
+        popParent();
+}
+
+//! @todo Implement DefinitionParser::parseDefinitionListLine()
+void DefinitionParser::parseDefinitionListLine()
+{
 }

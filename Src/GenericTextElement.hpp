@@ -60,6 +60,9 @@ public:
     void setStyle(ElementStyle style)
     {style_=style;}
     
+    ElementStyle style() const
+    {return style_;}
+    
 };
 
 #endif

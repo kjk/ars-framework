@@ -67,7 +67,7 @@ namespace ArsLexis
         }
     };
     
-    fontID getBoldFont(fontID normal);
+    FontID getBoldFont(FontID normal);
     
     struct C_StringLess
     {
