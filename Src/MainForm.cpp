@@ -252,6 +252,8 @@ bool MainForm::handleEvent(EventType& event)
                 const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
                 if (data.outcomeDefinition==data.outcome)
                 {
+                    Field field(*this, termInputField);
+                    field.selectWholeText();                    
                     synchronizeWithHistory();
                     setDisplayMode(showDefinition);
                     update();
