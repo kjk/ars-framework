@@ -53,8 +53,11 @@ namespace ArsLexis
         PayloadHandler* payloadHandler() const
         {return payloadHandler_.get();}
         
-        virtual void notifyPayloadFinished()
-        {inPayload_=false;}
+        virtual status_t notifyPayloadFinished()
+        {
+            inPayload_=false; 
+            return errNone;
+        }
         
         void startPayload(PayloadHandler* payloadHandler, ulong_t length);
         

@@ -140,13 +140,16 @@ namespace ArsLexis
 
     int AddLinesToList(const String& txt, CharPtrList_t& strList);
 
-    String strip(const String& str);
+    
+    void strip(String& str);
 }
 
+/*
+These below are redundant - MSL has implementation of both memmove and memcpy.    
 #ifdef _PALM_OS
 void memmove(char *dst, char *src, int len);
 #define memcpy memmove
 #endif
-
+*/
 
 #endif

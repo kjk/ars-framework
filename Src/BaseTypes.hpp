@@ -119,5 +119,7 @@ namespace ArsLexis
 # define chrNull _T('\0')
 #endif
 
+#define ARRAY_SIZE(arr) sizeof(arr)/sizeof(*arr)
+
 #endif // ARSLEXIS_BASE_TYPES_HPP__
 

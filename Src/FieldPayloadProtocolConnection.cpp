@@ -86,7 +86,7 @@ namespace ArsLexis
                         error=payloadHandler_->handleIncrement(resp, length, true);
                     if (!error)
                     {
-                        notifyPayloadFinished();
+                        error = notifyPayloadFinished();
                         resp.erase(0, payloadLengthLeft_+lineSeparatorLength);
                         NarrowString newResp;
                         TextToByteStream(resp, newResp);
@@ -100,7 +100,7 @@ namespace ArsLexis
                     if (errNone==(error=payloadHandler_->handleIncrement(resp, length, finishPayload)))
                     {
                         if (finishPayload)
-                            notifyPayloadFinished();
+                            error = notifyPayloadFinished();
                         resp.erase(0, length);
                         NarrowString newResp;
                         TextToByteStream(resp, newResp);

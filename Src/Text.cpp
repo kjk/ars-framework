@@ -391,16 +391,17 @@ String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
     return str.substr(lineStartPos, lineLen);
 }
 
-// note: caller needs to free memory with delete
+// note: caller needs to free memory with delete[]
 char_t *StringCopy(const String& str)
 {
+    using namespace std;
     const char_t *curStr = str.c_str();
     int len = tstrlen(curStr);
     char_t *newStr = new char_t[len+1];
     if (NULL==newStr)
         return NULL;
 
-    memcpy((char*)newStr, (char*)curStr, (len+1)*sizeof(char_t));
+    memcpy(newStr, curStr, (len+1)*sizeof(char_t));
     return newStr;
 }
 
@@ -442,24 +443,23 @@ int AddLinesToList(const String& txt, CharPtrList_t& strList)
     return count;
 }
 
-String strip(const String& str)
+void strip(String& str)
 {
-    uint_t left = 0;
-    uint_t right = str.length();
-
+    String::size_type left = 0;
+    String::size_type right = str.length();
     while (isSpace(str[left]) && left < right)
         left++;
     while (isSpace(str[right-1]) && left < right)
         right--;
     if (left == right)
-        return _T("");
+        str.clear();
     else
-        return String(str, left, right);
-
+        str.assign(str, left, right-left);
 }
 
 } // namespace ArsLexis
 
+/*
 #ifdef _PALM_OS
 void memmove(char *dst, char *src, int len)
 {
@@ -477,3 +477,4 @@ void memmove(char *dst, char *src, int len)
     }
 }
 #endif //_PALM_OS
+*/
