@@ -325,6 +325,7 @@ class SQLTokenizer:
             while True:
                 c = self.getChar()
                 assert c != None
+                # it's a reverse of mysql_sub_escape_string in libmysqld\libmysql.c
                 if c =='\\':
                     c = self.getChar()
                     if c=='n':
@@ -333,6 +334,8 @@ class SQLTokenizer:
                         txt += '\r'
                     elif c=='\\' or c=='\'' or c=='\"':
                         txt += c
+                    elif c=='Z':
+                        txt += chr(26)
                     elif c=='0':
                         # not really sure what to do with escaped 0, should it really be 0x0?
                         # happens for 'Irish_building'

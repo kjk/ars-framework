@@ -123,11 +123,11 @@ def findRandomDefinition(db, cursor):
         return None
         
 internalLinkRe=re.compile(r'\[\[(.*?)(\|.*?)?\]\]', re.S)
-testedLinks=[]
-validLinks=[]
+testedLinks = {}
+validLinks = {}
 
 def validateInternalLinks(db, cursor, definition):
-    global g_fVerbose
+    global g_fVerbose, validLinks, testedLinks
 
     if g_fVerbose:
         sys.stdout.write("* Validaiting internal links: ")
@@ -137,14 +137,14 @@ def validateInternalLinks(db, cursor, definition):
     matches.reverse()
     for match in matches:
         term=match.group(1)
-        if len(term) and (term not in testedLinks):
-            testedLinks.append(term)
+        if len(term)!=0 and not testedLinks.has_key(term):
+            testedLinks[term] = 1
             idTermDef=findExactDefinition(db, cursor, term)
             if idTermDef:
                 if g_fVerbose:
                     sys.stdout.write("'%s' [ok], " % term)
-                validLinks.append(term)
-        if term not in validLinks:
+                validLinks[term] = 1
+        if not validLinks.has_key(term):
             name=match.group(match.lastindex).lstrip('| ').rstrip().replace('_', ' ')
             if g_fVerbose:
                 sys.stdout.write("'%s' => '%s', " % (term,name))
