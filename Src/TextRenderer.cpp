@@ -53,7 +53,7 @@ void TextRenderer::checkDrawingWindow()
             drawingWindowIsOffscreen_ = true;
             Graphics offscreen(offscreenWindow);
             this->bounds(bounds);
-            bounds.explode(1, 1, -2, -2);
+//            bounds.explode(1, 1, -2, -2);
             formWindow.copyArea(bounds, offscreen, bounds.topLeft);
         }
     }
@@ -66,7 +66,7 @@ void TextRenderer::updateForm(Graphics& graphics)
         return;
     Rectangle bounds;
     this->bounds(bounds);
-    bounds.explode(1, 1, -2, -2);
+    //bounds.explode(1, 1, -2, -2);
     Graphics formWindow(form()->windowHandle()); //form()->windowHandle(); WinGetDrawWindow()
     graphics.copyArea(bounds, formWindow, bounds.topLeft);
 }

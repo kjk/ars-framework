@@ -58,7 +58,7 @@ Err PopupMenu::run(UInt16 id, const Rectangle& rect)
     running_ = true;
     show();
     focus();
-    draw();
+//    draw();
      
     return errNone;
 }
