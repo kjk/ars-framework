@@ -2,7 +2,6 @@
 #define __ARSLEXIS_WINSYSUTILS_HPP__
 
 #include <windows.h>
-
 #include <sipapi.h>
 
 #include <Text.hpp>

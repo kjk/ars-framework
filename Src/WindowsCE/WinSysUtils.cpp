@@ -1,6 +1,16 @@
-#include <SysUtils.hpp>
+#include <windows.h>
+
+#ifdef WIN32_PLATFORM_WFSP
+#include <tpcshell.h>
+#endif
+
+#include <aygshell.h>
+#include <winuserm.h> // for VK_TBACK
 
 #include <Shellapi.h>
+#include "SysUtils.hpp"
+
+#include <BaseTypes.hpp>
 
 using ArsLexis::String;
 using ArsLexis::char_t;
