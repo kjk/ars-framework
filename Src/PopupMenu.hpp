@@ -16,6 +16,7 @@ public:
         ArsLexis::char_t* hyperlink;
         bool active;
         bool bold;
+        bool separator;
         
         Item();
         

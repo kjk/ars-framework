@@ -78,7 +78,7 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
         if (noListSelection == sel)
             break;
         const PopupMenuItemDrawHandler::Item& item = itemDrawHandler.items[sel];
-        if (item.active)
+        if (item.active && !item.separator)
         {
             hyperlink = item.hyperlink;
             break;
@@ -111,12 +111,10 @@ PopupMenuItemDrawHandler::~PopupMenuItemDrawHandler()
     delete [] items;
 }
 
-PopupMenuItemDrawHandler::Item::Item():
-    text(NULL),
-    hyperlink(NULL),
-    active(false),
-    bold(false)
+PopupMenuItemDrawHandler::Item::Item()
 {
+    using namespace std;
+    memset(this, 0, sizeof(*this));
 }
 
 PopupMenuItemDrawHandler::Item::~Item()
@@ -134,13 +132,15 @@ UInt16 PopupMenuItemDrawHandler::maxTextWidth() const
     for (UInt16 i = 0; i < count; ++i)
     {
         const Item& item = items[i];
+        const char_t* text = item.text;
+        if (NULL == text)
+            continue;
+
         if (item.bold)
             FntSetFont(boldFont);
         else
             FntSetFont(stdFont);
-        const char_t* text = item.text;
-        if (NULL == text)
-            continue;
+
         UInt16 w = FntCharsWidth(text, StrLen(text)) + 2;
         if (w > width)
             width = w;
@@ -153,6 +153,12 @@ void PopupMenuItemDrawHandler::drawItem(Graphics& graphics, List& list, uint_t i
 {
     assert(index < count);
     const Item& item = items[index];
+    if (item.separator)
+    {
+        int y = itemBounds.y() + itemBounds.height() / 2;
+        graphics.drawLine(itemBounds.x() - 2, y, itemBounds.x() + itemBounds.width(), y);
+        return;
+    }
     const char_t* text = item.text;
     if (NULL == text)
         return;
@@ -162,8 +168,8 @@ void PopupMenuItemDrawHandler::drawItem(Graphics& graphics, List& list, uint_t i
     else
         FntSetFont(stdFont);
     Point p = itemBounds.topLeft;
-    ++p.x;
-    uint_t width = itemBounds.width() - 2;
+//    ++p.x;
+    uint_t width = itemBounds.width(); // - 2;
     uint_t length = StrLen(text);
     graphics.charsInWidth(text, length, width);
     
@@ -218,7 +224,8 @@ static bool extractString(const char_t*& data, long& length, const char_t*& str,
 enum PopupMenuItemFlag 
 {
     flagItemInactive = 1,
-    flagItemBold = 2
+    flagItemBold = 2,
+    flagItemSeparator = 4
 };
 
 bool PopupMenuItemDrawHandler::itemsFromString(const char_t* data, long length)
@@ -240,22 +247,29 @@ bool PopupMenuItemDrawHandler::itemsFromString(const char_t* data, long length)
         if (!extractString(data, length, text, val))
             goto Fail;
         
-        item.text = StringCopy2N(text, val);
-        if (NULL == item.text)
-            goto Fail;
+        if (0 != val)
+        {
+            item.text = StringCopy2N(text, val);
+            if (NULL == item.text)
+                goto Fail;
+        }
         
         if (!extractString(data, length, text, val))
             goto Fail;
         
-        item.hyperlink = StringCopy2N(text, val);
-        if (NULL == item.text)
-            goto Fail;
-            
+        if (0 != val)
+        {
+            item.hyperlink = StringCopy2N(text, val);
+            if (NULL == item.text)
+                goto Fail;
+        }
+                    
         if (!extractLong(data, length, val))
             goto Fail;
         
         item.active = (0 == (flagItemInactive & val));
         item.bold = (0 != (flagItemBold & val));
+        item.separator = (0 != (flagItemSeparator & val));
     }
     delete [] items;
     items = newItems;
