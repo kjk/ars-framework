@@ -273,7 +273,12 @@ namespace ArsLexis {
     status_t HttpConnection::BodyReader::readNextChunk()
     {
         connection_.bodyContentsAvailable_=false;
-        return connection_.SimpleSocketConnection::notifyReadable();
+        const uint_t sizeBefore=connection_.response().length();
+        status_t error=connection_.SimpleSocketConnection::notifyReadable();
+        connection_.finished_=(sizeBefore==connection_.response().length());
+        if (eof())
+            log().debug()<<"BodyReader::readNextChunk(): last read didn't change data length, setting eof flag";
+        return error;
     }
     
     void HttpConnection::BodyReader::flush()
@@ -288,6 +293,7 @@ namespace ArsLexis {
         {
             if (eof())
             {
+                log().debug()<<"BodyReader::read(): server shut socket down and buffer is empty, returning npos";
                 chr=npos;
                 flush();
                 return errNone;
@@ -297,6 +303,7 @@ namespace ArsLexis {
                 return error;
             if (body().length()==charsRead_)
             {
+                log().debug()<<"BodyReader::read(): body().length() didn't change, returning npos";
                 chr=npos;
                 flush();
                 return errNone;
@@ -319,6 +326,7 @@ charAvailable:
     {
         if (body().empty() && eof())
         {
+            log().debug()<<"BodyReader::read(): body().empty() and eof(), returning npos";
             num=npos;
             return errNone;
         }
@@ -333,6 +341,7 @@ charAvailable:
             else
             {
                 num=pos;
+                log().debug()<<"BodyReader::read(): encountered npos, last part of data: "<<String(dst, offset, num);
                 return errNone;
             }
         }

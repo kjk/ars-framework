@@ -9,11 +9,6 @@
 #include <cctype>
 #endif
 
-#if defined(_WIN32_WCE)
-#include <Winnls.h>
-#endif
-
-
 #if defined(_MSC_VER)
 // disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
 // TODO: move it to a more centrilsed place (like BaseTypes.hpp) ?
@@ -68,22 +63,19 @@ namespace ArsLexis
 #endif
     }
     
-#if defined(_WIN32)
     struct CharToByte 
     { 
-        char operator()(char_t in) {return (char) in;}
+        char operator()(char_t in) {return char(in);}
     };
+    
     struct ByteToChar 
     { 
-        char_t operator()(char in) {return (char_t) in;}
+        char_t operator()(char in) {return char_t(in);}
     };
 
-#endif
-
-    inline void TextToByteStream(String& inTxt, NarrowString& outStream)
+    inline void TextToByteStream(const String& inTxt, NarrowString& outStream)
     {
 #if defined(_WIN32)
-        
         /*Why this doesn't work I have no idea
         char *out=NULL;
         int size = WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, 0, NULL,NULL);
@@ -91,16 +83,16 @@ namespace ArsLexis
         WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
         outStream.assign(out);
         delete []out;*/
+        outStream.reserve(inText.length());
         std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
 #else
         outStream.assign(inTxt);
 #endif
     }
 
-    inline void ByteStreamToText(NarrowString& inStream, String& outTxt)
+    inline void ByteStreamToTxt(const NarrowString& inStream, String& outTxt)
     {
 #if defined(_WIN32)
-        
         /*Why this doesn't work I have no idea
         char_t *out=NULL;
         int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
@@ -108,8 +100,8 @@ namespace ArsLexis
         MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
         outTxt.assign(out);
         delete []out;*/
+        outTxt.reserve(inStream.length());
         std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
-
 #else
         outTxt.assign(inStream);
 #endif

@@ -11,7 +11,7 @@
 namespace ArsLexis {
 
     class HttpConnection: public SimpleSocketConnection {
-
+    
     public:
     
         explicit HttpConnection(SocketConnectionManager& manager);
@@ -43,7 +43,7 @@ namespace ArsLexis {
         
         void setUri(const String& uri);
         
-        enum status_tor {
+        enum Error {
             errHttpUnknownTransferEncoding=errFirstAvailable,
             errHttpUnsupportedStatusCode,
             errHttpUnexpectedEndOfChunk,
@@ -119,6 +119,9 @@ namespace ArsLexis {
         protected:            
             
             void flush();
+            
+            Logger& log() 
+            {return connection_.log();}
                 
         public:
         
