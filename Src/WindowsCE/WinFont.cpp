@@ -1,7 +1,3 @@
-// WinFont.cpp: implementation of the WinFont class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "WinFont.h"
 
 using namespace ArsLexis;
