@@ -31,6 +31,10 @@ class DefinitionParser
     
     Boolean isPlainText() const;
     
+    /**
+     * @internal
+     * Transforms current settings in open* variables into settings of @c FormattedTextElement.
+     */
     void applyCurrentFormatting(FormattedTextElement* element);
     
     typedef std::list<DefinitionElement*, ArsLexis::Allocator<DefinitionElement*> > ParentsStack_t;
@@ -41,25 +45,8 @@ class DefinitionParser
     void pushParent(DefinitionElement* parent);
     
     void popParent();
-
-/*    
-    struct ParentSetter;
-    friend struct ParentSetter;
-    struct ParentSetter
-    {
-        DefinitionParser& parser;
-        ParentSetter(DefinitionParser& p, DefinitionElement* parent):
-            parser(p)
-        {
-            parser.pushParent(parent);
-        }
-        
-        ~ParentSetter()
-        {
-            parser.popParent();
-        }
-    };
-*/
+    
+    void popAvailableParent();
 
     /**
      * @internal
@@ -112,24 +99,54 @@ class DefinitionParser
     
     Definition definition_;
     ArsLexis::String text_;
+    UInt16 parsePosition_;
+    UInt16 lineEnd_;
     
-    Err subParseText(UInt16 n, ElementStyle style);
+    void parseText(UInt16 length, ElementStyle style);
     
-    Err parse();
+    void parse();
     
     ArsLexis::HTMLCharacterEntityReferenceDecoder decoder_;
 
     void decodeHTMLCharacterEntityRefs(ArsLexis::String& text) const;
     
-    UInt16 parsePosition_;
-    
     void appendElement(DefinitionElement* element);
+    
+    enum LineType
+    {
+        emptyLine,
+        headerLine,
+        listElementLine,
+        textLine,
+        horizontalBreakLine,
+        indentedLine,
+        definitionListLine
+    };
+    
+    LineType lineType_;
+    LineType previousLineType_;
+
+    Boolean continuationAllowed() const
+    {return previousLineType_==listElementLine || previousLineType_==textLine || previousLineType_==indentedLine;}
+    
+
+    void parseHeaderLine();
+    
+    void parseIndentedLine();
+    
+    void parseDefinitionListLine();
+    
+    void parseTextLine();
+    
+    void parseListElementLine();
+    
+    void detectLineType();
     
 public:
 
     DefinitionParser();
     
-    Err parse(const ArsLexis::String& text, Definition& definition);
+    void parse(const ArsLexis::String& text, Definition& definition);
     
     ~DefinitionParser();
 

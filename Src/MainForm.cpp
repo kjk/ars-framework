@@ -70,9 +70,9 @@ Err MainForm::initialize()
             "times, it became evident that a number of apparently unrelated problems combine to produce "
             "the delay, but on analysis all have the same root cause. "
         ));
-        element->setParent(*parent);
+        element->setParent(parent);
         definition_.appendElement(element=new LineBreakElement());
-        element->setParent(*parent);
+        element->setParent(parent);
         definition_.appendElement(element=new GenericTextElement(
             "This paper explores a number of problems regarding the use of recursive make, and "
             "shows that they are all symptoms of the same problem. Symptoms that the UNIX community "
@@ -82,7 +82,7 @@ Err MainForm::initialize()
             "are overly sensitive to changes in the source code and require constant Makefile intervention "
             "to keep them working. "
         ));
-        element->setParent(*parent);
+        element->setParent(parent);
         definition_.appendElement(new LineBreakElement());
         BulletElement* bullet=0;
         definition_.appendElement(bullet=new BulletElement());
@@ -94,10 +94,10 @@ Err MainForm::initialize()
             "it is only necessary to avoid the separation; to use a single make session to build the "
             "whole project, which is not quite the same as a single Makefile. "
         ));
-        element->setParent(*bullet);
+        element->setParent(bullet);
         ListNumberElement* listNumber=0;
         definition_.appendElement(listNumber=new ListNumberElement(1));
-        listNumber->setParent(*bullet);
+        listNumber->setParent(bullet);
         listNumber->setTotalCount(1);
         definition_.appendElement(element=new GenericTextElement(
             "This conclusion runs counter to much accumulated folk wisdom in building large projects "
@@ -107,7 +107,7 @@ Err MainForm::initialize()
             "and without the intuitvely expected compromise of modularity. The use of a whole "
             "project make is not as difficult to put into practice as it may at first appear. "
         ));
-        element->setParent(*listNumber);
+        element->setParent(listNumber);
     }
     return error;
 }

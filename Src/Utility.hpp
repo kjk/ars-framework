@@ -74,6 +74,11 @@ namespace ArsLexis
         bool operator ()(const char* str1, const char* str2) const
         {return StrCompare(str1, str2)<0;}
     };
+    
+    void trim(String& str);
+    
+    Boolean isWhitespace(char chr);
+    
 }
 
 #endif

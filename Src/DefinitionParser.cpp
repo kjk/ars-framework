@@ -2,7 +2,10 @@
 #include "FormattedTextElement.hpp"
 #include "ListNumberElement.hpp"
 #include "BulletElement.hpp"
+#include "ParagraphElement.hpp"
+#include "HorizontalLineElement.hpp"
 #include <cctype>
+#include "Utility.hpp"
 
 using ArsLexis::String;
 
@@ -15,7 +18,10 @@ DefinitionParser::DefinitionParser():
     openStrikeout_(0),
     openUnderline_(0),
     openNowiki_(0),
-    parsePosition_(0)
+    parsePosition_(0),
+    lineEnd_(0),
+    lineType_(emptyLine),
+    previousLineType_(emptyLine)
 {
 }    
     
@@ -39,6 +45,12 @@ void DefinitionParser::popParent()
 {
     assert(!parentsStack_.empty());
     parentsStack_.pop_back();
+}
+
+void DefinitionParser::popAvailableParent()
+{
+    if (!parentsStack_.empty())
+        parentsStack_.pop_back();
 }
 
 
@@ -79,25 +91,26 @@ void DefinitionParser::reset()
     openUnderline_=0;
     openNowiki_=0;
     parsePosition_=0;
+    lineEnd_=0;
+    lineType_=emptyLine;
+    previousLineType_=emptyLine;
 }
     
     
-Err DefinitionParser::parse(const ArsLexis::String& text, Definition& definition)
+void DefinitionParser::parse(const String& text, Definition& definition)
 {
     reset();
     text_=text;
-    Err error=parse();
-    if (!error)
-        definition.swap(definition_);
+    parse();
+    definition.swap(definition_);
     definition_.clear();
     text_.clear();
-    return error;        
 }
 
 static const char entityReferenceStart='&';
 static const char entityReferenceEnd=';';
 
-void DefinitionParser::decodeHTMLCharacterEntityRefs(ArsLexis::String& text) const
+void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
 {
     UInt16 length=text.length();
     UInt16 index=0;
@@ -132,25 +145,27 @@ void DefinitionParser::decodeHTMLCharacterEntityRefs(ArsLexis::String& text) con
     }
 }
 
-static const char indentLineStart=':';
+static const char indentLineChar=':';
 static const char bulletChar='*';
 static const char numberedListChar='#';
 static const char headerChar='=';
 static const char strongChar='\'';
 static const char htmlTagStart='<';
+static const char horizontalLineChar='-';
+static const char definitionListChar=';';
 
 #define horizontalLineString "----"
 #define sectionString "=="
 #define subSectionString "==="
 #define subSubSectionString "===="
+#define listCharacters "*#"
 
 
 
-Err DefinitionParser::subParseText(UInt16 n, ElementStyle style)
+void DefinitionParser::parseText(UInt16 length, ElementStyle style)
 {
     
 
-    return errNone;
 }
 
 
@@ -183,7 +198,7 @@ void DefinitionParser::finishCurrentNumberedList()
         currentNumberedList_.empty();
 }
 
-void DefinitionParser::manageListNesting(const ArsLexis::String& newNesting)
+void DefinitionParser::manageListNesting(const String& newNesting)
 {
     UInt16 lastNestingDepth=lastListNesting_.length();
     UInt16 newNestingDepth=newNesting.length();
@@ -240,3 +255,143 @@ void DefinitionParser::manageListNesting(const ArsLexis::String& newNesting)
     }
 }
 
+void DefinitionParser::appendElement(DefinitionElement* element)
+{
+    element->setParent(currentParent());
+    definition_.appendElement(element);
+}
+
+void DefinitionParser::detectLineType()
+{
+    String::size_type end=text_.find('\n', parsePosition_);
+    lineEnd_=(text_.npos==end?text_.length():end);
+    
+    lineType_=textLine;
+    if (0==openNowiki_)
+    {
+        if (lineEnd_==parsePosition_)
+            lineType_=emptyLine;
+        else {
+            switch (text_[parsePosition_])
+            {
+                case indentLineChar:
+                    lineType_=indentedLine;
+                    break;
+                    
+                case bulletChar:
+                case numberedListChar:
+                    lineType_=listElementLine;
+                    break;
+                
+                case definitionListChar:
+                    lineType_=definitionListLine;
+                    break;
+                
+                case headerChar:
+                    if (text_.find(sectionString, parsePosition_)==parsePosition_)
+                        lineType_=headerLine;
+                    break;
+                    
+                case horizontalLineChar:
+                    if (text_.find(horizontalLineString, parsePosition_)==parsePosition_)
+                        lineType_=horizontalBreakLine;
+                    break;
+            }       
+        }
+    }
+}
+
+void DefinitionParser::parseTextLine()
+{
+    if (!continuationAllowed())
+    {
+        ParagraphElement* para=new ParagraphElement();
+        appendElement(para);
+        pushParent(para);
+    }
+    parseText(lineEnd_-parsePosition_, styleDefault);                
+}
+
+void DefinitionParser::parse()
+{
+    previousLineType_=lineType_;
+    while (parsePosition_<text_.length())
+    {
+        detectLineType();
+
+        if (continuationAllowed() && textLine!=lineType_)
+            popParent(); 
+            
+        if (listElementLine==previousLineType_ && listElementLine!=lineType_)
+            manageListNesting(String());
+            
+        switch (lineType_)
+        {
+            case headerLine:
+                parseHeaderLine();
+                break;
+                
+            case textLine:
+                parseTextLine();
+                break;                    
+            
+            case horizontalBreakLine:
+                appendElement(new HorizontalLineElement());
+                break;
+                
+            case emptyLine:
+                appendElement(new LineBreakElement());
+                break;
+                
+            case listElementLine:
+                parseListElementLine();
+                break;
+                
+            case indentedLine:
+                parseIndentedLine();
+                break;
+                
+            case definitionListLine:
+                parseDefinitionListLine();
+                break;
+                
+            default:
+                assert(false);        
+        }
+        parsePosition_=lineEnd_+1;
+        previousLineType_=lineType_;
+    }
+}
+
+//! @todo Add header indexing
+void DefinitionParser::parseHeaderLine()
+{
+    using ArsLexis::isWhitespace;
+    while (parsePosition_<lineEnd_ && headerChar==text_[parsePosition_] || isWhitespace(text_[parsePosition_]))
+        ++parsePosition_;
+    UInt16 lineEnd=lineEnd_;
+    while (lineEnd>parsePosition_ && headerChar==text_[lineEnd-1] || isWhitespace(text_[lineEnd-1]))
+        --lineEnd;
+    ParagraphElement* para=new ParagraphElement();
+    appendElement(para);
+    pushParent(para);
+    parseText(lineEnd-parsePosition_, styleHeader);
+    popParent();   
+}
+
+void DefinitionParser::parseListElementLine()
+{
+    String::size_type startLong=text_.find_first_not_of(listCharacters, parsePosition_);
+    UInt16 start=lineEnd_;
+    if (text_.npos!=startLong && startLong<lineEnd_)
+        start=startLong;
+    String elementDesc(text_, parsePosition_, start-parsePosition_);
+    manageListNesting(elementDesc);
+    parsePosition_=start;
+    parseText(lineEnd_-parsePosition_, styleDefault);
+}
+
+void DefinitionParser::parseIndentedLine()
+{
+    
+}

@@ -34,8 +34,8 @@ public:
     virtual void elementClicked(Definition& definition)
     {}
     
-    void setParent(DefinitionElement& parent)
-    {parent_=&parent;}
+    void setParent(DefinitionElement* parent)
+    {parent_=parent;}
     
     Coord indentation() const;
     

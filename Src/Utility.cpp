@@ -18,4 +18,17 @@ namespace ArsLexis
         return result;
     }
 
+    
+    //! @todo Implement ArsLexis::trim(String&).
+    void trim(String& string)
+    {
+    
+    }
+    
+    Boolean isWhitespace(char chr)
+    {
+        return chrSpace==chr || chrTab==chr || chrCarriageReturn==chr || chrLineFeed==chr;
+    }
+
 }
+
