@@ -225,25 +225,39 @@ status_t FeedHandlerFromReader(FieldPayloadProtocolConnection::PayloadHandler& h
 {
     // This function uses String because such is interface of PayloadHandler that it requires so.
     // TODO: refactor PayloadHandler to use const char_t* instead.
-    String str;
+    CDynStr str;
     
     status_t err;
     const uint_t chunk = 8192;
-    uint_t length = chunk;
-    while (chunk == length)
-    {
-        ulong_t before = str.length();
-        str.resize(before + length);
-            
-        if (errNone != (err = reader.read(&str[before], length)))
-            return err;
-            
-        str.resize(before += length);
+    char_t* buffer = (char_t*)malloc(sizeof(char_t) * chunk);
+    if (NULL == buffer)
+        return memErrNotEnoughSpace;
         
-        if (errNone != (err = handler.handleIncrement(str.c_str(), before, chunk != length)))
+    uint_t length = chunk;
+    while (true)
+    {
+        if (errNone != (err = reader.read(buffer, length)))
+            goto Error;
+
+        if (NULL == str.AppendCharPBuf(buffer, length))
+        {
+            err = memErrNotEnoughSpace;
+            goto Error;
+        }            
+        
+        ulong_t incLen = str.Len();
+        if (errNone != (err = handler.handleIncrement(str.GetCStr(), incLen, chunk != length)))
             return err;
-            
-        str.erase(0, before);
+        
+        assert(incLen <= str.Len());
+        DynStrRemoveStartLen(&str, 0, incLen);
+        if (chunk != length)
+            break;
     }
+    free(buffer);
     return errNone;
+Error:
+    if (NULL != buffer)
+        free(buffer);
+    return err;    
 }
