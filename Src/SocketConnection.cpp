@@ -108,61 +108,90 @@ namespace ArsLexis
         if (ref)
             manager_.removeConnection(*this);
     }
-    
+
     void SocketConnection::open()
     {
         assert(address_!=0);
         Err error=socket_.open();
-        if (!error)
-        {
-            manager_.addConnection(*this);
-            Boolean flag=true;
-            error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
-            if (!error)
-                error=socket_.connect(*address_, transferTimeout());
-            if (netErrWouldBlock==error)
-                error=errNone;
-            if (!error)
-            {
-                registerEvent(SocketSelector::eventException);
-                registerEvent(SocketSelector::eventWrite);
-            }
-            else
-                log()<<"open(): unable to set socket option, "<<error;                
-        }
-        else
-            log()<<"open(): unable to open socket, "<<error;
-        
         if (error)
+        {
+            log()<<"open(): unable to open socket, "<<error;
             handleError(error);
+            return;
+        }
+
+        manager_.addConnection(*this);
+
+        //error=socket_.setNonBlocking();
+        if (error)
+        {
+            log()<<"open(), can't setNonBlocking(), "<<error;
+            handleError(error);
+            return;
+        }
+
+        error=socket_.connect(*address_, transferTimeout());
+        if (netErrWouldBlock==error)
+        {
+            // log()<<"open(), got netErrWouldBlock from connect(), changed to errNone";
+            error=errNone;
+        }
+
+        if (netErrSocketBusy==error)
+        {
+            log()<<"open(), got netErrSocketBusy from connect(), changed to errNone";
+            error=errNone;
+        }
+
+        if (error)
+        {
+            log()<<"open(): can't connect(), "<<error;
+            handleError(error);
+            return;
+        }
+
+        registerEvent(SocketSelector::eventException);
+        registerEvent(SocketSelector::eventWrite);
+
+        assert(errNone==error);
     }
 
     void SocketConnection::notifyException()
     {
-        Err error=socketStatus();
+        Err error=getSocketErrorStatus();
         if (errNone==error)
         {
-            log()<<"notifyException(): socketStatus() returned errNone.";
+            log()<<"notifyException(): getSocketErrorStatus() returned errNone.";
             assert(false);
             error=netErrTimeout;
         }
         else
-            log()<<"notifyException(): socketStatus() returned error, "<<error;
+            log()<<"notifyException(): getSocketErrorStatus() returned error, "<<error;
         handleError(error);
     }
 
-    Err SocketConnection::socketStatus() const
+    // devnote: seems to return non-PalmOS error codes
+    // e.g. 10061 is WSAECONNREFUSED (http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winsock/winsock/windows_sockets_error_codes_2.asp)
+    // those seem to be defined in Core\System\Unix\sys_errno.h but without the 10000 (0x2710) prefix 
+    Err SocketConnection::getSocketErrorStatus() const
     {
         NetSocketRef socketRef=socket_;
         assert(socketRef!=0);
-        Err status=errNone;
-        UInt16 size=sizeof(status);
+        int     status=0;
+        UInt16  size=sizeof(status);
         //! @bug PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
         //! Nevertheless status is also filled in these cases and seems right...
         Err error=socket_.getOption(netSocketOptLevelSocket, netSocketOptSockErrorStatus, &status, size);
         if (error)
-            log()<<"socketStatus(): unable to query socket option, "<<error;
-        return status;
+        {
+            log()<<"getSocketErrorStatus(): unable to query socket option, "<<error;
+            return error;
+        }
+        if (status)
+        {
+            log()<<"getSocketErrorStatus(): error status, "<<(Err)status;
+        }            
+        return (Err)status;
     }
 
 }

@@ -199,9 +199,11 @@ Err iPediaConnection::notifyFinished()
     return error;        
 }
 
+#define SOCK_CONN_REFUSED 10061
+
 void iPediaConnection::handleError(Err error)
 {
-    log()<<"handleError(): error code "<<error;
+    log()<<"handleError(), error code "<<error;
     UInt16 alertId=frmInvalidObjectId;
     switch (error)
     {
@@ -215,6 +217,10 @@ void iPediaConnection::handleError(Err error)
         
         case netErrTimeout:
             alertId=connectionTimedOutAlert;
+            break;
+
+        case SOCK_CONN_REFUSED:
+            alertId=cantConnectToServerAlert;
             break;
         
         default:

@@ -165,37 +165,38 @@ static void startLookupConnection(ArsLexis::Application& application, LookupHist
     iPediaApplication& app=static_cast<iPediaApplication&>(application);
     SocketConnectionManager* manager=0;
     Err error=app.getConnectionManager(manager);
-    if (!error)
+    if (error)
+        return;
+
+    Resolver* resolver=0;
+    error=app.getResolver(resolver);
+    assert(manager);
+    assert(resolver);
+    if (!manager->active())
     {
-        Resolver* resolver=0;
-        error=app.getResolver(resolver);
-        assert(manager);
-        assert(resolver);
-        if (!manager->active())
+        app.log() << "startLookupConnection, server=" << server << " term=" << term;
+        iPediaConnection* conn=new iPediaConnection(*manager);
+        conn->setTransferTimeout(app.ticksPerSecond()*45L);
+        switch (historyChange)
         {
-            iPediaConnection* conn=new iPediaConnection(*manager);
-            conn->setTransferTimeout(app.ticksPerSecond()*15L);
-            switch (historyChange)
-            {
-                case iPediaConnection::historyMoveBack:
-                    conn->setTerm(history.previousTerm());
-                    break;
-                    
-                case iPediaConnection::historyMoveForward:
-                    conn->setTerm(history.nextTerm());
-                    break;
-                    
-                case iPediaConnection::historyReplaceForward:
-                    conn->setTerm(term);
-                    break;
-                    
-                default:
-                    assert(false);
-            }
-            conn->setHistoryChange(historyChange);
-            resolver->resolveAndConnect(conn, server);
-        }            
-    }
+            case iPediaConnection::historyMoveBack:
+                conn->setTerm(history.previousTerm());
+                break;
+                
+            case iPediaConnection::historyMoveForward:
+                conn->setTerm(history.nextTerm());
+                break;
+                
+            case iPediaConnection::historyReplaceForward:
+                conn->setTerm(term);
+                break;
+                
+            default:
+                assert(false);
+        }
+        conn->setHistoryChange(historyChange);
+        resolver->resolveAndConnect(conn, server);
+    }            
 }
 
 void MainForm::startHistoryLookup(bool forward)

@@ -54,7 +54,7 @@ namespace ArsLexis
 
         Socket socket_;
     
-        Err socketStatus() const;
+        Err getSocketErrorStatus() const;
     
         virtual void notifyWritable()
         {}
@@ -85,7 +85,9 @@ namespace ArsLexis
         {abortConnection();}
         
         void setTransferTimeout(Int32 timeout)
-        {transferTimeout_=timeout;}
+        {
+            transferTimeout_=timeout;
+        }
         
         Int32 transferTimeout() const
         {return transferTimeout_;}

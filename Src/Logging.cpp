@@ -19,8 +19,8 @@ namespace ArsLexis
     
     Logger::LineAppender& Logger::LineAppender::operator<<(unsigned short ui)
     {
-        char buffer[6];
-        Int16 len=StrPrintF(buffer, "%hu", ui);
+        char buffer[26];
+        Int16 len=StrPrintF(buffer, "%hu (=0x%x)", ui, ui);
         if (len>0)
             line_.append(buffer, len);
         return *this;

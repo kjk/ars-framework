@@ -3,6 +3,8 @@
 #include "SysUtils.hpp"
 #include "NetLibrary.hpp"
 
+#include "iPediaApplication.hpp"
+
 namespace ArsLexis
 {
 
@@ -80,16 +82,25 @@ namespace ArsLexis
         std::auto_ptr<NetHostInfoBufType> buffer(new NetHostInfoBufType);
         MemSet(buffer.get(), sizeof(NetHostInfoBufType), 0);
         Err error=netLib_.getHostByName(name.c_str(), buffer.get(), connection->transferTimeout());
-        if (!error)
+        if (error)
         {
-            NetIPAddr resAddr=buffer->address[0];
-            assert(resAddr!=0);
-            INetSocketAddress addr(resAddr, port);
-            connection->setAddress(addr);
-            connection->open();
-        }
-        else
             connection->handleError(error);
+            return;
+        }
+
+        NetIPAddr resAddr=buffer->address[0];
+        assert(resAddr!=0);
+
+#ifdef NEVER
+        char addrStr[32];
+        NetLibAddrINToA(netLib_.refNum(), resAddr, addrStr);
+        Application &app = Application::instance();
+        iPediaApplication& iApp=static_cast<iPediaApplication&>(app);
+        iApp.log()<< "Resolver::blockingResolveAndConnect to ip="<<addrStr;
+#endif
+        INetSocketAddress addr(resAddr, port);
+        connection->setAddress(addr);
+        connection->open();
     }
    
     Err Resolver::resolveAndConnect(SocketConnection* connection, const String& address, UInt16 port)

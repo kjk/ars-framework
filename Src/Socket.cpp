@@ -26,8 +26,7 @@ namespace ArsLexis
         assert(!socket_);
         Err error=errNone;
         socket_=NetLibSocketOpen(netLib_, domain, type, protocol, timeout, &error);
-        if (!error)
-            assert(socket_!=0);
+        assert(error || (socket_!=0));
         return error;
     }
     
@@ -83,7 +82,14 @@ namespace ArsLexis
             assert(error);
         return error;
     }
-    
+
+    Err SocketBase::setNonBlocking()
+    {
+        Boolean flag=true;
+        Err error=setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
+        return error;
+    } 
+
     Err SocketBase::setOption(UInt16 level, UInt16 option, void* optionValue, UInt16 valueLength, Int32 timeout)
     {
         assert(socket_!=0);

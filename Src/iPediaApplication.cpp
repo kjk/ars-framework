@@ -23,7 +23,7 @@ iPediaApplication::iPediaApplication():
 //    log_.replaceSink(new DebuggerLogSink());
     log_.replaceSink(new MemoLogSink());
 #endif
-    log()<<"iPedia Application instantiated.";
+    // log()<<"iPedia Application instantiated.";
 }
 
 inline void iPediaApplication::detectViewer()
@@ -71,7 +71,7 @@ iPediaApplication::~iPediaApplication()
     if (resolver_)
         delete resolver_;
 
-    log()<<"iPediaApplication deleted.";
+    //log()<<"iPediaApplication deleted.";
 }
 
 

@@ -79,6 +79,8 @@ namespace ArsLexis
         
         operator NetSocketRef() const
         {return socket_;}
+
+        Err setNonBlocking();
         
         Err setOption(UInt16 level, UInt16 option, void* optionValue, UInt16 valueLength, Int32 timeout=evtWaitForever);
         
