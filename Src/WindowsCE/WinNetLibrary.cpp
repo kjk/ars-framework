@@ -4,7 +4,7 @@
 
 namespace ArsLexis
 {
-    const uint_t NetLibrary::defaultConfig=0;
+    //const uint_t NetLibrary::defaultConfig=0;
     
     NetLibrary::NetLibrary():
     closed_(true),

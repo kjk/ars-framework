@@ -5,12 +5,8 @@
 #if !defined(AFX_WINFONT_H__4DB36623_0043_4054_B7FF_C3474967BB8E__INCLUDED_)
 #define AFX_WINFONT_H__4DB36623_0043_4054_B7FF_C3474967BB8E__INCLUDED_
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#include <wingdi.h>
 #include "FontEffects.hpp"
+#include <wingdi.h>
 
 
 class WinFont  
