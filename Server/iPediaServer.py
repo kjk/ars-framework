@@ -11,7 +11,7 @@
 #             future will be replaced with -verbose flag (i.e. we'll be silent
 #             by default)
 #   -usepsyco : will use psyco, if available
-#    -db name : use database name
+#   -db name  : use database name
 
 import sys, re, random, datetime, MySQLdb, _mysql_exceptions
 import arsutils,iPediaDatabase
@@ -23,6 +23,12 @@ try:
 except:
     print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
     g_fPsycoAvailable = False
+
+DB_HOST = 'localhost'
+DB_USER = 'ipedia'
+DB_PWD  = 'ipedia'
+
+MANAGEMENT_DB = 'ipedia_manage'
 
 g_unregisteredLookupsLimit=10
 g_unregisteredLookupsDailyLimit=2    
@@ -569,13 +575,16 @@ class iPediaProtocol(basic.LineReceiver):
 
 class iPediaFactory(protocol.ServerFactory):
 
-    def createConnection(self):
-        return MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db=self.dbName)
-        
+    def createArticlesConnection(self):
+        return MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db=self.dbName)
+
+    def createManagementConnection(self):
+        return MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db='ipediamanage')
+
     def __init__(self, dbName):
         global g_articleCount
         self.dbName=dbName
-        db=self.createConnection()
+        db=self.createArticlesConnection()
         cursor=db.cursor()
         cursor.execute("""select count(*), min(id), max(id) from definitions""")
         row=cursor.fetchone()
@@ -590,7 +599,21 @@ class iPediaFactory(protocol.ServerFactory):
         self.dbName=newDb
         
     protocol = iPediaProtocol
-    
+
+def getDbList():
+    conn = MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db='ipediamanage')
+    cur = conn.cursor()
+    cur.execute("SHOW DATABASES;")
+    dbs = []
+    for row in cur.fetchall():
+        dbName = row[0]
+        if 0==dbName.find("ipedia"):
+            dbs.append(row[0])
+    cur.close()
+    conn.close()
+    return dbs    
+
+
 class iPediaTelnetProtocol(basic.LineReceiver):
 
     listRe=re.compile(r'\s*list\s*', re.I)
@@ -600,12 +623,14 @@ class iPediaTelnetProtocol(basic.LineReceiver):
         db=None
         cursor=None
         try:
-            db=self.factory.iPediaFactory.createConnection()
+            db=self.factory.iPediaFactory.createManagementConnection()
             cursor=db.cursor()
-            cursor.execute("show databases like 'ipedia%'")
+            cursor.execute("show databases like 'ipedia_%'")
             row=cursor.fetchone()
             while row:
-                self.transport.write(row[0]+'\r\n')
+                dbName = row[0]
+                if dbName != MANAGEMENT_DB:
+                    self.transport.write(dbName+'\r\n')
                 row=cursor.fetchone()
         except _mysql_exceptions.Error, ex:
             print ex

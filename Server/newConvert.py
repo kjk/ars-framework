@@ -42,7 +42,7 @@ g_connIpediaDbName = None
 
 g_dbName = None
 
-DATA_DB_NAME = "ipedia_data"
+MANAGEMENT_DB = 'ipedia_manage'
 
 def usageAndExit():
     print "newConvert.py [-verbose] [-limit n] [-showdups] [-nopsyco] sqlDumpName"
@@ -253,7 +253,6 @@ def convertArticles(sqlDump,dbName,articleLimit):
             #print "redirect '%s' (to '%s') not resolved" % (title,redirect)
     print "Number of unresolved redirects: %d" % unresolvedCount
 
-    #initDatabase()
     ipedia_write_cur = getNamedCursor(getIpediaConnection(dbName), "ipedia_write_cur")
         
     # go over articles again (hopefully now using the cache),
@@ -276,7 +275,7 @@ def convertArticles(sqlDump,dbName,articleLimit):
             convertedArticle = ConvertedArticle(article.getNamespace(), article.getTitle(), converted)
 
         title = title.replace("_", " ")
-        title = title.lower()
+        #title = title.lower()
         if article.fRedirect():
             # what now?
             pass
@@ -385,20 +384,20 @@ requestsSql = """CREATE TABLE `requests` (
 
 def delDataDb(conn):
     cur = conn.cursor()
-    cur.execute("DROP DATABASE %s" % DATA_DB_NAME)
+    cur.execute("DROP DATABASE %s" % MANAGEMENT_DB)
     cur.close()
-    print "Database '%s' deleted" % DATA_DB_NAME
+    print "Database '%s' deleted" % MANAGEMENT_DB
 
 def createDataDb(conn):
     cur = conn.cursor()
-    cur.execute("CREATE DATABASE %s" % DATA_DB_NAME)
-    cur.execute("USE %s" % DATA_DB_NAME)
+    cur.execute("CREATE DATABASE %s" % MANAGEMENT_DB)
+    cur.execute("USE %s" % MANAGEMENT_DB)
     cur.execute(cookiesSql)
     cur.execute(regusersSql)
     cur.execute(requestsSql)
-    cur.execute("GRANT ALL ON %s.* TO 'ipedia'@'localhost' IDENTIFIED BY 'ipedia';" % DATA_DB_NAME)
+    cur.execute("GRANT ALL ON %s.* TO 'ipedia'@'localhost' IDENTIFIED BY 'ipedia';" % MANAGEMENT_DB)
     cur.close()
-    print "Created '%s' database and granted perms to ipedia user" % DATA_DB_NAME
+    print "Created '%s' database and granted perms to ipedia user" % MANAGEMENT_DB
 
 def createIpediaDb(sqlDumpName,dbName,fRecreateDb=False,fRecreateDataDb=False):
     connRoot = getRootConnection()
@@ -408,9 +407,9 @@ def createIpediaDb(sqlDumpName,dbName,fRecreateDb=False,fRecreateDataDb=False):
     for db in dbList:
         if db==dbName:
             fDbExists = True
-        if db==DATA_DB_NAME:
+        if db==MANAGEMENT_DB:
             fDataDbExists = True
-            print "Data database '%s' already exists" % DATA_DB_NAME
+            print "Data database '%s' already exists" % MANAGEMENT_DB
     if not fDbExists:
         createDb(connRoot,dbName)
     else:
@@ -427,7 +426,7 @@ def createIpediaDb(sqlDumpName,dbName,fRecreateDb=False,fRecreateDataDb=False):
             delDataDb(connRoot)
             createDataDb(connRoot)
         else:
-            print "Database '%s' exists" % DATA_DB_NAME
+            print "Database '%s' exists" % MANAGEMENT_DB
 
 def createFtIndex():
     print "starting to create full-text index"
