@@ -832,6 +832,8 @@ bool ExtendedList::scroll(WinDirectionType direction, uint_t items)
 void ExtendedList::handleFocusChange(FocusChange change)
 {
     FormGadget::handleFocusChange(change);
+    if (!form()->visible())
+        return;
     int sel = selection();
     if (noListSelection != sel)
     {
