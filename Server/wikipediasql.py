@@ -35,6 +35,7 @@ class WikipediaArticle:
     def getText(self): return self.row[CUR_TEXT]
     def fRedirect(self):  return int(self.row[CUR_IS_REDIRECT])==1
     def getViewCount(self): return int(self.row[CUR_COUNTER])
+    def getTimestamp(self): return self.row[CUR_TIMESTAMP]
 
 BEG_TXT = "INSERT INTO cur VALUES "
 

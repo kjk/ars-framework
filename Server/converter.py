@@ -229,11 +229,11 @@ def convertAllFromSQL(fileName,articleLimit):
     count = 0
     for article in wikipediasql.iterWikipediaArticles(fileName):
         # we only convert article from the main namespace
-        if article.getNs() != NS_MAIN
+        if article.getNs() != NS_MAIN:
             continue
         title = article.getTitle()
         txt = article.getText()
-        timestamp = article.getNs()
+        timestamp = article.getTimestamp()
         convertTerm(title,txt,timestamp)
         count += 1
         if 0 == count % 500:
