@@ -13,7 +13,8 @@ MainForm::MainForm(iPediaApplication& app):
     displayMode_(showSplashScreen),
     lastPenDownTimestamp_(0),
     updateDefinitionOnEntry_(false),
-    checkedArticleCount_(false)
+    checkedArticleCount_(false),
+    enableInputFieldAfterUpdate_(false)
 {
     definition_.setRenderingProgressReporter(&renderingProgressReporter_);
     definition_.setHyperlinkHandler(&app.hyperlinkHandler());
@@ -213,6 +214,13 @@ void MainForm::draw(UInt16 updateCode)
     const LookupManager* lookupManager=app.getLookupManager();
     if (lookupManager && lookupManager->lookupInProgress())
         lookupManager->showProgress(graphics, progressArea);
+    if (enableInputFieldAfterUpdate_)
+    {
+        enableInputFieldAfterUpdate_=false;
+        Field field(*this, termInputField);
+        field.focus();
+        field.show();
+    }
 }
 
 
@@ -313,15 +321,12 @@ void MainForm::setControlsState(bool enabled)
     }
 
     {        
-        Field field(*this, termInputField);
         if (enabled)
-        {
-            field.focus();
-            field.show();
-        }
+            enableInputFieldAfterUpdate_ =true;
         else
         {
             releaseFocus();
+            Field field(*this, termInputField);
             field.hide();
         }
     }

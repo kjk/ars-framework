@@ -133,6 +133,7 @@ private:
     DisplayMode displayMode_:4;
     bool updateDefinitionOnEntry_:1;
     bool checkedArticleCount_:1;
+    bool enableInputFieldAfterUpdate_:1;
     
 };
 
