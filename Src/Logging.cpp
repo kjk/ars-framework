@@ -303,6 +303,7 @@ void ArsLexis::cleanAllocationLogging()
 
 void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* fileName, int line)
 {
+#if defined(ARSLEXIS_DEBUG_MEMORY_ALLOCATION)
     HostFILEType* file=0;
     UInt32 creatorId=Application::creator();
     Err error=FtrGet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32*>(&file));
@@ -320,6 +321,7 @@ void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* file
             HostFPrintF(file, "+\t0x%08lx\t%ld\t%s: %hd\n", ptr, size, 0==fileName?"(Unknown)":fileName, line);
         HostFFlush(file);
     }
+#endif    
 }
 
 #endif // _PALMOS

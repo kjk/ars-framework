@@ -15,11 +15,11 @@ namespace ArsLexis
     {
         String request_;
         String response_;
-        ushort_t maxResponseSize_;
-        ushort_t chunkSize_;
+        uint_t maxResponseSize_;
+        uint_t chunkSize_;
         
         bool sending_;
-        ushort_t requestBytesSent_;
+        uint_t requestBytesSent_;
         
     protected:
         
@@ -43,10 +43,10 @@ namespace ArsLexis
 
         SimpleSocketConnection(SocketConnectionManager& manager);
         
-        void setMaxResponseSize(ushort_t size)
+        void setMaxResponseSize(uint_t size)
         {maxResponseSize_=size;}
         
-        void setChunkSize(ushort_t size)
+        void setChunkSize(uint_t size)
         {chunkSize_=size;}
         
         bool sending() const

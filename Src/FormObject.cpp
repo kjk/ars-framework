@@ -87,6 +87,11 @@ namespace ArsLexis
 #endif
     {}
 
+     void List::updateItemsCount(const CustomDrawHandler& handler)
+     {
+        LstSetListChoices(object(), reinterpret_cast<Char**>(const_cast<CustomDrawHandler*>(&handler)), handler.itemsCount());
+     }
+   
     void List::setCustomDrawHandler(List::CustomDrawHandler* handler)
     {
         if (handler)
@@ -98,7 +103,7 @@ namespace ArsLexis
 #else
             LstSetDrawFunction(object(), CustomDrawHandler::drawCallback);
 #endif
-            LstSetListChoices(object(), reinterpret_cast<Char**>(handler), handler->itemsCount());
+            updateItemsCount(*handler);
         }
         else
         {
@@ -125,5 +130,5 @@ namespace ArsLexis
             top=std::max(0, total-visible);
         setTopItem(top);
     }
-    
+ 
 }

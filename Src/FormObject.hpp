@@ -214,7 +214,7 @@ namespace ArsLexis
         void draw()
         {LstDrawList(object());}
         
-        void setSelection(uint_t item)
+        void setSelection(int item)
         {LstSetSelection(object(), item);}
 
         int selection() const
@@ -252,7 +252,7 @@ namespace ArsLexis
             virtual void drawItem(List& list, uint_t item, const Rectangle& listBounds)=0;
             
             virtual uint_t itemsCount() const=0;
-
+            
             virtual ~CustomDrawHandler() {}
 
             friend class List;               
@@ -264,6 +264,8 @@ namespace ArsLexis
         
         void setTopItem(uint_t item)
         {LstSetTopItem(object(), item);}
+        
+        void updateItemsCount(const CustomDrawHandler& handler);
 
     };
     

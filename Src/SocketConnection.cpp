@@ -1,8 +1,6 @@
 #include <SocketConnection.hpp>
 #include <algorithm>
 
-
-
 namespace ArsLexis 
 {
 
