@@ -1,7 +1,7 @@
 #include "MainForm.hpp"
 #include "DefinitionParser.hpp"
 #include "iPediaApplication.hpp"
-#include "DefinitionRequestConnection.hpp"
+#include "iPediaConnection.hpp"
 #include "SocketAddress.hpp"
 
 void MainForm::resize(const RectangleType& screenBounds)
@@ -57,6 +57,8 @@ Err MainForm::initialize()
     Err error=iPediaForm::initialize();
     if (!error)
     {
+        iPediaApplication& app=static_cast<iPediaApplication&>(application());
+        definition_.setHyperlinkHandler(&app.hyperlinkHandler());
         ArsLexis::String text(            
 "[[af:Wetenskapsfiksie]] [[da:Science-fiction]] [[de:Science-Fiction]] [[eo:Sciencfikcio]] [[es:Ciencia ficción]] [[fi:Tieteiskirjallisuus]] [[fr:Science-fiction]] [[he:&#1502;&#1491;&#1506; &#1489;&#1491;&#1497;&#1493;&#1504;&#1497;]][[ja:&#12469;&#12452;&#12456;&#12531;&#12473;&#12539;&#12501;&#12451;&#12463;&#12471;&#12519;&#12531;]] [[nl:Science fiction]] [[no:Science fiction]] [[pl:Science fiction]] [[sv:Science fiction]][[ru:&#1053;&#1072;&#1091;&#1095;&#1085;&#1072;&#1103; &#1092;&#1072;&#1085;&#1090;&#1072;&#1089;&#1090;&#1080;&#1082;&#1072;]]\n"
 "\n"
@@ -192,8 +194,8 @@ Err MainForm::initialize()
 "* [http://greatsfandf.com/ Great Science-Fiction & Fantasy Works]: an attempt to extract the more literate authors and works from the morass.\n"
     );        
         DefinitionParser parser(text);
-        parser.parseIncrement(true);
-        parser.updateDefinition(definition_);
+        parser.parseIncrement(text.length(), true);
+        parser.updateDefinition(definition_); 
     }
     return error;
 }
@@ -222,13 +224,15 @@ void MainForm::handleControlSelect(const ctlSelect& data)
     if (!error)
     {
         assert(manager);
-        SimpleSocketConnection* connection=new DefinitionRequestConnection(*manager, "Term: Science fiction\r\n");
-        connection->setTransferTimeout(app.ticksPerSecond()*15L);
-        connection->setChunkSize(256);
-//        error=connection->open(INetSocketAddress(0xcf2c860b, 80), "GET / HTTP/1.0\r\n\r\n");
-        error=connection->open(INetSocketAddress(0x7f000001, 9000));
+/*        
+        iPediaConnection* conn=new iPediaConnection(*manager);
+        conn->setTransferTimeout(app.ticksPerSecond()*15L);
+        conn->setChunkSize(256);
+        conn->setTerm("Science fiction");
+        error=conn->open(INetSocketAddress(0x7f000001, 9000));
         if (!(errNone==error || netErrWouldBlock==error))
-            delete connection;
+            delete conn;
+*/            
     }
 }
 

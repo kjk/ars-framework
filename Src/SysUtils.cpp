@@ -20,5 +20,27 @@ namespace ArsLexis
         bounds.extent.x=x;
         bounds.extent.y=y;
     }
+    
+    UInt32 random(UInt32 range)
+    {
+        Int16 rand1=SysRandom(0);
+        if ( 2 == (rand1 % 3) )
+            rand1 = SysRandom(TimGetTicks());
+
+        Int16 rand2 = SysRandom(0);
+        if ( 2 == (rand2 % 3) )
+            rand2 = SysRandom(TimGetTicks());
+
+        UInt32 result = rand1*sysRandomMax + rand2;
+        result = result % range;
+        return result;
+    }
+
+
+    String deviceIdToken()
+    {
+        //! @todo Implement deviceIdToken() (well... copy from iNoah should be enough)
+        return "TEST";
+    }
 
 }

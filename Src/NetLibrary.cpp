@@ -17,7 +17,7 @@ namespace ArsLexis
         if (!error)
         {
             Application& app=Application::instance();
-            //! @bug NetLibOpenConf() return netErrUnimplemented on Cobalt Simulator.
+            //! @bug NetLibOpenConf() returns netErrUnimplemented on Cobalt Simulator.
             //! To workaround it we call implemented NetLibOpen() instead...
             if (app.romVersionMajor()>5)
                 error=NetLibOpen(refNum(), &ifError);

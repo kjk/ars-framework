@@ -10,4 +10,6 @@
 #define appPrefID				0x00
 #define appPrefVersionNum		0x01
 
+#define appVersion                      "0.5"
+
 #endif /* IPEDIA_H_ */

@@ -156,7 +156,7 @@ class DefinitionParser
     
     void parseListElementLine();
     
-    bool detectNextLine(bool finish);
+    bool detectNextLine(UInt16 end, bool finish);
     
     Boolean detectHTMLTag(UInt16 textEnd);
     
@@ -170,7 +170,7 @@ public:
 
     DefinitionParser(const ArsLexis::String& text, UInt16 initialOffset=0);
 
-    void parseIncrement(bool finish=false);
+    void parseIncrement(UInt16 end, bool finish=false);
     
     void updateDefinition(Definition& definition);
     

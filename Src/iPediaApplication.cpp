@@ -41,10 +41,29 @@ void iPediaApplication::detectViewer()
     LocalID dbID=0;
     Err error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, sysFileCClipper, true, &cardNo, &dbID);
     if (!error)
-    {
-        assert(dbID!=0);
-        hyperlinkHandler_.setViewerLocation(cardNo, dbID);
-    }
+        goto NoError;
+    error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'NF3P', true, &cardNo, &dbID);
+    if (!error)
+        goto NoError;
+    error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'NOVR', true, &cardNo, &dbID);
+    if (!error)
+        goto NoError;
+    error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'NF3T', true, &cardNo, &dbID);
+    if (!error)
+        goto NoError;
+    error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'BLZ1', true, &cardNo, &dbID);
+    if (!error)
+        goto NoError;
+    error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'BLZ5', true, &cardNo, &dbID);
+    if (!error)
+        goto NoError;
+    error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, 'PScp', true, &cardNo, &dbID);
+    if (!error)
+        goto NoError;
+    return;
+NoError:
+    assert(dbID!=0);
+    hyperlinkHandler_.setViewerLocation(cardNo, dbID);
 }
 
 iPediaApplication::~iPediaApplication()

@@ -34,9 +34,12 @@ namespace ArsLexis
         virtual void reportProgress()
         {}
         
+        void setRequest(const String& request)
+        {request_=request;}
+        
     public:
 
-        SimpleSocketConnection(SocketConnectionManager& manager, const String& request);
+        SimpleSocketConnection(SocketConnectionManager& manager, const String& request=ArsLexis::String());
         
         ~SimpleSocketConnection();
         

@@ -74,7 +74,7 @@ namespace ArsLexis
 {
 
     /**
-     * Replacement for @c std::allocator. The former one uses (not explicitely) some 
+     * Replacement for @c std::allocator. The former one uses (not explicitly) some 
      * globals.
      */
     template <class T> 

@@ -251,8 +251,6 @@ namespace ArsLexis
 
         /**
          * Instantiates object of @c AppClass class, calls its @c handleLaunchCode(UInt16, MemPtr, UInt16) function and deletes object afterwards.
-         * This function will catch @c PalmOSError or @c std::bad_alloc exceptions, perform some
-         * cleanup and return appropriate error code.
          * @return standard PalmOS error code.
          * @note This function is designed so that it should be the only code called from @c PilotMain() function,
          * unless you know what you're doing.

@@ -6,7 +6,8 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
     if (viewerDatabaseId_)
     {
         UInt16 urlLength=url.length();
-        char* urlCopy=static_cast<char*>(MemPtrNew(urlLength+1));        if (urlCopy)
+        char* urlCopy=static_cast<char*>(MemPtrNew(urlLength+1));
+        if (urlCopy)
         {
             MemMove(urlCopy, url.data(), urlLength);
             urlCopy[urlLength]=chrNull;

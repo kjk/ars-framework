@@ -11,6 +11,7 @@ namespace ArsLexis
     HTMLCharacterEntityReferenceDecoder::HTMLCharacterEntityReferenceDecoder()
     {
         // This is machine generated code. Function insert() is used because it generates 50% smaller code than inline version.
+        // Nevertheless this code still sucks and probably we should use gperf to make it suck less...
         insert("quot", 34);
         insert("amp", 38);
         insert("lt", 60);

@@ -58,6 +58,9 @@ public:
     const RenderingPreferences& renderingPreferences() const
     {return renderingPrefs_;}
     
+    iPediaHyperlinkHandler& hyperlinkHandler()
+    {return hyperlinkHandler_;}
+    
 };
 
 

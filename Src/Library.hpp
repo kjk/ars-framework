@@ -9,7 +9,7 @@ namespace ArsLexis
     class Library
     {
         UInt16 refNum_;
-        Boolean loaded_;
+        bool loaded_;
         
         Library(const Library&);
         Library& operator=(const Library&);

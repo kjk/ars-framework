@@ -417,14 +417,14 @@ void DefinitionParser::appendElement(DefinitionElement* element)
     definition_.appendElement(element);
 }
 
-bool DefinitionParser::detectNextLine(bool finish)
+bool DefinitionParser::detectNextLine(UInt16 textEnd, bool finish)
 {
     String::size_type end=text_.find('\n', parsePosition_);
-    bool goOn=(text_.npos!=end);
+    bool goOn=(text_.npos!=end && end<textEnd);
     if (finish || goOn)
     {
         previousLineType_=lineType_;
-        lineEnd_=(text_.npos==end?text_.length():end);
+        lineEnd_=((text_.npos==end || end>=textEnd)?textEnd:end);
         lineType_=textLine;
         if (0==openNowiki_)
         {
@@ -473,12 +473,12 @@ void DefinitionParser::parseTextLine()
     parseText(lineEnd_, styleDefault);                
 }
 
-void DefinitionParser::parseIncrement(bool finish)
+void DefinitionParser::parseIncrement(UInt16 end, bool finish)
 {
     bool goOn=false;
     do 
     {
-        goOn=detectNextLine(finish);
+        goOn=detectNextLine(end, finish);
         if (goOn)
         {
             if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ && listElementLine!=previousLineType_)
@@ -527,7 +527,6 @@ void DefinitionParser::parseIncrement(bool finish)
 
 void DefinitionParser::updateDefinition(Definition& definition)
 {
-    assert(parsePosition_>=text_.length()); // This should generally happen after parsing is finished...
     Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
     std::swap(definition, definition_); 
     definition.setHyperlinkHandler(handler);
