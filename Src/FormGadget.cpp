@@ -7,7 +7,8 @@ using namespace ArsLexis;
 FormGadget::FormGadget(Form& form, UInt16 id):
     FormObjectWrapper(form, id),
     visible_(false),
-    usable_(false)
+    usable_(false),
+    doubleBuffer_(false)
 {}        
 
 FormGadget::~FormGadget()
@@ -44,8 +45,31 @@ void FormGadget::drawProxy()
     Graphics graphics(form()->windowHandle());
     Rectangle rect;
     bounds(rect);
-    Graphics::ClipRectangleSetter setClip(graphics, rect);
-    draw(graphics);
+    bool db=doubleBuffer_;
+    if (db)
+    {
+        Rectangle formBounds;
+        form()->bounds(formBounds);
+        Err error;
+        WinHandle wh=WinCreateOffscreenWindow(formBounds.width(), formBounds.height(), nativeFormat, &error);
+        if (errNone==error)
+        {
+            {
+                Graphics offscreen(wh);
+                ActivateGraphics active(offscreen);
+                draw(graphics);
+                offscreen.copyArea(rect, graphics, rect.topLeft);
+            }
+            WinDeleteWindow(wh, false);
+        }
+        else
+            db=false;
+    }
+    if (!db)
+    {
+        Graphics::ClipRectangleSetter setClip(graphics, rect);
+        draw(graphics);
+    }
 }
 
 void FormGadget::draw(Graphics& graphics)

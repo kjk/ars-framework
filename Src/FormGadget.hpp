@@ -15,6 +15,7 @@ namespace ArsLexis {
         
         bool visible_;
         bool usable_;
+        bool doubleBuffer_;
 
     protected:        
 
@@ -30,6 +31,9 @@ namespace ArsLexis {
         
         virtual bool handleMiscEvent(const EventType& event);
 
+        void setDoubleBuffer(bool val)
+        {doubleBuffer_=val;}
+        
     public:
     
         bool visible() const

@@ -115,7 +115,15 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     UInt32 version;
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
     if (errNone==error && 4<=version)
+    {
         hasHighDensityFeatures_=true;
+        setDoubleBuffer(true);
+    }
+    setRgbColor(listBackground_, 255, 255, 255);
+    setRgbColor(itemBackground_, 70, 163, 255);
+    setRgbColor(selectedItemBackground_, 0, 107, 215);
+    setRgbColor(foreground_, 255, 255, 255);
+    
 }
 
 ExtendedList::~ExtendedList()
@@ -156,10 +164,10 @@ void ExtendedList::draw(Graphics& graphics)
     if (!windowSettingsChecked_)
     {
         windowSettingsChecked_=true;
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foreground_);
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackground_);
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuForeground), &selectedItemBackground_);
+//        WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
+//        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foreground_);
+//        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackground_);
+//        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuForeground), &selectedItemBackground_);
         if (rgbEqual(itemBackground_, selectedItemBackground_))
         {
             saturate(selectedItemBackground_, 64);
@@ -351,7 +359,7 @@ void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
     long viewCapacity=height()/itemHeight_;
     long itemsCount=this->itemsCount();
     assert(itemsCount>viewCapacity);
-    long traktorHeight=(viewCapacity*totalHeight)/itemsCount;
+    long traktorHeight=(viewCapacity*totalHeight)/itemsCount+1;
     traktorHeight=std::max(traktorHeight, 5L);
     RGBColorType oldColor;
     WinSetBackColorRGB(&itemBackground_, &oldColor);
