@@ -552,7 +552,7 @@ DefinitionParser::LineType DefinitionParser::detectLineType(uint_t start, uint_t
     LineType lineType=textLine;
     if (0==openNowiki_)
     {
-        if (end==start)
+        if (end==start || (end-start==1 && (*text_)[start]=='\r'))
             lineType=emptyLine;
         else {
             switch ((*text_)[start])
@@ -599,21 +599,21 @@ bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
                 end=text_->find('\n', lineEnd+1);
                 if (!finish && (text_->npos==end || end>=textEnd))
                     break;
+                if (finish && lineEnd==textEnd)
+                    goto LineFinished;
                 uint_t nextLineEnd=((text_->npos==end || end>=textEnd)?textEnd:end);
                 if (textLine==detectLineType(lineEnd+1, nextLineEnd))
                     lineEnd=nextLineEnd;
                 else
                 {
                     goOn=true;
-                    previousLineType_=previousLineType;
-                    lineEnd_=lineEnd;
-                    lineType_=lineType;
-                    break;
+                    goto LineFinished;
                 }
             }
         }
         else
         {
+LineFinished:        
             previousLineType_=previousLineType;
             lineEnd_=lineEnd;
             lineType_=lineType;
