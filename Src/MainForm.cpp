@@ -214,7 +214,7 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
 {
     Graphics graphics(windowHandle());
     if (scrollPage==unit)
-        units*=(definition_.shownLinesCount()/2);
+        units*=(definition_.shownLinesCount());
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
     definition_.scroll(graphics, app.renderingPreferences(), units);
     updateScrollBar();
