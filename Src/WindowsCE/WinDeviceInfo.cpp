@@ -8,7 +8,7 @@
 #include <Text.hpp>
 
 #include <aygshell.h>
-#ifndef WIN32_PLATFORM_PSPC
+#ifdef WIN32_PLATFORM_WFSP
 #include <tpcshell.h>
 #endif
 #include <winuser.h>
@@ -18,21 +18,25 @@
 namespace ArsLexis
 {
 
-status_t getSystemParameter(String& out, int param)
+status_t getSystemParameter(String& out, UINT uiAction)
 {
-    int      buffSize = 128;
-    char_t * buffer   = NULL;
+    int      bufChars = 128;
+    int      bufSize;
+    char_t * buffer    = NULL;
+    BOOL     fOk;
 
     status_t error = ERROR_INSUFFICIENT_BUFFER;
     while (error == ERROR_INSUFFICIENT_BUFFER)
     {
-        buffSize *= 2;
+        bufChars *= 2;
+        bufSize = bufChars*sizeof(char_t);
         delete [] buffer;
 
-        buffer = new char_t[buffSize];
-        memset(buffer,0,sizeof(buffSize));
+        buffer = new char_t[bufChars];
+        memset(buffer,0,bufSize);
 
-        if (SystemParametersInfo(param, buffSize, buffer, 0))
+        fOk = SystemParametersInfo(uiAction, bufSize, buffer, 0);
+        if (fOk)
         {            
             out.append(buffer);
             error = errNone;
@@ -42,7 +46,7 @@ status_t getSystemParameter(String& out, int param)
     }
 
     delete [] buffer;
-    return error;                
+    return error;
 }
 
 status_t getOEMCompanyId(String& out)
@@ -57,7 +61,7 @@ status_t getHotSyncName(String& out)
 
 status_t getPhoneNumber(String& out)
 {
-#ifndef WIN32_PLATFORM_PSPC
+#ifdef WIN32_PLATFORM_WFSP  // smartphone
     SMS_ADDRESS address;
     memset(&address,0,sizeof(SMS_ADDRESS));
     HRESULT res = SmsGetPhoneNumber(&address);
@@ -79,7 +83,19 @@ static status_t getPlatform(String& out)
 {
     status_t err = getSystemParameter(out,SPI_GETPLATFORMTYPE);
     if (errNone!=err)
-        return err;
+    {
+        // we couldn't get it dynamically (on emulator there's access denied)
+        // so we use names based on compile-time detection
+
+#ifdef WIN32_PLATFORM_PSPC
+        out.append(_T("Pocket PC Static"));
+#endif
+
+#ifdef WIN32_PLATFORM_WFSP
+       out.append(_T("Smartphone Static"));
+#endif
+       err = errNone;        
+    }
 
     OSVERSIONINFO osvi;
     osvi.dwOSVersionInfoSize = sizeof(osvi);

@@ -133,7 +133,7 @@ namespace ArsLexis
 
         name.assign(resp, 0, separatorPos);
         assert(separatorPos>0);
-        // if ":" is at the end, it means a field with not value
+        // if ":" is at the end, it means a field with no value
         // TODO: should we detect fields with arguments that shouldn't have arguments
         // and vice-versa?
         if (separatorPos+1==lineEnd)
