@@ -26,6 +26,7 @@ namespace ArsLexis
     
     // bool notifyManagerPresent();
     void sendEvent(uint_t event, short wph, short wpl, int lp);
+    struct EventData {LPARAM lParam; WPARAM wParam;};
 }
 
 #endif

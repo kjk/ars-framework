@@ -5,6 +5,7 @@
 #include <BaseTypes.hpp>
 #include <Geometry.hpp>
 #include <Utility.hpp>
+#include <list>
 #include "WinFont.h"
 
 namespace ArsLexis 
@@ -14,19 +15,23 @@ namespace ArsLexis
     typedef HDC NativeGraphicsHandle_t;    
     typedef int NativeGraphicsState_t;
     typedef WinFont NativeFont_t;
-
     
-    struct NativeGraphicsSupport
-    {
-	    NativeFont_t font;
-    };
+    
+    
 
 
     class Graphics: private NonCopyable
     {
-        NativeGraphicsHandle_t handle_;        
-        NativeGraphicsSupport support_;
+        struct StackElement
+        {
+            NativeGraphicsState_t state;
+            NativeFont_t font;
+        };
+
+        NativeGraphicsHandle_t handle_;
+        NativeFont_t font_;
         HWND hwnd_;
+        std::list<StackElement> fontStack_;
 
     public:
     

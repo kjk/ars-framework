@@ -24,15 +24,23 @@ class WinFont
         FontWrapper();
         unsigned refsCount;
         HFONT font;
+        ArsLexis::FontEffects effects_;
     };
     public:
         WinFont();
         WinFont(HFONT font);
         WinFont& operator=(const WinFont& r);
-        void setEffects(ArsLexis::FontEffects& fx);
         WinFont(const WinFont& copy);
-        void addEffects(ArsLexis::FontEffects& fx);
-        ArsLexis::FontEffects effects() const;
+
+        void setEffects(ArsLexis::FontEffects effects)
+        {fntWrapper->effects_=effects;}
+        
+        ArsLexis::FontEffects effects() const
+        {return fntWrapper->effects_;}       
+        
+        void addEffects(ArsLexis::FontEffects& fx)
+        {fntWrapper->effects_+=fx;}
+
         HFONT getHandle() const;
         virtual ~WinFont();
         static WinFont getSymbolFont();

@@ -11,8 +11,8 @@ namespace ArsLexis
 
     Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
     {
-        Font_t oldOne=support_.font;
-        support_.font=font;
+        Font_t oldOne=font_;
+        font_=font;
         //FntSetFont(support_.font.withEffects());
         SelectObject(handle_, font.getHandle());
         return oldOne;
@@ -20,12 +20,24 @@ namespace ArsLexis
 
     Graphics::State_t Graphics::pushState()
     {
-        return SaveDC(handle_);
+        StackElement el;
+        el.font=font_;
+        el.state = SaveDC(handle_);
+        fontStack_.push_back(el);
+        return el.state;
     }
 
     void Graphics::popState(const Graphics::State_t& state)
     {
-        RestoreDC(handle_,-1);
+        StackElement el;
+        do 
+        {
+            el = fontStack_.back();
+            fontStack_.pop_back();
+        }
+        while(el.state!=state);
+        font_=el.font;
+        RestoreDC(handle_,state);
     }
     
     Graphics::~Graphics()
@@ -38,24 +50,57 @@ namespace ArsLexis
 
     void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
     {
-        /*FontEffects fx=support_.font.effects();
-        PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
+        FontEffects fx=font_.effects();
+        /*
+            PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
+        */
+        uint_t len=length;
+        uint_t width=0;
+        charsInWidth(text, len, width);
+        
+        uint_t height=fontHeight();
+        uint_t top=topLeft.y;
+
+        /*
+        if (fx.subscript())
+            top+=(height*0.333);
+        WinDrawChars(text, length, topLeft.x, top);
         */
         
-        //uint_t height=fontHeight();
-        /*uint_t top=topLeft.y;
-        if (fx.subscript())
-            top+=(height*0.333);*/
-        //WinDrawChars(text, length, topLeft.x, top);
-        /*if (fx.strikeOut())
+        ExtTextOut(handle_, topLeft.x, topLeft.y, 0, NULL, text, length, NULL);
+        if (fx.strikeOut())
         {
             uint_t baseline=fontBaseline();
             top=topLeft.y+baseline*0.667;
-            uint_t width=FntCharsWidth(text, length);
             drawLine(topLeft.x, top, topLeft.x+width, top);
+        }
+        int style;
+        switch (fx.underline())
+        {
+            case ArsLexis::FontEffects::underlineDotted:
+                style = PS_DASH;
+                break;
+            case ArsLexis::FontEffects::underlineSolid:
+                style = PS_SOLID;
+                break;
+        }
+        //Still underlining doesn't work
+        /*if (fx.underline()!=ArsLexis::FontEffects::underlineNone)
+        {
+            LOGPEN pen;
+            //TODO: again not effective
+            HGDIOBJ hgdiobj = GetCurrentObject(handle_,OBJ_PEN);
+            GetObject(hgdiobj, sizeof(pen), &pen);
+            pen.lopnStyle = style;
+            HPEN newPen=CreatePenIndirect(&pen);
+            SelectObject(handle_,newPen);
+            uint_t baseline=fontBaseline();
+            top=topLeft.y + height - baseline+1;
+            drawLine(topLeft.x, top, topLeft.x+width, top);            
+            SelectObject(handle_,hgdiobj);
+            DeleteObject(newPen);
         }*/
-        ExtTextOut(handle_, topLeft.x, topLeft.y, 0, 
-            NULL, text, length, NULL);
+
         //(handle_, topLeft.x , topLeft.y, text, length);
     }
     
@@ -85,9 +130,6 @@ namespace ArsLexis
         p[1].x=x1;
         p[1].y=y1;
         Polyline(handle_, p, 2);
-        // MoveToEx(handle_, x0, y0);
-        // LineTo(handle_, x1, y1); THIS DOESN'T WORK - STUPID WIN CE
-        // WinDrawLine(x0, y0, x1, y1);        
     }
 
     NativeColor_t Graphics::setForegroundColor(NativeColor_t color)
@@ -179,15 +221,12 @@ namespace ArsLexis
         SIZE size;
         //Boolean dontMind;
         //FntCharsInWidth(text, &w, &len, &dontMind);
-        GetTextExtentExPoint(handle_, text, length, width, 
-                &len, NULL, &size ); 
+        GetTextExtentExPoint(handle_, text, length, 0, 
+                NULL, NULL, &size ); 
         length = len;
         width = size.cx;
     }
 
-    //Graphics::Font_t& Graphics::font()
-    //{return support_.font;}
-    
     Graphics::Font_t Graphics::font() const
-    {return support_.font;}
+    {return font_;}
 }
