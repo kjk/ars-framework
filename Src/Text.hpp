@@ -219,6 +219,10 @@ void StrStrip(char_t *str);
 // If not found return -1.
 long StrFind(const char_t* str, long len, char_t chr);
 
+// Find string sub in string str. If len == -1  or slen == -1 assume that str is null-terminated and calculate length first.
+// If not found return -1.
+long StrFind(const char_t* str, long len, const char_t* sub, long slen);
+
 /**
  * outLength must be inLength*2 ("?text?"->"3f746578743f")
  * return used length of out buffer (2*inLength)

@@ -121,4 +121,8 @@ bool StyleParseColor(const char* value, ulong_t length, unsigned char& r, unsign
 #define styleAttrValueVerticalAlignSubscript "sub"
 #define styleAttrValueVerticalAlignSuperscript "superscript"
 
+#ifndef NDEBUG
+void test_StyleParse();
+#endif
+
 #endif

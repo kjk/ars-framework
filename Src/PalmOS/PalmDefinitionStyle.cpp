@@ -162,7 +162,8 @@ static bool StyleParseAttribute(const char* attr, ulong_t attrLen, const char* v
     if (StrEquals(attr, attrLen, styleAttrNameFontVariant))
     {
         if (StrEquals(val, valLen, styleAttrValueFontVariantSmallCaps))
-            style.small = style.yes;        else if (StrEquals(val, valLen, styleAttrValueFontVariantNormal))
+            style.small = style.yes;
+        else if (StrEquals(val, valLen, styleAttrValueFontVariantNormal))
             style.small = style.no;
         else
             return false;
@@ -319,7 +320,8 @@ DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)
 }
 
 
-#ifdef DEBUG
+#ifndef NDEBUG
+
 void test_StaticStyleTable()
 {
     // Validate that fields_ are sorted.
@@ -338,4 +340,22 @@ void test_StaticStyleTable()
     DefinitionStyle s = *getStaticStyle(styleIndexDefault);
     s |= *ptr;
 }
+
+void test_StyleParse()
+{
+    const char* txt = 
+" font-family: serif;\nfont-style:\n italic;\n\n \n \nfont-variant: small-caps\n;\n font-weight\n :\n bold\n ;font-size:large;color:rgb(\n90%,196, 0%\n);background-color:#fff;\n\n text-decoration: underline\n;vertical-align:baseline;";
+    DefinitionStyle* style = StyleParse(txt, strlen(txt));
+    assert(NULL != style);
+    assert(largeFont == style->fontId);
+    assert(style->yes == style->small);
+    assert(style->yes == style->bold);
+    assert(-1 != style->foregroundColor.index);
+    assert(-1 != style->backgroundColor.index);
+    assert(solidUnderline == style->underline);
+    assert(style->no == style->subscript);
+    assert(style->no == style->superscript);
+    delete style;
+}
+
 #endif

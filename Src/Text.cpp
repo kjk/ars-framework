@@ -1065,6 +1065,26 @@ long StrFind(const char_t* str, long len, char_t chr)
     return -1;
 }
 
+long StrFind(const char_t* str, long len, const char_t* sub, long slen)
+{
+    if (NULL == str || NULL == sub)
+        return -1;
+    if (-1 == len)
+        len = tstrlen(str);
+    if (-1 == slen)
+        slen = tstrlen(sub);
+        
+    if (slen > len)
+        return -1;
+    
+    long checks = (len - slen) + 1;
+    for (long i = 0; i < checks; ++i)
+        if (StrEquals(str + i, slen, sub, slen))
+            return i;
+    return -1;
+}
+
+
 long bufferToHexCode(const char* in, long inLength, char* out, long outLength)
 {
     assert(inLength*2 <= outLength);
