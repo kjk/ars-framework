@@ -27,18 +27,18 @@ class ListNumberElement;
  */
 class DefinitionParser
 {
-    Boolean openEmphasize_;
-    Boolean openStrong_;
-    Boolean openVeryStrong_;
-    UInt16 openTypewriter_;
-    UInt16 openSmall_;
-    UInt16 openStrikeout_;
-    UInt16 openUnderline_;
-    UInt16 openNowiki_;
+    bool openEmphasize_;
+    bool openStrong_;
+    bool openVeryStrong_;
+    uint_t openTypewriter_;
+    uint_t openSmall_;
+    uint_t openStrikeout_;
+    uint_t openUnderline_;
+    uint_t openNowiki_;
     
     void reset();
     
-    Boolean isPlainText() const;
+    bool isPlainText() const;
     
     /**
      * @internal
@@ -111,13 +111,13 @@ class DefinitionParser
     
     Definition definition_;
     const ArsLexis::String& text_;
-    UInt16 parsePosition_;
-    UInt16 lineEnd_;
-    UInt16 lastElementStart_;
-    UInt16 lastElementEnd_;
-    UInt16 unnamedLinksCount_;
+    uint_t parsePosition_;
+    uint_t lineEnd_;
+    uint_t lastElementStart_;
+    uint_t lastElementEnd_;
+    uint_t unnamedLinksCount_;
     
-    void parseText(UInt16 end, ElementStyle style);
+    void parseText(uint_t end, ElementStyle style);
     
     void parse();
     
@@ -143,7 +143,7 @@ class DefinitionParser
 
     ElementStyle currentStyle_;
     
-    static Boolean lineAllowsContinuation(LineType lineType)
+    static bool lineAllowsContinuation(LineType lineType)
     {
         return listElementLine==lineType || textLine==lineType || indentedLine==lineType;
     }
@@ -159,21 +159,21 @@ class DefinitionParser
     
     void parseListElementLine();
     
-    bool detectNextLine(UInt16 end, bool finish);
+    bool detectNextLine(uint_t end, bool finish);
     
-    Boolean detectHTMLTag(UInt16 textEnd);
+    bool detectHTMLTag(uint_t textEnd);
     
-    Boolean detectStrongTag(UInt16 textEnd);
+    bool detectStrongTag(uint_t textEnd);
     
-    Boolean detectHyperlink(UInt16 textEnd);
+    bool detectHyperlink(uint_t textEnd);
     
     GenericTextElement* createTextElement();
     
 public:
 
-    DefinitionParser(const ArsLexis::String& text, UInt16 initialOffset=0);
+    DefinitionParser(const ArsLexis::String& text, uint_t initialOffset=0);
 
-    void parseIncrement(UInt16 end, bool finish=false);
+    void parseIncrement(uint_t end, bool finish=false);
     
     void updateDefinition(Definition& definition);
     

@@ -12,7 +12,7 @@ using ArsLexis::String;
 using ArsLexis::isWhitespace;
 using ArsLexis::FontEffects;
 
-DefinitionParser::DefinitionParser(const String& text, UInt16 initialOffset):
+DefinitionParser::DefinitionParser(const String& text, uint_t initialOffset):
     openEmphasize_(false),
     openStrong_(false),
     openVeryStrong_(false),
@@ -61,7 +61,7 @@ void DefinitionParser::popAvailableParent()
 }
 
 
-Boolean DefinitionParser::isPlainText() const
+bool DefinitionParser::isPlainText() const
 {
     return !(openEmphasize_ || openStrong_ || openVeryStrong_ || openTypewriter_ ||
         openSmall_ || openStrikeout_ || openUnderline_);
@@ -94,10 +94,10 @@ static const char entityReferenceEnd=';';
 
 void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
 {
-    UInt16 length=text.length();
-    UInt16 index=0;
-    Boolean inEntity=false;
-    UInt16 entityStart=0;
+    uint_t length=text.length();
+    uint_t index=0;
+    bool inEntity=false;
+    uint_t entityStart=0;
     while (index<length)
     {
         char chr=text[index];
@@ -157,9 +157,9 @@ static const char linkCloseChar=']';
 #define strongText "'''"
 #define veryStrongText "''''"
 
-Boolean DefinitionParser::detectStrongTag(UInt16 end)
+bool DefinitionParser::detectStrongTag(uint_t end)
 {
-    Boolean isStrongTag=false;
+    bool isStrongTag=false;
     if (text_.find(emphasizeText, parsePosition_)==parsePosition_)
     {
         createTextElement();
@@ -197,7 +197,7 @@ Boolean DefinitionParser::detectStrongTag(UInt16 end)
 #define superscriptText "sup"
 
 //! @todo Implement DefinitionParser::detectHTMLTag()
-Boolean DefinitionParser::detectHTMLTag(UInt16 end)
+bool DefinitionParser::detectHTMLTag(uint_t end)
 {
     return false;
 }
@@ -207,12 +207,12 @@ Boolean DefinitionParser::detectHTMLTag(UInt16 end)
 #define linkCloseText "]"
 #define linkPartSeparator "|"
 
-Boolean DefinitionParser::detectHyperlink(UInt16 end)
+bool DefinitionParser::detectHyperlink(uint_t end)
 {
 
-    Boolean isHyperlink=false;
+    bool isHyperlink=false;
     String::size_type linkEndPos=text_.find(linkCloseText, parsePosition_+1);
-    UInt16 linkEnd=(text_.npos==linkEndPos?end:linkEndPos);
+    uint_t linkEnd=(text_.npos==linkEndPos?end:linkEndPos);
     if (linkEnd<end)
     {
         isHyperlink=true;
@@ -220,7 +220,7 @@ Boolean DefinitionParser::detectHyperlink(UInt16 end)
         if (linkOpenChar==text_[parsePosition_+1] && linkEnd+1<end && linkCloseChar==text_[linkEnd+1]) // Is it link to other wikipedia article?
         {
             parsePosition_+=2;
-            Boolean isOtherLanguage=(parsePosition_<linkEnd-2 && ':'==text_[parsePosition_+2]);
+            bool isOtherLanguage=(parsePosition_<linkEnd-2 && ':'==text_[parsePosition_+2]);
             // We don't want other language links as we provide only English contents, and we can't render names in some languages.
             if (!isOtherLanguage) 
             {
@@ -277,14 +277,14 @@ Boolean DefinitionParser::detectHyperlink(UInt16 end)
     return isHyperlink;
 }
 
-void DefinitionParser::parseText(UInt16 end, ElementStyle style)
+void DefinitionParser::parseText(uint_t end, ElementStyle style)
 {
     currentStyle_=style;
     lastElementStart_=parsePosition_;
     while (parsePosition_<end)
     {
         char chr=text_[parsePosition_];
-        Boolean specialChar=false;
+        bool specialChar=false;
         lastElementEnd_=parsePosition_;
         if ((htmlTagStart==chr && detectHTMLTag(end)) ||
             (0==openNowiki_ && 
@@ -340,8 +340,8 @@ void DefinitionParser::startNewNumberedList(ListNumberElement* firstElement)
 void DefinitionParser::finishCurrentNumberedList()
 {
     assert(!currentNumberedList_.empty());
-    UInt16 totalCount=currentNumberedList_.size();
-    for (UInt16 i=0; i<totalCount; ++i)
+    uint_t totalCount=currentNumberedList_.size();
+    for (uint_t i=0; i<totalCount; ++i)
         currentNumberedList_[i]->setTotalCount(totalCount);
     if (!numListsStack_.empty())
     {
@@ -354,18 +354,18 @@ void DefinitionParser::finishCurrentNumberedList()
 
 void DefinitionParser::manageListNesting(const String& newNesting)
 {
-    UInt16 lastNestingDepth=lastListNesting_.length();
-    UInt16 newNestingDepth=newNesting.length();
+    uint_t lastNestingDepth=lastListNesting_.length();
+    uint_t newNestingDepth=newNesting.length();
     if (lastNestingDepth || newNestingDepth)
     {
-        UInt16 firstDiff=0;  // This will be index of first character that makes previous and current nesting descr. differ.
+        uint_t firstDiff=0;  // This will be index of first character that makes previous and current nesting descr. differ.
         while (firstDiff<std::min(lastNestingDepth, newNestingDepth) && 
             lastListNesting_[firstDiff]==newNesting[firstDiff])
             firstDiff++;
             
         if (lastNestingDepth>0)
         {
-            for (UInt16 i=lastNestingDepth; i>firstDiff; --i)
+            for (uint_t i=lastNestingDepth; i>firstDiff; --i)
             {
                 char listType=lastListNesting_[i-1];
                 if (numberedListChar==listType)
@@ -376,7 +376,7 @@ void DefinitionParser::manageListNesting(const String& newNesting)
         
         if (newNestingDepth>0)
         {
-            Boolean continueList=false;
+            bool continueList=false;
             if (firstDiff==newNestingDepth) // Means we have just finished a sublist and next element will be another point in current list, not a sublist
             {
                 assert(firstDiff>0); 
@@ -384,7 +384,7 @@ void DefinitionParser::manageListNesting(const String& newNesting)
                 --firstDiff;                
                 continueList=true;    // Mark that next created element should be continuation of existing list, not start of new one
             }
-            for (UInt16 i=firstDiff; i<newNestingDepth; ++i)
+            for (uint_t i=firstDiff; i<newNestingDepth; ++i)
             {
                 char elementType=newNesting[firstDiff];
                 DefinitionElement* element=0;
@@ -421,7 +421,7 @@ void DefinitionParser::appendElement(DefinitionElement* element)
     definition_.appendElement(element);
 }
 
-bool DefinitionParser::detectNextLine(UInt16 textEnd, bool finish)
+bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
 {
     String::size_type end=text_.find('\n', parsePosition_);
     bool goOn=(text_.npos!=end && end<textEnd);
@@ -477,7 +477,7 @@ void DefinitionParser::parseTextLine()
     parseText(lineEnd_, styleDefault);                
 }
 
-void DefinitionParser::parseIncrement(UInt16 end, bool finish)
+void DefinitionParser::parseIncrement(uint_t end, bool finish)
 {
     bool goOn=false;
     do 
@@ -541,7 +541,7 @@ void DefinitionParser::parseHeaderLine()
 {
     while (parsePosition_<lineEnd_ && headerChar==text_[parsePosition_] || isWhitespace(text_[parsePosition_]))
         ++parsePosition_;
-    UInt16 lineEnd=lineEnd_;
+    uint_t lineEnd=lineEnd_;
     while (lineEnd>parsePosition_ && headerChar==text_[lineEnd-1] || isWhitespace(text_[lineEnd-1]))
         --lineEnd;
     ParagraphElement* para=new ParagraphElement();
@@ -555,7 +555,7 @@ void DefinitionParser::parseHeaderLine()
 void DefinitionParser::parseListElementLine()
 {
     String::size_type startLong=text_.find_first_not_of(listCharacters, parsePosition_);
-    UInt16 start=lineEnd_;
+    uint_t start=lineEnd_;
     if (text_.npos!=startLong && startLong<lineEnd_)
         start=startLong;
     String elementDesc(text_, parsePosition_, start-parsePosition_);
@@ -574,7 +574,7 @@ void DefinitionParser::parseIndentedLine()
     ++parsePosition_;
     while (parsePosition_<lineEnd_ && isWhitespace(text_[parsePosition_]))
         ++parsePosition_;
-    UInt16 lineEnd=lineEnd_;
+    uint_t lineEnd=lineEnd_;
     while (lineEnd>parsePosition_ && isWhitespace(text_[lineEnd-1]))
         --lineEnd;
     IndentedParagraphElement* para=new IndentedParagraphElement();

@@ -71,7 +71,7 @@ namespace ArsLexis
         if (support_.font.effects().strikeOut())
         {
             uint_t baseline=fontBaseline();
-            top=topLeft.y+baseline/2;
+            top=topLeft.y+baseline*0.667;
             uint_t width=FntCharsWidth(text, length);
             drawLine(topLeft.x, top, topLeft.x+width, top);
         }

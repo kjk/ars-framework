@@ -4,12 +4,60 @@
 #include "iPediaConnection.hpp"
 #include "SocketAddress.hpp"
 
+#include "FormattedTextElement.hpp"
+
 using namespace ArsLexis;
 
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
     displayMode_(showSplashScreen)
 {
+/*
+    FormattedTextElement* ft;
+    definition_.appendElement(ft=new FormattedTextElement("This is a piece of text written in standard font. "));    definition_.appendElement(ft=new FormattedTextElement("This is striked out. "));
+    ft->fontEffects().setStrikeOut(true);
+    definition_.appendElement(ft=new FormattedTextElement("This is once again a piece of text written in standard font. "));
+    definition_.appendElement(ft=new FormattedTextElement("This is underlined. "));
+    ft->fontEffects().setUnderline(FontEffects::underlineSolid);    
+    definition_.appendElement(ft=new FormattedTextElement("This is yet another piece of text written in standard font. "));
+    definition_.appendElement(ft=new FormattedTextElement("Bold. "));
+    ft->fontEffects().setWeight(FontEffects::weightBold);    
+    definition_.appendElement(ft=new FormattedTextElement("This is next piece of text written in standard font. "));
+    definition_.appendElement(ft=new FormattedTextElement("superscript "));
+    ft->fontEffects().setSuperscript(true);
+    definition_.appendElement(ft=new FormattedTextElement("Standard again. "));
+    definition_.appendElement(ft=new FormattedTextElement("subscript "));
+    ft->fontEffects().setSubscript(true);
+    definition_.appendElement(ft=new FormattedTextElement("And finally standard once more. "));
+    definition_.appendElement(ft=new FormattedTextElement("This is a piece of text written in standard font. "));
+    ft->setStyle(styleHeader);
+    definition_.appendElement(ft=new FormattedTextElement("This is striked out. "));
+    ft->fontEffects().setStrikeOut(true);
+    ft->setStyle(styleHeader);
+    definition_.appendElement(ft=new FormattedTextElement("This is once again a piece of text written in standard font. "));
+    ft->setStyle(styleHeader);
+    definition_.appendElement(ft=new FormattedTextElement("This is underlined. "));
+    ft->setStyle(styleHeader);
+    ft->fontEffects().setUnderline(FontEffects::underlineSolid);    
+    definition_.appendElement(ft=new FormattedTextElement("This is yet another piece of text written in standard font. "));
+    ft->setStyle(styleHeader);
+    definition_.appendElement(ft=new FormattedTextElement("Bold. "));
+    ft->setStyle(styleHeader);
+    ft->fontEffects().setWeight(FontEffects::weightBold);    
+    definition_.appendElement(ft=new FormattedTextElement("This is next piece of text written in standard font. "));
+    ft->setStyle(styleHeader);
+    definition_.appendElement(ft=new FormattedTextElement("superscript "));
+    ft->setStyle(styleHeader);
+    ft->fontEffects().setSuperscript(true);
+    definition_.appendElement(ft=new FormattedTextElement("Standard again. "));
+    ft->setStyle(styleHeader);
+    definition_.appendElement(ft=new FormattedTextElement("subscript "));
+    ft->setStyle(styleHeader);
+    ft->fontEffects().setSubscript(true);
+    definition_.appendElement(ft=new FormattedTextElement("And finally standard once more. "));
+    ft->setStyle(styleHeader);
+    setDisplayMode(showDefinition);    
+*/    
 }
 
 MainForm::~MainForm()
