@@ -7,6 +7,87 @@
 namespace ArsLexis 
 {
 
+#if defined(_WIN32)    
+    char_t PalmToUnicode[160-128] = 
+    {
+     8364, 129 , 8218,  131, 8222, 8230, 8224, 8225,  710, 8240, 
+      352, 8249,  338, 9674,  142,  143,  144, 8216, 8217, 8220, 
+     8221, 8226, 8211, 8212, 8776, 8482,  353, 8250,  339,  157, 
+      158,  159
+    };
+
+    char_t UnicodeToPalm[24][2] = 
+    {
+      338, 140,  339, 156,  352, 138,  353, 154,  710, 136, 
+     8211, 150, 8212, 151, 8216, 145, 8217, 146, 8218, 130, 
+     8220, 147, 8221, 148, 8222, 132, 8224, 134, 8225, 135,
+     8226, 149, 8230, 133, 8240, 137, 8249, 139, 8250, 155,
+     8364, 128, 8482, 153, 8776, 152, 9674, 141
+    };
+    struct CharToByte
+    { 
+        char operator()(char_t in) 
+        {   
+            if(in<=255) //Is it common code ?
+                return char(in);
+            else //It's unicode char
+            {
+                //Maybe binary search - MS doesn't support 
+                //as always standard and bsearch
+                for(int i=0; i<24; i++)
+                    if(UnicodeToPalm[i][0]==in)
+                        return (char)UnicodeToPalm[i][1];
+                assert(true); //we never shall reach this point
+                return 0;
+            }
+        }
+    };
+    
+    struct ByteToChar 
+    { 
+        char_t operator()(unsigned char in) {
+            if((in>=128)&&(in<=159))
+                return PalmToUnicode[in-128];
+            else
+                return char_t(in);
+        }
+    };
+#endif
+    
+    void TextToByteStream(const String& inTxt, NarrowString& outStream)
+    {
+#if defined(_WIN32)
+        /*Why this doesn't work I have no idea
+        char *out=NULL;
+        int size = WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, 0, NULL,NULL);
+        out=new char[size];
+        WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
+        outStream.assign(out);
+        delete []out;*/
+        outStream.reserve(inTxt.length());
+        std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
+#else
+        outStream.assign(inTxt);
+#endif
+    }
+
+    void ByteStreamToText(const NarrowString& inStream, String& outTxt)
+    {
+#if defined(_WIN32)
+        /*Why this doesn't work I have no idea
+        char_t *out=NULL;
+        int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
+        out=new char_t[size];
+        MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
+        outTxt.assign(out);
+        delete []out;*/
+        outTxt.reserve(inStream.length());
+        std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
+#else
+        outTxt.assign(inStream);
+#endif
+    }
+
     bool startsWith(const String& text, const char_t* start, uint_t startOffset)
     {
         while (startOffset<text.length() && *start)

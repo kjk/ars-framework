@@ -62,51 +62,10 @@ namespace ArsLexis
         return std::isspace(chr);
 #endif
     }
-    
-    struct CharToByte 
-    { 
-        char operator()(char_t in) {return char(in);}
-    };
-    
-    struct ByteToChar 
-    { 
-        char_t operator()(char in) {return char_t(in);}
-    };
 
-    inline void TextToByteStream(const String& inTxt, NarrowString& outStream)
-    {
-#if defined(_WIN32)
-        /*Why this doesn't work I have no idea
-        char *out=NULL;
-        int size = WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, 0, NULL,NULL);
-        out=new char[size];
-        WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
-        outStream.assign(out);
-        delete []out;*/
-        outStream.reserve(inTxt.length());
-        std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
-#else
-        outStream.assign(inTxt);
-#endif
-    }
+    void TextToByteStream(const String& inTxt, NarrowString& outStream);
 
-    inline void ByteStreamToText(const NarrowString& inStream, String& outTxt)
-    {
-#if defined(_WIN32)
-        /*Why this doesn't work I have no idea
-        char_t *out=NULL;
-        int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
-        out=new char_t[size];
-        MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
-        outTxt.assign(out);
-        delete []out;*/
-        outTxt.reserve(inStream.length());
-        std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
-#else
-        outTxt.assign(inStream);
-#endif
-    }
-
+    void ByteStreamToText(const NarrowString& inStream, String& outTxt);
 
     template<class Ch>
     struct C_StringLess

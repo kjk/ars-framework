@@ -38,11 +38,13 @@ namespace ArsLexis
 
     typedef unsigned short LocalID;
     
+    typedef std::basic_string<unsigned char>   NarrowString;
+
 # define tstrlen _tcslen
 # define tprintf _stprintf
 # define ticks   GetTickCount
 
-
+    
 // Using xtoi functions is dangerous as they don't have any way to inform on invalid format. Use ArsLexis::numericValue() instead.
 //# define tatoi _wtoi
 
@@ -61,6 +63,8 @@ namespace ArsLexis
     
     // One would ask: why some stupid status_t and not error_t? Because PalmOS Cobalt is coming...
     typedef Err status_t;
+    
+    typedef std::basic_string<char>   NarrowString;
 
 #  define ticks TimGetTicks
     
@@ -86,7 +90,8 @@ namespace ArsLexis
 #endif
 
     typedef std::basic_string<char_t> String;
-    typedef std::basic_string<char>   NarrowString;
+
+    
 }  
 
 #if !defined(chrNull)
