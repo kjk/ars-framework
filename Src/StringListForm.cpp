@@ -72,13 +72,13 @@ void StringListForm::handleControlSelect(const EventType& event)
     if ( controlId == selectButtonId_ )
     {
         List list(*this, stringListId_);
-        sendEvent(eventToSend_, StringListEventData(list.selection()));
         closePopup();
+        sendEvent(eventToSend_, StringListEventData(list.selection()));
     }
     else if ( controlId == cancelButtonId_)
     {
-        sendEvent(eventToSend_, StringListEventData(NOT_SELECTED));
         closePopup();
+        sendEvent(eventToSend_, StringListEventData(NOT_SELECTED));
     }
 #ifdef DEBUG
     else
@@ -91,8 +91,8 @@ void StringListForm::handleListSelect(const EventType& event)
     assert(stringListId_==event.data.lstSelect.listID);
     assert(event.data.lstSelect.selection < stringCount_);
 
-    sendEvent(eventToSend_, StringListEventData(event.data.lstSelect.selection));
     closePopup();
+    sendEvent(eventToSend_, StringListEventData(event.data.lstSelect.selection));
 }
 
 bool StringListForm::handleKeyPress(const EventType& event)

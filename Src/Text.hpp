@@ -152,9 +152,9 @@ namespace ArsLexis
 
     void strip(String& str);
     
-    std::vector<ArsLexis::String> split(const String& str, const String& spliter);
+    std::vector<ArsLexis::String> split(const String& str, const String& splitter = _T(" "));
     
-    String join(const std::vector<ArsLexis::String>& vec, const String& joiner);
+    String join(const std::vector<ArsLexis::String>& vec, const String& joiner = _T(" "));
 
     void replaceCharInString(char_t *str, char_t orig, char_t replacement);
 

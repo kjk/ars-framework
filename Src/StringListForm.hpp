@@ -46,7 +46,7 @@ public:
 
     ~StringListForm();
 
-    void SetStringList(int stringCount, char_t *strList[], uint_t eventToSend);
+    void SetStringList(int stringCount, char_t* strList[], uint_t eventToSend);
 };
 
 #endif

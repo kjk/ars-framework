@@ -391,7 +391,7 @@ String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
     return str.substr(lineStartPos, lineLen);
 }
 
-char_t *StringCopy(const char_t *curStr)
+char_t* StringCopy(const char_t *curStr)
 {
     using namespace std;
     int len = tstrlen(curStr);
@@ -404,13 +404,7 @@ char_t *StringCopy(const char_t *curStr)
     return newStr;
 }    
 
-// note: caller needs to free memory with delete[]
-char_t *StringCopy(const String& str)
-{
-    return StringCopy(str.c_str());
-}
-
-char_t *StringCopyN(const char_t *str, int strLen)
+char_t* StringCopyN(const char_t* str, int strLen)
 {
     using namespace std;
     char_t *newStr = new char_t[strLen+1];
@@ -419,6 +413,12 @@ char_t *StringCopyN(const char_t *str, int strLen)
     memcpy(newStr, str, strLen*sizeof(char_t));
     newStr[strLen] = chrNull;
     return newStr;
+}
+
+// note: caller needs to free memory with delete[]
+char_t* StringCopy(const String& str)
+{
+    return StringCopyN(str.data(), str.length());
 }
 
 // given a list of strings, free memory taken by each string in the list.
@@ -473,7 +473,7 @@ void strip(String& str)
         str.assign(str, left, right-left);
 }
 
-std::vector<ArsLexis::String> split(const String& str, const String& spliter = _T(" "))
+std::vector<ArsLexis::String> split(const String& str, const String& spliter)
 {
     std::vector<ArsLexis::String> vec;
     String::size_type curPos = 0;
@@ -569,7 +569,7 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
     return strList;
 }
    
-String join(const std::vector<ArsLexis::String>& vec, const String& joiner = _T(" "))
+String join(const std::vector<ArsLexis::String>& vec, const String& joiner)
 {
     String str = "";
     for (uint_t i=0; i < vec.size(); i++)
@@ -581,7 +581,7 @@ String join(const std::vector<ArsLexis::String>& vec, const String& joiner = _T(
     return str;
 }
 
-void replaceCharInString(char_t *str, char_t orig, char_t replacement)
+void replaceCharInString(char_t* str, char_t orig, char_t replacement)
 {
     while (_T('\0')!=*str)
     {
