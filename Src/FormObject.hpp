@@ -208,7 +208,7 @@ namespace ArsLexis
         void setChoices(const char* choices[], uint_t choicesCount)
         {LstSetListChoices(object(), const_cast<char**>(choices), choicesCount);}
         
-        uint_t visibleItems() const
+        uint_t visibleItemsCount() const
         {return LstGetVisibleItems(object());}
         
         void draw()
@@ -217,7 +217,7 @@ namespace ArsLexis
         void setSelection(uint_t item)
         {LstSetSelection(object(), item);}
 
-        int getSelection() const
+        int selection() const
         {return LstGetSelection(object());}
 
         void makeItemVisible(uint_t item)
@@ -226,8 +226,11 @@ namespace ArsLexis
         bool scroll(WinDirectionType direction, uint_t items)
         {return LstScrollList(object(), direction, items);}
 
-        uint_t numberOfItems() const
+        uint_t itemsCount() const
         {return LstGetNumberOfItems(object()); }
+        
+        int topItem() const
+        {return LstGetTopItem(object());}
 
         void setSelectionDelta(int delta);
         
@@ -256,6 +259,11 @@ namespace ArsLexis
         };
         
         void setCustomDrawHandler(CustomDrawHandler* handler);
+        
+        void adjustVisibleItems();
+        
+        void setTopItem(uint_t item)
+        {LstSetTopItem(object(), item);}
 
     };
     

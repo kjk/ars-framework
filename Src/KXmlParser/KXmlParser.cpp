@@ -14,7 +14,7 @@ using namespace KXml2;
 #pragma pcrelconstdata on
 #pragma far_code
 #pragma inline_bottom_up on 
-//#pragma inline_depth(100)
+#pragma inline_depth(100)
 
 #endif
 
@@ -604,12 +604,8 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
         {
             int i = (attributeCount_++) << 2;
             attributes_.resize(i + 4);
-            // These calls are redundant!            
             i+=2;
-//            attributes_[i++] = "";
-//            attributes_[i++] = ""; //NULL;
             attributes_[i++] = attrName;
-//            attributes_[i] = "";
         }
         else
         {
@@ -725,24 +721,8 @@ error_t KXmlParser::parseEndTag()
             return eExpectedDifferentName;
     }
     else
-    {   
-/*
-        String str1 = name_;
-        String str2 = elementStack_[sp + 3];
-        //TODO: str1, str2 toLower()
-        MUSTDO
-		std::transform(str1.begin(), str1.end(), str1.begin(), ArsLexis::toLower);
-		std::transform(str2.begin(), str2.end(), str2.begin(), ArsLexis::toLower);
-
-        for (int t=0; t<(int)str1.length(); t++)
-            str1[t] = ArsLexis::toLower(str1[t]);
-        for (int t1=0; t1<(int)str2.length(); t1++)
-            str2[t1] = ArsLexis::toLower(str2[t]);
-*/
-
         if (depth_ == 0 || !ArsLexis::equalsIgnoreCase(name_, elementStack_[sp + 3]))
             return eNoError; //was just return, so no error
-    }
     nameSpace_ = elementStack_[sp];
     prefix_ = elementStack_[sp + 1];
     name_ = elementStack_[sp + 2];
@@ -1049,13 +1029,13 @@ bool KXmlParser::isProp (const String& n1, bool prop, const String& n2) {
 
 error_t KXmlParser::setFeature(const String& feature, bool flag)
 {
-    if (FEATURE_PROCESS_NAMESPACES == feature)
+    if (0==feature.compare(FEATURE_PROCESS_NAMESPACES))
         processNsp_ = flag;
     else
         if (isProp(feature, false, _T("relaxed")))
             relaxed_ = flag;
         else
-            if(FEATURE_COMPLETLY_LOOSE == feature)
+            if (0==feature.compare(FEATURE_COMPLETLY_LOOSE))
                 completlyLoose_ = flag;
             else
                 return eUnsupportedFeature;

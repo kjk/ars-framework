@@ -4,10 +4,6 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 
-#if defined(_PALM_OS)
-#include <PalmOS.h>
-#endif
-
 namespace ArsLexis
 {
 

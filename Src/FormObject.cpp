@@ -66,31 +66,17 @@ namespace ArsLexis
     // the caller doesn't have to worry about this stuff)
     void List::setSelectionDelta(int delta)
     {
-        assert(0!=delta);
-
-        uint_t curSelection;
-
-        if (noListSelection==getSelection())
-            curSelection = 0;
-        else
-            curSelection = (uint_t)getSelection();
-
-        if (delta>0)
-        {
-            curSelection += (uint_t)delta;
-            if (curSelection>numberOfItems()-1)
-                curSelection=numberOfItems()-1;
-        }
-        else
-        {
-            delta = -delta;
-            if (curSelection<(uint_t)delta)
-                curSelection=0;
-            else
-                curSelection-=delta;
-        }
-        setSelection(curSelection);
-        makeItemVisible(curSelection);
+        if (0==delta)
+            return;
+        // Why? If some calculations lead to delta==0, let it be.
+        // assert(0!=delta);
+        int sel=selection();
+        if (noListSelection==sel)
+            sel = 0;
+        sel+=delta;
+        sel=std::max(0, std::min<int>(sel, itemsCount()-1));
+        setSelection(sel);
+        makeItemVisible(sel);
     }
 
     List::CustomDrawHandler::CustomDrawHandler():
@@ -128,6 +114,16 @@ namespace ArsLexis
         Rectangle bounds(*rect);
         List list(*handler->form_, handler->listId_);
         handler->drawItem(list, itemNum, bounds);
+    }
+
+    void List::adjustVisibleItems() 
+    {
+        int top=topItem();
+        int visible=visibleItemsCount();
+        int total=itemsCount();
+        if (total-top<visible)
+            top=std::max(0, total-visible);
+        setTopItem(top);
     }
     
 }
