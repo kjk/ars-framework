@@ -248,7 +248,7 @@ enum PopupMenuItemFlag
 void PopupMenuModel::setItems(Item* items, uint_t itemsCount)
 {
     assert(NULL != items);
-    delete this->items;
+    delete [] this->items;
     this->items = items;
     this->count = itemsCount;
 }
