@@ -327,7 +327,7 @@ def convertAll(articleLimit):
 
 def convertAllFromSQL(fileName,articleLimit):
     count = 0
-    for article in convertFromSQL.iterWikipediaArticles(fileName):
+    for article in wikipediasql.iterWikipediaArticles(fileName):
         title = article.getTitle()
         txt = article.getText()
         timestamp = article.getNs()
