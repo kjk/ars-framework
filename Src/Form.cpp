@@ -220,7 +220,8 @@ namespace ArsLexis
                 FormObject object(*this, entryFocusControlId_);
                 object.focus();
                 entryFocusControlId_ = frmInvalidObjectId;
-                object.draw();
+                if (visible())
+                    object.draw();
             }
         }
         return false;
