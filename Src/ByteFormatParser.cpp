@@ -412,3 +412,21 @@ status_t ByteFormatParser::parseAll(const char_t* inputText)
     assert(elementsCount_ == totalElementsCount_);
     return error;
 }
+
+ulong_t readUnaligned32(const char* addr)
+{
+    return
+    (
+    (((ulong_t)((unsigned char)addr[0])) << 24) | 
+    (((ulong_t)((unsigned char)addr[1])) << 16) | 
+    (((ulong_t)((unsigned char)addr[2])) <<  8) | 
+    ((ulong_t)((unsigned char)addr[3])) );
+}    
+void writeUnaligned32(char* addr, ulong_t value)
+{
+    addr[0] = (char)((ulong_t)(value) >> 24);
+    addr[1] = (char)((ulong_t)(value) >> 16);
+    addr[2] = (char)((ulong_t)(value) >>  8);
+    addr[3] = (char)((ulong_t)(value));
+}    
+

@@ -3,6 +3,9 @@
 
 #include <DefinitionElement.hpp>
 
+ulong_t readUnaligned32(const char* addr);
+void    writeUnaligned32(char* addr, ulong_t value);
+
 /**
  Used to change byteData to DefinitnionElements
 
