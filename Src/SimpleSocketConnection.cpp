@@ -73,7 +73,7 @@ namespace ArsLexis
             }
         }
         else
-            error=sockConnErrResponseTooLong;                
+            error=errResponseTooLong;                
             
         if (error)
             handleError(error);

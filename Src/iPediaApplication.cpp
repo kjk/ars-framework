@@ -11,13 +11,17 @@ IMPLEMENT_APPLICATION_INSTANCE(appFileCreator)
 using namespace ArsLexis;
 
 iPediaApplication::iPediaApplication():
-    log_("root", "\\log\\iPedia.log"),
+    log_("root"),
     diaNotifyRegistered_(false),
     netLib_(0),
     connectionManager_(0),
     ticksPerSecond_(SysTicksPerSecond()),
     resolver_(0)
 {
+#ifndef NDEBUG
+//    log_.replaceSink(new HostFileLogSink("\\log\\iPedia.log"));
+    log_.replaceSink(new MemoLogSink());
+#endif
     log()<<"iPedia Application instantiated.";
 }
 

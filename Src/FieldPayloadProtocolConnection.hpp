@@ -38,9 +38,7 @@ namespace ArsLexis
     protected:
     
         virtual Err handleField(const String& name, const String& value)
-        {
-            return sockConnErrResponseMalformed;
-        }
+        {return errResponseMalformed;}
         
         PayloadHandler* releasePayloadHandler()
         {

@@ -87,7 +87,7 @@ Err iPediaConnection::handleField(const String& name, const String& value)
         if (!error)
             formatVersion_=numValue;
         else
-            error=sockConnErrResponseMalformed;
+            error=errResponseMalformed;
     }
     else if (0==name.find(definitionForField))
         definitionForTerm_=value;
@@ -101,20 +101,15 @@ Err iPediaConnection::handleField(const String& name, const String& value)
             payloadType_=payloadDefinition;
         }
         else
-            error=sockConnErrResponseMalformed;
+            error=errResponseMalformed;
     }
     else if (0==name.find(cookieField))
     {
         iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
         if (value.length()!=iPediaApplication::Preferences::cookieLength)
-            error=sockConnErrResponseMalformed;
+            error=errResponseMalformed;
         else
-        {
-            
-//            StrNCopy(app.preferences().cookie, value.data(), value.length());
-//            app.preferences().cookie[value.length()]=chrNull;
             app.preferences().cookie=value;
-        }
     }
     else if (0==name.find(errorField))
     {
@@ -124,10 +119,10 @@ Err iPediaConnection::handleField(const String& name, const String& value)
             if (numValue>=serverErrorFirst && numValue<=serverErrorLast)
                 serverError_=static_cast<ServerError>(numValue);
             else
-                error=sockConnErrResponseMalformed;
+                error=errResponseMalformed;
         }            
         else
-            error=sockConnErrResponseMalformed;
+            error=errResponseMalformed;
     }
     else 
         error=FieldPayloadProtocolConnection::handleField(name, value);
@@ -188,11 +183,11 @@ void iPediaConnection::handleError(Err error)
     UInt16 alertId=frmInvalidObjectId;
     switch (error)
     {
-        case sockConnErrResponseTooLong:
+        case errResponseTooLong:
             alertId=definitionTooBigAlert;
             break;
             
-        case sockConnErrResponseMalformed:
+        case errResponseMalformed:
             alertId=malformedResponseAlert;
             break;
         

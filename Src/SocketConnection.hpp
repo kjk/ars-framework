@@ -7,6 +7,7 @@
 
 namespace ArsLexis
 {
+
     class SocketConnection;
 
     class SocketConnectionManager
@@ -67,6 +68,13 @@ namespace ArsLexis
         SocketConnection(SocketConnectionManager& manager);
         
     public:
+    
+        enum Error
+        {
+            errResponseTooLong=sockConnErrorClass,
+            errResponseMalformed,
+            errFirstAvailable
+        };
     
         virtual void handleError(Err error)
         {abortConnection();}

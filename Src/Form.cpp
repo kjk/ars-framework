@@ -17,22 +17,21 @@ namespace ArsLexis
             {
                 case winExitEvent:
                     form=app.getOpenForm(event->data.winExit.exitWindow);
-                    if (0==form)
-                        form=app.getOpenForm(FrmGetActiveFormID());
                     break;
                     
                 case winEnterEvent:
                     form=app.getOpenForm(event->data.winEnter.enterWindow);
-                    if (0!=form)
-                        break;
+                    break;
                     
                 default:
                     form=app.getOpenForm(FrmGetActiveFormID());
             }
             
         }
-        assert(form!=0);
-        return form->handleEvent(*event);
+        if (form)
+            return form->handleEvent(*event);
+        else
+            return false;
     }
     
     Form::Form(Application& app, UInt16 id):

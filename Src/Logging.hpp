@@ -7,6 +7,56 @@
 namespace ArsLexis
 {
 
+#pragma mark LogSink
+    
+    class LogSink
+    {
+    public:
+        virtual ~LogSink()
+        {}
+        
+        virtual void output(const String& str)=0;
+    };
+
+#pragma mark -
+#pragma mark HostFileLogSink
+    
+    class HostFileLogSink: public LogSink
+    {
+        HostFILEType* file_;
+        
+    public:        
+        
+        explicit HostFileLogSink(const char* fileName);
+        
+        ~HostFileLogSink();
+        
+        void output(const String& str);
+        
+    };
+    
+#pragma mark -
+#pragma mark MemoLogSink
+    
+    class MemoLogSink: public LogSink
+    {
+        DmOpenRef db_;
+        
+        void closeDatabase();
+        
+    public:        
+        
+        MemoLogSink();
+        
+        ~MemoLogSink();
+        
+        void output(const String& str);
+        
+    };
+    
+#pragma mark -
+#pragma mark Logger
+
     class Logger
     {
         const char* context_;
@@ -108,24 +158,57 @@ namespace ArsLexis
         return LineAppender(*this)<<val;
     }
     
+#pragma mark -
+#pragma mark RootLogger
+
     class RootLogger: public Logger
     {
-        HostFILEType* file_;
+        LogSink* sink_;
         
     public:
     
-        RootLogger(const char* context, const char* fileName);
+        RootLogger(const char* context, LogSink* sink=0):
+            Logger(context),
+            sink_(sink)
+        {}
         
-        ~RootLogger();
+        LogSink* setSink(LogSink* newSink)
+        {
+            LogSink* prev=sink_;
+            sink_=newSink;
+            return prev;
+        }
+        
+        void replaceSink(LogSink* newSink)
+        {
+            delete setSink(newSink);
+        }
+        
+        LogSink* releaseSink()
+        {
+            return setSink(0);
+        }
+        
+        ~RootLogger()
+        {
+            delete sink_;
+        }
         
         static RootLogger* instance();
         
     protected:
         
-        void logRaw(const String& text);
+        void logRaw(const String& text)
+        {
+            if (sink_)
+                sink_->output(text);
+        }
     
     };
     
+#pragma mark -
+#pragma mark ChildLogger
+
     class ChildLogger: public Logger
     {
         Logger* parent_;
@@ -152,6 +235,9 @@ namespace ArsLexis
         
     };
     
+#pragma mark -
+#pragma mark FunctionLogger
+
     class FunctionLogger: public ChildLogger
     {
     public:
