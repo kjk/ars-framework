@@ -22,4 +22,6 @@ bool ListCtrlGetSelectedItemText(HWND ctrl, String& txtOut);
 bool GotoURL(const ArsLexis::char_t *url);
 bool GetSpecialFolderPath(String& pathOut, BOOL fCreate=TRUE);
 
+int GetScrollBarDx();
+
 #endif

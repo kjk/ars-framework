@@ -20,14 +20,13 @@ static String newRegCode;
 
 static BOOL OnInitDialog(HWND hDlg, const String& oldRegCode)
 {
-    SHINITDLGINFO shidi;
-    ZeroMemory(&shidi, sizeof(shidi));
+    SHINITDLGINFO shidi = {0};
     shidi.dwMask   = SHIDIM_FLAGS;
 
 #ifdef WIN32_PLATFORM_PSPC
-        shidi.dwFlags  = SHIDIF_SIZEDLG | SHIDIF_EMPTYMENU;
+    shidi.dwFlags  = SHIDIF_SIZEDLG | SHIDIF_EMPTYMENU;
 #else
-        shidi.dwFlags  = SHIDIF_SIZEDLGFULLSCREEN;
+    shidi.dwFlags  = SHIDIF_SIZEDLGFULLSCREEN;
 #endif
     shidi.hDlg     = hDlg;
 

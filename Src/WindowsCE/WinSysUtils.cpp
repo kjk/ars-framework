@@ -173,3 +173,13 @@ bool GetSpecialFolderPath(String& pathOut, BOOL fCreate)
 #endif
 }
 
+int GetScrollBarDx()
+{
+    int scrollBarDx = -1;
+    if (-1==scrollBarDx)
+    {
+        scrollBarDx = GetSystemMetrics(SM_CXVSCROLL);
+    }
+    return scrollBarDx;
+}
+

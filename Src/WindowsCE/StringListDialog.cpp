@@ -30,13 +30,14 @@ static bool    fRemoveDups = false;
 static CharPtrList_t * g_strList = NULL;
 static String          selectedWord;
 
-const int hotKeyCode = 0x32;
+#define HOT_KEY_ACTION 0x32
 
 static LRESULT CALLBACK ListWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
-    if (0x87==msg)   //What the hell is constatnt - any idea VK_F24 ??
+    // What the hell is constant - any idea VK_F24 ??
+    if (0x87==msg)
     {
-        if (hotKeyCode==wp)
+        if (HOT_KEY_ACTION==wp)
         {
             SendMessage(g_hRecentLookupDlg, WM_COMMAND, ID_SELECT, 0);
         }
@@ -74,7 +75,7 @@ static BOOL InitStringList(HWND hDlg)
 
     HWND ctrlList = GetDlgItem(hDlg, IDC_STRING_LIST);
     g_oldListWndProc = (WNDPROC)SetWindowLong(ctrlList, GWL_WNDPROC, (LONG)ListWndProc);
-    RegisterHotKey(ctrlList, hotKeyCode, 0, VK_TACTION);
+    RegisterHotKey(ctrlList, HOT_KEY_ACTION, 0, VK_TACTION);
 
     ListCtrlFillFromList(ctrlList, *g_strList, fRemoveDups);
 
