@@ -19,7 +19,8 @@ iPediaConnection::iPediaConnection(LookupManager& lookupManager):
     notFound_(false),
     registering_(false),
     performFullTextSearch_(false),
-    getRandom_(false)
+    getRandom_(false),
+    getArticleCount_(false)
 {
 }
 
@@ -76,7 +77,7 @@ void iPediaConnection::prepareRequest()
         appendField(request, getRandomDefField);
     }
     
-    if (lookupManager_.articleCountNotChecked==lookupManager_.articleCount())
+    if (getArticleCount_)
         appendField(request, getArticleCountField);
 
     request+='\n';
@@ -233,7 +234,10 @@ Err iPediaConnection::handleField(const String& name, const String& value)
     {
         error=numericValue(value, numValue);
         if (!error)
-            lookupManager_.setArticleCount(numValue);
+        {
+            iPediaApplication& app=iPediaApplication::instance();
+            app.preferences().articleCount=numValue;
+        }
         else
             error=errResponseMalformed;
     }

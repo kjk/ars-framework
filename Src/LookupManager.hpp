@@ -77,8 +77,7 @@ public:
         history_(history),
         historyChange_(historyMoveForward),
         percentProgress_(percentProgressDisabled),
-        lookupInProgress_(false),
-        articleCount_(articleCountNotChecked)
+        lookupInProgress_(false)
     {}
     
     ~LookupManager();
@@ -120,11 +119,6 @@ public:
     
     void checkArticleCount();
     
-    long articleCount() const
-    {return articleCount_;}
-
-    enum {articleCountNotChecked=-1L};
-    
 private:
     
     void handleServerError(ServerError serverError);
@@ -159,11 +153,6 @@ private:
     HistoryChange historyChange_:7; // I don't remember how many bits it needs. I assume 7 will do.
     bool lookupInProgress_:1;
     
-    long articleCount_;    
-    
-    void setArticleCount(long count)
-    {articleCount_=count;}
-
 };
 
 #endif

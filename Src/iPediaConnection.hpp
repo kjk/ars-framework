@@ -91,6 +91,9 @@ public:
     void setRandom()
     {getRandom_=true;}
     
+    void setRetrieveArticleCount(bool value=true)
+    {getArticleCount_=value;}
+    
 private:
     
     LookupManager::ServerError serverError_;
@@ -99,6 +102,7 @@ private:
     bool registering_:1;
     bool performFullTextSearch_:1;
     bool getRandom_:1;
+    bool getArticleCount_:1;
     
 };
 

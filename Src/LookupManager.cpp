@@ -208,8 +208,8 @@ void LookupManager::showProgress(ArsLexis::Graphics& graphics, const ArsLexis::R
 
 void LookupManager::checkArticleCount()
 {
-    articleCount_=articleCountNotChecked;
     iPediaConnection* conn=new iPediaConnection(*this);
     conn->setAddress(iPediaApplication::instance().server());
+    conn->setRetrieveArticleCount();
     conn->enqueue();
 }

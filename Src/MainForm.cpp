@@ -116,13 +116,12 @@ void MainForm::drawSplashScreen(Graphics& graphics, const ArsLexis::Rectangle& b
     
     graphics.drawCenteredText("http://www.arslexis.com", point, rect.width());
     
-    const LookupManager* lookupManager=app.getLookupManager();
-    if (0!=lookupManager && lookupManager->articleCountNotChecked!=lookupManager->articleCount())
+    if (app.preferences().articleCountNotChecked!=app.preferences().articleCount)
     {
         point.y+=20;
         ArsLexis::String articleCountText="Number of articles: ";
         char buffer[16];
-        int len=StrPrintF(buffer, "%ld", lookupManager->articleCount());
+        int len=StrPrintF(buffer, "%ld", app.preferences().articleCount);
         articleCountText.append(buffer, len);
         graphics.drawCenteredText(articleCountText.c_str(), point, rect.width());
     }

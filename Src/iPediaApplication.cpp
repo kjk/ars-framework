@@ -189,6 +189,7 @@ namespace {
         cookiePrefId,
         serialNumberPrefId,
         serialNumberRegFlagPrefId,
+        lastArticleCountPrefId,
         lookupHistoryFirstPrefId,
         renderingPrefsFirstPrefId=lookupHistoryFirstPrefId+LookupHistory::reservedPrefIdCount,
         
@@ -217,6 +218,8 @@ void iPediaApplication::loadPreferences()
     prefs.serialNumber=text;
     if (errNone!=(error=reader->ErrGetBool(serialNumberRegFlagPrefId, safe_reinterpret_cast<Boolean*>(&prefs.serialNumberRegistered))))
         goto OnError;
+    if (errNone!=(error=reader->ErrGetLong(lastArticleCountPrefId, &prefs.articleCount))) 
+        goto OnError;
     if (errNone!=(error=prefs.renderingPreferences.serializeIn(*reader, renderingPrefsFirstPrefId)))
         goto OnError;
     preferences_=prefs;    
@@ -238,6 +241,8 @@ void iPediaApplication::savePreferences()
     if (errNone!=(error=writer->ErrSetStr(serialNumberPrefId, preferences_.serialNumber.c_str())))
         goto OnError;
     if (errNone!=(error=writer->ErrSetBool(serialNumberRegFlagPrefId, preferences_.serialNumberRegistered)))
+        goto OnError;
+    if (errNone!=(error=writer->ErrSetLong(lastArticleCountPrefId, preferences_.articleCount))) 
         goto OnError;
     if (errNone!=(error=preferences_.renderingPreferences.serializeOut(*writer, renderingPrefsFirstPrefId)))
         goto OnError;

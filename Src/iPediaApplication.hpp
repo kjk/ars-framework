@@ -81,11 +81,16 @@ public:
         bool serialNumberRegistered;
         bool checkArticleCountAtStartup;
         
+        enum {articleCountNotChecked=-1L};
+        
+        long articleCount;
+        
         Preferences():
             serialNumberRegistered(false),
-            checkArticleCountAtStartup(true)
+            checkArticleCountAtStartup(true),
+            articleCount(articleCountNotChecked)            
         {}
-
+        
     };
     
     Preferences& preferences() 
