@@ -1,5 +1,6 @@
 #include <Application.hpp>
 #include <Form.hpp>
+
 #include <memory>
 
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.

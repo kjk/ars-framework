@@ -22,7 +22,7 @@ namespace ArsLexis
         {
             Err error=NetLibSocketClose(netLib_, socket_, evtWaitForever, &error);
             if (error)
-                log()<<"~SocketBase(): NetLibSocketClose() returned error, "<<error;
+                log().error()<<"~SocketBase(): NetLibSocketClose() returned error, "<<error;
         }
     }
     

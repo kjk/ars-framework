@@ -7,23 +7,12 @@
 #ifndef __ARSLEXIS_DEBUG_HPP__
 #define __ARSLEXIS_DEBUG_HPP__
 
-#if defined(__MWERKS__) && defined(__MC68K__)
-
-#define _PALM_OS
-
-#if __ide_target("Release") && !defined(NDEBUG)
-#define NDEBUG
-#endif
-
-#ifndef NDEBUG
-//! Some functions depend on this non-standard symbol instead of standard-compliant @c NDEBUG.
-#define DEBUG
-#endif
+#if defined(__MWERKS__)
 
 //! Prevents using MSL-provided error function (called when normally exception would be thrown).
 #define _MSL_ERROR_FUNC -1
 
-#endif // __MWERKS__ && __MC68K__
+#endif // __MWERKS__
 
 #if defined(_PALM_OS)
 

@@ -25,6 +25,8 @@ LookupManager::~LookupManager()
 
 namespace {
 
+#pragma pcrelconstdata on
+
     static const UInt16 serverErrorAlerts[]=
     {   
         serverFailureAlert,

@@ -146,7 +146,7 @@ bool iPediaApplication::handleApplicationEvent(EventType& event)
         if (!inStressMode())
             FrmAlert(data.alertId);
         else
-            log()<<"Alert: "<<data.alertId;
+            log().debug()<<"Alert: "<<data.alertId;
     }
     if (lookupManager_ && appLookupEventFirst<=event.eType && appLookupEventLast>=event.eType)
         lookupManager_->handleLookupEvent(event);

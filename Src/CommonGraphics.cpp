@@ -5,6 +5,10 @@ namespace ArsLexis
     
     namespace {
     
+#ifdef __MWERKS__
+#pragma pcrelconstdata on
+#endif
+    
         typedef NativeColor_t (Graphics::* ColorSetterMethod_t)(NativeColor_t);
         static ColorSetterMethod_t colorSetters[]={&Graphics::setTextColor, &Graphics::setForegroundColor, &Graphics::setBackgroundColor};
 
