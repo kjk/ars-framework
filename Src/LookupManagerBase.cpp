@@ -71,6 +71,6 @@ namespace ArsLexis {
 
     LookupProgressReportingSupport::~LookupProgressReportingSupport()
     {}
-    
+
 }
 

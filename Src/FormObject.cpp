@@ -151,9 +151,11 @@ namespace ArsLexis
 
     void List::adjustVisibleItems() 
     {
+        int total=itemsCount();
+        if (0==total) 
+            return;
         int top=topItem();
         int visible=visibleItemsCount();
-        int total=itemsCount();
         if (total-top<visible)
             top=std::max(0, total-visible);
         setTopItem(top);

@@ -117,11 +117,13 @@ namespace ArsLexis {
                 case lookupFinishedEvent:
                     lookupInProgress_=false;
                     handleLookupFinished(reinterpret_cast<const LookupFinishedData&>(event.data));
+                    setStatusText(String());
+                    setPercentProgress(percentProgressDisabled);
+                    setBytesProgress(0);
                     break;                    
             }
-            
         }
-        
+
         void abortConnections()
         {
             lookupInProgress_=false;
