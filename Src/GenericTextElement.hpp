@@ -3,12 +3,19 @@
 
 #include "DefinitionElement.hpp"
 
+typedef void action_callback(void *data);
+
 class GenericTextElement: public DefinitionElement
 {
 
     ArsLexis::String text_;
-    ElementStyle style_;
-    
+    ElementStyle     style_;
+    // actionCallback_ is being called when hotspot is hit. It takes precedence
+    // over hyperlink handler (because we need to mark the text as hyperlink 
+    // in order to have a hotspot; this is a bit hackish)
+    action_callback * actionCallback_;
+    void *            actionCallbackData_;
+
     void drawTextWithSelection(ArsLexis::Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Point& point);
 
 public:
@@ -78,6 +85,12 @@ public:
     {return true;}
 
     void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const;
+
+    void setActionCallback(action_callback *actionCb, void *data)
+    {
+        actionCallback_ = actionCb;
+        actionCallbackData_ = data;
+    }
 
 };
 

@@ -17,7 +17,9 @@ GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, 
 GenericTextElement::GenericTextElement(const String& text):
     text_(text),
     hyperlink_(0),
-    style_(styleDefault)
+    style_(styleDefault),
+    actionCallback_(NULL),
+    actionCallbackData_(NULL)
 {}
 
 GenericTextElement::~GenericTextElement()
@@ -244,9 +246,18 @@ void GenericTextElement::setHyperlink(const String& resource, HyperlinkType type
 void GenericTextElement::performAction(Definition& definition)
 {
     assert(isHyperlink());
-    Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
-    if (handler) 
-        handler->handleHyperlink(definition, *this);
+    // actionCallback_ takes precedence over hyperlink handler and we don't
+    // call hyperlink handler if actionCallback_ is present
+    if (actionCallback_)
+    {
+        (*actionCallback_)(actionCallbackData_);
+    }
+    else
+    {
+        Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
+        if (handler) 
+            handler->handleHyperlink(definition, *this);
+    }
 }
 
 void GenericTextElement::toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
