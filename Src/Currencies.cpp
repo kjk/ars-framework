@@ -9,9 +9,9 @@
 namespace ArsLexis{
 
     enum {
-        currencyAbbrevLength    =4,
-        currencyNameLength      =55,
-        currencyCoutriesLength  =106
+        currencyAbbrevLength    = 4,
+        currencyNameLength      = 55,
+        currencyCoutriesLength  = 106
     };
     
     typedef const char_t CurrencyAbbrevField_t[currencyAbbrevLength];
@@ -69,7 +69,9 @@ namespace ArsLexis{
         {_T("EEK"), _T("Krooni"), _T("Estonia") },
         {_T("EGP"), _T("Pounds"), _T("Egypt") },
         {_T("ETB"), _T("Ethiopia Birr"), _T("Eritrea, Eritrea") },
+        {_T("EUR"), _T("Euro"), _T("Austria, Belgium, Finland, France, Greece, Eire (Ireland), Italy, Luxembourg, Martinique, Portugal, Spain") },
         {_T("FJD"), _T("Dollars"), _T("Fiji") },
+        {_T("GBP"), _T("Pounds"), _T("Britain (United Kingdom)") },
         {_T("GEL"), _T("Lari"), _T("Georgia") },
         {_T("GHC"), _T("Cedis"), _T("Ghana") },
         {_T("GMD"), _T("Dalasi"), _T("Gambia") },
@@ -88,6 +90,7 @@ namespace ArsLexis{
         {_T("ISK"), _T("Kronur"), _T("Iceland") },
         {_T("JMD"), _T("Dollars"), _T("Jamaica") },
         {_T("JOD"), _T("Dinars"), _T("Jordan") },
+        {_T("JPY"), _T("Yen"), _T("Japan") },
         {_T("KES"), _T("Shillings"), _T("Kenya") },
         {_T("KGS"), _T("Soms"), _T("Kyrgyzstan") },
         {_T("KMF"), _T("Francs"), _T("Comoros") },
@@ -151,6 +154,7 @@ namespace ArsLexis{
         {_T("TZS"), _T("Shillings"), _T("Tanzania") },
         {_T("UAH"), _T("Hryvnia"), _T("Ukraine") },
         {_T("UGX"), _T("Shillings"), _T("Uganda") },
+        {_T("USD"), _T("United States Dollars"), _T("Ecuador, Micronesia (Federated States of), Palau") },
         {_T("UYU"), _T("Pesos"), _T("Uruguay") },
         {_T("UZS"), _T("Sums"), _T("Uzbekistan") },
         {_T("VEB"), _T("Bolivares"), _T("Venezuela") },

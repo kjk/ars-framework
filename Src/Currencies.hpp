@@ -7,7 +7,7 @@
 namespace ArsLexis {
 
     enum {
-        currenciesCount = 137
+        currenciesCount = 141
     };
 
     class Currency
