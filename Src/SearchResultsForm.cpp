@@ -1,5 +1,5 @@
 #include "SearchResultsForm.hpp"
-#include "FormObject.hpp"
+#include <FormObject.hpp>
 #include "LookupManager.hpp"
 #include "MainForm.hpp"
 
@@ -233,6 +233,27 @@ bool SearchResultsForm::handleKeyPress(const EventType& event)
     return handled;
 }
 
+void SearchResultsForm::handleLookupFinished(const EventType& event)
+{
+    setControlsState(true);
+    const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
+    if (data.outcomeDefinition==data.outcome)
+    {
+        MainForm* form=static_cast<MainForm*>(application().getOpenForm(mainForm));
+        assert(form);
+        if (form)
+            form->setUpdateDefinitionOnEntry();
+        closePopup();
+    }
+    else if (data.outcomeList==data.outcome)
+        updateSearchResults();
+    else
+        update();
+    LookupManager* lookupManager=static_cast<iPediaApplication&>(application()).getLookupManager();
+    assert(lookupManager);
+    lookupManager->handleLookupFinishedInForm(data);
+}
+
 
 bool SearchResultsForm::handleEvent(EventType& event)
 {
@@ -250,26 +271,8 @@ bool SearchResultsForm::handleEvent(EventType& event)
             break;
 
         case iPediaApplication::appLookupFinishedEvent:
-            {
-                setControlsState(true);
-                const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
-                if (data.outcomeDefinition==data.outcome)
-                {
-                    MainForm* form=static_cast<MainForm*>(application().getOpenForm(mainForm));
-                    assert(form);
-                    if (form)
-                        form->setUpdateDefinitionOnEntry();
-                    handled=true;
-                    closePopup();
-                }
-                else if (data.outcomeList==data.outcome)
-                    updateSearchResults();
-                else
-                    update();
-                LookupManager* lookupManager=static_cast<iPediaApplication&>(application()).getLookupManager();
-                assert(lookupManager);
-                lookupManager->handleLookupFinishedInForm(data);
-            }
+            handleLookupFinished(event);
+            handled=true;
             break;     
             
         case iPediaApplication::appLookupStartedEvent:

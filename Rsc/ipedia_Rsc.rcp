@@ -16,7 +16,7 @@ BEGIN
          MENUITEM "Last Search Results" ID searchResultsMenuItem  "L"
          MENUITEM SEPARATOR ID AUTOID
          MENUITEM "Random article" ID randomMenuItem  "R"
-#ifndef NDEBUG		 
+#ifdef  INTERNAL_BUILD
          MENUITEM SEPARATOR ID AUTOID
          MENUITEM "localhost" ID useLocalhostMenuItem  
          MENUITEM "dict-pc.arslexis.com" ID useDictPcMenuItem    

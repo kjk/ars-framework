@@ -475,7 +475,7 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
     switch (itemId)
     {
     
-#ifndef NDEBUG    
+#ifdef  INTERNAL_BUILD    
         case useDictPcMenuItem:
             switchServer(serverDictPcArslexis);
             handled=true;
@@ -512,7 +512,7 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             handled=true;
             break;
 
-#ifndef NDEBUG
+#ifdef INTERNAL_BUILD
         case toggleStressModeMenuItem:
             handleToggleStressMode();
             handled=true;

@@ -12,9 +12,7 @@
 #include <PalmOS_Headers_Debug>
 #endif
 
-
-//#include <MSLHeaders++.h>
-
+#define INTERNAL_BUILD
 #define ARSLEXIS_USE_NEW_FRAMEWORK 1
 #define _PALM_OS  1
 
