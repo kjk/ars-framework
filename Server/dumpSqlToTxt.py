@@ -15,7 +15,7 @@
 #                and prints the statistics
 #   fileName - which file to process
 
-import sys,os,os.path,string,time,md5,bz2,wikipedia-sql
+import sys,os,os.path,string,time,md5,bz2,wikipediasql
 try:
     import psyco
     g_fPsycoAvailable = True

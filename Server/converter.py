@@ -27,7 +27,7 @@
 # -usepsyco : if used, will use psyco for speeding up, false by default
 
 import MySQLdb, sys, datetime, re, unicodedata, time, entities
-import wikipedia-sql
+import wikipediasql
 try:
     import psyco
     g_fPsycoAvailable = True
