@@ -307,6 +307,11 @@ namespace ArsLexis
         
         void updateItemsCount(const CustomDrawHandler& handler);
         
+        
+        enum KeyHandlerOptions {
+            optionScrollPagesWithLeftRight=1,
+            optionFireListSelectOnCenter=2
+        };
         /**
          * Performs selection change in case of up/down key or 5-way up/down or fires @c lstSelectEvent if 5-way center is pressed.
          * @param form @c Form object that gives acces to its 5-way test functions.
@@ -314,7 +319,7 @@ namespace ArsLexis
          * @param scrollPagesWithLeftRight if set to @c true, will use left/right buttons to scroll page up/down.
          * @return @c true if list recognized event and handled it, @c false otherwise.
          */
-        bool handleKeyDownEvent(const Form& form, const EventType& event, bool scrollPagesWithLeftRight=false);
+        bool handleKeyDownEvent(const Form& form, const EventType& event, uint_t options=0);
         
         ~List();
 

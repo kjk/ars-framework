@@ -163,21 +163,21 @@ namespace ArsLexis
     {}
 
 
-    bool List::handleKeyDownEvent(const Form& form, const EventType& event, bool scrollPagesWithLeftRight)
+    bool List::handleKeyDownEvent(const Form& form, const EventType& event, uint_t options)
     {
         assert(keyDownEvent==event.eType);
-        bool handled=true;
+        bool handled=false;
         int delta=0;
         int page=visibleItemsCount();
         if (form.fiveWayUpPressed(&event))
             delta=-1;
         else if (form.fiveWayDownPressed(&event))
             delta=1;
-        else if (scrollPagesWithLeftRight && form.fiveWayLeftPressed(&event))
+        else if ((optionScrollPagesWithLeftRight & options) && form.fiveWayLeftPressed(&event))
             delta=-page;
-        else if (scrollPagesWithLeftRight && form.fiveWayRightPressed(&event))
+        else if ((optionScrollPagesWithLeftRight & options) && form.fiveWayRightPressed(&event))
             delta=page;
-        else if (form.fiveWayCenterPressed(&event))
+        else if ((optionFireListSelectOnCenter & options) && form.fiveWayCenterPressed(&event))
         {
             EventType e;
             MemSet(&e, sizeof(e), 0);
@@ -208,12 +208,12 @@ namespace ArsLexis
                     break;
                     
                 case chrLeftArrow:
-                    if (scrollPagesWithLeftRight)
+                    if (optionScrollPagesWithLeftRight & options)
                         delta=-page;
                     break;
                     
                 case chrRightArrow:
-                    if (scrollPagesWithLeftRight)
+                    if (optionScrollPagesWithLeftRight & options)
                         delta=page;
                     break;
             }
