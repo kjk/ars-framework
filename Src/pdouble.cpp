@@ -38,15 +38,35 @@ static const double pow2[] = {
     1e-004, 1e-002, 1e-001
 };
 
+void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit, bool insertThousandSeparator)
+{
+    printDoubleRoundInternal(x,s,roundFactor,numDigits,precLimit);
+    if (insertThousandSeparator)
+    {
+        //find '.' 'e' or '\0'
+        int i = 0;
+        
+        while (s[i] != '.' && s[i] != 'e' && s[i] != '\0')
+            i++;
+        i -= 3;
+        while (i > 0)
+        {
+            MemMove(s+i+1,s+i,StrLen(s)-i+1);
+            s[i] = ',';        
+            i -=3;
+        }
+    }
+}
+
 void printDouble(double x, char *s);
-void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit);
+void printDoubleRoundInternal(double x, char *s, double roundFactor, int numDigits, int precLimit);
 
 void printDouble(double x, char *s)
 {
-    printDoubleRound(x,s,ROUND_FACTOR, NUM_DIGITS, -1);
+    printDoubleRoundInternal(x,s,ROUND_FACTOR, NUM_DIGITS, -1);
 }
 
-void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit)
+void printDoubleRoundInternal(double x, char *s, double roundFactor, int numDigits, int precLimit)
 {
     FlpCompDouble fcd;
     short   e, e1, i;

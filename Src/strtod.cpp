@@ -47,7 +47,12 @@ strToDouble(const char* str, double *dbl)
         if (str[i] != '.') {
             if (PalmIsDigit(str[i]))
                 result = result * 10.0 + (str[i] - '0');
-            else {
+            else if (str[i] == ',')
+            {
+                //nothing 
+            }
+            else
+            {
                 return false;
             }
         }
