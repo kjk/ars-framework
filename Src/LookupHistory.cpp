@@ -14,7 +14,7 @@ LookupHistory::~LookupHistory()
     
 void LookupHistory::replaceAllNext(const ArsLexis::String& term)
 {
-    if (!termHistory_.empty())
+    if (historyPosition_!=termHistory_.end() && !termHistory_.empty())
         termHistory_.erase(++historyPosition_, termHistory_.end());
     termHistory_.push_back(term);
     historyPosition_=termHistory_.end();

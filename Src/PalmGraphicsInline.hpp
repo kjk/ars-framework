@@ -84,7 +84,6 @@ namespace ArsLexis
     inline const Graphics::Font_t& Graphics::font() const
     {return support_.font;}
     
-
 }
 
 #endif

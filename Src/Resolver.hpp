@@ -17,7 +17,12 @@ namespace ArsLexis
     {
 
         NetLibrary& netLib_;
+        
         typedef std::map<String, NetIPAddr> AddressCache_t;
+
+//        typedef std::pair<String, NetIPAddr> CacheEntry_t;
+//        typedef std::list<CacheEntry_t> AddressCache_t;
+
         AddressCache_t cache_;
         
         enum {dnsAddressesCount_=2};

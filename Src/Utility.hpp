@@ -18,7 +18,7 @@ namespace ArsLexis
     
     class NonCopyable
     {
-        NonCopyable(const NonCopyable&);
+        explicit NonCopyable(const NonCopyable&);
         NonCopyable& operator=(const NonCopyable&);
     public:
         NonCopyable() {}        

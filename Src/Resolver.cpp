@@ -19,13 +19,13 @@ namespace ArsLexis
     
     void Resolver::initialize()
     {
+        for (int i=0; i<dnsAddressesCount_; ++i)
+            dnsAddresses_[i]=0;
         queryServerAddresses();
     }
     
     void Resolver::updateCacheEntry(const String& name, NetIPAddr address)
     {
-        for (int i=0; i<dnsAddressesCount_; ++i)
-            dnsAddresses_[i]=0;
         cache_[name]=address;         
     }
 
@@ -38,7 +38,7 @@ namespace ArsLexis
     Err Resolver::validateAddress(const String& origAddress, String& validAddress, UInt16& port)
     {
         Err error=errNone;
-        String::size_type pos=origAddress.find(":");
+        String::size_type pos=origAddress.find(':', 1);
         if (origAddress.npos!=pos)
         {
             UInt16 portLength=origAddress.length()-pos-1;

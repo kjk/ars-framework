@@ -227,7 +227,6 @@ bool DefinitionParser::detectStrongTag(uint_t end)
 #define subscriptText "sub"
 #define superscriptText "sup"
 
-//! @todo Implement DefinitionParser::detectHTMLTag()
 bool DefinitionParser::detectHTMLTag(uint_t end)
 {
     bool result=false;
@@ -250,51 +249,53 @@ bool DefinitionParser::detectHTMLTag(uint_t end)
                 openNowiki_+=(isClosing?-1:1);
                 result=true;
             }
-            else if (startsWithIgnoreCase(textLine_, teleTypeText, tagStart))
+            else if (0==openNowiki_)
             {
-                createTextElement();
-                openTypewriter_+=(isClosing?-1:1);
-                result=true;
+                if (startsWithIgnoreCase(textLine_, teleTypeText, tagStart))
+                {
+                    createTextElement();
+                    openTypewriter_+=(isClosing?-1:1);
+                    result=true;
+                }
+                else if (startsWithIgnoreCase(textLine_, lineBreakText, tagStart))
+                {
+                    createTextElement();
+                    std::auto_ptr<LineBreakElement> p(new LineBreakElement());
+                    appendElement(p.get());
+                    p.release();
+                    result=true;
+                }
+                else if (startsWithIgnoreCase(textLine_, smallText, tagStart))
+                {
+                    createTextElement();
+                    openSmall_+=(isClosing?-1:1);
+                    result=true;
+                }
+                else if (startsWithIgnoreCase(textLine_, strikeOutText, tagStart))
+                {
+                    createTextElement();
+                    openStrikeout_+=(isClosing?-1:1);
+                    result=true;
+                }
+                else if (startsWithIgnoreCase(textLine_, underlineText, tagStart))
+                {
+                    createTextElement();
+                    openUnderline_+=(isClosing?-1:1);
+                    result=true;
+                }
+                else if (startsWithIgnoreCase(textLine_, superscriptText, tagStart))
+                {
+                    createTextElement();
+                    openSuperscript_+=(isClosing?-1:1);
+                    result=true;
+                }
+                else if (startsWithIgnoreCase(textLine_, subscriptText, tagStart))
+                {
+                    createTextElement();
+                    openSubscript_+=(isClosing?-1:1);
+                    result=true;
+                }
             }
-            else if (startsWithIgnoreCase(textLine_, lineBreakText, tagStart))
-            {
-                createTextElement();
-                std::auto_ptr<LineBreakElement> p(new LineBreakElement());
-                appendElement(p.get());
-                p.release();
-                result=true;
-            }
-            else if (startsWithIgnoreCase(textLine_, smallText, tagStart))
-            {
-                createTextElement();
-                openSmall_+=(isClosing?-1:1);
-                result=true;
-            }
-            else if (startsWithIgnoreCase(textLine_, strikeOutText, tagStart))
-            {
-                createTextElement();
-                openStrikeout_+=(isClosing?-1:1);
-                result=true;
-            }
-            else if (startsWithIgnoreCase(textLine_, underlineText, tagStart))
-            {
-                createTextElement();
-                openUnderline_+=(isClosing?-1:1);
-                result=true;
-            }
-            else if (startsWithIgnoreCase(textLine_, superscriptText, tagStart))
-            {
-                createTextElement();
-                openSuperscript_+=(isClosing?-1:1);
-                result=true;
-            }
-            else if (startsWithIgnoreCase(textLine_, subscriptText, tagStart))
-            {
-                createTextElement();
-                openSubscript_+=(isClosing?-1:1);
-                result=true;
-            }
-        
             if (result)
                 textPosition_=tagEnd+1;
         }
