@@ -188,7 +188,7 @@ bool ArsLexis::highDensityFeaturesPresent()
 
 void ArsLexis::sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
 {
-    assert(data<=8);
+    assert(dataSize<=sizeof(EventData));
     EventData i;
     memcpy(&i, data, dataSize);
     PostMessage(HWND_BROADCAST, event, i.wParam, i.lParam);
