@@ -1,5 +1,12 @@
 #include <SysUtils.hpp>
 
+// TODO: implement. Used by iPediaConnection
+ulong_t ArsLexis::random(ulong_t range)
+{
+    ulong_t result = 1;
+    return result;
+}
+
 /*bool ArsLexis::notifyManagerPresent()
 {
     UInt32 value;
@@ -178,7 +185,7 @@ bool ArsLexis::highDensityFeaturesPresent()
     return (errNone==error && version>=4);
 }*/
 
-void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize)
+void ArsLexis::sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
 {
     /*EventType event;
     MemSet(&event, sizeof(event), 0);
@@ -189,5 +196,14 @@ void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize)
         MemMove(&event.data, data, dataSize);
     }
     EvtAddEventToQueue(&event);*/
+}
+
+void ArsLexis::localizeNumber(char_t* begin, char_t* end)
+{
+   
+}
+
+void ArsLexis::processReadyUiEvents()
+{
 }
 

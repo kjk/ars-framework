@@ -534,7 +534,9 @@ void Definition::replaceElements(Elements_t& elements)
 }
 
 
+#if defined(_PALM_OS)
 #pragma segment Segment1
+#endif
 
 Definition::HyperlinkHandler::~HyperlinkHandler()
 {}
