@@ -1,15 +1,16 @@
 #ifndef __FORMATTING_PROPERTIES_HPP__
 #define __FORMATTING_PROPERTIES_HPP__
 
-#include <PalmOS.h>
+#include "Debug.hpp"
+#include "BaseTypes.hpp"
 
 class FormattingProperties
 {
-    UInt16 strength_:2;
-    UInt16 typewriter_:1;
-    UInt16 small_:1;
-    UInt16 strike_:1;
-    UInt16 underline_:1;
+    uint_t strength_:2;
+    uint_t typewriter_:1;
+    uint_t small_:1;
+    uint_t strike_:1;
+    uint_t underline_:1;
 
 public:
 
@@ -29,28 +30,28 @@ public:
     Strength strength() const
     {return static_cast<Strength>(strength_);}
     
-    Boolean typewriterFont() const
+    bool typewriterFont() const
     {return typewriter_;}
 
-    void setTypewriterFont(Boolean val) 
+    void setTypewriterFont(bool val) 
     {typewriter_=val;}
 
-    Boolean small() const
+    bool small() const
     {return small_;}
     
-    void setSmall(Boolean val)
+    void setSmall(bool val)
     {small_=val;}
     
-    Boolean strikeOut() const
+    bool strikeOut() const
     {return strike_;}
     
-    void setStrikeOut(Boolean val)
+    void setStrikeOut(bool val)
     {strike_=val;}
     
-    Boolean underline() const
+    bool underline() const
     {return underline_;}
     
-   void setUnderline(Boolean val)
+   void setUnderline(bool val)
    {underline_=val;}
 
 };

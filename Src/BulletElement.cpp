@@ -1,7 +1,6 @@
 #include "BulletElement.hpp"
 
 BulletElement::BulletElement():
-    GenericTextElement("*"),
     childIndentation_(0)
 {}
 
@@ -33,7 +32,7 @@ void BulletElement::calculateLayout(LayoutContext& mc)
         newBullet+=symbolShiftNone;
         swapText(newBullet);
     }
-    Coord widthBefore=indentation()+mc.usedWidth;
+    uint_t widthBefore=indentation()+mc.usedWidth;
     GenericTextElement::calculateLayout(mc);
     childIndentation_=mc.usedWidth-widthBefore;
 }

@@ -1,6 +1,8 @@
 #include "Debug.hpp"
+#include "BaseTypes.hpp"
+#include "Graphics.hpp"
 
-#define elementCompletedProgress ((UInt16)-1)
+#define elementCompletedProgress ((uint_t)-1)
 
 class RenderingPreferences;
 
@@ -9,14 +11,16 @@ class RenderingPreferences;
  */
 struct LayoutContext
 {
+    ArsLexis::Graphics graphics;
     const RenderingPreferences& preferences;
-    UInt16 renderingProgress;
-    const Coord screenWidth;
-    Coord usedWidth;
-    Coord usedHeight;
-    Coord baseLine;
+    uint_t renderingProgress;
+    const uint_t screenWidth;
+    uint_t usedWidth;
+    uint_t usedHeight;
+    uint_t baseLine;
     
-    LayoutContext(const RenderingPreferences& prefs, Coord theScreenWidth):
+    LayoutContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
+        graphics(graph),
         preferences(prefs),
         renderingProgress(0),
         screenWidth(theScreenWidth),
@@ -25,18 +29,16 @@ struct LayoutContext
         baseLine(0)
     {}
     
-    void markElementCompleted(Coord width)
+    void markElementCompleted(uint_t width)
     {
         renderingProgress=elementCompletedProgress;
         usedWidth+=width;
-//  The assertion below fails if text is displayed underlined.
-//        assert(usedWidth<=screenWidth);
     }
     
-    Boolean isElementCompleted() const
+    bool isElementCompleted() const
     {return (renderingProgress==elementCompletedProgress);}
     
-    Boolean isFirstInLine() const
+    bool isFirstInLine() const
     {return (usedWidth==0);}
     
     void startNewLine()
@@ -46,10 +48,10 @@ struct LayoutContext
         baseLine=0;
     }
     
-    Coord availableWidth() const
+    uint_t availableWidth() const
     {return (usedWidth>screenWidth?0:screenWidth-usedWidth);}
     
-    void extendHeight(Coord reqHeight, Coord reqBaseLine);
+    void extendHeight(uint_t reqHeight, uint_t reqBaseLine);
     
 };
 
@@ -58,11 +60,11 @@ class Definition;
 struct RenderingContext: public LayoutContext
 {
     Definition& definition;
-    const Coord left;
-    Coord top;
+    const uint_t left;
+    uint_t top;
     
-    RenderingContext(const RenderingPreferences& prefs, Definition& def, Coord x, Coord y, Coord width):
-        LayoutContext(prefs, width),
+    RenderingContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, Definition& def, uint_t x, uint_t y, uint_t width):
+        LayoutContext(graph, prefs, width),
         definition(def),
         left(x),
         top(y)

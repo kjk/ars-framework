@@ -2,5 +2,6 @@
 
 void IndentedParagraphElement::calculateLayout(LayoutContext& layoutContext)
 {
-    setChildIndentation(layoutContext.preferences.standardIndentation());    ParagraphElement::calculateLayout(layoutContext);
+    setChildIndentation(layoutContext.preferences.standardIndentation());
+    ParagraphElement::calculateLayout(layoutContext);
 }

@@ -53,7 +53,8 @@ namespace ArsLexis
          * @internal 
          * Type used to store @c Form objects through application's lifetime.
          */
-        typedef std::list<Form*, Allocator<Form*> > Forms_t;
+        typedef std::list<Form*> Forms_t;
+//        typedef std::list<Form*, Allocator<Form*> > Forms_t;
         
         /**
          * @internal 

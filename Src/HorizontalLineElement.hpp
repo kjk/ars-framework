@@ -10,7 +10,7 @@ public:
     HorizontalLineElement()
     {}
 
-    Boolean requiresNewLine(const RenderingPreferences& preferences) const
+    bool requiresNewLine(const RenderingPreferences& preferences) const
     {return true;}
 
     void calculateLayout(LayoutContext& layoutContext);

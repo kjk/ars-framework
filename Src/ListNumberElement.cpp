@@ -2,17 +2,17 @@
 
 using ArsLexis::String;
 
-ListNumberElement::ListNumberElement(UInt16 number):
+ListNumberElement::ListNumberElement(uint_t number):
     number_(number),
     childIndentation_(0)
 {}
 
 void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
 {
-    static const UInt16 bufferSize=16;    
+    static const uint_t bufferSize=16;    
     char buffer[bufferSize];
     // Yeah, everybody know I should use std::stringstream here... But it enlarges code by 12kB and gives a load of warnings of non-inlined functions.
-    UInt16 wideNumber=8;
+    uint_t wideNumber=8;
     if (totalCount_>=10 && totalCount_<100)
         wideNumber=88;
     else if (totalCount_>=100 && totalCount_<1000)
@@ -25,7 +25,7 @@ void ListNumberElement::calculateLayout(LayoutContext& layoutContext)
     String str(buffer);
     swapText(str);
 
-    Coord widthBefore=indentation()+layoutContext.usedWidth;
+    uint_t widthBefore=indentation()+layoutContext.usedWidth;
     GenericTextElement::calculateLayout(layoutContext);
     childIndentation_=layoutContext.usedWidth-widthBefore;
 

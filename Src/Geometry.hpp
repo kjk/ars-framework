@@ -1,77 +1,94 @@
 #ifndef __ARSLEXIS_GEOMETRY_HPP__
 #define __ARSLEXIS_GEOMETRY_HPP__
 
-#include <PalmOS.h>
+#include <algorithm>
+#include "NativeGeometry.hpp"
 
 namespace ArsLexis
 {
 
+    typedef int Coord_t;
+
+    struct Point
+    {
+        Coord_t x,y;
+        
+        Point(): x(0), y(0) {}
+        
+        Point(Coord_t xx, Coord_t yy): x(xx), y(yy) {}
+        
+        Point(const NativePoint_t& nativePoint);
+        
+        void toNative(NativePoint_t& nativePoint) const;
+        
+        Point& operator=(const NativePoint_t& nativePoint);
+        
+        Point& operator+=(const Point& offset)
+        {
+            x+=offset.x;
+            y+=offset.y;
+            return *this;
+        }
+        
+        Point operator + (const Point& offset) const
+        {
+            Point result(*this);
+            result+=offset;
+            return result;
+        }
+        
+    };
+
     struct Rectangle // Unfortunately we can't inherit from RectangleType because typedef struct RectangleType masks its name.
     {
-        RectangleType data;
+        Point topLeft;
+        Point extent;
         
-        Rectangle()
-        {RctSetRectangle(&data, 0, 0, 0, 0);}
+        Rectangle() {}
         
-        Rectangle(const RectangleType& rect)
-        {RctCopyRectangle(&rect, &data);}
+        Rectangle(const Point& tl, const Point& ex): topLeft(tl), extent(ex) {}
         
-        Rectangle(const PointType& tl, const PointType& ex)
-        {RctSetRectangle(&data, tl.x, tl.y, ex.x, ex.y);}
+        Rectangle(Coord_t x, Coord_t y, Coord_t width, Coord_t height):
+            topLeft(x, y), extent(width, height) {}
+            
+        Rectangle(const NativeRectangle_t& nativeRect);
         
-        Rectangle(Coord x, Coord y, Coord dx, Coord dy)
-        {RctSetRectangle(&data, x, y, dx, dy);}
+        void toNative(NativeRectangle_t& nativeRect) const;   
         
-        Boolean hitTest(const PointType& point) const
-        {return RctPtInRectangle(point.x, point.y, &data);}
+        Rectangle& operator=(const NativeRectangle_t& nativeRect);         
         
-        operator const RectangleType* () const
-        {return &data;}
+        Coord_t x() const
+        {return topLeft.x;}
         
-        operator RectangleType* ()
-        {return &data;}
+        Coord_t& x()
+        {return topLeft.x;}
         
-        const PointType& topLeft() const
-        {return data.topLeft;}
+        Coord_t y() const
+        {return topLeft.y;}
         
-        PointType& topLeft()
-        {return data.topLeft;}
+        Coord_t& y()
+        {return topLeft.y;}
         
-        const PointType extent() const
-        {return data.extent;}
+        Coord_t width() const
+        {return extent.x;}
         
-        PointType& extent()
-        {return data.extent;}
-        
-        Coord x() const
-        {return topLeft().x;}
-        
-        Coord& x()
-        {return topLeft().x;}
-        
-        Coord y() const
-        {return topLeft().y;}
-        
-        Coord& y()
-        {return topLeft().y;}
-        
-        Coord width() const
-        {return extent().x;}
-        
-        Coord& width()
-        {return extent().x;}
+        Coord_t& width()
+        {return extent.x;}
 
-        Coord height() const
-        {return extent().y;}
+        Coord_t height() const
+        {return extent.y;}
 
-        Coord& height()
-        {return extent().y;}
+        Coord_t& height()
+        {return extent.y;}
 
+        bool hitTest(const Point& point) const
+        {return (point.x>=x() && point.x<x()+width() && point.y>=y() && point.y<y()+height());}
+        
         struct HitTest
         {
-            const PointType& point;
+            const Point& point;
             
-            HitTest(const PointType& p):
+            HitTest(const Point& p):
                 point(p)
             {}
             
@@ -82,53 +99,65 @@ namespace ArsLexis
             
         };
         
-        Rectangle& operator=(const RectangleType* rect)
+        bool empty() const
+        {return (width()>0 && height()>0);}
+        
+        operator bool () const
+        {return !empty();}
+        
+        void clear()
+        {width()=0; height()=0;}
+        
+        Rectangle& operator &= (const Rectangle& rect)
         {
-            RctCopyRectangle(rect, &data);
+            x()=std::max(x(), rect.x());
+            y()=std::max(y(), rect.y());
+            Coord_t x1=std::min(x()+width(), rect.x()+rect.width());
+            Coord_t y1=std::min(y()+height(), rect.y()+rect.height());
+            if (x1<x() || y1<y())
+                clear();
+            else
+            {
+                width()=x1-x();
+                height()=y1-y();
+            }
             return *this;
         }
         
-        Boolean intersectsWith(const Rectangle& rect) const
+        Rectangle operator & (const Rectangle& rect)
         {
-            Rectangle tmp;
-            RctGetIntersection(&data, &rect.data, &tmp.data);
-            return (tmp.width() && tmp.height());
+            Rectangle result(*this);
+            result &=rect;
+            return result;
+        }
+            
+        bool operator && (const Rectangle& rect) const
+        {
+            Rectangle tmp(*this);
+            tmp &= rect;
+            return tmp.operator bool();
         }
         
-        Boolean operator && (const Rectangle& rect) const
-        {return intersectsWith(rect);}
-        
-        Boolean operator && (const PointType& point) const
+        bool operator && (const Point& point) const
         {return hitTest(point);}
         
-        void explode(Coord deltaLeft, Coord deltaTop, Coord deltaWidth, Coord deltaHeight)
+        Rectangle& explode(Coord_t deltaLeft, Coord_t deltaTop, Coord_t deltaWidth, Coord_t deltaHeight)
         {
             x()+=deltaLeft;
             y()+=deltaTop;
             width()+=deltaWidth;
             height()+=deltaHeight;
+            return *this;
         }
-                
+
+        Rectangle& operator+= (const Point& offset)
+        {
+            topLeft+=offset;
+            return *this;
+        }
+              
     };
-    
-    struct Point
-    {
-        PointType data;
-        
-        Point()
-        {data.x=data.y=0;}
-        
-        Point(Coord x, Coord y)
-        {data.x=x; data.y=y;}
-        
-        operator const PointType* () const
-        {return &data;}
-        
-        operator PointType* ()
-        {return &data;}
-        
-    };
-    
+
 }
 
 

@@ -22,7 +22,8 @@ namespace ArsLexis
         const char* data_;
         UInt32 resolvedAddress_;
         
-        typedef std::list<String, Allocator<String> > Aliases_t;
+        typedef std::list<String> Aliases_t;
+//        typedef std::list<String, Allocator<String> > Aliases_t;
         Aliases_t aliases_;
         
         

@@ -46,7 +46,8 @@ class DefinitionParser
      */
     void applyCurrentFormatting(FormattedTextElement* element);
     
-    typedef std::list<DefinitionElement*, ArsLexis::Allocator<DefinitionElement*> > ParentsStack_t;
+    typedef std::list<DefinitionElement*> ParentsStack_t;
+//    typedef std::list<DefinitionElement*, ArsLexis::Allocator<DefinitionElement*> > ParentsStack_t;
     ParentsStack_t parentsStack_;
     
     DefinitionElement* currentParent();
@@ -71,8 +72,10 @@ class DefinitionParser
      * For purpose of setting ListNumberElement's totalCount member we need collection
      * that has cheap size() implementation, and list typically doesn't. 
      */
-    typedef std::vector<ListNumberElement*, ArsLexis::Allocator<ListNumberElement*> > NumberedList_t;
-    typedef std::list<NumberedList_t, ArsLexis::Allocator<NumberedList_t> > NumberedListsStack_t;
+    typedef std::vector<ListNumberElement*> NumberedList_t;
+//    typedef std::vector<ListNumberElement*, ArsLexis::Allocator<ListNumberElement*> > NumberedList_t;
+    typedef std::list<NumberedList_t> NumberedListsStack_t;
+//    typedef std::list<NumberedList_t, ArsLexis::Allocator<NumberedList_t> > NumberedListsStack_t;
     
     /**
      * @internal

@@ -6,7 +6,7 @@
 class ParagraphElement: public LineBreakElement
 {
 
-    Coord childIndentation_;
+    uint_t childIndentation_;
 
 public:
     
@@ -14,10 +14,10 @@ public:
         childIndentation_(0)
     {}
 
-    Coord childIndentation() const
+    uint_t childIndentation() const
     {return childIndentation_;}
     
-    void setChildIndentation(Coord indent)
+    void setChildIndentation(uint_t indent)
     {childIndentation_=indent;}
 
 };

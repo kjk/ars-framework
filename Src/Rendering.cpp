@@ -1,8 +1,8 @@
 #include "Rendering.hpp"
 
-void LayoutContext::extendHeight(Coord reqHeight, Coord reqBaseLine)
+void LayoutContext::extendHeight(uint_t reqHeight, uint_t reqBaseLine)
 {
-    Coord blDiff=reqBaseLine-baseLine;
+    int blDiff=reqBaseLine-baseLine;
     if (blDiff>0)
     {
         usedHeight+=blDiff;

@@ -11,7 +11,7 @@
 #include "Debug.hpp"
 #include <list>
 #include <vector>
-#include "Geometry.hpp"
+#include "Graphics.hpp"
 #include "Rendering.hpp"
 #include "RenderingPreferences.hpp"
 
@@ -26,7 +26,8 @@ class Definition
      * @internal
      * Type used to store @c DefinitonElement objects that represent various parts of definition.
      */
-    typedef std::list<DefinitionElement*, ArsLexis::Allocator<DefinitionElement*> > Elements_t;
+    typedef std::list<DefinitionElement*> Elements_t;
+//    typedef std::list<DefinitionElement*, ArsLexis::Allocator<DefinitionElement*> > Elements_t;
     
     /**
      * @internal
@@ -63,22 +64,23 @@ class Definition
          * @internal
          * Rendering progress of @c firstElement that line starts with.
          */
-        UInt16 renderingProgress;
+        uint_t renderingProgress;
         
         /**
          * @internal
          * Line height.
          */
-        Coord height;
+        uint_t height;
         
         /**
          * @internal
          * Position of baseline ralative to height.
          */
-        Coord baseLine;
+        uint_t baseLine;
     };
     
-    typedef std::vector<LineHeader, ArsLexis::Allocator<LineHeader> > Lines_t;
+    typedef std::vector<LineHeader> Lines_t;
+//    typedef std::vector<LineHeader, ArsLexis::Allocator<LineHeader> > Lines_t;
     typedef Lines_t::iterator LinePosition_t;
     
     /**
@@ -91,13 +93,13 @@ class Definition
      * @internal
      * First currently displayed line index.
      */
-    UInt16 firstLine_;
+    uint_t firstLine_;
     
     /**
      * @internal
      * Index of one-past-last currently displayed line.
      */
-    UInt16 lastLine_;
+    uint_t lastLine_;
     
     /**
      * @internal
@@ -125,7 +127,8 @@ public:
      */
     class HotSpot 
     {
-        typedef std::list<ArsLexis::Rectangle, ArsLexis::Allocator<ArsLexis::Rectangle> > Rectangles_t;
+        typedef std::list<ArsLexis::Rectangle> Rectangles_t;
+//        typedef std::list<ArsLexis::Rectangle, ArsLexis::Allocator<ArsLexis::Rectangle> > Rectangles_t;
         
         /**
          * @internal 
@@ -146,7 +149,7 @@ public:
         void addRectangle(const ArsLexis::Rectangle& rect)
         {rectangles_.push_back(rect);}
         
-        bool hitTest(const PointType& point) const;
+        bool hitTest(const ArsLexis::Point& point) const;
         
         DefinitionElement& element()
         {return element_;}
@@ -156,7 +159,7 @@ public:
          * @c validArea rectangle, it's removed from the @c HotSpot.
          * @param delta coordinates to move rectangles by.
          */
-        void move(const PointType& delta, const ArsLexis::Rectangle& validArea);
+        void move(const ArsLexis::Point& delta, const ArsLexis::Rectangle& validArea);
         
         bool valid() const
         {return !rectangles_.empty();}
@@ -168,21 +171,21 @@ public:
     /**
      * Renders (paints) this @c Definition into bounds.
      */
-    void render(const ArsLexis::Rectangle& bounds, const RenderingPreferences& preferences);
+    void render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& preferences);
     
-    UInt16 totalLinesCount() const
+    uint_t totalLinesCount() const
     {return lines_.size();}
     
-    UInt16 firstShownLine() const
+    uint_t firstShownLine() const
     {return firstLine_;}
     
-    UInt16 shownLinesCount() const
+    uint_t shownLinesCount() const
     {return lastLine_-firstLine_;}
     
     /**
      * Scrolls this @c Definition by @c delta lines, bounding it as neccessary.
      */
-    void scroll(Int16 delta);
+    void scroll(ArsLexis::Graphics& graphics, int delta);
 
     Definition();
     
@@ -209,7 +212,7 @@ public:
      * Checks if @c point falls within bounds of any currently displayed @c HotSpot. If so,
      * calls @c DefinitionElement::hotSpotClicked() of element associated with @c HotSpot.
      */
-    void hitTest(const PointType& point);
+    void hitTest(const ArsLexis::Point& point);
     
     /**
      * Resets this definition to its default state (without any elements, hot spots etc.).
@@ -230,7 +233,8 @@ private:
     HyperlinkHandler* hyperlinkHandler_;
     RenderingPreferences preferences_;
 
-    typedef std::list<HotSpot*, ArsLexis::Allocator<HotSpot*> > HotSpots_t;
+    typedef std::list<HotSpot*> HotSpots_t;
+//    typedef std::list<HotSpot*, ArsLexis::Allocator<HotSpot*> > HotSpots_t;
     HotSpots_t hotSpots_;
     
     /**
@@ -243,17 +247,17 @@ private:
      */
     void clearLines();
 
-    void calculateLayout(const ElementPosition_t& firstElement, UInt16 renderingProgress);
+    void calculateLayout(ArsLexis::Graphics& graphics, const ElementPosition_t& firstElement, uint_t renderingProgress);
     
-    void calculateVisibleRange(UInt16& firstLine, UInt16& lastLine, Int16 delta=0);
+    void calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int delta=0);
     
     void renderLine(RenderingContext& renderContext, const LinePosition_t& line);
     
-    void renderLineRange(const LinePosition_t& begin, const LinePosition_t& end, Coord topOffset);
+    void renderLineRange(ArsLexis::Graphics& graphics, const LinePosition_t& begin, const LinePosition_t& end, uint_t topOffset);
 
-    void renderLayout();
+    void renderLayout(ArsLexis::Graphics& graphics);
     
-    void moveHotSpots(const PointType& delta);
+    void moveHotSpots(const ArsLexis::Point& delta);
     
 };
 

@@ -2,6 +2,7 @@
 #define __RENDERING_PREFERENCES_HPP__
 
 #include "Debug.hpp"
+#include "BaseTypes.hpp"
 
 enum HyperlinkType
 {
@@ -85,7 +86,7 @@ public:
         return styles_[style];
     }
     
-    UInt16 standardIndentation() const
+    uint_t standardIndentation() const
     {return 20;}
     
     UnderlineModeType standardUnderline() const

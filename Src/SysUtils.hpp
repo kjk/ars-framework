@@ -2,11 +2,12 @@
 #define __ARSLEXIS_SYSUTILS_HPP__
 
 #include "Debug.hpp"
+#include "BaseTypes.hpp"
 
 namespace ArsLexis
 {
 
-    Boolean isNotifyManager();
+    bool isNotifyManager();
     
     void getScreenBounds(RectangleType& bounds);
     
@@ -17,11 +18,11 @@ namespace ArsLexis
      * that.
      * @note Shamelessly ripped from Noah's noah_pro_2nd_segment.c ;-)
      */
-    UInt32 random(UInt32 range);
+    std::uint32_t random(std::uint32_t range);
     
     String deviceIdToken();
     
-    Err numericValue(const char* begin, const char* end, Int32& result, UInt16 base=10);
+    Err numericValue(const char* begin, const char* end, std::int32_t& result, uint_t base=10);
 }
 
 #endif

@@ -5,29 +5,29 @@
 
 class ListNumberElement: public GenericTextElement
 {
-    UInt16 number_;
-    UInt16 totalCount_;
-    Coord childIndentation_;
+    uint_t number_;
+    uint_t totalCount_;
+    uint_t childIndentation_;
 
 protected:
 
-    Coord childIndentation() const
+    uint_t childIndentation() const
     {return childIndentation_;}
     
 public:
 
-    ListNumberElement(UInt16 number);
+    ListNumberElement(uint_t number);
 
-    UInt16 number() const
+    uint_t number() const
     {return number_;}
     
-    void setTotalCount(UInt16 totalCount)
+    void setTotalCount(uint_t totalCount)
     {totalCount_=totalCount;}
     
-    UInt16 totalCount() const
+    uint_t totalCount() const
     {return totalCount_;}
 
-    Boolean requiresNewLine(const RenderingPreferences& preferences) const
+    bool requiresNewLine(const RenderingPreferences& preferences) const
     {return true;}
 
     void calculateLayout(LayoutContext& mc);

@@ -3,7 +3,7 @@
 namespace ArsLexis
 {
 
-    Boolean isNotifyManager()
+    bool isNotifyManager()
     {
         UInt32 value=0;
         Err error=FtrGet(sysFtrCreator,sysFtrNumNotifyMgrVersion, &value);
@@ -21,17 +21,17 @@ namespace ArsLexis
         bounds.extent.y=y;
     }
     
-    UInt32 random(UInt32 range)
+    std::uint32_t random(std::uint32_t range)
     {
-        Int32 rand1=SysRandom(0);
+        std::int32_t rand1=SysRandom(0);
         if ( 2 == (rand1 % 3) )
             rand1 = SysRandom(TimGetTicks());
 
-        Int32 rand2 = SysRandom(0);
+        std::int32_t rand2=SysRandom(0);
         if ( 2 == (rand2 % 3) )
             rand2 = SysRandom(TimGetTicks());
 
-        UInt32 result = rand1*sysRandomMax + rand2;
+        std::uint32_t result = rand1*sysRandomMax + rand2;
         result = result % range;
         return result;
     }
@@ -44,7 +44,7 @@ namespace ArsLexis
     }
     
     
-    Err numericValue(const char* begin, const char* end, Int32& result, UInt16 base)
+    Err numericValue(const char* begin, const char* end, std::int32_t& result, uint_t base)
     {
         Err error=errNone;
         bool negative=false;

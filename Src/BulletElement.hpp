@@ -5,13 +5,13 @@
 
 class BulletElement: public GenericTextElement
 {
-    Coord childIndentation_;
+    uint_t childIndentation_;
     
 protected:
 
     void applyFormatting(const RenderingPreferences& prefs);
     
-    Coord childIndentation() const
+    uint_t childIndentation() const
     {return childIndentation_;}
 
 public:
@@ -19,7 +19,7 @@ public:
     
     BulletElement();
 
-    Boolean requiresNewLine(const RenderingPreferences& preferences) const
+    bool requiresNewLine(const RenderingPreferences& preferences) const
     {return true;}
     
     void calculateLayout(LayoutContext& mc);

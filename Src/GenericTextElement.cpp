@@ -27,7 +27,7 @@ GenericTextElement::~GenericTextElement()
 #ifdef NDEBUG
 inline 
 #endif
-static UInt16 findNextWhitespace(const String& text, UInt16 fromPos)
+static uint_t findNextWhitespace(const String& text, uint_t fromPos)
 {
     String::size_type nextWhitespace=text.find_first_of(whitespaceChars, fromPos);
     if (String::npos==nextWhitespace)
@@ -35,26 +35,26 @@ static UInt16 findNextWhitespace(const String& text, UInt16 fromPos)
     return nextWhitespace;
 }
 
-void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord left, Coord top, Definition* definition, Boolean render)
+void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
 {
     assert(!layoutContext.isElementCompleted());
     applyFormatting(layoutContext.preferences);
     
-    Coord indent=indentation();
+    uint_t indent=indentation();
     if (layoutContext.usedWidth<indent)
         layoutContext.usedWidth=indent;
 
-    Coord baseLine=FntBaseLine();
-    Coord lineHeight=FntLineHeight();
+    uint_t baseLine=FntBaseLine();
+    uint_t lineHeight=FntLineHeight();
     const char* text=text_.c_str()+layoutContext.renderingProgress;
     left+=layoutContext.usedWidth;
     top+=(layoutContext.baseLine-baseLine);
 
-    UInt16 nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
+    uint_t nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
     Int16 length=FntWordWrap(text, layoutContext.availableWidth());
     if (0==layoutContext.renderingProgress && !layoutContext.isFirstInLine() && length<nextWhitespace)
     {
-        Int16 newLineLength=FntWordWrap(text, layoutContext.screenWidth);
+        uint_t newLineLength=FntWordWrap(text, layoutContext.screenWidth);
         if (nextWhitespace<=newLineLength)
         {
             layoutContext.usedWidth+=layoutContext.availableWidth();
@@ -65,11 +65,11 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
     if (!render)
         layoutContext.extendHeight(lineHeight, baseLine);
 
-    Coord width=FntCharsWidth(text, length);
+    Int16 width=FntCharsWidth(text, length);
 
     if (render)
     {
-        Int16 charsToDraw=length;
+        uint_t charsToDraw=length;
         while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
             --charsToDraw;
         WinDrawChars(text, charsToDraw, left, top);
@@ -88,7 +88,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
         length=FntWordWrap(text, layoutContext.screenWidth);
         if (length<nextWhitespace)
         {
-            Int16 newLineLength=FntWordWrap(text, layoutContext.screenWidth);
+            uint_t newLineLength=FntWordWrap(text, layoutContext.screenWidth);
             if (newLineLength<nextWhitespace)
             {
                 length=StrLen(text);
@@ -98,7 +98,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
 
                 if (render)
                 {
-                    Int16 charsToDraw=length;
+                    uint_t charsToDraw=length;
                     while (charsToDraw && isWhitespace(*(text+charsToDraw-1)))
                         --charsToDraw;
                     WinDrawChars(text, length, left, top);
@@ -175,7 +175,7 @@ void GenericTextElement::setHyperlink(const ArsLexis::String& resource, Hyperlin
     }
 }
 
-void GenericTextElement::hotSpotClicked(Definition& definition)
+void GenericTextElement::performAction(Definition& definition)
 {
     assert(isHyperlink());
     if (hyperlinkBookmark==hyperlink_->type)

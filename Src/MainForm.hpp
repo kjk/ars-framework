@@ -13,8 +13,8 @@ class MainForm: public iPediaForm
     void handlePenUp(const EventType& event);
     void handleControlSelect(const ctlSelect& data);
     
-    void drawSplashScreen(ArsLexis::Rectangle& bounds);
-    void drawDefinition(ArsLexis::Rectangle& bounds);
+    void drawSplashScreen(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
+    void drawDefinition(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     void startLookupConnection(const ArsLexis::String& term);
     
 protected:

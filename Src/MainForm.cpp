@@ -48,16 +48,16 @@ void MainForm::resize(const RectangleType& screenBounds)
     update();    
 }
 
-void MainForm::drawSplashScreen(ArsLexis::Rectangle& bounds)
+void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
 {
     UInt16 index=getObjectIndex(definitionScrollBar);
     hideObject(index);
     const iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    BackgroundColorSetter setBackground(app.renderingPreferences().backgroundColor());
+    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, app.renderingPreferences().backgroundColor());
     bounds.explode(0, 15, 0, -33);
-    WinEraseRectangle(bounds, 0);
+    graphics.erase(bounds);
     UInt16 currentY=bounds.y()+20;
-    FontSetter font(largeFont);
+    Graphics::FontSetter font(graphics, largeFont);
     drawCenteredChars("ArsLexis iPedia", bounds.x(), currentY, bounds.width());
     currentY+=16;
 #ifdef DEMO
@@ -79,15 +79,14 @@ void MainForm::drawSplashScreen(ArsLexis::Rectangle& bounds)
     drawCenteredChars("http://www.arslexis.com", bounds.x(), currentY, bounds.width());
 }
 
-void MainForm::drawDefinition(ArsLexis::Rectangle& bounds)
+void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
 {
     const iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    BackgroundColorSetter setBackground(app.renderingPreferences().backgroundColor());
+    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, app.renderingPreferences().backgroundColor());
     bounds.explode(0, 15, 0, -33);
-    WinEraseRectangle(bounds, 0);
-    
+    graphics.erase(bounds);
     bounds.explode(2, 2, -12, -4);
-    definition_.render(bounds, app.renderingPreferences());
+    definition_.render(graphics, bounds, app.renderingPreferences());
     
     UInt16 index=getObjectIndex(definitionScrollBar);
     showObject(index);
@@ -99,12 +98,13 @@ void MainForm::drawDefinition(ArsLexis::Rectangle& bounds)
 void MainForm::draw(UInt16 updateCode)
 {
     iPediaForm::draw(updateCode);
-    ArsLexis::Rectangle rect=bounds();
-    WinPaintLine(rect.x(), rect.height()-18, rect.width(), rect.height()-18);
+    Rectangle rect=bounds();
+    Graphics graphics(windowHandle());
+    graphics.drawLine(rect.x(), rect.height()-18, rect.width(), rect.height()-18);
     if (showSplashScreen==displayMode())
-        drawSplashScreen(rect);
+        drawSplashScreen(graphics, rect);
     else
-        drawDefinition(rect);
+        drawDefinition(graphics, rect);
 }
 
 
@@ -121,14 +121,13 @@ Err MainForm::initialize()
 
 inline void MainForm::handleScrollRepeat(const sclRepeat& data)
 {
-    definition_.scroll(data.newValue-data.value);
+    Graphics graphics(windowHandle());
+    definition_.scroll(graphics, data.newValue-data.value);
 }
 
 void MainForm::handlePenUp(const EventType& event)
 {
-    PointType point;
-    point.x=event.screenX;
-    point.y=event.screenY;
+    Point point(event.screenX, event.screenY);
     if (definition_.bounds() && point)
         definition_.hitTest(point); 
 }

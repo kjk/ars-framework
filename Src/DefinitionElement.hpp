@@ -13,12 +13,12 @@ protected:
         parent_(0)
     {}
     
-    virtual Coord childIndentation() const
+    virtual uint_t childIndentation() const
     {return 0;}
     
 public:
     
-    virtual Boolean requiresNewLine(const RenderingPreferences& preferences) const
+    virtual bool requiresNewLine(const RenderingPreferences& preferences) const
     {return false;}
     
     virtual void calculateLayout(LayoutContext& mc)=0;
@@ -31,13 +31,13 @@ public:
     virtual ~DefinitionElement()
     {}
     
-    virtual void hotSpotClicked(Definition& definition)
+    virtual void performAction(Definition& definition)
     {}
     
     void setParent(DefinitionElement* parent)
     {parent_=parent;}
     
-    Coord indentation() const;
+    uint_t indentation() const;
     
 };
 

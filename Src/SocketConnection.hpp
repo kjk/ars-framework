@@ -12,7 +12,8 @@ namespace ArsLexis
     {
         NetLibrary& netLib_;
         SocketSelector selector_;
-        typedef std::vector<SocketConnection*, Allocator<SocketConnection*> > Connections_t;
+//        typedef std::vector<SocketConnection*, Allocator<SocketConnection*> > Connections_t;
+        typedef std::vector<SocketConnection*> Connections_t;
         Connections_t connections_;
         
         void addConnection(SocketConnection& connection);

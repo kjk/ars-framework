@@ -25,7 +25,7 @@ class GenericTextElement: public DefinitionElement
     
 protected:
 
-    void calculateOrRender(LayoutContext& layoutContext, Coord left, Coord top, Definition* definition=0, Boolean render=false);
+    void calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition=0, bool render=false);
     
     virtual void applyFormatting(const RenderingPreferences& preferences);
     
@@ -63,7 +63,7 @@ public:
     ElementStyle style() const
     {return style_;}
     
-    void hotSpotClicked(Definition& definition);
+    void performAction(Definition& definition);
     
 };
 

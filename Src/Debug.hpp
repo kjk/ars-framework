@@ -7,10 +7,6 @@
 #ifndef __ARSLEXIS_DEBUG_HPP__
 #define __ARSLEXIS_DEBUG_HPP__
 
-#pragma no_static_dtors on 
-#pragma warn_ptr_int_conv on 
-//#pragma warn_a5_access on
-
 #if __ide_target("Release")
 #define NDEBUG
 #endif
@@ -68,15 +64,16 @@ inline void operator delete[](void *ptr)
     ::operator delete(ptr);
 }
 
-#include <string>
-
+/*
 namespace ArsLexis 
 {
+*/
 
     /**
      * Replacement for @c std::allocator. The former one uses (not explicitly) some 
      * globals.
      */
+/*
     template <class T> 
     class Allocator
     {
@@ -133,6 +130,11 @@ namespace ArsLexis
     };
 
     typedef std::basic_string<char, std::char_traits<char>, Allocator<char> > String;
+*/
+
+/*    
+    typedef std::string String;
 }
+*/
 
 #endif

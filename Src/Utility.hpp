@@ -15,7 +15,7 @@ namespace ArsLexis
         }
     };
 
-
+/*
     class FontSetter 
     {
         FontID originalFontId_;
@@ -87,6 +87,8 @@ namespace ArsLexis
         }
     };
     
+*/
+    
     FontID getBoldFont(FontID normal);
     
     struct C_StringLess
@@ -95,9 +97,7 @@ namespace ArsLexis
         {return StrCompare(str1, str2)<0;}
     };
     
-    void trim(String& str);
-    
-    Boolean isWhitespace(char chr);
+    bool isWhitespace(char chr);
     
     void drawCenteredChars(const char* str, Coord left, Coord top, Coord width);
     

@@ -49,6 +49,9 @@ namespace ArsLexis
         {FrmDrawForm(form_);}
         
         virtual Boolean handleEvent(EventType& event);
+        
+        WinHandle windowHandle() const
+        {return FrmGetWindowHandle(form_);}
             
     public:
         

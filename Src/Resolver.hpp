@@ -2,6 +2,7 @@
 #define __ARSLEXIS_RESOLVER_HPP__
 
 #include "SocketAddress.hpp"
+#include "BaseTypes.hpp"
 #include <map>
 
 namespace ArsLexis

@@ -5,11 +5,11 @@
 
 class LineBreakElement: public DefinitionElement
 {
-    void calculateOrRender(LayoutContext& layoutContext, Boolean render=false);
+    void calculateOrRender(LayoutContext& layoutContext, bool render=false);
 
 public:
     
-    Boolean requiresNewLine(const RenderingPreferences& preferences) const
+    bool requiresNewLine(const RenderingPreferences& preferences) const
     {return true;}
 
     void calculateLayout(LayoutContext& mc)

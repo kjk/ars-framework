@@ -1,5 +1,7 @@
 #include "HorizontalLineElement.hpp"
-#include "Utility.hpp"
+#include "Graphics.hpp"
+
+using ArsLexis::Graphics;
 
 void HorizontalLineElement::calculateLayout(LayoutContext& layoutContext)
 {
@@ -9,15 +11,15 @@ void HorizontalLineElement::calculateLayout(LayoutContext& layoutContext)
 
 void HorizontalLineElement::render(RenderingContext& renderingContext)
 {
-    Coord indent=indentation();
+    uint_t indent=indentation();
     if (renderingContext.usedWidth<indent)
         renderingContext.usedWidth=indent;
-    Coord top=renderingContext.top+renderingContext.usedHeight/2;
-    Coord left=renderingContext.left+renderingContext.usedWidth;
+    uint_t top=renderingContext.top+renderingContext.usedHeight/2;
+    uint_t left=renderingContext.left+renderingContext.usedWidth;
     
     const RenderingPreferences::StyleFormatting& format=renderingContext.preferences.styleFormatting(styleDefault);
-    ArsLexis::ForegroundColorSetter setForeColor(format.textColor);
-    WinPaintLine(left+2, top, left+renderingContext.availableWidth()-2, top);
+    Graphics::ColorSetter setForeColor(renderingContext.graphics, Graphics::colorForeground, format.textColor);
+    renderingContext.graphics.drawLine(left+2, top, left+renderingContext.availableWidth()-2, top);
     
     renderingContext.markElementCompleted(renderingContext.availableWidth());
 }
