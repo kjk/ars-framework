@@ -27,8 +27,8 @@ static bool    fRemoveDups = false;
 #define SELECT_PRESSED  1
 #define CANCEL_PRESSED  2
 
-static StrList_t g_strList;
-static String    selectedWord;
+static CharPtrList_t g_strList;
+static String        selectedWord;
 
 const int hotKeyCode = 0x32;
 
@@ -78,8 +78,8 @@ static BOOL InitStringList(HWND hDlg)
 
     const char_t *str;
 
-    StrList_t::iterator iter = g_strList.begin();
-    StrList_t::iterator iterEnd = g_strList.end();
+    CharPtrList_t::iterator iter = g_strList.begin();
+    CharPtrList_t::iterator iterEnd = g_strList.end();
 
     do {
         str = *iter;
@@ -144,7 +144,7 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
     return FALSE;
 }
 
-bool FGetStringFromList(HWND hwnd, StrList_t strList, ArsLexis::String& strOut)
+bool FGetStringFromList(HWND hwnd, CharPtrList_t strList, ArsLexis::String& strOut)
 {
     g_strList = strList;
     fRemoveDups = false;
@@ -158,7 +158,7 @@ bool FGetStringFromList(HWND hwnd, StrList_t strList, ArsLexis::String& strOut)
     return false;
 }
 
-bool FGetStringFromListRemoveDups(HWND hwnd, StrList_t strList, String& strOut)
+bool FGetStringFromListRemoveDups(HWND hwnd, CharPtrList_t strList, String& strOut)
 {
     g_strList = strList;
     fRemoveDups = true;

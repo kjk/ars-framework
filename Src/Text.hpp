@@ -16,7 +16,7 @@
 # pragma warning( disable : 4800 )
 #endif
 
-typedef std::list<const ArsLexis::char_t *> StrList_t;
+typedef std::list<const ArsLexis::char_t *> CharPtrList_t;
 
 namespace ArsLexis
 {

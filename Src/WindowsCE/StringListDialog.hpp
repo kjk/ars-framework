@@ -6,7 +6,7 @@
 
 using ArsLexis::String;
 
-bool FGetStringFromList(HWND hwnd, StrList_t strList, String& strOut);
-bool FGetStringFromListRemoveDups(HWND hwnd, StrList_t strList, String& strOut);
+bool FGetStringFromList(HWND hwnd, CharPtrList_t strList, String& strOut);
+bool FGetStringFromListRemoveDups(HWND hwnd, CharPtrList_t strList, String& strOut);
 
 #endif
