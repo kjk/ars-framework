@@ -14,7 +14,7 @@
 
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
-import sys, re, random, datetime, MySQLdb, _mysql_exceptions
+import sys, re, random, datetime, MySQLdb, _mysql_exceptions, iPediaDatabase
 try:
     import psyco
     g_fPsycoAvailable = True
@@ -22,62 +22,10 @@ except:
     print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
     g_fPsycoAvailable = False
 
-# if true we'll log terms that redirect to themselves to a file
-g_fLogCircularReferences = True
-g_circularReferencesLogName = "circular.log"
-
 g_articleCount = 0
 
 # if True we'll print debugging info
 g_fVerbose = None
-
-class CircularDetector(object):
-    def __init__(self,logFileName):
-        self.logFileName = logFileName
-        self.loadLog()
-    def loadLog(self):
-        self.circulars = {}
-        try:
-            fo = open(self.logFileName, "rb")
-            for lines in fo.readlines():
-                (defId,term) = line.split(":")
-                self.circulars[defId] = term
-            fo.close()
-        except:
-            pass #it's ok if file doesn't exist
-    def log(self,defId,term):
-        if not self.circulars.has_key(defId):
-            self.circulars[defId] = term
-    def saveLog(self):
-         fo = open(self.logFileName,"wb")
-         for defId in self.circulars.keys():
-            term = self.circulars[defId]
-            toWrite = defId + ":" + term + "\n"
-            fo.write(toWrite)
-         fo.close()
-
-g_circularDetector = None
-def logCircular(defId,term):
-    global g_fLogCircularReferences, g_circularDetector, g_circularReferencesLogName
-    if not g_fLogCircularReferences:
-        return
-    if not g_circularDetector:
-        g_circularDetector = CircularDetector(g_circularReferencesLogName)
-    g_circularDetector.log(defId,term)
-
-def saveCircular():
-    global g_fLogCircularReferences, g_circularDetector
-    if not g_fLogCircularReferences:
-        return
-    if g_circularDetector:
-        g_circularDetector.saveLog()
-
-def testCircular():
-    logCircular("me", "him")
-    logCircular("me", "him2")
-    logCircular("one", "two")
-    logCircular("three", "four")
-    saveCircular()
 
 lineSeparator =     "\n"
 fieldSeparator =    ": "
@@ -98,14 +46,8 @@ clientVersionField =    "Client-Version"
 searchField =           "Search"
 searchResultsField =    "Search-Results"
 
-redirectCommand =    "#REDIRECT"
-termStartDelimiter = "[["
-termEndDelimiter =   "]]"
-
 definitionFormatVersion = 1
 protocolVersion = 1
-
-listLengthLimit = 200
 
 requestLinesCountLimit = 20
 
@@ -114,13 +56,6 @@ class iPediaServerError:
     unsupportedDevice=2
     invalidAuthorization=3
     malformedRequest=4
-
-def startsWithIgnoreCase(s1, substr):
-    if len(s1)<len(substr):
-        return False
-    if s1[:len(substr)].upper()==substr.upper():
-        return True
-    return False
 
 class iPediaProtocol(basic.LineReceiver):
 
@@ -333,90 +268,8 @@ class iPediaProtocol(basic.LineReceiver):
         self.outputField(resultsForField, self.term)
         self.outputPayloadField(definitionField, definition)
         
-    def findTarget(self, db, cursor, idTermDef):
-        global g_fVerbose
-        defId, term, definition=idTermDef
-        history=[]
-        while True:
-            if not startsWithIgnoreCase(definition, redirectCommand):
-                return defId, term, definition
-            history.append(defId)
-            termStart=definition.find(termStartDelimiter)+2
-            termEnd=definition.find(termEndDelimiter)
-            term=definition[termStart:termEnd].replace('_', ' ')
-            #print "Resolving term: ", term
-            query="""SELECT id, term, definition FROM definitions WHERE term='%s' """ % db.escape_string(term)
-            cursor.execute(query)
-            row=cursor.fetchone()
-            if not row:
-                return None
-
-            defId, term, definition=row[0], row[1], row[2]
-            if defId in history:
-                if g_fVerbose:
-                    print "--------------------------------------------------------------------------------"
-                    print "WARNING! Circular reference: ", term
-                    print "--------------------------------------------------------------------------------"
-                logCircular(defId,term)
-                return None
-        
-    def findExactDefinition(self, db, cursor, term):
-        query="""SELECT id, term, definition FROM definitions WHERE term='%s';""" % db.escape_string(term)
-        cursor.execute(query)
-        row=cursor.fetchone()
-        if row:
-            definition=None
-            idTermDef=self.findTarget(db, cursor, (row[0], row[1], row[2]))
-            return idTermDef
-        else:
-            return None
-
-    def findRandomDefinition(self,db,cursor):
-        global g_articleCount
-        term_id = random.randint(self.factory.minDefinitionId, self.factory.maxDefinitionId)
-        #query="""SELECT id, term, definition FROM definitions  ORDER BY RAND() LIMIT 0,1;"""
-        #query="""SELECT id, term, definition FROM definitions WHERE id=%d;""" % term_id
-        query="""SELECT id, term, definition FROM definitions WHERE id=%d;""" % term_id
-        cursor.execute(query)
-        row=cursor.fetchone()
-        if row:
-            definition=None
-            idTermDef=self.findTarget(db, cursor, (row[0], row[1], row[2]))
-            return idTermDef
-        else:
-            return None
-        
-    internalLinkRe=re.compile(r'\[\[(.*?)(\|.*?)?\]\]', re.S)
-                
-    def validateInternalLinks(self, db, cursor, definition):
-        global g_fVerbose
-
-        if g_fVerbose:
-            sys.stdout.write("* Validaiting internal links: ")
-        matches=[]
-        for iter in iPediaProtocol.internalLinkRe.finditer(definition):
-            matches.append(iter)
-        matches.reverse()
-        tested=[]
-        valid=[]
-        for match in matches:
-            term=match.group(1)
-            term
-            if len(term) and (term not in tested):
-                idTermDef=self.findExactDefinition(db, cursor, term)
-                if idTermDef:
-                    if g_fVerbose:
-                        sys.stdout.write("'%s' [ok], " % term)
-                    valid.append(term)
-            if term not in valid:
-                name=match.group(match.lastindex).lstrip('| ').rstrip().replace('_', ' ')
-                if g_fVerbose:
-                    sys.stdout.write("'%s' => '%s', " % (term,name))
-                definition=definition[:match.start()]+name+definition[match.end():]
-        return definition
-
     def preprocessDefinition(self, db, cursor, definition):
-        definition=self.validateInternalLinks(db, cursor, definition)
+#        definition=iPediaDatabase.validateInternalLinks(db, cursor, definition)
         definition=definition.replace("{{CURRENTMONTH}}", str(datetime.date.today().month));
         definition=definition.replace("{{CURRENTMONTHNAME}}", datetime.date.today().strftime("%B"))
         definition=definition.replace("{{CURRENTMONTHNAMEGEN}}", datetime.date.today().strftime("%B"))
@@ -427,51 +280,6 @@ class iPediaProtocol(basic.LineReceiver):
         definition=definition.replace("{{NUMBEROFARTICLES}}", str(self.factory.articleCount))
         return definition
         
-    def findFullTextMatches(self, db, cursor, reqTerm):
-        print "Performing full text search..."
-        words=reqTerm.split()
-        queryStr=''
-        for word in words:
-            queryStr+=(' +'+word)
-        query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s' in boolean mode) order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
-        cursor.execute(query)
-        row=cursor.fetchone()
-        if not row:
-            print "Performing non-boolean mode search..."
-            query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s') order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(reqTerm), listLengthLimit)
-            cursor.execute(query)
-
-        tupleList=[]
-                        
-        while row:
-            tupleList.append((row[0], row[1], row[2]))
-            print row[1], row[3]
-            row=cursor.fetchone()
-            
-        if not len(tupleList):
-            return None
-
-        validatedIds=[]
-        termList=[]
-        for idTermDef in tupleList:
-            defId, term, definition=idTermDef
-            print "Checking term: ", term
-            resTuple=self.findTarget(db, cursor, idTermDef)
-            if resTuple:
-                defId, term, definition=resTuple
-                if defId not in validatedIds:
-                    validatedIds.append(defId)
-                    termList.append(term)
-                else:
-                    print "Discarding duplicate term: ", term
-            else:
-                print "Discarding failed redirection..."
-        
-        if not len(termList):
-            return None
-        else:
-            return termList
-        
     def handleDefinitionRequest(self):
         sys.stderr.write( "'%s' returned from handleDefinitionRequest()\n" % self.requestedTerm )
         cursor=None
@@ -479,13 +287,13 @@ class iPediaProtocol(basic.LineReceiver):
         try:
             db=self.getDatabase()
             cursor=db.cursor()
-            idTermDef=self.findExactDefinition(db, cursor, self.requestedTerm)
+            idTermDef=iPediaDatabase.findExactDefinition(db, cursor, self.requestedTerm)
             if idTermDef:
                 self.definitionId, self.term, definition=idTermDef
             if definition:
                 self.outputDefinition(self.preprocessDefinition(db, cursor, definition))
             else:
-                self.termList=self.findFullTextMatches(db, cursor, self.requestedTerm)
+                self.termList=iPediaDatabase.findFullTextMatches(db, cursor, self.requestedTerm)
                 if self.termList:
                     self.outputField(resultsForField, self.requestedTerm)
                     joinedList=""
@@ -508,7 +316,7 @@ class iPediaProtocol(basic.LineReceiver):
         try:
             db=self.getDatabase()
             cursor=db.cursor()
-            self.termList=self.findFullTextMatches(db, cursor, self.searchExpression)
+            self.termList=iPediaDatabase.findFullTextMatches(db, cursor, self.searchExpression)
             if self.termList:
                 self.outputField(resultsForField, self.searchExpression)
                 joinedList=""
@@ -534,7 +342,7 @@ class iPediaProtocol(basic.LineReceiver):
             cursor=db.cursor()
             idTermDef=None
             while not idTermDef:
-                idTermDef=self.findRandomDefinition(db, cursor)
+                idTermDef=iPediaDatabase.findRandomDefinition(db, cursor)
             self.definitionId, self.term, definition=idTermDef
             sys.stderr.write( "'%s' returned from handleGetRandomRequest()\n" % self.term )
 
@@ -680,9 +488,9 @@ def fDetectRemoveCmdFlag(flag):
 
 def main():
     global g_fVerbose, g_fPsycoAvailable
-    g_fVerbose = True
+    g_fVerbose, iPediaDatabase.g_fVerbose = True, True
     if fDetectRemoveCmdFlag( "-silent" ):
-        g_fVerbose = False
+        g_fVerbose, iPediaDatabase.g_fVerbose = False, False
 
     fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
     if g_fPsycoAvailable and fUsePsyco:

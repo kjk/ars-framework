@@ -27,7 +27,7 @@
 # -usepsyco : if used, will use psyco for speeding up, false by default
 
 import MySQLdb, sys, datetime, time
-import wikipediasql,articleconvert
+import wikipediasql,articleconvert, iPediaDatabase
 try:
     import psyco
     g_fPsycoAvailable = True
@@ -223,7 +223,38 @@ def convertAll(articleLimit):
         if 0 == processedInOneFetch:
             break
         curOffset += rowsPerQuery
-
+        
+def validateAll(articleLimit):
+    rowCount = 0
+    rowsLeft=getIpediaRowCount()
+    rowsPerQuery=500
+    curOffset=0
+    cursor=getNamedCursor(g_connOne, "all_cur_ids")
+    writeCur= getNamedCursor(g_connTwo, "ipedia_write_cur")
+    while True:
+        query="""SELECT id, term, definition FROM ipedia.definitions"""
+        if g_timestamp:
+            query+=""" AND last_modified>'%s'""" % dbEscape(sys.argv[1])
+        query+=""" LIMIT %d, %d""" % (curOffset, rowsPerQuery)
+        cursor.execute(query)
+        processedInOneFetch=0
+        for row in cursor.fetchall():
+            defId, term, text=row[0], row[1], row[2]
+            modText=iPediaDatabase.validateInternalLinks(g_connTwo, writeCur, text)
+            if modText!=text:
+                updQuery="""UPDATE definitions SET definition='%s' WHERE id=%d""" % (dbEscape(modText), defId)
+                writeCur.execute(updQuery)
+            rowCount+=1
+            rowsLeft-=1
+            processedInOneFetch+=1
+            if 0 == rowCount % 500:
+                sys.stderr.write("validated %d rows, left %d, last term=%s\n" % (rowCount, rowsLeft, term))
+            if articleLimit and rowCount >= articleLimit:
+                return
+        if 0 == processedInOneFetch:
+            break
+        curOffset += rowsPerQuery
+        
 NS_MAIN = 0
 def convertAllFromSQL(fileName,articleLimit):
     count = 0
@@ -293,7 +324,7 @@ def dumpTimingInfo():
     dur = g_endTime - g_startTime
     str = "duration %f seconds\n" % dur
     sys.stderr.write(str)
-
+    
 if __name__=="__main__":
 
     fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
@@ -305,6 +336,7 @@ if __name__=="__main__":
 
     g_fForceConvert = fDetectRemoveCmdFlag( "-force" )
     g_fVerbose = fDetectRemoveCmdFlag( "-verbose" )
+    iPediaDatabase.g_fVerbose=g_fVerbose
     g_fShowDups = fDetectRemoveCmdFlag( "-showdups" )
     g_timestamp = getRemoveCmdArg( "-ts" )
     g_fSlowVersion = fDetectRemoveCmdFlag( "-slow" )
@@ -326,8 +358,10 @@ if __name__=="__main__":
         convertOneTerm(termToConvert)
     elif None != fromSql:
         convertAllFromSQL(fromSql,articleLimit)
+        validateAll(articleLimit)
     else:
         convertAll(articleLimit)
+        validateAll(articleLimit)
     endTiming()
     deinitDatabase()
     dumpTimingInfo()
