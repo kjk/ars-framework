@@ -155,7 +155,6 @@ DynStr *DynStrAppenDynStr(DynStr *dstr, DynStr *toAppend)
     return DynStrAppend(dstr, DYNSTR_STR(toAppend), DynStrLen(toAppend));
 }
 
-/*
 // a generic append which appends arbitrary binary data
 // to DynStr. Re-allocates the string if neccesary. Note that
 // it means that you shouldn't use DynStr passed as an argument
@@ -165,49 +164,43 @@ DynStr *DynStrAppenDynStr(DynStr *dstr, DynStr *toAppend)
 // THE ORIGINAL DynStr - the client has to do it by himself.
 DynStr *DynStrAppend(DynStr *dstr, char_t *data, UInt32 dataSize)
 {
-    UInt32  newRequiredSize;
-    char_t *  curEnd;
-    UInt32  newStrLen;
-    char_t *  newStr;
-    UInt32  newLen;
+    char_t *    curEnd;
+    UInt32      newStrLen;
+    char_t *    newStr;
+    UInt32      newBufSize;
 
     if ( dataSize > DYNSTR_LEFT(dstr) )
     {
         // need to re-allocate the buffer
-        newLen = dstr->strLen+1+dataSize;
+        newBufSize = dstr->strLen+1+dataSize;
         if (0 != dstr->reallocIncrement)
         {
             // if reallocIncrement wants us to alloc bigger buffer, do it
-            if (dstr->bufSize + dstr->reallocIncrement > newLen)
+            if (dstr->bufSize + dstr->reallocIncrement > newBufSize)
             {
-                newLen = dstr->bufSize + dstr->reallocIncrement;
+                newBufSize = dstr->bufSize + dstr->reallocIncrement;
             }
         }
-        newStr = (Char*)MemPtrNew(newLen);
+        newStr = (char_t *)MemPtrNew(newBufSize);
         if (NULL == newStr)
             return NULL;
-        MemMove(newStr, DYNSTR_STR(dstr), DynStrLen(dstr));
+        MemMove(newStr, DYNSTR_STR(dstr), DynStrLen(dstr)*sizeof(char_t));
         MemPtrFree(DYNSTR_STR(dstr));
         dstr->str     = newStr;
-        dstr->bufSize = newLen;
+        dstr->bufSize = newBufSize;
     }
 
     // here we're sure we have enough space
-    assert( bufSize <= DYNSTR_LEFT(dstr) );
-
-    // TODO: it might overflow UInt32. but what the hell. If the caller
-    // wants more than 4 GB in total, then he has problems anyway
-    newRequiredSize = dstr->strLen + 1 + bufSize; // 1 for terminating 0
+    assert( dataSize <= DYNSTR_LEFT(dstr) );
 
     curEnd = DYNSTR_STR(dstr) + dstr->strLen;
-    MemMove(curEnd, buf, bufSize);
-    newStrLen = dstr->strLen + bufSize;
-    DYNSTR_STR(dstr)[newStrLen] = '\0';
+    MemMove(curEnd, data, dataSize);
+    newStrLen = dstr->strLen + dataSize/sizeof(char_t);
+    DYNSTR_STR(dstr)[newStrLen] = _T('\0');
     dstr->strLen = newStrLen;
 
     return dstr;
 }
-*/
 
 // return a C-compatible copy of the string. It might be different
 // than real data if the data has embedded 0, which for C means
