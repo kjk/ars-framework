@@ -64,6 +64,20 @@ public:
     iPediaHyperlinkHandler& hyperlinkHandler()
     {return hyperlinkHandler_;}
     
+    struct Preferences
+    {
+        ArsLexis::String cookie;
+    };
+    
+    Preferences& preferences() 
+    {return preferences_;}
+    
+    const Preferences& preferences() const
+    {return preferences_;}
+    
+private:
+    
+    Preferences preferences_;
 };
 
 

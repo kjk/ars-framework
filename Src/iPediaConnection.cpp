@@ -11,7 +11,6 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
     SimpleSocketConnection(manager),
     parser_(0),
     transactionId_(random((UInt32)-1)),
-    getCookie_(false),
     inPayload_(false),
     payloadIsError_(false),
     definitionNotFound_(false),
@@ -65,12 +64,11 @@ void iPediaConnection::prepareRequest()
     char buffer[9];
     StrPrintF(buffer, "%lx", transactionId_);
     appendField(request, transactionIdField, buffer);
-    if (getCookie_)
+    if (app.preferences().cookie.empty())
         appendField(request, getCookieField, deviceIdToken());
     else
-    {
-        //! @todo Obtain cookie stored in application's preferences here and create Cookie field.
-    }        
+        appendField(request, cookieField, app.preferences().cookie);
+        
     if (!term_.empty())
         appendField(request, getDefinitionField, term_);
     if (!serialNumber_.empty())
@@ -136,8 +134,9 @@ void iPediaConnection::processLine(UInt16 start, UInt16 end)
     }
     else if (start==response().find(cookieField, start))
     {
-        //! @todo Set cookie in preferences according to field value
         String cookie=extractFieldValue(response(), start, end);
+        iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
+        app.preferences().cookie=cookie;        
     }
 
     if (error)

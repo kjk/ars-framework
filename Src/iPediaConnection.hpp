@@ -12,11 +12,10 @@ class iPediaConnection: public ArsLexis::SimpleSocketConnection
     ArsLexis::String term_;
     ArsLexis::String serialNumber_;
 
-    UInt16 getCookie_:1;
     UInt16 inPayload_:1;
     UInt16 payloadIsError_:1;
     UInt16 definitionNotFound_:1;
-    UInt16 formatVersion_:12;
+    UInt16 formatVersion_:13;
     
     UInt16 payloadStart_;    
     UInt16 payloadLength_;

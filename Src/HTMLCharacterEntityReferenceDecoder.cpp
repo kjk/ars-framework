@@ -48,37 +48,37 @@ namespace ArsLexis
         insert("frac12", 189);
         insert("frac34", 190);
         insert("iquest", 191);
-        insert("agrave", 192);
-        insert("aacute", 193);
-        insert("acirc", 194);
-        insert("atilde", 195);
-        insert("auml", 196);
-        insert("aring", 197);
-        insert("aelig", 198);
-        insert("ccedil", 199);
-        insert("egrave", 200);
-        insert("eacute", 201);
-        insert("ecirc", 202);
-        insert("euml", 203);
-        insert("igrave", 204);
-        insert("iacute", 205);
-        insert("icirc", 206);
-        insert("iuml", 207);
-        insert("eth", 208);
-        insert("ntilde", 209);
-        insert("ograve", 210);
-        insert("oacute", 211);
-        insert("ocirc", 212);
-        insert("otilde", 213);
-        insert("ouml", 214);
+        insert("Agrave", 192);
+        insert("Aacute", 193);
+        insert("Acirc", 194);
+        insert("Atilde", 195);
+        insert("Auml", 196);
+        insert("Aring", 197);
+        insert("AElig", 198);
+        insert("Ccedil", 199);
+        insert("Egrave", 200);
+        insert("Eacute", 201);
+        insert("Ecirc", 202);
+        insert("Euml", 203);
+        insert("Igrave", 204);
+        insert("Iacute", 205);
+        insert("Icirc", 206);
+        insert("Iuml", 207);
+        insert("ETH", 208);
+        insert("Ntilde", 209);
+        insert("Ograve", 210);
+        insert("Oacute", 211);
+        insert("Ocirc", 212);
+        insert("Otilde", 213);
+        insert("Ouml", 214);
         insert("times", 215);
-        insert("oslash", 216);
-        insert("ugrave", 217);
-        insert("uacute", 218);
-        insert("ucirc", 219);
-        insert("uuml", 220);
-        insert("yacute", 221);
-        insert("thorn", 222);
+        insert("Oslash", 216);
+        insert("Ugrave", 217);
+        insert("Uacute", 218);
+        insert("Ucirc", 219);
+        insert("Uuml", 220);
+        insert("Yacute", 221);
+        insert("THORN", 222);
         insert("szlig", 223);
         insert("agrave", 224);
         insert("aacute", 225);
@@ -112,6 +112,9 @@ namespace ArsLexis
         insert("yacute", 253);
         insert("thorn", 254);
         insert("yuml", 255);
+        // Note: these mappings below are formally incorrect, but often used and we should try to display them anyway
+        insert("ndash", 150); // 8211
+        insert("mdash", 151); // 8212
     }
 
     char HTMLCharacterEntityReferenceDecoder::decode(const char* entityReference) const

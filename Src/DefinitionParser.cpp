@@ -498,7 +498,7 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
         goOn=detectNextLine(end, finish);
         if (goOn || finish)
         {
-            if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_ /*  && listElementLine!=previousLineType_ */)
+            if (lineAllowsContinuation(previousLineType_) && textLine!=lineType_)
                 popParent(); 
                 
             if (listElementLine==previousLineType_ && listElementLine!=lineType_)
@@ -540,6 +540,16 @@ void DefinitionParser::parseIncrement(uint_t end, bool finish)
             parsePosition_=lineEnd_+1;
         }
     } while (goOn);
+    if (finish)
+    {
+        if (lineAllowsContinuation(previousLineType_))
+            popParent(); 
+            
+        if (listElementLine==previousLineType_)
+            manageListNesting(String());
+        
+        assert(numListsStack_.empty());        assert(currentNumberedList_.empty());            
+    }
 }
 
 void DefinitionParser::updateDefinition(Definition& definition)
