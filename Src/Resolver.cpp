@@ -13,7 +13,7 @@ namespace ArsLexis
     Resolver::Resolver(NetLibrary& netLib):
         netLib_(netLib)
     {
-        updateCacheEntry( _T("localhost"), 0x7f000001);
+        // updateCacheEntry( _T("localhost"), 0x7f000001);
     }
 
     Resolver::~Resolver()
