@@ -14,7 +14,7 @@ namespace ArsLexis {
     class LookupProgressReporter {
     public:
     
-        virtual void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds)=0;
+        virtual void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds, bool clearBkg=true)=0;
         
         virtual ~LookupProgressReporter();
         
@@ -23,7 +23,7 @@ namespace ArsLexis {
     class DefaultLookupProgressReporter: public LookupProgressReporter {
     public:
     
-        void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds);
+        void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds, bool clearBkg=true);
         
         ~DefaultLookupProgressReporter();
         
@@ -61,8 +61,8 @@ namespace ArsLexis {
        void setBytesProgress(ulong_t bytes)
        {bytesProgress_=bytes;}
 
-        void showProgress(Graphics& graphics, const Rectangle& bounds)
-        {progressReporter_->showProgress(*this, graphics, bounds);}
+        void showProgress(Graphics& graphics, const Rectangle& bounds, bool clearBkg=true)
+        {progressReporter_->showProgress(*this, graphics, bounds, clearBkg);}
         
         virtual ~LookupProgressReportingSupport();
         
@@ -91,7 +91,8 @@ namespace ArsLexis {
         LookupManagerBase(): lookupInProgress_(false) {}
     
         using LookupProgressReportingSupport::showProgress;
-    
+        using LookupProgressReportingSupport::setProgressReporter;
+
         enum Event {
             lookupStartedEvent=firstLookupEventNumber,
             lookupProgressEvent,

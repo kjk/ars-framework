@@ -11,9 +11,9 @@ namespace ArsLexis {
     DefaultLookupProgressReporter::~DefaultLookupProgressReporter()
     {}
     
-    void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds)
+    void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds, bool clearBkg)
     {
-        graphics.erase(bounds);
+        if(clearBkg) graphics.erase(bounds);
         Rectangle rect(bounds);
         rect.explode(2, 2, -4, -4);
         Graphics::FontSetter setFont(graphics, Font());
