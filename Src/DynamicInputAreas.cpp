@@ -83,7 +83,10 @@ namespace ArsLexis
         MemSet(&event, sizeof(event), 0);
         event.eType=(eventsEnum)winDisplayChangedEvent;
         RectangleType& bounds=event.data.winDisplayChanged.newBounds;
-        WinGetBounds(WinGetDisplayWindow(), &bounds);
+        Coord x, y;
+        WinGetDisplayExtent(&x, &y);
+        bounds.extent.x=x;
+        bounds.extent.y=y;
         EvtAddUniqueEventToQueue(&event, 0, true);
     }
     

@@ -7,6 +7,8 @@ namespace ArsLexis
 {
 
     Boolean isNotifyManager();
+    
+    void getScreenBounds(RectangleType& bounds);
 
 }
 

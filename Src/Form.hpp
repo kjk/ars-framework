@@ -45,7 +45,7 @@ namespace ArsLexis
          * Redraws form.
          * Calls FrmDrawForm().
          */
-        virtual void draw()
+        virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
         {
             assert(form_!=0);
             FrmDrawForm(form_);

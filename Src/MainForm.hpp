@@ -9,7 +9,7 @@ protected:
 
     void resize(const RectangleType& screenBounds);
     
-    void draw();
+    void draw(UInt16 updateCode=frmRedrawUpdateCode);
     
 public:
     

@@ -3,7 +3,7 @@
 void MainForm::resize(const RectangleType& screenBounds)
 {
     setBounds(screenBounds);
-    
+
     RectangleType bounds;
     UInt16 index=getObjectIndex(definitionScrollBar);
     getObjectBounds(index, bounds);
@@ -31,9 +31,9 @@ void MainForm::resize(const RectangleType& screenBounds)
     update();    
 }
 
-void MainForm::draw()
+void MainForm::draw(UInt16 updateCode)
 {
-    iPediaForm::draw();
+    iPediaForm::draw(updateCode);
     RectangleType bounds;
     getBounds(bounds);
     WinPaintLine(bounds.topLeft.x, bounds.extent.y-18, bounds.extent.x, bounds.extent.y-18);

@@ -85,13 +85,13 @@ namespace ArsLexis
     Boolean Form::handleOpen()
     {
         deleteOnClose=false;
-        draw();
+        update();
         return true;
     }
     
     Boolean Form::handleUpdate(UInt16 updateCode)
     {
-        draw();
+        draw(updateCode);
         return true;
     }
 
