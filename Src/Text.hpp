@@ -2,7 +2,10 @@
 #define __ARSLEXIS_TEXT_HPP__
 
 #include <BaseTypes.hpp>
+
+#if !(defined(_WIN32_WCE) || defined(_WIN32))
 #include <cctype>
+#endif
 
 #if defined(_MSC_VER)
 // disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)

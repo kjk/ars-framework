@@ -230,7 +230,7 @@ namespace ArsLexis
 
 #ifndef _MSC_VER
     template<>
-    Logger::LineAppender Logger::operator<< <const char_t*> (const char_t* val);
+    Logger::LineAppender Logger::operator<< < const char_t* > (const char_t* val);
 #endif // _MSC_VER
     
 #pragma mark -

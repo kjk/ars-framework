@@ -163,7 +163,7 @@ namespace ArsLexis
         manager_(manager),
         state_(stateUnresolved),
         transferTimeout_(evtWaitForever),
-        log_("SocketConnection"),
+        log_(_T("SocketConnection")),
         socket_(manager.netLib_)
     {
     }
@@ -182,27 +182,27 @@ namespace ArsLexis
         status_t error=socket_.open();
         if (error)
         {
-            log().debug()<<"open(): unable to open socket, "<<error;
+            log().debug()<<_T("open(): unable to open socket, ")<<error;
             return error;
         }
 
         //error=socket_.setNonBlocking();
         if (error)
         {
-            log().info()<<"open(), can't setNonBlocking(), "<<error;
+            log().info()<<_T("open(), can't setNonBlocking(), ")<<error;
             return error;
         }
 
         error=socket_.connect(address_, transferTimeout());
         if (netErrWouldBlock==error)
         {
-            log().info()<<"open(), got netErrWouldBlock from connect(), changed to errNone";
+            log().info()<<_T("open(), got netErrWouldBlock from connect(), changed to errNone");
             error=errNone;
         }
 
         if (netErrSocketBusy==error)
         {
-            log().info()<<"open(), got netErrSocketBusy from connect(), changed to errNone";
+            log().info()<<_T("open(), got netErrSocketBusy from connect(), changed to errNone");
             error=errNone;
         }
         
@@ -220,12 +220,13 @@ namespace ArsLexis
         status_t error=getSocketErrorStatus();
         if (errNone==error)
         {
-            log().debug()<<"notifyException(): getSocketErrorStatus() returned errNone.";
+            log().debug()<<_T("notifyException(): getSocketErrorStatus() returned errNone.");
             assert(false);
             error=netErrTimeout;
         }
         else
-            log().debug()<<"notifyException(): getSocketErrorStatus() returned error, "<<error;
+            log().debug()<<_T("notifyException(): getSocketErrorStatus() returned error, ")<<error;
+            
         return error;
     }
 
@@ -243,12 +244,12 @@ namespace ArsLexis
         status_t error=socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
         if (error)
         {
-            log().error()<<"getSocketErrorStatus(): unable to query socket option, "<<error;
+            log().error()<<_T("getSocketErrorStatus(): unable to query socket option, ")<<error;
             return error;
         }
         if (status)
         {
-            log().debug()<<"getSocketErrorStatus(): error status, "<<(status_t)status;
+            log().debug()<<_T("getSocketErrorStatus(): error status, ")<<(status_t)status;
         }            
         return (status_t)status;
     }

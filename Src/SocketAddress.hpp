@@ -11,13 +11,13 @@ namespace ArsLexis
     class SocketAddress 
     {
     protected:
-        NativeSocketAddr_t address_;
+        SocketAddr address_;
         
     public:
         
         SocketAddress();
 
-        operator const NativeSocketAddr_t* () const
+        operator const SocketAddr* () const
         {return &address_;}
         
         uint_t size() const
@@ -31,7 +31,7 @@ namespace ArsLexis
         struct INetSocketAddr {
             short family;
             uint_t port;
-            NativeIPAddr_t ip;
+           IPAddr ip;
         };
         
         INetSocketAddr& address() 
@@ -44,10 +44,10 @@ namespace ArsLexis
         
         INetSocketAddress();
         
-        INetSocketAddress(const NativeIPAddr_t& ipAddr, ushort_t port, short addressFamily=socketAddrINET);
+        INetSocketAddress(const IPAddr& addr, ushort_t port, short addressFamily=socketAddrINET);
 
-        void setIpAddress(const NativeIPAddr_t& ipAddr)
-        {address().ip=ipAddr;}      
+        void setIpAddress(const IPAddr& addr)
+        {address().ip=addr;}      
 
         void setPort(ushort_t port)
         {address().port=hostToNetS(port);}
@@ -55,7 +55,7 @@ namespace ArsLexis
         void setAddressFamily(short addressFamily)
         {address().family=addressFamily;}
 
-        const NativeIPAddr_t& ipAddress() const
+        const IPAddr& ipAddress() const
         {return address().ip;}
 
         ushort_t port() const

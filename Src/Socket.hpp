@@ -9,6 +9,7 @@
 
 #include <Debug.hpp>
 #include <Logging.hpp>
+#include <Utility.hpp>
 #include <NativeSocks.hpp>
 
 namespace ArsLexis
@@ -74,7 +75,7 @@ namespace ArsLexis
         operator  NativeSocket_t() const
         {return socket_;}
 
-        status_t setNonBlocking(bool value=true);
+        //status_t setNonBlocking(bool value=true);
         
         status_t setOption(uint_t level, uint_t option, const void* optionValue, uint_t valueLength, long timeout=evtWaitForever);
         
@@ -182,8 +183,8 @@ namespace ArsLexis
         ushort_t eventsCount() const
         {return eventsCount_;}
         
-        bool active() const
-        {return inputFDs_[eventRead] || inputFDs_[eventWrite] || inputFDs_[eventException];}
+        /*bool active() const
+        {return inputFDs_[eventRead] || inputFDs_[eventWrite] || inputFDs_[eventException];}*/
         
     };
     

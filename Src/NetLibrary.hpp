@@ -23,7 +23,7 @@ namespace ArsLexis
 
         ~NetLibrary();
 
-        static const uint_t defaultConfig=0;
+        static const uint_t defaultConfig;
 
         status_t initialize(uint_t& ifError, uint_t configIndex=defaultConfig, ulong_t openFlags=0);
 
@@ -35,11 +35,11 @@ namespace ArsLexis
         //status_t getSetting(ushort_t setting, void* value, ushort_t& valueLength) const;
         //status_t setSetting(ushort_t setting, const void* value, ushort_t valueLength);
 
-        status_t getHostByName(const char* name, HostInfoBuffer& buffer, long timeout=evtWaitForever);
+        status_t getHostByName(const char_t* name, HostInfoBuffer& buffer, long timeout=evtWaitForever);
 
-        status_t addrAToIN(const char* addr, INetSocketAddress& out);
+        status_t addrAToIN(const char_t* addr, INetSocketAddress& out);
         
-        NativeSocket_t socketOpen(NetSocketAddrEnum domain,  NetSocketTypeEnum type, int protocol, long timeout, status_t& error);
+        NativeSocket_t socketOpen(NativeSockAddrFamily_t  domain,  NativeSocketType_t type, int protocol, long timeout, status_t& error);
                 
         int socketClose(NativeSocket_t socket, long  timeout, status_t& error);
 
@@ -49,7 +49,7 @@ namespace ArsLexis
 
         int socketReceive(NativeSocket_t socket, void* bufP, uint_t bufLen, uint_t flags, void* fromAddrP, uint_t* fromLen, long  timeout, status_t& error);
             
-        int socketConnect(NativeSocket_t socket, const NativeSocketAddr_t& sockAddrP, uint_t addrLen, long timeout, status_t& error);
+        int socketConnect(NativeSocket_t socket, const SocketAddr& sockAddrP, uint_t addrLen, long timeout, status_t& error);
 
         int select(uint_t width, NativeFDSet_t* readFDs, NativeFDSet_t *writeFDs, NativeFDSet_t *exceptFDs, long timeout, status_t& error);
 

@@ -9,7 +9,7 @@ namespace ArsLexis
 #pragma mark SocketBase
 
     SocketBase::SocketBase(NetLibrary& netLib):
-        log_("SocketBase"),
+        log_(_T("SocketBase")),
         netLib_(netLib),
         socket_(0)
     {}
@@ -21,7 +21,7 @@ namespace ArsLexis
             status_t error;
             int result=netLib_.socketClose(socket_, evtWaitForever, error);
             if (-1==result || error)
-                log().error()<<"~SocketBase(): NetLibSocketClose() returned error, "<<error;
+                log().error()<<_T("~SocketBase(): NetLibSocketClose() returned error, ")<<error;
         }
     }
     
@@ -44,15 +44,15 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)
-            log()<<"shutdown(): NetLibSocketShutdown() returned error, "<<error;
+            log().debug()<<_T("shutdown(): NetLibSocketShutdown() returned error, ")<<error;
         return error;
     }
     
-    status_t SocketBase::send(uint_t& sent, const void* buffer, uint_t bufferLength, long timeout, uint_t flags, const SocketAddress* address)
+    status_t SocketBase::send(uint_t& sent, const void* buffer, uint_t bufferLength, long timeout, uint_t flags,  const SocketAddress* address)
     {
         assert(socket_!=0);
         status_t error=errNone;
-        const  NativeSocketAddr_t* addr=0;
+        const SocketAddr* addr=0;
         uint_t addrLen=0;
         if (address)
         {
@@ -60,7 +60,7 @@ namespace ArsLexis
             addrLen=address->size();
         }
         short result=netLib_.socketSend(socket_, const_cast<void*>(buffer), bufferLength, flags, 
-            const_cast<NativeSocketAddr_t*>(addr), addrLen, timeout, error);
+            const_cast<SocketAddr*>(addr), addrLen, timeout, error);
         if (result>0)
         {
             assert(!error);
@@ -88,12 +88,12 @@ namespace ArsLexis
         return error;
     }
 
-    status_t SocketBase::setNonBlocking(bool value)
+    /*status_t SocketBase::setNonBlocking(bool value)
     {
         bool flag=value;
         status_t error=setOption(socketOptLevelSocket, socketOptSockNonBlocking, &flag, sizeof(flag));
         return error;
-    } 
+    } */
 
     status_t SocketBase::setOption(uint_t level, uint_t option, const void* optionValue, uint_t valueLength, long timeout)
     {
@@ -105,7 +105,8 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)            
-            log()<<"setOption(): NetLibSocketOptionSet() returned error, "<<error;
+            log().debug()<<_T("setOption(): NetLibSocketOptionSet() returned error, ")<<error;
+            
         return error;
     }
     
@@ -119,7 +120,7 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)            
-            log().warning()<<"getOption(): NetLibSocketOptionGet() returned error, "<<error;
+            log().warning()<<_T("getOption(): NetLibSocketOptionGet() returned error, ")<<error;
         return error;
     }
         
@@ -127,7 +128,7 @@ namespace ArsLexis
     {
         assert(socket_!=0);
         status_t error=errNone;
-        const NativeSocketAddr_t* addr=address;
+        const SocketAddr* addr=address;
         uint_t addrLen=address.size();
         int result=netLib_.socketConnect(socket_, *addr, addrLen, timeout, error);
         if (-1==result)
@@ -166,8 +167,8 @@ namespace ArsLexis
             netFDZero(&inputFDs_[i]);
             netFDZero(&outputFDs_[i]);
         }
-        if (catchStandardEvents)
-            netFDSet(sysFileDescStdIn, &inputFDs_[eventRead]);
+        //if (catchStandardEvents)
+        //    netFDSet(sysFileDescStdIn, &inputFDs_[eventRead]);
         recalculateWidth();
     }
     

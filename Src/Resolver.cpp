@@ -1,8 +1,13 @@
 #include <Resolver.hpp>
 #include <NetLibrary.hpp>
-//nclude <cctype>
 #include <Text.hpp>
+#include <BaseTypes.hpp>
+
+#if !(defined(_WIN32_WCE) || defined(_WIN32))
+#include <cctype>
 #include <cstring>
+#endif
+
 
 namespace ArsLexis
 {
@@ -10,7 +15,7 @@ namespace ArsLexis
     Resolver::Resolver(NetLibrary& netLib):
         netLib_(netLib)
     {
-        updateCacheEntry("localhost", 0x7f000001);
+        updateCacheEntry( _T("localhost"), 0x7f000001);
     }
 
     Resolver::~Resolver()
@@ -33,7 +38,7 @@ namespace ArsLexis
     }
 */
     
-    void Resolver::updateCacheEntry(const String& name, NativeIPAddr_t address)
+    void Resolver::updateCacheEntry(const String& name, unsigned long address)
     {
 /*    
         AddressCache_t::iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(name));
@@ -42,7 +47,7 @@ namespace ArsLexis
         else
             cache_.push_front(std::make_pair(name, address));
 */
-        cache_[name]=address;            
+        cache_[name].ip=address;            
     }
 
     status_t Resolver::validateAddress(const String& origAddress, String& validAddress, ushort_t& port)
@@ -81,8 +86,8 @@ namespace ArsLexis
         if (error)
             return error;
 
-        NativeIPAddr_t  resAddr=buffer->getAddress();
-        assert(resAddr!=0);
+        IPAddr  resAddr=buffer->getAddress();
+        assert(resAddr.ip!=0);
 //        cache_.push_front(std::make_pair(name, resAddr));
         cache_[name]=resAddr;
 
@@ -114,10 +119,10 @@ namespace ArsLexis
             return errNone;
         }
         AddressCache_t::const_iterator it=cache_.find(validAddress);
-//        AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
-        if (it!=cache_.end())
+//      AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
+        if (!(it==cache_.end()))
         {
-            addr.setIpAddress(it->second);
+            addr.setIpAddress((*it).second);
             addr.setPort(port);
             out=addr;
             return errNone;

@@ -19,7 +19,7 @@ namespace ArsLexis
 
         NetLibrary& netLib_;
         
-        typedef std::map<String, NativeIPAddr_t> AddressCache_t;
+        typedef std::map<String, IPAddr> AddressCache_t;
         
     public:        
     
@@ -40,7 +40,7 @@ namespace ArsLexis
         
        ~Resolver();
        
-       void updateCacheEntry(const String& name, NativeIPAddr_t address);
+       void updateCacheEntry(const String& name, unsigned long address);
        
        status_t resolve(SocketAddress& out, const String& address, ushort_t port=0, ulong_t timeout=evtWaitForever);
        
