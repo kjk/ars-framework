@@ -46,7 +46,7 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
 {
     bool goOn = false;
     status_t error = errNone;
-    char_t * resp = ArsLexis::StrToUtf16(response().c_str());
+    char_t * resp = StrToUtf16(response().c_str());
     char_t * toFree = resp;
     if (NULL == resp)
         return 1; // TODO: better error

@@ -107,10 +107,10 @@ char_t *getStateSymbol(int pos)
 // always return index value in (0, statesCount-1)
 int getIndexByFirstChar(ArsLexis::char_t inChar)
 {
-    inChar = ArsLexis::toLower(inChar);
+    inChar = toLower(inChar);
     for (int i = 0; i < STATES_COUNT; i++)
     {
-        char_t foundChar = ArsLexis::toLower(states[i].name[0]);
+        char_t foundChar = toLower(states[i].name[0]);
         if (inChar <= foundChar)
             return i;
     }

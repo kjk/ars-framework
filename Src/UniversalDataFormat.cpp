@@ -96,7 +96,7 @@ long UniversalDataFormat::getItemTextAsLong(int itemNo, int elemNo) const
 {
     const ArsLexis::char_t* text = getItemText(itemNo, elemNo);
     long result;
-    ArsLexis::status_t error = ArsLexis::numericValue(text, text+tstrlen(text), result);
+    ArsLexis::status_t error = numericValue(text, text+tstrlen(text), result);
     if (errNone != error)
         return 0;
     return result;

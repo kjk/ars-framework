@@ -4,9 +4,6 @@
 # pragma pcrelconstdata on
 #endif
 
-namespace ArsLexis 
-{
-
 #if defined(_WIN32)    
 char_t PalmToUnicode[160-128] = 
 {
@@ -86,7 +83,6 @@ char *Utf16ToStr(const char_t *txt)
     return res;
 #endif
 }
-
 
 void ByteStreamToText(const NarrowString& inStream, String& outTxt)
 {
@@ -186,7 +182,7 @@ bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* 
     return (s1start==s1end && s2start==s2end);
 }
 
-ArsLexis::status_t ArsLexis::numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
+ArsLexis::status_t numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
 {
     ArsLexis::status_t error=errNone;
     bool     negative=false;
@@ -242,7 +238,7 @@ static ArsLexis::char_t numToHex(int num)
 }
 
 // encode binary blob of blobSize size and put the result in the out string
-void ArsLexis::HexBinEncodeBlob(unsigned char *blob, int blobSize, ArsLexis::String& out)
+void HexBinEncodeBlob(unsigned char *blob, int blobSize, ArsLexis::String& out)
 {
     out.clear();
     out.reserve(blobSize*2); // 2 chars per each byte
@@ -259,7 +255,7 @@ void ArsLexis::HexBinEncodeBlob(unsigned char *blob, int blobSize, ArsLexis::Str
     }
 }
 
-ArsLexis::String ArsLexis::hexBinEncode(const String& in)
+ArsLexis::String hexBinEncode(const String& in)
 {
     String out;
     out.reserve(2*in.length());
@@ -280,17 +276,13 @@ ArsLexis::String ArsLexis::hexBinEncode(const String& in)
     return out;
 }
 
-namespace {
-
-    inline static void CharToHexString(ArsLexis::char_t* buffer, ArsLexis::char_t chr)
-    {
-        buffer[0]=HEX_DIGITS[chr/16];
-        buffer[1]=HEX_DIGITS[chr%16];
-    }
-
+inline static void CharToHexString(ArsLexis::char_t* buffer, ArsLexis::char_t chr)
+{
+    buffer[0]=HEX_DIGITS[chr/16];
+    buffer[1]=HEX_DIGITS[chr%16];
 }
 
-void ArsLexis::urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
+void urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
 {
     char_t *hexNum = _T("%  ");
 
@@ -316,7 +308,7 @@ void ArsLexis::urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
     }
 }
 
-void ArsLexis::removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& out)
+void removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& out)
 {
     out.resize(0);
     out.reserve(len);
@@ -458,7 +450,7 @@ int AddLinesToList(const String& txt, CharPtrList_t& strList)
     int  count = 0;
     while (true)
     {
-        word = ArsLexis::GetNextLine(txt, curPos, fEnd);
+        word = GetNextLine(txt, curPos, fEnd);
         if (fEnd)
             break;
         wordTxt = StringCopy(word);
@@ -851,7 +843,7 @@ bool strToDouble(const char_t* str, double *dbl)
     }
 
     *dbl = result * sign;       // correcting the sign
-	return true;
+    return true;
 }
 
 // compare two version numbers as returned by Latest-Client-Version
@@ -872,8 +864,6 @@ int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
         return 1;
     return -1;
 }
-
-} // namespace ArsLexis
 
 // note: caller needs to free memory with free
 char_t* StringCopy2__(const char_t *curStr, int len, const char_t* file, int line)
