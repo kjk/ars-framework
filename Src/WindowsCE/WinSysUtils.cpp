@@ -12,17 +12,20 @@ ulong_t ArsLexis::random(ulong_t range)
     return result;
 }
 
+// must be defined elsewhere e.g. iPediaApplication.cpp
+extern HWND g_hwndForEvents;
+
 void ArsLexis::sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
 {
     assert(dataSize<=sizeof(EventData));
     EventData i;
     memcpy(&i, data, dataSize);
-    PostMessage(HWND_BROADCAST, event, i.wParam, i.lParam);
+    PostMessage(g_hwndForEvents, event, i.wParam, i.lParam);
 }
 
 void ArsLexis::sendEvent(uint_t event, short wph, short wpl, int lp)
 {
-    PostMessage(HWND_BROADCAST, event, (wph<<16)|wpl, lp);
+    PostMessage(g_hwndForEvents, event, (wph<<16)|wpl, lp);
 }
 
 void ArsLexis::localizeNumber(char_t* begin, char_t* end)
