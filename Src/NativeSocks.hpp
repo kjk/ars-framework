@@ -50,12 +50,9 @@ namespace ArsLexis
     const int socketOptLevelSocket = SOL_SOCKET;
     const int  socketOptSockErrorStatus= SO_ERROR ;
     const int netSocketDirOutput = 1;
-    const status_t netErrorClass = 0x1200;
-    const status_t netErrParamErr = netErrorClass | 4;
-    const status_t netErrTimeout = netErrorClass | 18;
-    const status_t netErrSocketClosedByRemote = netErrorClass | 20;
-    const status_t netErrWouldBlock = netErrorClass | 47;
-    const status_t netErrSocketBusy = netErrorClass | 9;
+    //TODO: Move errors to ErrBase.h and correct return values returned 
+    //in WinNetLibrary
+
     #define netToHostS ntohs
     #define hostToNetS htons
     #define netFDSet(n,p) FD_SET(n, p)
@@ -131,5 +128,16 @@ namespace ArsLexis
 #endif
 
 }
+
+#if defined(_WIN32_WCE)	
+    const ArsLexis::status_t memErrorClass = 0x0100;
+    const ArsLexis::status_t netErrorClass = 0x1200;
+    const ArsLexis::status_t netErrParamErr = netErrorClass | 4;
+    const ArsLexis::status_t netErrTimeout = netErrorClass | 18;
+    const ArsLexis::status_t netErrSocketClosedByRemote = netErrorClass | 20;
+    const ArsLexis::status_t netErrWouldBlock = netErrorClass | 47;
+    const ArsLexis::status_t netErrSocketBusy = netErrorClass | 9;
+    const ArsLexis::status_t memErrNotEnoughSpace = memErrorClass | 2;
+#endif
 
 #endif //__ARSLEXIS_NATIVESOCKS_HPP__

@@ -14,12 +14,14 @@
 
 #endif // __MWERKS__
 
-#if defined(_PALM_OS)
 
 #include <new>          // I include <new> & <memory> here so that definitions from there are included before I redefine new
 #include <memory>
+#if defined(_PALM_OS)
 #include <cassert>
+#endif
 #include <BaseTypes.hpp>
+
 
 namespace ArsLexis 
 {
@@ -38,7 +40,7 @@ namespace ArsLexis
  * to MSL new (nothrow) that simply catches exception
  * thrown by new.
  */
-inline void* operator new(unsigned long size)
+inline void* operator new(ArsLexis::new_return_type size)
 {
     void* ptr=0;
     if (size) 
@@ -50,7 +52,7 @@ inline void* operator new(unsigned long size)
     return ptr;
 }
 
-inline void* operator new(unsigned long size, const char* file, int line)
+inline void* operator new(ArsLexis::new_return_type size, const char* file, int line)
 {
     void* ptr=::operator new(size);
     ArsLexis::logAllocation(ptr, false, file, line);
@@ -68,12 +70,12 @@ inline void operator delete(void *ptr)
     }        
 }
 
-inline void* operator new[](unsigned long size)
+inline void* operator new[](ArsLexis::new_return_type size)
 {
     return ::operator new(size);
 }
 
-inline void* operator new[](unsigned long size, const char* file, int line)
+inline void* operator new[](ArsLexis::new_return_type size, const char* file, int line)
 {
     void* ptr=::operator new[](size);
     ArsLexis::logAllocation(ptr, false, file, line);
@@ -87,82 +89,6 @@ inline void operator delete[](void *ptr)
 
 #ifndef NDEBUG
 #define new new (__FILE__, __LINE__)
-#endif
-
-#endif
-
-
-#if defined(_WIN32_WCE)
-
-#include <new>       
-#include <memory>
-#include <BaseTypes.hpp>
-
-namespace ArsLexis 
-{
-    /** 
-     * Placeholder for custom memory allocation failure handler.
-     * It should be defined somewher in application modules.
-     */
-    void handleBadAlloc();
-    
-    void logAllocation(void* ptr, bool free, const char* file, int line);
-    
-}
-
-/**
- * Custom memory allocation function, that doesn't throw (contrary 
- * to MSL new (nothrow) that simply catches exception
- * thrown by new.
- */
-inline void* operator new(unsigned int size)
-{
-    void* ptr=0;
-    if (size) 
-        ptr=malloc(size);
-    else
-        ptr=malloc(1);
-    if (!ptr)
-        ArsLexis::handleBadAlloc();
-    return ptr;
-}
-
-inline void* operator new(unsigned int size, const char* file, int line)
-{
-    void* ptr=::operator new(size);
-    ArsLexis::logAllocation(ptr, false, file, line);
-    return ptr;
-}
-
-inline void operator delete(void *ptr)
-{
-    if (ptr) 
-    {
-        free(ptr);
-#ifndef NDEBUG
-        ArsLexis::logAllocation(ptr, true, 0, 0);
-#endif            
-    }        
-}
-
-inline void* operator new[](unsigned int size)
-{
-    return ::operator new(size);
-}
-
-inline void* operator new[](unsigned int size, const char* file, int line)
-{
-    void* ptr=::operator new[](size);
-    ArsLexis::logAllocation(ptr, false, file, line);
-    return ptr;
-}
-
-inline void operator delete[](void *ptr)
-{
-    ::operator delete(ptr);
-}
-
-
 #endif
 
 

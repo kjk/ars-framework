@@ -26,7 +26,8 @@ namespace ArsLexis
 {
     struct EventType
     {
-        int type;
+        int eType;
+        void* data;
     };
 
     typedef DWORD tick_t;
@@ -36,6 +37,8 @@ namespace ArsLexis
     typedef SCODE status_t;
 
     typedef unsigned short LocalID;
+    
+    typedef unsigned int new_return_type;
 
 # define tstrlen _tcslen
 # define tprintf _stprintf
@@ -58,6 +61,8 @@ namespace ArsLexis
     
     // One would ask: why some stupid status_t and not error_t? Because PalmOS Cobalt is coming...
     typedef Err status_t;
+
+    typedef unsigned long new_return_type;
 
 #  define ticks TimGetTicks
     
