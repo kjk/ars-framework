@@ -1280,7 +1280,10 @@ error_t KXmlParser::getPositionDescription(String& ret)
 
         buf += '>';
     }
-    else if (type_ == IGNORABLE_WHITESPACE);
+    else if (type_ == IGNORABLE_WHITESPACE)
+    {
+        // do nothing
+    }
     else if (type_ != TEXT)
     {
         String text = getText();
