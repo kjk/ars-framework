@@ -51,7 +51,7 @@ namespace {
 
 }
 
-void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Rectangle& area)
+void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Rectangle& area, bool hyperlink)
 {
     uint_t intersectStart=std::max(start, selectionStart);
     uint_t intersectEnd=std::min(end, selectionEnd);
@@ -66,14 +66,21 @@ void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start,
             point.x+=graphics.textWidth(text, length);
         }
 #ifdef _PALM_OS
-        graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point);
-        Rectangle rect(point, Point(graphics.textWidth(text, length), area.height()));
-        graphics.invertRectangle(rect);
-        point.x += rect.width();
+        if (!hyperlink) 
+        {
+            graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point);
+            Rectangle rect(point, Point(graphics.textWidth(text, length), area.height()));
+            graphics.invertRectangle(rect);
+            point.x += rect.width();
+        }
+        else {
 #else
-        graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point, true);
-        point.x+=graphics.textWidth(text, length);
+        if (true) 
+        {
 #endif
+            graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point, true);
+            point.x+=graphics.textWidth(text, length);
+        }
         if (intersectEnd<end)
         {
             graphics.drawText(text=(text_.c_str()+intersectEnd), length=(end-intersectEnd), point);
@@ -159,7 +166,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     {
         ArsLexis::Rectangle textArea(left, top, txtDx, lineHeight);
         drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
-            layoutContext.selectionStart, layoutContext.selectionEnd, textArea);
+            layoutContext.selectionStart, layoutContext.selectionEnd, textArea, layoutContext.selectionIsHyperlink);
         if (isHyperlink())
             defineHotSpot(*definition, textArea);
     }

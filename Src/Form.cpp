@@ -141,15 +141,15 @@ namespace ArsLexis
     {
         FormGadget* gadget;
         bool taking = (event.eType == frmObjectFocusTakeEvent);
-        if (frmInvalidObjectId != focusedControlIndex_ && frmGadgetObj == FrmGetObjectType(form_, focusedControlIndex_) && taking)
+        const frmObjectFocusTake& data = reinterpret_cast<const frmObjectFocusTake&>(event.data);
+        assert(id_ == data.formID);
+        UInt16 index = FrmGetObjectIndex(form_, data.objectID);
+        if (frmInvalidObjectId != focusedControlIndex_ && frmGadgetObj == FrmGetObjectType(form_, focusedControlIndex_) && taking && index != focusedControlIndex_)
         {
             gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, focusedControlIndex_));
             assert(NULL != gadget);
             gadget->handleFocusChange(FormGadget::focusLosing);
         }
-        const frmObjectFocusTake& data = reinterpret_cast<const frmObjectFocusTake&>(event.data);
-        assert(id_ == data.formID);
-        UInt16 index = FrmGetObjectIndex(form_, data.objectID);
         if (frmInvalidObjectId == index)
             return;
         if (taking)
@@ -159,7 +159,8 @@ namespace ArsLexis
             return;
         gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, index));
         assert(NULL != gadget);
-        gadget->handleFocusChange(taking ? FormGadget::focusTaking : FormGadget::focusLosing);
+        if (taking)
+            gadget->handleFocusChange(FormGadget::focusTaking);
     }
     
     bool Form::handleEvent(EventType& event)

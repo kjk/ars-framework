@@ -23,7 +23,7 @@ namespace ArsLexis {
         
         virtual void drawFocusRing() {}
         
-        virtual void removeFocusRing() {}
+        virtual void removeFocusRing();
         
         virtual void handleDraw(Graphics& graphics);
         
@@ -48,6 +48,11 @@ namespace ArsLexis {
         };
         
         virtual void handleFocusChange(FocusChange change);
+        
+        void fireDrawCompleted() {
+            form()->afterGadgetDraw();
+        }
+
         
     public:
     

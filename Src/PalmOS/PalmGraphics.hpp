@@ -155,6 +155,14 @@ namespace ArsLexis {
         uint_t fontBaseline() const
         {return effectiveBaseline_;}
         
+/*        
+        enum TextVideoMode {
+            textVideoNormal,
+            textVideoInverseSelection,
+            textVideoInverseHyperlink
+        }
+ */
+         
         void drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted=false);
         
         void drawCenteredText(const char_t* str, const Point& topLeft, uint_t width);

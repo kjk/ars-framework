@@ -131,8 +131,6 @@ namespace ArsLexis {
     protected:
     
         void drawFocusRing();
-    
-        void removeFocusRing();
 
         const ItemRenderer* itemRenderer() const
         {return itemRenderer_;}

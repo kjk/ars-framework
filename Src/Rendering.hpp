@@ -24,6 +24,7 @@ struct LayoutContext
     GenericTextElement* nextTextElement;
     uint_t selectionStart;
     uint_t selectionEnd;
+    bool selectionIsHyperlink;
     
     LayoutContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
         graphics(graph),
@@ -35,7 +36,8 @@ struct LayoutContext
         baseLine(0),
         nextTextElement(0),
         selectionStart(progressCompleted),
-        selectionEnd(progressCompleted)
+        selectionEnd(progressCompleted),
+        selectionIsHyperlink(false)
     {}
     
     void markElementCompleted(uint_t width)
@@ -71,13 +73,11 @@ struct RenderingContext: public LayoutContext
     Definition& definition;
     uint_t left;
     uint_t top;
-    bool selectionIsHyperlink;
     
     RenderingContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, Definition& def, uint_t x, uint_t y, uint_t width):
         LayoutContext(graph, prefs, width),
         definition(def),
         left(x),
-        top(y),
-        selectionIsHyperlink(false)
+        top(y)
     {}
 };

@@ -1,6 +1,7 @@
 #include <FormGadget.hpp>
 #include <Graphics.hpp>
 #include <Application.hpp>
+#include <68k/Hs.h>
 
 using namespace ArsLexis;
 
@@ -72,6 +73,7 @@ void FormGadget::drawProxy()
         Graphics::ClipRectangleSetter setClip(graphics, rect);
         handleDraw(graphics);
     }
+    fireDrawCompleted();
 }
 
 void FormGadget::handleDraw(Graphics& graphics)
@@ -108,7 +110,6 @@ bool FormGadget::handleGadgetCommand(UInt16 command, void* param)
         case formGadgetDrawCmd:
             drawProxy();
             handled=true;
-            form()->afterGadgetDraw();
             break;
 
         case formGadgetHandleEventCmd:
@@ -133,4 +134,9 @@ void FormGadget::handleFocusChange(FocusChange change)
 void FormGadget::notifyHide() {}
 
 void FormGadget::notifyShow() {}
+
+void FormGadget::removeFocusRing() 
+{
+    HsNavRemoveFocusRing(*form());
+}
 

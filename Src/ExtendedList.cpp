@@ -327,12 +327,6 @@ void ExtendedList::drawFocusRing()
     assert(errNone == error);
 }
 
-void ExtendedList::removeFocusRing()
-{
-    assert(form()->application().runningOnTreo600());
-//    HsNavRemoveFocusRing(*form());
-}
-
 void ExtendedList::setItemRenderer(ItemRenderer* itemRenderer, RedrawOption ro)
 {
     if (0!=(itemRenderer_=itemRenderer) && 0!=itemRenderer->itemsCount())

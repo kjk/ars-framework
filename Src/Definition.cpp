@@ -898,18 +898,24 @@ bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPrefe
         {
             uint_t top = firstShownLine();
             scroll(graphics, prefs, items);
-            return firstShownLine() != top;
+            if (firstShownLine() != top)
+                return true;
+            else
+                clearSelection(graphics, prefs);
         }
     }
     if (usesHyperlinkNavigation())
     {
+        bool handled = false;
         switch (navKey)
         {
             case navKeyRight:
-                return navigateHyperlink(graphics, prefs, true);
+                handled = navigateHyperlink(graphics, prefs, true);
+                break;
             
             case navKeyLeft:
-                return navigateHyperlink(graphics, prefs, false);
+                handled = navigateHyperlink(graphics, prefs, false);
+                break;
             
             case navKeyCenter:
                 if (!selectionIsHyperlink_)
@@ -922,11 +928,13 @@ bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPrefe
                 renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
                 (*inactiveSelectionStartElement_)->performAction(*this);
                 inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
-                return true;
+                handled = true;
             
         }
+        if (!handled && hasSelection())
+            clearSelection(graphics, prefs);
+        return handled;
     }
-    
     return false;
 }
 
@@ -1042,4 +1050,16 @@ bool Definition::navigateHyperlink(ArsLexis::Graphics& graphics, const Rendering
 bool Definition::hasSelection() const
 {
     return selectionStartElement_ != elements_.end();
+}
+
+void Definition::clearSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs) {
+    if (!hasSelection())
+        return;
+    ElementPosition_t start = selectionStartElement_;
+    ElementPosition_t end = selectionEndElement_;
+    selectionStartElement_ = selectionEndElement_ = elements_.end();
+    selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
+    inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+    selectionIsHyperlink_ = false;
+    renderElementRange(graphics, prefs, start, end);
 }

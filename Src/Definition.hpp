@@ -290,6 +290,8 @@ public:
     { return elements_.end();}
     
     bool hasSelection() const;
+    
+    void clearSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs);
 
 private:
 

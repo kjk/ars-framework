@@ -83,6 +83,7 @@ void TextRenderer::drawProxy()
         if (errNone == lastRenderingError_)
             updateForm(graphics);
     }
+    fireDrawCompleted();
     if (errNone == lastRenderingError_ && NULL != scrollBar_)
         doUpdateScrollbar();
    if (errNone != lastRenderingError_ && NULL != renderingErrorListener_)
@@ -112,6 +113,7 @@ void TextRenderer::scroll(WinDirectionType direction, uint_t items, ScrollbarUpd
         if (errNone == lastRenderingError_)
             updateForm(graphics);
     }
+    fireDrawCompleted();
     if (errNone == lastRenderingError_ && updateScrollbar == update && NULL != scrollBar_)
         doUpdateScrollbar();
     if (errNone != lastRenderingError_ && NULL != renderingErrorListener_)
@@ -191,10 +193,13 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
     else
         scheduledScrollDirection_ = scheduledScrollAbandoned;
     checkDrawingWindow();
-    Graphics graphics(drawingWindow_);
-    ActivateGraphics activate(graphics);
-    if (definition_.extendSelection(graphics, renderingPreferences_, p, tapCount))
-        updateForm(graphics);
+    {
+        Graphics graphics(drawingWindow_);
+        ActivateGraphics activate(graphics);
+        if (definition_.extendSelection(graphics, renderingPreferences_, p, tapCount))
+            updateForm(graphics);
+    }
+    fireDrawCompleted();
     return true;
 }
 
@@ -260,6 +265,7 @@ void TextRenderer::handleNilEvent()
         if (definition_.extendSelection(graphics, renderingPreferences_, p, 0))
             updateForm(graphics);
     }
+    fireDrawCompleted();
     if (NULL != scrollBar_)
         doUpdateScrollbar();
 }
@@ -291,9 +297,9 @@ bool TextRenderer::handleKeyDownEvent(const EventType& event)
         Graphics graphics(drawingWindow_);
         ActivateGraphics activate(graphics);
         handled = definition_.navigatorKey(graphics, renderingPreferences_, key);
-        if (handled)
-            updateForm(graphics);
+        updateForm(graphics);
     }
+    fireDrawCompleted();
     if (handled)
         doUpdateScrollbar();
     return handled;
@@ -311,8 +317,7 @@ void TextRenderer::drawFocusRing()
 
 void TextRenderer::removeFocusRing()
 {
-    assert(form()->application().runningOnTreo600());
-//    HsNavRemoveFocusRing(*form());
+    FormGadget::removeFocusRing();
 }
 
 bool TextRenderer::copySelection() const
