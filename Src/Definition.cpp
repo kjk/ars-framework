@@ -12,6 +12,12 @@
 #include <Text.hpp>
 #include "LineBreakElement.hpp"
 
+void DestroyElements(Definition::Elements_t& elems)
+{
+    std::for_each(elems.begin(), elems.end(), ObjectDeleter<DefinitionElement>());
+    elems.clear();
+}
+
 Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     element_(element)
 {
@@ -160,8 +166,9 @@ void Definition::clear()
     clearHotSpots();
     clearLines();
     if (elementsOwner_)
-        std::for_each(elements_.begin(), elements_.end(), ObjectDeleter<DefinitionElement>());
-    elements_.clear();
+        DestroyElements(elements_);
+    else
+        elements_.clear();
     selectionStartElement_=elements_.end();
     selectionEndElement_=elements_.end();
     elementsOwner_ = true;

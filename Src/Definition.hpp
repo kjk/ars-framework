@@ -404,6 +404,8 @@ public:
     bool navigateHyperlink(Graphics& graphics, const RenderingPreferences& prefs, bool next);
 };
 
+void DestroyElements(Definition::Elements_t& elems);
+
 /**
  * parse text with "<b>", "</b>" and "<br>" tags inside.
  * if useHyperlink is true:

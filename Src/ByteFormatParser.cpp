@@ -391,7 +391,7 @@ bool ByteFormatParser::parseHeader(const char_t* inText)
     return true;
 }
        
-status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t inputLength, bool finish)
+status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inputLength, bool finish)
 {
     inText_.append(inputText, inputLength);
     inLength_ += inputLength;

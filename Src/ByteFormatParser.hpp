@@ -2,6 +2,7 @@
 #define __ByTE_FORMAT_PARSER__
 
 #include <DefinitionElement.hpp>
+#include <FieldPayloadProtocolConnection.hpp>
 
 ulong_t readUnaligned32(const char* addr);
 void    writeUnaligned32(char* addr, ulong_t value);
@@ -10,7 +11,7 @@ void    writeUnaligned32(char* addr, ulong_t value);
  Used to change byteData to DefinitnionElements
 
  */
-class ByteFormatParser
+class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
 {
     private:
         typedef std::vector<DefinitionElement*> ElementsPointers_t;
@@ -57,7 +58,7 @@ class ByteFormatParser
 
         void reset();
        
-        ArsLexis::status_t handleIncrement(const ArsLexis::char_t* text, ulong_t length, bool finish=false);
+        status_t handleIncrement(const char_t* payload, ulong_t& length, bool finish);
 
         /**
          * ignore length if inputTextLen = (UInt32)(-1)
