@@ -16,7 +16,7 @@ class GenericTextElement: public DefinitionElement
     action_callback * actionCallback_;
     void *            actionCallbackData_;
 
-    void drawTextWithSelection(ArsLexis::Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Point& point);
+    void drawTextWithSelection(ArsLexis::Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Rectangle& area);
 
 public:
     

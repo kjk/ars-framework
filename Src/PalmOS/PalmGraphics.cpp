@@ -158,4 +158,11 @@ namespace ArsLexis
         }
     }
  
+    void Graphics::invertRectangle(const Rectangle& rect) 
+    {
+        RectangleType r;
+        rect.toNative(r);
+        WinInvertRectangle(&r, 0);
+    }
+    
 }

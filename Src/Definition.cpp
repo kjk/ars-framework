@@ -75,6 +75,8 @@ Definition::Definition():
     hyperlinkHandler_(0),
     selectionStartElement_(elements_.end()),
     selectionEndElement_(elements_.end()),
+    inactiveSelectionStartElement_(elements_.end()),
+    inactiveSelectionEndElement_(elements_.end()),
     selectionStartProgress_(LayoutContext::progressCompleted),
     selectionEndProgress_(LayoutContext::progressCompleted),
     trackingSelection_(false),
@@ -267,13 +269,29 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
     }
     LinePosition_t nextLine = line;
     ++nextLine;
+    LayoutContext layoutContext(graphics, prefs, bounds_.width());
+    layoutContext.usedWidth=line->leftMargin;
+    layoutContext.usedHeight=line->height;
+    layoutContext.renderingProgress = line->renderingProgress;
     elem = line->firstElement;
     progress = line->renderingProgress;
-    LayoutContext layoutContext(graphics, prefs, bounds_.width());
-    layoutContext.usedWidth=0;
-    layoutContext.usedHeight=line->height;
-    while (true) 
+    while (end != elem) 
     {
+        if (elem == nextLine->firstElement && progress == nextLine->renderingProgress)
+            break;
+        ElementPosition_t nextElem = elem;
+        ++nextElem;
+        if (end != nextElem && (*nextElem)->isTextElement())
+            layoutContext.nextTextElement = static_cast<GenericTextElement*>(*nextElem);
+        progress = (*elem)->charIndexAtOffset(layoutContext, width);
+        if (DefinitionElement::offsetOutsideElement != progress)
+            break;
+        ++elem;
+        layoutContext.renderingProgress = 0;
+    }
+    if (end == elem) {
+        --elem;
+        progress = DefinitionElement::offsetOutsideElement;
     }
 }
 
@@ -522,6 +540,21 @@ void Definition::renderSingleElement(Graphics& graphics, const RenderingPreferen
     renderLayout(graphics, prefs, &element);
 }
 
+static bool hyperlinksEqual(const DefinitionElement* e1, const DefinitionElement* e2) 
+{
+    if (!(e1->isTextElement() && e2->isTextElement()))
+        return false;
+    const GenericTextElement* t1 = static_cast<const GenericTextElement*>(e1);
+    const GenericTextElement* t2 = static_cast<const GenericTextElement*>(e2);
+    if (!(t1->isHyperlink() && t2->isHyperlink()))
+        return false;
+    const GenericTextElement::HyperlinkProperties* p1 = t1->hyperlinkProperties();
+    const GenericTextElement::HyperlinkProperties* p2 = t2->hyperlinkProperties();
+    if (p1->type != p2->type || p1->resource != p2->resource)
+        return false;
+    return true;
+}
+
 bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking) 
 {
     if (trackingSelection_ && NULL == selectedHotSpot_)
@@ -530,7 +563,6 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
     {
         assert(trackingSelection_);
         assert(selectionEndProgress_ == LayoutContext::progressCompleted);
-        assert(selectionStartElement_ != elements_.end());
         bool insideHyperlink = selectedHotSpot_->hitTest(point);
         if (!endTracking) 
         {
@@ -559,7 +591,6 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
     }
     else 
     {
-        assert(!endTracking);
         HotSpots_t::const_iterator end=hotSpots_.end();
         for (HotSpots_t::const_iterator it=hotSpots_.begin(); it!=end; ++it)
         {
@@ -576,6 +607,31 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
             selectionEndProgress_ = LayoutContext::progressCompleted;
             selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &selectedHotSpot_->element());
             renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+/*            
+            ElementPosition_t pos = selectionStartElement_;
+            while (true)
+            {
+                if (pos == elements_.begin())
+                    break;
+                --pos;
+               if (!hyperlinksEqual(*pos, *selectionStartElement_))
+                    break;
+               selectionStartElement_ = pos;
+            }
+            pos = selectionEndElement_;
+            while (true) 
+            {
+                ++pos;
+                if (pos == elements_.end())
+                    break;
+                if (!hyperlinksEqual(*pos, *selectionEndElement_))
+                    break;
+                selectionEndElement_ = pos;
+                renderSingleElement(graphics, prefs, *(*pos));
+            }
+            inactiveSelectionStartElement_ = selectionStartElement_;
+            inactiveSelectionEndElement_ = selectionEndElement_;
+*/
             return true;
         }
         return false;
@@ -599,14 +655,32 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
 bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking) 
 {
     Point p(point.x - bounds_.x(), point.y - bounds_.y());
+    ElementPosition_t elem;
+    uint_t progress;
+    LinePosition_t line = lineAtHeight(p.y);
+    elementAtWidth(graphics, prefs, line, p.x, elem, progress);
     if (!trackingSelection_) 
     {
-        assert(!endTracking);
-        LinePosition_t line = lineAtHeight(p.y);
-        
+        selectionStartElement_ = selectionEndElement_ = elem;
+        selectionStartProgress_ = selectionEndProgress_ = progress;
         trackingSelection_ = true;
     }
-    else if (endTracking) 
+    else 
+    {
+        /*
+        ElementPosition_t pos;
+        if (elem > selectionEndElement_ || (elem == selectionEndElement_ && progress > selectionEndProgress_))
+        {
+            pos = selectionEndElement_;
+            selectionEndElement_ = elem;
+            selectionEndProgress_ = progress;
+            ++elem;
+            while (pos != elem)
+                renderSingleElement(graphics, prefs, *pos++);
+        } 
+        */   
+    }
+    if (endTracking) 
         trackingSelection_ = false;
     return true;
 }
@@ -614,6 +688,8 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
 bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking)
 {
     if (elements_.empty())
+        return false;
+    if (!trackingSelection_ && !(bounds_ && point))
         return false;
     if (trackHyperlinkHighlight(graphics, prefs, point, endTracking))
         return true;

@@ -3,10 +3,7 @@
 #include <Text.hpp>
 #include <memory>
 
-using ArsLexis::char_t;
-using ArsLexis::String;
-using ArsLexis::Graphics;
-using ArsLexis::Point;
+using namespace ArsLexis;
 
 GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
     resource(res),
@@ -41,7 +38,7 @@ namespace {
     {
         uint_t length=text.length();
         for (uint_t i=fromPos; i<length; ++i)
-            if (ArsLexis::isSpace(text[i]))
+            if (isSpace(text[i]))
                 return i;
         return length;
     }
@@ -49,16 +46,16 @@ namespace {
     static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
     {
         String::const_reverse_iterator it(text.rend()-start-length);
-        return (text.rend()-std::find_if(it, it+length, ArsLexis::isSpace))-start;
+        return (text.rend()-std::find_if(it, it+length, isSpace))-start;
     }
 
 }
 
-void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Point& p)
+void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rectangle& area)
 {
     uint_t intersectStart=std::max(start, selectionStart);
     uint_t intersectEnd=std::min(end, selectionEnd);
-    ArsLexis::Point point(p);
+    Point point(area.topLeft);
     uint_t length;
     const char_t* text;
     if (intersectStart<intersectEnd)
@@ -68,8 +65,15 @@ void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start,
             graphics.drawText(text=(text_.c_str()+start), length=(intersectStart-start), point);
             point.x+=graphics.textWidth(text, length);
         }
+#ifdef _PALM_OS
+        graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point);
+        Rectangle rect(point, Point(graphics.textWidth(text, length), area.height()));
+        graphics.invertRectangle(rect);
+        point.x += rect.width();
+#else
         graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point, true);
         point.x+=graphics.textWidth(text, length);
+#endif
         if (intersectEnd<end)
         {
             graphics.drawText(text=(text_.c_str()+intersectEnd), length=(end-intersectEnd), point);
@@ -97,7 +101,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     
     if (layoutContext.isFirstInLine())
     {
-        while (ArsLexis::isSpace(*text))
+        while (isSpace(*text))
         {
             ++text;
             ++layoutContext.renderingProgress;
@@ -116,11 +120,11 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     }
 
     if (text_.length()==layoutContext.renderingProgress+length &&
-        !ArsLexis::isSpace(text_[text_.length()-1]) &&
+        !isSpace(text_[text_.length()-1]) &&
         layoutContext.nextTextElement && 
         !layoutContext.nextTextElement->breakBefore(layoutContext.preferences) &&
         !layoutContext.nextTextElement->text().empty() &&
-        !ArsLexis::isSpace(layoutContext.nextTextElement->text()[0]))
+        !isSpace(layoutContext.nextTextElement->text()[0]))
     {
         LayoutContext copy(layoutContext.graphics, layoutContext.preferences, layoutContext.screenWidth);
         copy.baseLine=layoutContext.baseLine;
@@ -138,7 +142,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     uint_t charsToDraw = length;
     uint_t curTxtDx = txtDx;
     while ( (charsToDraw>0) && 
-        ArsLexis::isSpace(*(text+charsToDraw-1)) && 
+        isSpace(*(text+charsToDraw-1)) && 
         (layoutContext.availableWidth()<curTxtDx))
     {
         --charsToDraw;
@@ -152,10 +156,11 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
     if (render)
     {
+        Rectangle textArea(left, top, txtDx, lineHeight);
         drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
-            layoutContext.selectionStart, layoutContext.selectionEnd, Point(left, top));
+            layoutContext.selectionStart, layoutContext.selectionEnd, textArea);
         if (isHyperlink())
-            defineHotSpot(*definition, ArsLexis::Rectangle(left, top, txtDx, lineHeight));
+            defineHotSpot(*definition, textArea);
     }
 
     if (!render)
@@ -181,13 +186,13 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
                 if (render)
                 {
                     uint_t charsToDraw=length;
-                    while (charsToDraw && ArsLexis::isSpace(*(text+charsToDraw-1)))
+                    while (charsToDraw && isSpace(*(text+charsToDraw-1)))
                         --charsToDraw;
                     drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
                         layoutContext.selectionStart, layoutContext.selectionEnd, Point(left, top));
 //                    graphics.drawText(text, charsToDraw, Point(left, top));
                     if (isHyperlink())
-                        defineHotSpot(*definition, ArsLexis::Rectangle(left, top, width, lineHeight));
+                        defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
                 }
                 
                 layoutContext.renderingProgress+=length;
@@ -211,7 +216,7 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
     uint_t left = lc.usedWidth;
     if (lc.isFirstInLine())
     {
-        while (ArsLexis::isSpace(*text))
+        while (isSpace(*text))
         {
             ++text;
             ++lc.renderingProgress;
@@ -227,11 +232,11 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
             return lc.renderingProgress;
     }
     if (text_.length() == lc.renderingProgress + length &&
-        !ArsLexis::isSpace(text_[text_.length()-1]) &&
+        !isSpace(text_[text_.length()-1]) &&
         NULL != lc.nextTextElement && 
         !lc.nextTextElement->breakBefore(lc.preferences) &&
         !lc.nextTextElement->text().empty() &&
-        !ArsLexis::isSpace(lc.nextTextElement->text()[0]))
+        !isSpace(lc.nextTextElement->text()[0]))
     {
         LayoutContext copy(lc.graphics, lc.preferences, lc.screenWidth);
         copy.usedWidth = lc.usedWidth + txtDx;
@@ -247,7 +252,7 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
     uint_t charsToDraw = length;
     uint_t curTxtDx = txtDx;
     while ( (charsToDraw>0) && 
-        ArsLexis::isSpace(*(text  +charsToDraw - 1)) && 
+        isSpace(*(text  +charsToDraw - 1)) && 
         (lc.availableWidth() < curTxtDx))
     {
         --charsToDraw;
@@ -263,6 +268,7 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
     graphics.charsInWidth(text, charIndex, offset);
     
     text += length;
+    uint_t lastProgress = lc.renderingProgress;
     if (*text) 
     {
         lc.renderingProgress += length;
@@ -272,7 +278,7 @@ uint_t GenericTextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset) {
         lc.markElementCompleted(txtDx);
     if (charIndex == charsToDraw)
         return offsetOutsideElement;
-    return lc.renderingProgress + charsToDraw;
+    return lastProgress + charIndex;
 }
 
 void GenericTextElement::calculateLayout(LayoutContext& layoutContext)
@@ -292,7 +298,7 @@ void GenericTextElement::applyHyperlinkDecorations(Graphics& graphics, const Ren
     if (isHyperlink())
     {
         const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlink_->type);
-        ArsLexis::Font f=graphics.font();
+        Font f=graphics.font();
         f.addEffects(decor.font.effects());
         graphics.setFont(f);
         graphics.setTextColor(decor.textColor);
@@ -314,7 +320,7 @@ void GenericTextElement::invalidateHotSpot()
     hyperlink_->hotSpot=0;
 }
 
-void GenericTextElement::defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds)
+void GenericTextElement::defineHotSpot(Definition& definition, const Rectangle& bounds)
 {
     assert(isHyperlink());
     if (!hyperlink_->hotSpot)

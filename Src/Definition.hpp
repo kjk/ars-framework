@@ -329,6 +329,8 @@ private:
     
     ElementPosition_t selectionStartElement_;
     ElementPosition_t selectionEndElement_;
+    ElementPosition_t inactiveSelectionStartElement_;
+    ElementPosition_t inactiveSelectionEndElement_;
     uint_t selectionStartProgress_;
     uint_t selectionEndProgress_;
     bool trackingSelection_;

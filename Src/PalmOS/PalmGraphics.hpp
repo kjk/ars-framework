@@ -180,6 +180,8 @@ namespace ArsLexis {
         void drawBitmap(uint_t bitmapId, const Point& topLeft);
 
         void stripToWidthWithEllipsis(ArsLexis::String& textInOut, uint_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
+        
+        void invertRectangle(const Rectangle& rect); 
 
     };
 
