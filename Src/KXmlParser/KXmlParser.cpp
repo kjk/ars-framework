@@ -715,16 +715,21 @@ error_t KXmlParser::parseEndTag()
     }
     else
     {   
+/*
         String str1 = name_;
         String str2 = elementStack_[sp + 3];
         //TODO: str1, str2 toLower()
         MUSTDO
+		std::transform(str1.begin(), str1.end(), str1.begin(), ArsLexis::toLower);
+		std::transform(str2.begin(), str2.end(), str2.begin(), ArsLexis::toLower);
+
         for (int t=0; t<(int)str1.length(); t++)
             str1[t] = ArsLexis::toLower(str1[t]);
-        for (int t=0; t<(int)str2.length(); t++)
-            str2[t] = ArsLexis::toLower(str2[t]);
+        for (int t1=0; t1<(int)str2.length(); t1++)
+            str2[t1] = ArsLexis::toLower(str2[t]);
+*/
 
-        if (depth_ == 0 || str1 != str2)
+        if (depth_ == 0 || !ArsLexis::equalsIgnoreCase(name_, elementStack_[sp + 3]))
             return eNoError; //was just return, so no error
     }
     nameSpace_ = elementStack_[sp];
