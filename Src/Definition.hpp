@@ -13,7 +13,7 @@
 #include <vector>
 #include "Graphics.hpp"
 #include "Rendering.hpp"
-#include "RenderingPreferences.hpp"
+#include <RenderingPreferences.hpp>
 
 class DefinitionElement;
 
@@ -261,8 +261,8 @@ private:
     
 };
 
-template<> 
-inline void std::swap(Definition& def1, Definition& def2)
-{def1.swap(def2);}
+//template<> 
+//inline void std::swap(Definition& def1, Definition& def2)
+//{def1.swap(def2);}
 
 #endif

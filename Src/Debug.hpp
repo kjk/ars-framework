@@ -25,11 +25,12 @@
 
 #endif // __MWERKS__ && __MC68K__
 
+#if defined(_PALM_OS)
+
 #include <new>          // I include <new> & <memory> here so that definitions from there are included before I redefine new
 #include <memory>
 #include <cassert>
 
-#if defined(_PALM_OS)
 
 namespace ArsLexis 
 {

@@ -13,7 +13,7 @@ namespace ArsLexis
     {
         effects_.fx.weight=std::max(weight(), eff.weight());
         effects_.fx.italic=(italic() || eff.italic());
-        effects_.fx.small=(small() || eff.small());
+        effects_.fx.isSsmall=(isSmall() || eff.isSmall());
         effects_.fx.strike=(strikeOut() || eff.strikeOut());
         effects_.fx.superscript=(superscript() || eff.superscript());
         effects_.fx.subscript=(subscript() || eff.subscript());

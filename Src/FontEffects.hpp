@@ -15,7 +15,7 @@ namespace ArsLexis
             {
                 uint_t weight:2;
                 uint_t italic: 1;
-                uint_t small:1;
+                uint_t isSmall:1;
                 uint_t strike:1;
                 uint_t superscript:1;
                 uint_t subscript:1;
@@ -48,11 +48,11 @@ namespace ArsLexis
         Weight weight() const
         {return static_cast<Weight>(effects_.fx.weight);}
         
-        bool small() const
-        {return effects_.fx.small;}
+        bool isSmall() const
+        {return effects_.fx.isSmall;}
         
         void setSmall(bool val)
-        {effects_.fx.small=val;}
+        {effects_.fx.isSmall=val;}
         
         bool strikeOut() const
         {return effects_.fx.strike;}

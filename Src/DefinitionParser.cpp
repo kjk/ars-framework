@@ -705,7 +705,7 @@ Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool 
 void DefinitionParser::updateDefinition(Definition& definition)
 {
     Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
-    std::swap(definition, definition_); 
+    definition.swap(definition_); 
     definition.setHyperlinkHandler(handler);
 }
 
