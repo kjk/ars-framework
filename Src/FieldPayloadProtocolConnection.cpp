@@ -59,6 +59,7 @@ namespace ArsLexis
         status_t error=errNone;
         String resp;
         ByteStreamToText(response(), resp);
+        // TODO: on Palm avoid TextToByteStream() - it's just a copy of data (I think)
         do 
         {
             if (!inPayload())

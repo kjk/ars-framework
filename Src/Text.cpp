@@ -28,12 +28,15 @@ namespace ArsLexis
     { 
         char operator()(char_t in) 
         {   
-            if(in<=255) //Is it common code ?
-                return char(in);
-            else //It's unicode char
+            if (in<=255)
             {
-                //Maybe binary search - MS doesn't support 
-                //as always standard and bsearch
+                // is it common code ?
+                return char(in);
+            }
+            else // it's unicode char
+            {
+                // Maybe binary search - MS doesn't support 
+                // as always standard and bsearch
                 for(int i=0; i<24; i++)
                     if(UnicodeToPalm[i][0]==in)
                         return (char)UnicodeToPalm[i][1];
@@ -45,11 +48,20 @@ namespace ArsLexis
     
     struct ByteToChar 
     { 
-        char_t operator()(unsigned char in) {
-            if((in>=128)&&(in<=159))
+        char_t operator()(unsigned char in)
+        {
+            if ((in>=128)&&(in<=159))
                 return PalmToUnicode[in-128];
             else
+            {
+                if ('\t'==in)
+                {
+                    // special case for tab - Palm ignores it, wince displays
+                    // as a rectangle
+                    return char_t(' ');
+                }
                 return char_t(in);
+            }
         }
     };
 #endif
