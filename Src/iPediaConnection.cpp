@@ -87,21 +87,6 @@ void iPediaConnection::open()
     
     prepareRequest();
     SimpleSocketConnection::open();
-    
-    NetSocketLingerType linger;
-    linger.onOff=true;
-    linger.time=0;
-    iPediaApplication& app=iPediaApplication::instance();
-    if (app.romVersionMajor()==5)  // Very, very ugly! But PalmSource claims there's bug in PalmOS 5.X and that's the way to walkaround it.
-    {
-        typedef UInt16 UInt16Arr[2];
-        UInt16Arr& toSwap=reinterpret_cast<UInt16Arr&>(linger);
-        std::swap(toSwap[0], toSwap[1]);
-    }        
-    
-    Err error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockLinger, &linger, sizeof(linger));
-    if (error)
-        log().debug()<<"setOption() returned error while setting linger: "<<error;
 }
 
 Err iPediaConnection::notifyProgress()
@@ -199,13 +184,27 @@ Err iPediaConnection::handleField(const String& name, const String& value)
 
 Err iPediaConnection::notifyFinished()
 {
-    Err error=FieldPayloadProtocolConnection::notifyFinished();
+    NetSocketLingerType linger;
+    linger.onOff=true;
+    linger.time=0;
+    iPediaApplication& app=iPediaApplication::instance();
+    if (app.romVersionMajor()==5)  // Very, very ugly! But PalmSource claims there's bug in PalmOS 5.X and that's the way to walkaround it.
+    {
+        typedef UInt16 UInt16Arr[2];
+        UInt16Arr& toSwap=reinterpret_cast<UInt16Arr&>(linger);
+        std::swap(toSwap[0], toSwap[1]);
+    }        
+    
+    Err error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockLinger, &linger, sizeof(linger));
+    if (error)
+        log().debug()<<"setOption() returned error while setting linger: "<<error;
+
+    error=FieldPayloadProtocolConnection::notifyFinished();
     if (!error)
     {
         LookupManager::LookupFinishedEventData data;
         if (!serverError_)
         {
-            iPediaApplication& app=iPediaApplication::instance();
             if (definitionParser_!=0)
             {
                 definitionParser_->updateDefinition(lookupManager_.lastDefinition());
