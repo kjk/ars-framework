@@ -38,7 +38,7 @@ namespace ArsLexis
             error=notifyProgress();
         }
         else
-            log().debug()<<_T("notifyWritable(): Socket::send() returned error, ")<<error;
+            log().error()<<_T("notifyWritable(): Socket::send() returned error, ")<<error;
 
         return error;        
     }
@@ -71,7 +71,7 @@ namespace ArsLexis
                 }
             }
             else
-                log().debug()<<_T("notifyReadable(): Socket::receive() returned error, ")<<error;
+                log().error()<<_T("notifyReadable(): Socket::receive() returned error, ")<<error;
         }
         else
             error=errResponseTooLong;                

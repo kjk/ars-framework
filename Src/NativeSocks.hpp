@@ -82,7 +82,7 @@ namespace ArsLexis
         {
             short   onOff;
             short   time;
-        };
+        } portable;
         NativeSocketLinger_t native;
     };
     
