@@ -15,6 +15,7 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
     inPayload_(false),
     payloadIsError_(false),
     definitionNotFound_(false),
+    registering_(false),
     formatVersion_(0),
     payloadStart_(0),
     payloadLength_(0),
@@ -65,15 +66,17 @@ void iPediaConnection::prepareRequest()
     char buffer[9];
     StrPrintF(buffer, "%lx", transactionId_);
     appendField(request, transactionIdField, buffer);
-    if (app.preferences().cookie.empty())
+    if (chrNull==app.preferences().cookie[0])
         appendField(request, getCookieField, deviceInfoToken());
     else
         appendField(request, cookieField, app.preferences().cookie);
         
     if (!term_.empty())
         appendField(request, getDefinitionField, term_);
-    if (!serialNumber_.empty())
-        appendField(request, registerField, serialNumber_);
+        
+    registering_=!(app.preferences().serialNumberRegistered || chrNull==app.preferences().serialNumber[0]);
+    if (registering_)
+        appendField(request, registerField, app.preferences().serialNumber);
         
     request+=lineSeparator;
     setRequest(request); 
@@ -120,9 +123,9 @@ void iPediaConnection::processLine(UInt16 start, UInt16 end)
     }
     else if (start==response().find(definitionForField, start))
         definitionForTerm_=extractFieldValue(response(), start, end);
-    else if ((start==response().find(definitionField, start)) ||
-        (payloadIsError_=(start==response().find(errorField, start)))) // Assignment here is intentional.
+    else if ((start==response().find(errorField, start)) || (start==response().find(definitionField, start))) // Assignment here is intentional.
     {
+        payloadIsError_=(start==response().find(errorField, start));
         error=extractFieldIntValue(response(), start, end, value);
         if (!error)
         {
@@ -137,14 +140,16 @@ void iPediaConnection::processLine(UInt16 start, UInt16 end)
     {
         String cookie=extractFieldValue(response(), start, end);
         iPediaApplication& app=static_cast<iPediaApplication&>(iPediaApplication::instance());
-        app.preferences().cookie=cookie;        
+        if (cookie.length()!=iPediaApplication::Preferences::cookieLength) ;
+        // @todo Notify malformed response here.
+        else
+            StrCopy(app.preferences().cookie, cookie.c_str());
     }
 
     if (error)
         handleError(error);
 }
 
-//! @todo Test processResponseIncrement()
 void iPediaConnection::processResponseIncrement(bool finish)
 {
     bool goOn=false;
@@ -193,9 +198,10 @@ void iPediaConnection::reportProgress()
 void iPediaConnection::finalize()
 {
     processResponseIncrement(true);
+    iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
     if (parser_!=0)
     {
-        MainForm* form=static_cast<MainForm*>(Application::instance().getOpenForm(mainForm));
+        MainForm* form=static_cast<MainForm*>(app.getOpenForm(mainForm));
         if (form)
         {
             parser_->updateDefinition(form->definition());
@@ -204,8 +210,13 @@ void iPediaConnection::finalize()
             form->update();
         }
     }
+    
+    if (registering_ && !payloadIsError_)
+        app.preferences().serialNumberRegistered=true;
+    
     if (definitionNotFound_)
         FrmAlert(definitionNotFoundAlert);
+        
     SimpleSocketConnection::finalize();
 }
 

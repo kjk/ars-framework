@@ -10,12 +10,12 @@ class iPediaConnection: public ArsLexis::SimpleSocketConnection
     DefinitionParser* parser_;
     UInt32 transactionId_;
     ArsLexis::String term_;
-    ArsLexis::String serialNumber_;
 
     UInt16 inPayload_:1;
     UInt16 payloadIsError_:1;
     UInt16 definitionNotFound_:1;
-    UInt16 formatVersion_:13;
+    UInt16 registering_:1;
+    UInt16 formatVersion_:12;
     
     UInt16 payloadStart_;    
     UInt16 payloadLength_;
@@ -49,9 +49,6 @@ public:
     
     void setTerm(const ArsLexis::String& term)
     {term_=term;}
-    
-    void setSerialNumber(const ArsLexis::String& serialNumber)
-    {serialNumber_=serialNumber;}
     
 };
 

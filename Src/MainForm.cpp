@@ -183,7 +183,8 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
 {
     Graphics graphics(windowHandle());
     if (scrollPage==unit)
-        units*=(definition_.shownLinesCount()/2);    definition_.scroll(graphics, units);
+        units*=(definition_.shownLinesCount()/2);
+    definition_.scroll(graphics, units);
     updateScrollBar();
 }
 
@@ -251,6 +252,7 @@ void MainForm::setTerm(const ArsLexis::String& term)
 bool MainForm::handleKeyPress(const EventType& event)
 {
     bool handled=false;
+
     switch (event.data.keyDown.chr)
     {
         case chrPageDown:

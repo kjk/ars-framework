@@ -63,7 +63,22 @@ public:
     struct Preferences
     {
         RenderingPreferences renderingPreferences;
-        ArsLexis::String cookie;
+        
+        enum {cookieLength=32};
+        char cookie[cookieLength+1]; // Don't use String in any code that may run with non-global lauch code!
+        
+        enum {serialNumberLength=32};
+        char serialNumber[serialNumberLength+1];
+        
+        bool serialNumberRegistered;
+        
+        Preferences():
+            serialNumberRegistered(false)
+        {
+            MemSet(cookie, sizeof(cookie), 0);
+            MemSet(serialNumber, sizeof(serialNumber), 0);
+        }
+        
     };
     
     Preferences& preferences() 

@@ -15,6 +15,7 @@ iPediaApplication::iPediaApplication():
     ticksPerSecond_(SysTicksPerSecond()),
     resolver_(0)
 {
+    StrCopy(preferences_.serialNumber, "TEST");
 }
 
 Err iPediaApplication::initialize()
@@ -38,8 +39,8 @@ Err iPediaApplication::initialize()
 void iPediaApplication::detectViewer()
 {
     DmSearchStateType searchState;
-    UInt16 cardNo=0;
-    LocalID dbID=0;
+    UInt16 cardNo;
+    LocalID dbID;
     Err error = DmGetNextDatabaseByTypeCreator(true, &searchState, sysFileTApplication, sysFileCClipper, true, &cardNo, &dbID);
     if (!error)
         goto NoError;
