@@ -8,20 +8,40 @@ namespace ArsLexis {
     
     class Graphics;
     struct Rectangle;
+    
+    class LookupProgressReportingSupport;
+    
+    class LookupProgressReporter {
+    public:
+    
+        virtual void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds)=0;
+        
+        virtual ~LookupProgressReporter();
+        
+    };
+    
+    class DefaultLookupProgressReporter: public LookupProgressReporter {
+    public:
+    
+        void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rectangle& bounds);
+        
+        ~DefaultLookupProgressReporter();
+        
+    };
 
     class LookupProgressReportingSupport {
         String statusText_;
         uint_t percentProgress_;
         ulong_t bytesProgress_;
         
+        typedef std::auto_ptr<LookupProgressReporter> ProgressReporterPtr;
+        ProgressReporterPtr progressReporter_;
+        
     public:
         
         enum {percentProgressDisabled=(uint_t)-1};
     
-        LookupProgressReportingSupport():
-            percentProgress_(percentProgressDisabled),
-            bytesProgress_(0)
-        {}
+        LookupProgressReportingSupport();
         
         const String& statusText() const
         {return statusText_;}
@@ -29,8 +49,11 @@ namespace ArsLexis {
         void setStatusText(const String& text)
         {statusText_=text;}
         
-        uint_t pecentProgress() const
+        uint_t percentProgress() const
         {return percentProgress_;}
+        
+        ulong_t bytesProgress() const
+        {return bytesProgress_;}
         
        void setPercentProgress(uint_t progress)
        {percentProgress_=progress;}
@@ -38,14 +61,18 @@ namespace ArsLexis {
        void setBytesProgress(ulong_t bytes)
        {bytesProgress_=bytes;}
 
-        virtual void showProgress(Graphics& graphics, const Rectangle& bounds) const;
+        void showProgress(Graphics& graphics, const Rectangle& bounds)
+        {progressReporter_->showProgress(*this, graphics, bounds);}
         
         virtual ~LookupProgressReportingSupport();
         
+        void setProgressReporter(LookupProgressReporter* reporter)
+        {progressReporter_.reset(reporter);}
+        
     };
 
-    template<uint_t firstLookupEventNumber, class LookupFinishedData, class ProgressReportingSupport=LookupProgressReportingSupport>
-    class LookupManagerBase: protected ProgressReportingSupport, private NonCopyable {
+    template<uint_t firstLookupEventNumber, class LookupFinishedData>
+    class LookupManagerBase: protected LookupProgressReportingSupport, private NonCopyable {
         
         SocketConnectionManager connectionManager_;
         bool lookupInProgress_;
@@ -55,15 +82,15 @@ namespace ArsLexis {
         virtual void handleLookupFinished(const LookupFinishedData& data)
         {}
 
-        using ProgressReportingSupport::setBytesProgress;
-        using ProgressReportingSupport::setPercentProgress;
-        using ProgressReportingSupport::setStatusText;
+        using LookupProgressReportingSupport::setBytesProgress;
+        using LookupProgressReportingSupport::setPercentProgress;
+        using LookupProgressReportingSupport::setStatusText;
 
     public:
     
         LookupManagerBase(): lookupInProgress_(false) {}
     
-        using ProgressReportingSupport::showProgress;
+        using LookupProgressReportingSupport::showProgress;
     
         enum Event {
             lookupStartedEvent=firstLookupEventNumber,
