@@ -36,7 +36,7 @@ namespace ArsLexis {
     };
 
     template<uint_t firstLookupEventNumber, class LookupFinishedData, class ProgressReportingSupport=LookupProgressReportingSupport>
-    class LookupManagerBase: protected ProgressReportingSupport {
+    class LookupManagerBase: protected ProgressReportingSupport, private NonCopyable {
         
         SocketConnectionManager connectionManager_;
         bool lookupInProgress_;
