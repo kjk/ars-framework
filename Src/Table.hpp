@@ -6,12 +6,15 @@
 namespace ArsLexis {
 
     class Table: public FormObjectWrapper<TableType> {
+    
+        uint_t topItem_;
+        uint_t itemsCount_;
+        ScrollBar* scrollBar_;
+        
     public:
     
-        explicit Table(Form& form, UInt16 id=frmInvalidObjectId):
-            FormObjectWrapper(form, id)
-        {}
-        
+        explicit Table(Form& form, ScrollBar* scrollBar = NULL);
+
         ~Table();
         
         void redraw() {TblRedrawTable(object());}
@@ -66,7 +69,16 @@ namespace ArsLexis {
         
         void adjustVisibleItems();
         
+        void setHasScrollbar(bool value) {TblHasScrollBar(object(), value);}
         
+        void setItemsCount(uint_t itemsCount) {itemsCount_ = itemsCount;}
+        uint_t itemsCount() const {return itemsCount_;}
+        uint_t itemHeight() const {return rowHeight(0);}
+        uint_t viewCapacity() const;
+        uint_t topItem() const {return topItem_;}
+        void setTopItem(uint_t topItem, bool updateScrollbar = false);
+        
+        bool handleEventInForm(EventType& event);        
     };
     
 }
