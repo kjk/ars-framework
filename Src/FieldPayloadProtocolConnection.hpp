@@ -10,7 +10,7 @@ namespace ArsLexis
     {
     public:
         
-        class PayloadHandler
+        class PayloadHandler: private ArsLexis::NonCopyable
         {
         public:
         

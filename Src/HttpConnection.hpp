@@ -43,7 +43,7 @@ namespace ArsLexis {
         
         void setUri(const String& uri);
         
-        enum Error {
+        enum status_tor {
             errHttpUnknownTransferEncoding=errFirstAvailable,
             errHttpUnsupportedStatusCode,
             errFirstAvailable
@@ -91,11 +91,11 @@ namespace ArsLexis {
         
         bool nextResponseLine(String& line, bool finish);
         
-        Err processResponseHeaders(bool finish);
+        status_t processResponseHeaders(bool finish);
         
-        Err processStatusLine(const String& line);
+        status_t processStatusLine(const String& line);
         
-        Err processHeaderLine(const String& line);
+        status_t processHeaderLine(const String& line);
 
         class BodyReader: public Reader {
         protected:
@@ -162,26 +162,26 @@ namespace ArsLexis {
         typedef std::auto_ptr<BodyReader> ReaderPtr;
         ReaderPtr reader_;
         
-        Err processResponseBody();
+        status_t processResponseBody();
         
     protected:
     
-        Err open();
+        status_t open();
     
-        virtual Err handleResponseField(const String& field, const String& value);
+        virtual status_t handleResponseField(const String& field, const String& value);
         
-        virtual Err handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason);
+        virtual status_t handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason);
         
-        Err notifyReadable();
+        status_t notifyReadable();
         
-        Err notifyFinished();
+        status_t notifyFinished();
         
-        Err notifyProgress();
+        status_t notifyProgress();
         
         bool bodyContentsAvailable() const
         {return bodyContentsAvailable_;}
         
-        virtual Err processBodyContents(Reader& reader);
+        virtual status_t processBodyContents(Reader& reader);
         
         ulong_t contentLength() const
         {return contentLength_;}

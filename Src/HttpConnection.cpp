@@ -86,22 +86,34 @@ namespace ArsLexis {
         setRequest(request);
     }
 
-    Err HttpConnection::handleResponseField(const String& field, const String& value)
+    status_t HttpConnection::handleResponseField(const String& field, const String& value)
     {
-        Err error=errNone;
-        if (equalsIgnoreCase(field, "Transfer-Encoding"))
+        status_t error=errNone;
+        if (equalsIgnoreCase(field, _T("Transfer-Encoding")))
         {
-            if (equalsIgnoreCase(value, "chunked"))
+            if (equalsIgnoreCase(value, _T("chunked")))
                 chunkedEncoding_=true;
             else 
                 error=errHttpUnknownTransferEncoding;
         }
+        else if (equalsIgnoreCase(field, _T("Content-Length")))
+        {
+            String::size_type len=value.find_first_of(_T("; \t"));
+            if (value.npos==len)
+                len=value.length();
+            long val;
+            error=numericValue(value.data(), value.data()+len, val);
+            if (errNone==error)
+                contentLength_=val;
+            else
+                error=errResponseMalformed;
+        }
         return error;
     }
 
-    Err HttpConnection::handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason)
+    status_t HttpConnection::handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason)
     {
-        Err error=errNone;
+        status_t error=errNone;
         if (statusCode>=100 && statusCode<200)
             skippingInfoResponse_=true;
         else if (statusCode!=200)
@@ -109,7 +121,7 @@ namespace ArsLexis {
         return error;
     }
     
-    Err HttpConnection::open() 
+    status_t HttpConnection::open() 
     {
         commitRequest();
         return SimpleSocketConnection::open();
@@ -134,7 +146,7 @@ namespace ArsLexis {
         }
     }
     
-    Err HttpConnection::notifyReadable() 
+    status_t HttpConnection::notifyReadable() 
     {
         if (!insideResponseBody_)
             return SimpleSocketConnection::notifyReadable();
@@ -154,9 +166,9 @@ namespace ArsLexis {
         return true;
     }
     
-    Err HttpConnection::processResponseHeaders(bool finish)
+    status_t HttpConnection::processResponseHeaders(bool finish)
     {
-        Err error=errNone;
+        status_t error=errNone;
         String line;
         bool ready=nextResponseLine(line, finish);
         while (ready && !insideResponseBody_) {
@@ -189,7 +201,7 @@ namespace ArsLexis {
         return error;    
     }
     
-    Err HttpConnection::processStatusLine(const String& line)
+    status_t HttpConnection::processStatusLine(const String& line)
     {
         if (line.find("HTTP/")!=0)
             return errResponseMalformed;
@@ -197,7 +209,7 @@ namespace ArsLexis {
         if (line.npos==pos0)
             return errResponseMalformed;
         long value;
-        Err error=numericValue(&line[5], &line[pos0], value);
+        status_t error=numericValue(&line[5], &line[pos0], value);
         if (error)
             return errResponseMalformed;
         uint_t major=value;
@@ -225,7 +237,7 @@ namespace ArsLexis {
         return handleStatusLine(major, minor, statusCode, reason);
     }
 
-    Err HttpConnection::processHeaderLine(const String& line)
+    status_t HttpConnection::processHeaderLine(const String& line)
     {
         String::size_type pos=line.find(':');
         if (line.npos==pos)
@@ -238,7 +250,7 @@ namespace ArsLexis {
         return handleResponseField(field, value);
     }
     
-    Err HttpConnection::processResponseBody()
+    status_t HttpConnection::processResponseBody()
     {
         bodyContentsAvailable_=true;
         if (!reader_.get())
@@ -321,7 +333,7 @@ charAvailable:
         return errNone;      
     }
 
-    Err HttpConnection::processBodyContents(Reader& reader) 
+    status_t HttpConnection::processBodyContents(Reader& reader) 
     {
         while (bodyContentsAvailable()) 
         {
@@ -336,14 +348,14 @@ charAvailable:
         return errNone;
     }
 
-    Err HttpConnection::notifyFinished()
+    status_t HttpConnection::notifyFinished()
     {
         if (!insideResponseBody_)
             return processResponseHeaders(true);
         return errNone;
     }
     
-    Err HttpConnection::notifyProgress()
+    status_t HttpConnection::notifyProgress()
     {
         if (!insideResponseBody_)
             return processResponseHeaders(false);
