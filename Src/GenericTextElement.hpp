@@ -49,6 +49,8 @@ protected:
 public:
 
     GenericTextElement(const ArsLexis::String& text=ArsLexis::String());
+    
+    GenericTextElement(const ArsLexis::char_t* text);
 
     ~GenericTextElement();
     

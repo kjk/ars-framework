@@ -22,6 +22,14 @@ GenericTextElement::GenericTextElement(const String& text):
     actionCallbackData_(NULL)
 {}
 
+GenericTextElement::GenericTextElement(const char_t* text):
+    text_(text),
+    hyperlink_(0),
+    style_(styleDefault),
+    actionCallback_(NULL),
+    actionCallbackData_(NULL)
+{}
+
 GenericTextElement::~GenericTextElement()
 {
     delete hyperlink_;

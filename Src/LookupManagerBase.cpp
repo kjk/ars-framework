@@ -19,7 +19,9 @@ namespace ArsLexis {
         Rectangle rect(bounds);
         rect.explode(2, 2, -4, -4);
         Graphics::FontSetter setFont(graphics, Font());
+#ifdef _WIN32        
         Graphics::ColorSetter colorTxt(graphics, Graphics::colorText, RGB(0,0,0));
+#endif
         const char_t* text = support.statusText;
         uint_t length = tstrlen(text);
         uint_t width = rect.width();
