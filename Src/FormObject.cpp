@@ -50,6 +50,24 @@ namespace ArsLexis
         assert(0!=object_);
     }
     
+    void FormObject::anchor(const Rectangle& boundingBox, FormObjectAnchorStyle horizAnchor, Coord rightMargin, FormObjectAnchorStyle vertAnchor, Coord bottomMargin)
+    {
+        Rectangle rect;
+        bounds(rect);
+        
+        if (anchorLeftEdge == horizAnchor) 
+            rect.x() = boundingBox.width() - rightMargin;
+        else if (anchorRightEdge == horizAnchor)
+            rect.width() = boundingBox.width() - rightMargin;
+        
+        if (anchorTopEdge == vertAnchor)
+            rect.y() = boundingBox.height() - bottomMargin;
+        else if (anchorBottomEdge == vertAnchor)
+            rect.height() = boundingBox.height() - bottomMargin;
+            
+        setBounds(rect);
+    }
+    
 #pragma mark -
 
     ScrollBar::~ScrollBar()

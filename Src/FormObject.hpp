@@ -14,6 +14,14 @@ namespace ArsLexis
 
 #pragma mark FormObject
 
+    enum FormObjectAnchorStyle {
+        anchorNot,
+        anchorLeftEdge,
+        anchorTopEdge = anchorLeftEdge,
+        anchorRightEdge,
+        anchorBottomEdge = anchorRightEdge
+    };
+    
     class FormObject: private NonCopyable
     {
         Form* form_;
@@ -77,6 +85,8 @@ namespace ArsLexis
         void show()
         {FrmShowObject(*form_, index_);}
 
+        void anchor(const Rectangle& boundingBox, FormObjectAnchorStyle horizAnchor=anchorNot, Coord rightMargin=0, FormObjectAnchorStyle vertAnchor=anchorNot, Coord bottomMargin=0);
+        
     };
     
 #pragma mark -
