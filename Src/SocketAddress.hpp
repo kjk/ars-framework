@@ -23,32 +23,44 @@ namespace ArsLexis
         uint_t size() const
         {return sizeof(address_);}
         
-        virtual ~SocketAddress();
+        virtual ~SocketAddress() {}
     };
     
     class INetSocketAddress: public SocketAddress
     {
-        NativeSockAddrIN_t& address() 
-        {return reinterpret_cast<NativeSockAddrIN_t&>(address_);}
+        struct INetSocketAddr {
+            short family;
+            uint_t port;
+            NativeIPAddr_t ip;
+        };
         
-        const NativeSockAddrIN_t& address() const
-        {return reinterpret_cast<const NativeSockAddrIN_t&>(address_);}
+        INetSocketAddr& address() 
+        {return reinterpret_cast<INetSocketAddr&>(address_);}
+        
+        const INetSocketAddr& address() const
+        {return reinterpret_cast<const INetSocketAddr&>(address_);}
         
     public:
         
         INetSocketAddress();
         
-        INetSocketAddress(const NativeIPAddr_t& ipAddr, ushort_t port, short addressFamily=SocketAddrINET_c);
+        INetSocketAddress(const NativeIPAddr_t& ipAddr, ushort_t port, short addressFamily=socketAddrINET);
 
-        void setIpAddress(const NativeIPAddr_t& ipAddr);        
+        void setIpAddress(const NativeIPAddr_t& ipAddr)
+        {address().ip=ipAddr;}      
 
-        void setPort(ushort_t port);
+        void setPort(ushort_t port)
+        {address().port=hostToNetS(port);}
 
-        void setAddressFamily(short addressFamily);        
+        void setAddressFamily(short addressFamily)
+        {address().family=addressFamily;}
 
-        const NativeIPAddr_t& ipAddress() const;
+        const NativeIPAddr_t& ipAddress() const
+        {return address().ip;}
 
-        ushort_t port() const ;
+        ushort_t port() const
+        {return netToHostS(address().port);}
+        
     };
     
 }

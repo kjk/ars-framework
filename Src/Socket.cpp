@@ -18,8 +18,9 @@ namespace ArsLexis
     {
         if (socket_!=0)
         {
-            status_t error=netLib_.socketClose(socket_, evtWaitForever, &error);
-            if (error)
+            status_t error;
+            int result=netLib_.socketClose(socket_, evtWaitForever, error);
+            if (-1==result || error)
                 log().error()<<"~SocketBase(): NetLibSocketClose() returned error, "<<error;
         }
     }
@@ -27,8 +28,8 @@ namespace ArsLexis
     status_t SocketBase::open(NativeSockAddrFamily_t domain, NativeSocketType_t type, short protocol, long timeout)
     {
         assert(!socket_);
-        status_t error=errNone;
-        socket_= netLib_.socketOpen(domain, type, protocol, timeout, &error);
+        status_t error;
+        socket_= netLib_.socketOpen(domain, type, protocol, timeout, error);
         assert(error || (socket_!=0));
         return error;
     }
@@ -37,7 +38,7 @@ namespace ArsLexis
     {
         assert(socket_!=0);
         status_t error=errNone;
-        short result=netLib_.socketShutdown(socket_, direction, timeout, &error);
+        int result=netLib_.socketShutdown(socket_, direction, timeout, error);
         if (-1==result)
             assert(error);
         else
@@ -47,19 +48,19 @@ namespace ArsLexis
         return error;
     }
     
-    status_t SocketBase::send(ushort_t& sent, const void* buffer, ushort_t bufferLength, long timeout, ushort_t flags, const SocketAddress* address)
+    status_t SocketBase::send(uint_t& sent, const void* buffer, uint_t bufferLength, long timeout, uint_t flags, const SocketAddress* address)
     {
         assert(socket_!=0);
         status_t error=errNone;
         const  NativeSocketAddr_t* addr=0;
-        ushort_t addrLen=0;
+        uint_t addrLen=0;
         if (address)
         {
             addr=*address;
             addrLen=address->size();
         }
         short result=netLib_.socketSend(socket_, const_cast<void*>(buffer), bufferLength, flags, 
-            const_cast<NativeSocketAddr_t*>(addr), addrLen, timeout, &error);
+            const_cast<NativeSocketAddr_t*>(addr), addrLen, timeout, error);
         if (result>0)
         {
             assert(!error);
@@ -72,12 +73,11 @@ namespace ArsLexis
         return error;
     }
     
-    status_t SocketBase::receive(ushort_t& received, void* buffer, ushort_t bufferLength, long timeout, ushort_t flags)
+    status_t SocketBase::receive(uint_t& received, void* buffer, uint_t bufferLength, long timeout, uint_t flags)
     {
         assert(socket_!=0);
         status_t error=errNone;
-        
-        short result=netLib_.socketReceive(socket_, buffer, bufferLength, flags, 0, 0, timeout, &error);
+        int result=netLib_.socketReceive(socket_, buffer, bufferLength, flags, 0, 0, timeout, error);
         if (result>=0)
         {
             assert(!error);
@@ -90,16 +90,16 @@ namespace ArsLexis
 
     status_t SocketBase::setNonBlocking(bool value)
     {
-        Boolean flag=value;
-        status_t error=setOption(SocketOptLevelSocket_c, SocketOptSockNonBlocking_c, &flag, sizeof(flag));
+        bool flag=value;
+        status_t error=setOption(socketOptLevelSocket, socketOptSockNonBlocking, &flag, sizeof(flag));
         return error;
     } 
 
-    status_t SocketBase::setOption(ushort_t level, ushort_t option, void* optionValue, ushort_t valueLength, long timeout)
+    status_t SocketBase::setOption(uint_t level, uint_t option, const void* optionValue, uint_t valueLength, long timeout)
     {
         assert(socket_!=0);
         status_t error=errNone;
-        short result=netLib_.socketOptionSet( socket_, level, option, optionValue, valueLength, timeout, &error);
+        int result=netLib_.socketOptionSet(socket_, level, option, const_cast<void*>(optionValue), valueLength, timeout, error);
         if (-1==result)
             assert(error);
         else
@@ -109,11 +109,11 @@ namespace ArsLexis
         return error;
     }
     
-    status_t SocketBase::getOption(ushort_t level, ushort_t option, void* optionValue, ushort_t& valueLength, long timeout) const
+    status_t SocketBase::getOption(uint_t level, uint_t option, void* optionValue, uint_t& valueLength, long timeout) const
     {
         assert(socket_!=0);
         status_t error=errNone;
-        short result=netLib_.socketOptionGet(socket_, level, option, optionValue, &valueLength, timeout, &error);
+        int result=netLib_.socketOptionGet(socket_, level, option, optionValue, valueLength, timeout, error);
         if (-1==result)
             assert(error);
         else
@@ -128,8 +128,8 @@ namespace ArsLexis
         assert(socket_!=0);
         status_t error=errNone;
         const NativeSocketAddr_t* addr=address;
-        ushort_t addrLen=address.size();
-        short result=NetLibSocketConnect(netLib_, socket_, const_cast<NativeSocketAddr_t*>(addr), addrLen, timeout, &error);
+        uint_t addrLen=address.size();
+        int result=netLib_.socketConnect(socket_, *addr, addrLen, timeout, error);
         if (-1==result)
             assert(error);
         else
@@ -137,10 +137,10 @@ namespace ArsLexis
         return error;
     }
 
-    status_t SocketBase::setLinger(const CommonSocketLinger_t& linger)
+    status_t SocketBase::setLinger(const SocketLinger& linger)
     {
         assert(socket_!=0);
-        status_t error=setOption(SocketOptLevelSocket_c, SocketOptSockLinger_c,&( (const_cast<CommonSocketLinger_t*>(&linger))->native), sizeof(linger));
+        status_t error=setOption(socketOptLevelSocket, socketOptSockLinger, &linger, sizeof(linger));
         return error;
     }
     
@@ -178,7 +178,7 @@ namespace ArsLexis
 
         status_t error=errNone;
         // Seems NetLibSelect() is really badly screwed in PalmOS - see strange error behaviour in the following if-else...
-        short eventsCount=netLib_.select( width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, &error);
+        short eventsCount=netLib_.select( width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, error);
         if (-1==eventsCount)
         {
             if (!error)

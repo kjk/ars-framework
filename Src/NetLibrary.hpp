@@ -10,8 +10,9 @@ namespace ArsLexis
     class INetSocketAddress;
 
     class NetLibrary
-
-		: private Library
+#if defined(_PALM_OS)    
+        :private Library
+#endif        
     {
         bool closed_:1;
         bool libraryOpened_:1;
@@ -19,92 +20,43 @@ namespace ArsLexis
     public:
         
         NetLibrary();
-        
+
         ~NetLibrary();
-        
-        enum {
-            defaultConfig
-        };
-        
-        operator ushort_t() const;
-        
-        status_t initialize(ushort_t& ifError, ushort_t configIndex=defaultConfig, ulong_t openFlags=0);
-        
+
+        static const uint_t defaultConfig=0;
+
+        status_t initialize(uint_t& ifError, uint_t configIndex=defaultConfig, ulong_t openFlags=0);
+
         bool closed() const 
         {return closed_;}
+
+        status_t close(bool immediate=false);
+
+        //status_t getSetting(ushort_t setting, void* value, ushort_t& valueLength) const;
+        //status_t setSetting(ushort_t setting, const void* value, ushort_t valueLength);
+
+        status_t getHostByName(const char* name, HostInfoBuffer& buffer, long timeout=evtWaitForever);
+
+        status_t addrAToIN(const char* addr, INetSocketAddress& out);
         
-         status_t close(bool immediate=false);
-        
-         //status_t getSetting(ushort_t setting, void* value, ushort_t& valueLength) const;
-         //status_t setSetting(ushort_t setting, const void* value, ushort_t valueLength);
-        
-         status_t getHostByName(const char* name, HostInfoBufType* buffer, long  timeout=evtWaitForever);
-        
-         status_t addrAToIN(const char* addr, INetSocketAddress& out);
-        
-	
-	NativeSocket_t socketOpen (
-	        NetSocketAddrEnum domain,  
-                NetSocketTypeEnum type,
-                short protocol, 
-                long timeout, status_t *errP);
+        NativeSocket_t socketOpen(NetSocketAddrEnum domain,  NetSocketTypeEnum type, int protocol, long timeout, status_t& error);
                 
-        short socketClose (NativeSocket_t socket, long  timeout, status_t *errP);
-        
-        short socketShutdown (
-                NativeSocket_t socket, 
-                short direction,
-                long  timeout, status_t *errP) ;
+        int socketClose(NativeSocket_t socket, long  timeout, status_t& error);
 
-        short  socketSend (
-                NativeSocket_t socket, 
-                void *bufP, ushort_t bufLen,
-                ushort_t flags, 
-                void *toAddrP, ushort_t toLen,
-                long timeout, status_t *errP) ;
-        
-        short socketReceive (
-            NativeSocket_t socket, 
-            void *bufP, 
-            ushort_t bufLen, 
-            ushort_t flags, 
-            void *fromAddrP, 
-            ushort_t  *fromLenP, 
-            long  timeout, 
-            status_t *errP);
+        int socketShutdown(NativeSocket_t socket, int direction, long timeout, status_t& error) ;
+
+        int socketSend(NativeSocket_t socket, void* bufP, uint_t bufLen, uint_t flags, void* toAddrP, uint_t toLen, long timeout, status_t& error);
+
+        int socketReceive(NativeSocket_t socket, void* bufP, uint_t bufLen, uint_t flags, void* fromAddrP, uint_t* fromLen, long  timeout, status_t& error);
             
-        short socketConnect (
-            NativeSocket_t  socket, 
-            NativeSocketAddr_t *sockAddrP,
-            short  addrLen, 
-            long timeout, 
-            status_t *errP) ;
+        int socketConnect(NativeSocket_t socket, const NativeSocketAddr_t& sockAddrP, uint_t addrLen, long timeout, status_t& error);
 
-        short select (
-                ushort_t  width, 
-                NativeFDSet_t *readFDs,
-                NativeFDSet_t *writeFDs, 
-                NativeFDSet_t *exceptFDs,
-                long timeout, 
-                status_t *errP) ;
+        int select(uint_t width, NativeFDSet_t* readFDs, NativeFDSet_t *writeFDs, NativeFDSet_t *exceptFDs, long timeout, status_t& error);
 
-        short socketOptionGet (
-                NativeSocket_t socket, 
-                ushort_t level, 
-                ushort_t  option,
-                void *optValueP, 
-                ushort_t *optValueLenP,
-                long  timeout, 
-                ushort_t *errP);
+        int socketOptionGet(NativeSocket_t socket, uint_t level, uint_t  option, void* optValueP, uint_t& optValueLen, long timeout, status_t& error);
 
-    short socketOptionSet (
-            NativeSocket_t socket, 
-            ushort_t level, 
-            ushort_t  option,
-            void *optValueP, 
-            ushort_t  optValueLen,
-            long  timeout, 
-            status_t *errP);
+        int socketOptionSet(NativeSocket_t socket, uint_t level, uint_t  option, void* optValueP, uint_t optValueLen, long timeout, status_t& error);
+        
     };
     
 }

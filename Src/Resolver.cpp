@@ -2,6 +2,7 @@
 #include <NetLibrary.hpp>
 //nclude <cctype>
 #include <Text.hpp>
+#include <cstring>
 
 namespace ArsLexis
 {
@@ -72,10 +73,11 @@ namespace ArsLexis
    
     status_t Resolver::blockingResolve(SocketAddress& out, const String& name, ushort_t port, ulong_t timeout)
     {
-        std::auto_ptr<HostInfoBufType> buffer(new  HostInfoBufType);
-        MemSet(buffer.get(), sizeof(HostInfoBufType), 0);
+        using namespace std;
+        auto_ptr<HostInfoBuffer> buffer(new  HostInfoBuffer);
+        memset(buffer.get(), sizeof(HostInfoBuffer), 0);
         assert(!netLib_.closed());
-        status_t error=netLib_.getHostByName(name.c_str(), buffer.get(), timeout);
+        status_t error=netLib_.getHostByName(name.c_str(), *buffer, timeout);
         if (error)
             return error;
 

@@ -3,7 +3,7 @@
 
 #if defined(_WIN32_WCE)
 #include <winsock.h>
-#elif defined(__PALMOS_H__)
+#elif defined(_PALM_OS)
 #include <Library.hpp>
 #endif
 
@@ -11,7 +11,7 @@
 namespace ArsLexis 
 {
 
-#if defined(__PALMOS_H__)
+#if defined(_PALM_OS)
 
     typedef NetSocketAddrType NativeSocketAddr_t;
     typedef NetIPAddr NativeIPAddr_t;
@@ -21,21 +21,20 @@ namespace ArsLexis
     typedef NetSocketLingerType NativeSocketLinger_t;
     typedef NetSocketAddrEnum NativeSockAddrFamily_t;
     typedef NetSocketTypeEnum NativeSocketType_t;
-    const NetSocketAddrEnum SocketAddrINET_c = netSocketAddrINET;
-    const NetSocketTypeEnum SocketTypeStream_c = netSocketTypeStream;
-    const NetSocketOptLevelEnum SocketOptLevelSocket_c  = netSocketOptLevelSocket;
-    const NetSocketOptEnum SocketOptSockNonBlocking_c = netSocketOptSockNonBlocking;
-    const NetSocketOptEnum SocketOptSockLinger_c=netSocketOptSockLinger;
-    const NetSocketOptEnum SocketOptSockErrorStatus_c=netSocketOptSockErrorStatus;
+    const NetSocketAddrEnum socketAddrINET = netSocketAddrINET;
+    const NetSocketTypeEnum socketTypeStream = netSocketTypeStream;
+    const NetSocketOptLevelEnum socketOptLevelSocket  = netSocketOptLevelSocket;
+    const NetSocketOptEnum socketOptSockNonBlocking = netSocketOptSockNonBlocking;
+    const NetSocketOptEnum socketOptSockLinger=netSocketOptSockLinger;
+    const NetSocketOptEnum socketOptSockErrorStatus=netSocketOptSockErrorStatus;
     #define netToHostS(x) NetNToHS(x)
     #define hostToNetS(x) NetHToNS(x)
 
-    class HostInfoBufType
-    {
-    	NetHostInfoBufType hostInfo_;
-    	public:
- 		NetHostInfoBufType& hostInfo() {	return hostInfo_; }
- 		NativeIPAddr_t getAddress() {  return hostInfo_.address[0]; }
+    class HostInfoBuffer {
+        NetHostInfoBufType hostInfo_;
+    public:
+        NetHostInfoBufType& hostInfo() {	return hostInfo_; }
+        NativeIPAddr_t getAddress() {  return hostInfo_.address[0]; }
     };
 
 #elif defined(_WIN32_WCE)	
@@ -49,8 +48,8 @@ namespace ArsLexis
     typedef int NativeSockAddrFamily_t;
     typedef int NativeSocketType_t;
 
-    const short SocketTypeStream_c = SOCK_STREAM;
-    const short SocketAddrINET_c = AF_INET;
+    const short socketTypeStream = SOCK_STREAM;
+    const short socketAddrINET = AF_INET;
     #define netToHostS ntohs
     #define hostToNetS htons
     #define netFDSet(n,p) FD_SET(n, p)
@@ -58,39 +57,39 @@ namespace ArsLexis
     #define netFDIsSet(n,p) FD_ISSET(n,p)
     #define netFDZero(p) FD_ZERO(p)
 
-    class HostInfoBufType
-    {
-    	struct hostent *hostInfo_;
-    	public:
- 			struct hostent& hostInfo() {	return *hostInfo_; }
-			//TODO: correct apropriately - set s_addr
- 			NativeIPAddr_t getAddress() {  in_addr ret; ret.s_addr=0; return ret; }
-			void setHostInfo(struct hostent *hostInfo) { hostInfo_=hostInfo; }
+    class HostInfoBuffer {
+        struct hostent *hostInfo_;
+    public:
+        struct hostent& hostInfo() {	return *hostInfo_; }
+        //TODO: correct apropriately - set s_addr
+        NativeIPAddr_t getAddress() {  in_addr ret; ret.s_addr=0; return ret; }
+        void setHostInfo(struct hostent *hostInfo) { hostInfo_=hostInfo; }
     };
-	// Maybe bettert idea to get rid of this stuff
-	class Library
-	{
+    
+    // Maybe bettert idea to get rid of this stuff
+    class Library
+    {
+    };
 
-	};
-	
-	#define evtWaitForever	-1
+    #define evtWaitForever	-1
 	
 #else
 
-#error "Define native sockets counterparts in NativeSocks.hpp before including Sockets.hpp"
+# error "Define native sockets counterparts in NativeSocks.hpp before including Sockets.hpp"
 
 #endif
-    typedef struct 
+
+    struct PortableSocketLinger
     {
         short   onOff;
         short   time;
-    } PortableSocketLinger_t;
+    };
 
-    typedef union
+    union SocketLinger
     {
-        PortableSocketLinger_t portable;
+        PortableSocketLinger portable;
         NativeSocketLinger_t native;
-    }CommonSocketLinger_t;
+    };
 
 }
 

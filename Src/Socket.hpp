@@ -63,26 +63,24 @@ namespace ArsLexis
          * Opens (creates) the socket.
          * @see NetLibSocketOpen()
          */
-        status_t open(NativeSockAddrFamily_t domain = SocketAddrINET_c,
-            NativeSocketType_t type= SocketTypeStream_c,
-            short protocol=0, long timeout=evtWaitForever);
+        status_t open(NativeSockAddrFamily_t domain = socketAddrINET, NativeSocketType_t type=socketTypeStream, short protocol=0, long timeout=evtWaitForever);
 
         status_t shutdown(short direction, long timeout=evtWaitForever);
         
-        status_t send(ushort_t& sent, const void* buffer, ushort_t bufferLength, long timeout=evtWaitForever, ushort_t flags=0, const SocketAddress* address=0);
+        status_t send(uint_t& sent, const void* buffer, uint_t bufferLength, long timeout=evtWaitForever, uint_t flags=0, const SocketAddress* address=0);
         
-        status_t receive(ushort_t& received, void* buffer, ushort_t bufferLength, long timeout=evtWaitForever, ushort_t flags=0);
+        status_t receive(uint_t& received, void* buffer, uint_t bufferLength, long timeout=evtWaitForever, uint_t flags=0);
         
         operator  NativeSocket_t() const
         {return socket_;}
 
         status_t setNonBlocking(bool value=true);
         
-        status_t setOption(ushort_t level, ushort_t option, void* optionValue, ushort_t valueLength, long timeout=evtWaitForever);
+        status_t setOption(uint_t level, uint_t option, const void* optionValue, uint_t valueLength, long timeout=evtWaitForever);
         
-        status_t getOption(ushort_t level, ushort_t option, void* optionValue, ushort_t& valueLength, long timeout=evtWaitForever) const;
+        status_t getOption(uint_t level, uint_t option, void* optionValue, uint_t& valueLength, long timeout=evtWaitForever) const;
         
-        status_t setLinger(const CommonSocketLinger_t& linger);
+        status_t setLinger(const SocketLinger& linger);
         
         //status_t getLinger(CommonSocketLinger_t& linger) const;
                 
@@ -129,8 +127,8 @@ namespace ArsLexis
         NetLibrary& netLib_;
         NativeFDSet_t inputFDs_[eventTypesCount_];
         NativeFDSet_t outputFDs_[eventTypesCount_];
-        ushort_t width_;
-        ushort_t eventsCount_;
+        uint_t width_;
+        uint_t eventsCount_;
         
         void recalculateWidth();
         
@@ -150,14 +148,14 @@ namespace ArsLexis
         
         void registerSocket(const SocketBase& socket, EventType event)
         {
-             NativeSocket_t ref=socket;
+            NativeSocket_t ref=socket;
             netFDSet(ref, &inputFDs_[event]);
             recalculateWidth();
         }
         
         void unregisterSocket(const SocketBase& socket, EventType event)
         {
-             NativeSocket_t ref=socket;
+            NativeSocket_t ref=socket;
             netFDClr(ref, &inputFDs_[event]);
             recalculateWidth();
         }
@@ -166,13 +164,13 @@ namespace ArsLexis
         
         bool checkSocketEvent(const SocketBase& socket, EventType event) const
         {
-             NativeSocket_t ref=socket;
+            NativeSocket_t ref=socket;
             return netFDIsSet(ref, &outputFDs_[event]);
         }
         
         bool isRegistered(const SocketBase& socket, EventType event) const
         {
-             NativeSocket_t ref=socket;
+            NativeSocket_t ref=socket;
             return netFDIsSet(ref, &inputFDs_[event]);
         }
         

@@ -29,7 +29,7 @@ namespace ArsLexis
     status_t SocketConnectionManager::openNetLib()
     {
         assert(netLib_.closed());
-        ushort_t ifError;
+        uint_t ifError;
         status_t error=netLib_.initialize(ifError);
         if (error || ifError)
             error=SocketConnection::errNetLibUnavailable;
@@ -237,10 +237,10 @@ namespace ArsLexis
         NativeSocket_t socketRef=socket_;
         assert(socketRef!=0);
         int     status=0;
-        ushort_t  size=sizeof(status);
+        uint_t  size=sizeof(status);
         //! @bug PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
         //! Nevertheless status is also filled in these cases and seems right...
-        status_t error=socket_.getOption(SocketOptLevelSocket_c, SocketOptSockErrorStatus_c, &status, size);
+        status_t error=socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
         if (error)
         {
             log().error()<<"getSocketErrorStatus(): unable to query socket option, "<<error;

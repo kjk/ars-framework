@@ -14,11 +14,11 @@ namespace ArsLexis
     status_t SimpleSocketConnection::notifyWritable()
     {
         assert(sending_);
-        ushort_t requestSize=request_.size();
-        ushort_t requestLeft=requestSize-requestBytesSent_;
+        uint_t requestSize=request_.size();
+        uint_t requestLeft=requestSize-requestBytesSent_;
         if (requestLeft>chunkSize_)
             requestLeft=chunkSize_;
-        ushort_t dataSize=0;
+        uint_t dataSize=0;
 //        status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
         status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, 0);
         if (errNone==error || netErrWouldBlock==error)
@@ -46,8 +46,8 @@ namespace ArsLexis
     status_t SimpleSocketConnection::notifyReadable()
     {
         assert(!sending_);
-        ushort_t dataSize=0;
-        ushort_t responseSize=response_.size();
+        uint_t dataSize=0;
+        uint_t responseSize=response_.size();
         status_t error=errNone;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
