@@ -119,7 +119,7 @@ namespace ArsLexis {
         
     private:
     
-        void drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item);
+        void drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item, bool showScrollbar);
         
         void handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp);
         
@@ -144,6 +144,10 @@ namespace ArsLexis {
         RGBColorType selectedItemBackground_;
         RGBColorType listBackground_;
         RGBColorType foreground_;
+        
+        bool hasHighDensityFeatures_;
+        bool screenIsDoubleDensity_;
+        bool windowSettingsChecked_;
     };
     
     class BasicStringItemRenderer: public ExtendedList::ItemRenderer {
@@ -160,6 +164,7 @@ namespace ArsLexis {
         virtual void getItem(String& out, uint_t item)=0;
         
     };
+    
 }
 
 #endif

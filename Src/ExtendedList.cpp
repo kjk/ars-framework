@@ -7,22 +7,114 @@
 
 using namespace ArsLexis;
 
+
+namespace {
+
+    static void saturate(UInt8& val, int level)
+    {
+        if (level>0)
+        {
+            if (255-level>val)
+                val+=level;
+            else
+                val=255;
+        }
+        else
+        {
+            if (0-level<val)
+                val+=level;
+            else
+                val=0;
+        }
+    }
+    
+    static void saturate(RGBColorType& rgb, int level)
+    {
+        saturate(rgb.r, level);
+        saturate(rgb.g, level);
+        saturate(rgb.b, level);
+    }
+    
+    static void drawBevel(Graphics& graphics, Rectangle& bounds, const RGBColorType& color, bool doubleDensity)
+    {
+        RGBColorType oldColor;
+        RGBColorType tmp=color;
+        saturate(tmp, 32);
+        WinSetForeColorRGB(&tmp, &oldColor);
+        uint_t x0=bounds.x();
+        uint_t y0=bounds.y();
+        uint_t x1=x0+bounds.width()-1;
+        uint_t y1=y0+bounds.height()-1;
+        UInt16 origCoordinateSystem;
+        if (doubleDensity) 
+        {
+            x0*=2;
+            y0*=2;
+            x1*=2;
+            y1*=2;
+            origCoordinateSystem=WinSetCoordinateSystem(kCoordinatesNative);
+        }
+        graphics.drawLine(x0+1, y0, x1-1, y0);
+        graphics.drawLine(x0, y0+1, x0, y1-2);
+        graphics.drawLine(x0, y0+1, x0+1, y0+1);
+        tmp=color;
+        saturate(tmp, 16);
+        WinSetForeColorRGB(&tmp, 0);
+        graphics.drawLine(x0+2, y0+1, x1-2, y0+1);
+        graphics.drawLine(x0+1, y0+2, x0+1, y1-3);
+        tmp=color;
+        saturate(tmp, -32);
+        WinSetForeColorRGB(&tmp, 0);
+        graphics.drawLine(x0+1, y1-1, x1-1, y1-1);
+        graphics.drawLine(x1, y0+1, x1, y1-2);
+        graphics.drawLine(x1-1, y1-2, x1, y1-2);
+        tmp=color;
+        saturate(tmp, -16);
+        WinSetForeColorRGB(&tmp, 0);
+        graphics.drawLine(x0+1, y1-2, x1-2, y1-2);
+        graphics.drawLine(x1-1, y0+1, x1-1, y1-3);
+        WinSetForeColorRGB(&oldColor, 0);
+        if (doubleDensity)
+        {
+            WinSetCoordinateSystem(origCoordinateSystem);
+            bounds.explode(1, 1, -2, -3);
+        }
+        else
+            bounds.explode(2, 2, -4, -5);
+        WinSetBackColorRGB(&color, &oldColor);
+        graphics.erase(bounds);
+        WinSetBackColorRGB(&oldColor, 0);
+    }
+    
+    inline static bool rgbEqual(const RGBColorType& c1, const RGBColorType& c2)
+    {   
+        return c1.r==c2.r && c1.g==c2.g && c1.b==c2.b;
+    }
+}
+
 ExtendedList::ExtendedList(Form& form, UInt16 id):
     FormGadget(form, id),
     itemRenderer_(0),
     selection_(noListSelection),
     topItem_(noListSelection),
     itemHeight_(18),
-    scrollBarWidth_(7),
-    scrollButtonHeight_(7)
+    scrollBarWidth_(12),
+    scrollButtonHeight_(12),
+    hasHighDensityFeatures_(false),
+    screenIsDoubleDensity_(false),
+    windowSettingsChecked_(false)
 {
-    setRgbColor(itemBackground_, 76, 124, 189);
-    setRgbColor(selectedItemBackground_, 87, 152, 211);
-//    setRgbColor(listBackground_, 65, 97, 166);
-    setRgbColor(listBackground_, 255, 255, 255);
-//    WinSetBackColorRGB(0, &listBackground_);
-    setRgbColor(foreground_, 255, 255, 255);
+    UInt32 version;
+    Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
+    if (errNone==error && 4<=version)
+        hasHighDensityFeatures_=true;
 
+//    setRgbColor(itemBackground_, 76, 124, 189);
+//    setRgbColor(selectedItemBackground_, 87, 152, 211);
+//    setRgbColor(listBackground_, 65, 97, 166);
+//    setRgbColor(listBackground_, 255, 255, 255);
+//    WinSetBackColorRGB(0, &listBackground_);
+//    setRgbColor(foreground_, 255, 255, 255);
     
 //    UInt32 screenDepths=1;
 //    Boolean color=false;
@@ -44,13 +136,13 @@ void ExtendedList::drawItem(Graphics& graphics, const Rectangle& bounds, uint_t 
     WinSetBackColorRGB(&oldColor, 0);
 }
 
-void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item)
+void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item, bool showScrollbar)
 {
     if (noListSelection==topItem_)
         topItem_=0;
     assert(topItem_<=item);
     uint_t offset=item-topItem_;
-    Rectangle itemBounds(listBounds.x(), listBounds.y()+offset*itemHeight_, listBounds.width()-visibleScrollBarWidth(), itemHeight_);
+    Rectangle itemBounds(listBounds.x(), listBounds.y()+offset*itemHeight_, showScrollbar?listBounds.width()-scrollBarWidth_:listBounds.width(), itemHeight_);
     Rectangle clipRectangle(itemBounds);
     if (clipRectangle.y()+clipRectangle.height()>listBounds.y()+listBounds.height())
     {
@@ -64,6 +156,27 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
 
 void ExtendedList::draw(Graphics& graphics)
 {
+    if (!windowSettingsChecked_)
+    {
+        windowSettingsChecked_=true;
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foreground_);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackground_);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuForeground), &selectedItemBackground_);
+        if (rgbEqual(itemBackground_, selectedItemBackground_))
+        {
+            saturate(selectedItemBackground_, 64);
+            if (rgbEqual(itemBackground_, selectedItemBackground_))
+                saturate(selectedItemBackground_, -64);
+        }
+        if (hasHighDensityFeatures_)
+        {
+            UInt32 attr;
+            Err error=WinScreenGetAttribute(winScreenDensity, &attr);
+            if (errNone==error && kDensityDouble==attr)
+                screenIsDoubleDensity_=true;
+        }
+    }
     Rectangle listBounds;
     bounds(listBounds);
     drawBackground(graphics, listBounds);
@@ -73,22 +186,26 @@ void ExtendedList::draw(Graphics& graphics)
     if (noListSelection==topItem_)
         topItem_=0;
     assert(itemsCount>topItem_);
-    uint_t itemsToDisplay=listBounds.height()/itemHeight_;
+    uint_t viewCapacity=listBounds.height()/itemHeight_;
+    uint_t itemsToDisplay=viewCapacity;
     if (0 != listBounds.height()%itemHeight_)
         ++itemsToDisplay;
     uint_t itemsBelow=itemsCount-topItem_;
+    bool showScrollbar=(itemsCount>viewCapacity);
     itemsToDisplay=std::min(itemsToDisplay, itemsBelow);
-    
     RGBColorType oldFore, oldText;
     WinSetForeColorRGB(&foreground_, &oldFore);
     WinSetTextColorRGB(&foreground_, &oldText);
     for (uint_t i=0; i<itemsToDisplay; ++i)
-        drawItemProxy(graphics, listBounds, topItem_+i);
+        drawItemProxy(graphics, listBounds, topItem_+i, showScrollbar);
     WinSetTextColorRGB(&oldText, 0);
     WinSetForeColorRGB(&oldFore, 0);
-    listBounds.x()=listBounds.x()+listBounds.width()-visibleScrollBarWidth();
-    Graphics::ClipRectangleSetter setClip(graphics, listBounds);
-    drawScrollBar(graphics, listBounds);
+    if (showScrollbar)
+    {
+        listBounds.x()=listBounds.x()+listBounds.width()-visibleScrollBarWidth();
+        Graphics::ClipRectangleSetter setClip(graphics, listBounds);
+        drawScrollBar(graphics, listBounds);
+    }
 }
 
 uint_t ExtendedList::height() const
@@ -136,6 +253,7 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
 {
     int oldSelection=selection_;
     bool scrolled=false;
+    bool showScrollbar=false;
     if (noListSelection!=(selection_=item)) 
     {
         uint_t itemsCount=this->itemsCount();
@@ -155,6 +273,8 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
                 topItem_=item-viewCapacity+1;
                 scrolled=true;
             }
+            if (viewCapacity<itemsCount)
+                showScrollbar=true;
         }     
     }
     if (redraw==ro)
@@ -171,9 +291,9 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
             WinSetForeColorRGB(&foreground_, &oldFore);
             WinSetTextColorRGB(&foreground_, &oldText);
             if (noListSelection!=oldSelection)
-                drawItemProxy(graphics, listBounds, oldSelection);
+                drawItemProxy(graphics, listBounds, oldSelection, showScrollbar);
             if (noListSelection!=selection_)
-                drawItemProxy(graphics, listBounds, selection_);
+                drawItemProxy(graphics, listBounds, selection_, showScrollbar);
             WinSetTextColorRGB(&oldText, 0);
             WinSetForeColorRGB(&oldFore, 0);
         }
@@ -205,70 +325,9 @@ void ExtendedList::adjustVisibleItems(RedrawOption ro)
     }
 }
 
-namespace {
-
-    static void saturate(UInt8& val, int level)
-    {
-        if (level>0)
-        {
-            if (255-level>val)
-                val+=level;
-            else
-                val=255;
-        }
-        else
-        {
-            if (0-level<val)
-                val+=level;
-            else
-                val=0;
-        }
-    }
-    
-    static void saturate(RGBColorType& rgb, int level)
-    {
-        saturate(rgb.r, level);
-        saturate(rgb.g, level);
-        saturate(rgb.b, level);
-    }
-    
-}
-
-void ExtendedList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t item, bool selected)
+void ExtendedList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t, bool selected)
 {
-    RGBColorType oldColor;
-    
-    RGBColorType bgColor=(selected?selectedItemBackground_:itemBackground_);
-    RGBColorType tmp=bgColor;
-    saturate(tmp, 20);
-    WinSetForeColorRGB(&tmp, &oldColor);
-    const uint_t x0=bounds.x();
-    const uint_t y0=bounds.y();
-    const uint_t x1=x0+bounds.width()-1;
-    const uint_t y1=y0+bounds.height()-1;
-    graphics.drawLine(x0+1, y0, x1-1, y0);
-    graphics.drawLine(x0, y0+1, x0, y1-2);
-    graphics.drawLine(x0, y0+1, x0+1, y0+1);
-    tmp=bgColor;
-    saturate(tmp, 10);
-    WinSetForeColorRGB(&tmp, 0);
-    graphics.drawLine(x0+2, y0+1, x1-2, y0+1);
-    graphics.drawLine(x0+1, y0+2, x0+1, y1-3);
-    tmp=bgColor;
-    saturate(tmp, -20);
-    WinSetForeColorRGB(&tmp, 0);
-    graphics.drawLine(x0+1, y1-1, x1-1, y1-1);
-    graphics.drawLine(x1, y0+1, x1, y1-2);
-    graphics.drawLine(x1-1, y1-2, x1, y1-2);
-    tmp=bgColor;
-    saturate(tmp, -10);
-    WinSetForeColorRGB(&tmp, 0);
-    graphics.drawLine(x0+1, y1-2, x1-2, y1-2);
-    graphics.drawLine(x1-1, y0+1, x1-1, y1-3);
-    WinSetForeColorRGB(&oldColor, 0);
-    bounds.explode(2, 2, -4, -5);
-    graphics.erase(bounds);
-    
+    drawBevel(graphics, bounds, selected?selectedItemBackground_:itemBackground_, screenIsDoubleDensity_);
 }
 
 void ExtendedList::drawBackground(Graphics& graphics, const Rectangle& bounds)
@@ -281,6 +340,13 @@ void ExtendedList::drawBackground(Graphics& graphics, const Rectangle& bounds)
 
 void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
 {
+    const int widthHeight=scrollBarWidth_-1;
+    Rectangle buttonBounds(bounds.x()+1, bounds.y(), widthHeight, widthHeight);
+    Rectangle orig=buttonBounds;
+    drawBevel(graphics, buttonBounds, itemBackground_, screenIsDoubleDensity_);
+    buttonBounds=orig;
+    buttonBounds.y()+=(bounds.height()-widthHeight);
+    drawBevel(graphics, buttonBounds, itemBackground_, screenIsDoubleDensity_);
 }
 
 ExtendedList::ItemRenderer::ItemRenderer()
