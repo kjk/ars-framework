@@ -51,7 +51,7 @@ namespace {
 
 }
 
-void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rectangle& area)
+void GenericTextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsLexis::Rectangle& area)
 {
     uint_t intersectStart=std::max(start, selectionStart);
     uint_t intersectEnd=std::min(end, selectionEnd);
@@ -156,7 +156,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
     if (render)
     {
-        Rectangle textArea(left, top, txtDx, lineHeight);
+        ArsLexis::Rectangle textArea(left, top, txtDx, lineHeight);
         drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
             layoutContext.selectionStart, layoutContext.selectionEnd, textArea);
         if (isHyperlink())
@@ -338,7 +338,7 @@ void GenericTextElement::invalidateHotSpot()
     hyperlink_->hotSpot=0;
 }
 
-void GenericTextElement::defineHotSpot(Definition& definition, const Rectangle& bounds)
+void GenericTextElement::defineHotSpot(Definition& definition, const ArsLexis::Rectangle& bounds)
 {
     assert(isHyperlink());
     if (!hyperlink_->hotSpot)

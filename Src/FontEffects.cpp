@@ -2,16 +2,20 @@
 #include <algorithm>
 #include <Utility.hpp>
 
+#if defined(_PALM_OS)
 #pragma pcrelconstdata on
+#endif
 
 namespace ArsLexis
 {
 
+#if defined(_PALM_OS)
     namespace {
         static const StaticAssert<sizeof(FontEffects) == sizeof(uint_t)> sizeof_FontEffects_equals_sizeof_uint = {};
     }
+#endif
 
-    FontEffects& FontEffects::operator+=(const FontEffects& eff)
+        FontEffects& FontEffects::operator+=(const FontEffects& eff)
     {
         effects_.fx.weight=std::max(weight(), eff.weight());
         effects_.fx.italic=(italic() || eff.italic());
