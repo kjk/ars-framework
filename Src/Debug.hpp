@@ -14,10 +14,11 @@
 #endif
 
 #ifndef NDEBUG
+//! Some functions depend on this non-standard symbol instead of standard-compliant @c NDEBUG.
 #define DEBUG
 #endif
 
-// Prevents using MSL-provided error function (called when normally exception would be thrown).
+//! Prevents using MSL-provided error function (called when normally exception would be thrown).
 #define _MSL_ERROR_FUNC -1
 
 #include <new>
@@ -25,9 +26,18 @@
 
 namespace ArsLexis 
 {
+    /** 
+     * Placeholder for custom memory allocation failure handler.
+     * It should be defined somewher in application modules.
+     */
     void handleBadAlloc();
 }
 
+/**
+ * Custom memory allocation function, that doesn't throw (contrary 
+ * to MSL new (nothrow) that simply catches exception
+ * thrown by new.
+ */
 inline void * operator new(unsigned long size)
 {
     void* ptr=0;
