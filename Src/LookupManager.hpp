@@ -20,7 +20,6 @@ class LookupManager: private ArsLexis::NonCopyable
     LookupHistory& history_;
     ArsLexis::NetLibrary netLibrary_;
     ArsLexis::SocketConnectionManager connectionManager_;
-    ArsLexis::Resolver resolver_;
     Definition lastDefinition_;
 
     ArsLexis::String lastInputTerm_;
@@ -83,12 +82,10 @@ public:
     LookupManager(LookupHistory& history):
         history_(history),
         connectionManager_(netLibrary_),
-        resolver_(netLibrary_),
         historyChange_(historyMoveForward),
         percentProgress_(percentProgressDisabled),
         lookupInProgress_(false)
-    {
-    }
+    {}
     
     ~LookupManager();
 

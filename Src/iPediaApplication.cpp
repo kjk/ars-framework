@@ -20,10 +20,12 @@ iPediaApplication::iPediaApplication():
     server_(serverLocalhost),
     stressMode_(false)
 {
-#ifndef NDEBUG
+#ifdef INTERNAL_BUILD
     log_.addSink(new MemoLogSink(), log_.logError);
+#ifndef NDEBUG    
     log_.addSink(new HostFileLogSink("\\var\\log\\iPedia.log"), log_.logEverything);
     log_.addSink(new DebuggerLogSink(), log_.logEverything);
+#endif    
 #endif
 }
 

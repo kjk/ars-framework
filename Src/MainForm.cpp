@@ -195,22 +195,6 @@ inline void MainForm::handleScrollRepeat(const EventType& event)
     }        
 }
 
-void MainForm::handlePenUp(const EventType& event)
-{
-    if (showDefinition==displayMode())
-    {
-/*    
-        Definition* definition=getDefinition();
-        if (definition)
-        {
-            Point point(event.screenX, event.screenY);
-            if (definition->bounds() && point)
-                definition->click(point);
-        }
-*/        
-    }
-}
-
 void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
 {
     Definition* definition=getDefinition();

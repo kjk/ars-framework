@@ -77,16 +77,35 @@ void iPediaConnection::prepareRequest()
     setRequest(request); 
 }
 
-Err iPediaConnection::open()
+Err iPediaConnection::enqueue()
 {
+    Err error=FieldPayloadProtocolConnection::enqueue();
+    if (error)
+        return error;
+
     String status;
     getResource(connectionStatusStrings, statusStringOpeningConnection, status);
     lookupManager_.setStatusText(status);
     lookupManager_.setPercentProgress(LookupManager::percentProgressDisabled);
     Application::sendEvent(iPediaApplication::appLookupStartedEvent);
+    return errNone;
+}
+
+
+Err iPediaConnection::open()
+{
     
     prepareRequest();
     Err error=SimpleSocketConnection::open();
+    if (error)
+        return error;
+
+    String status;
+    getResource(connectionStatusStrings, statusStringSendingRequest, status);
+    lookupManager_.setStatusText(status);
+    Application::sendEvent(iPediaApplication::appLookupProgressEvent);
+        
+/*    
     if (!error)
     {
         NetSocketLingerType linger;
@@ -99,15 +118,15 @@ Err iPediaConnection::open()
             UInt16Arr& toSwap=reinterpret_cast<UInt16Arr&>(linger);
             std::swap(toSwap[0], toSwap[1]);
         }        
-        
-        error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockLinger, &linger, sizeof(linger));
+        error=socket().setLinger(linger);
         if (error)
         {
             log().debug()<<"setOption() returned error while setting linger: "<<error;
             error=errNone;
         }
     }
-    return error;
+    */
+    return errNone;
 }
 
 Err iPediaConnection::notifyProgress()

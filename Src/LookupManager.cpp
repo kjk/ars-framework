@@ -14,7 +14,6 @@ Err LookupManager::initialize()
     {
         iPediaApplication& app=iPediaApplication::instance();
         lastDefinition_.setHyperlinkHandler(&app.hyperlinkHandler());        
-        resolver_.initialize();
     }
     return error;
 }
@@ -142,7 +141,8 @@ void LookupManager::lookupTerm(const ArsLexis::String& term)
     historyChange_=historyReplaceForward;
     iPediaConnection* conn=new iPediaConnection(*this);
     conn->setTerm(lastInputTerm_=term);
-    resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
+    conn->setAddress(iPediaApplication::instance().server());
+    conn->enqueue();
 }
 
 void LookupManager::lookupRandomTerm()
@@ -150,7 +150,8 @@ void LookupManager::lookupRandomTerm()
     historyChange_=historyReplaceForward;
     iPediaConnection* conn=new iPediaConnection(*this);
     conn->setRandom();
-    resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
+    conn->setAddress(iPediaApplication::instance().server());
+    conn->enqueue();
 }
 
 void LookupManager::search(const ArsLexis::String& expression)
@@ -159,7 +160,8 @@ void LookupManager::search(const ArsLexis::String& expression)
     iPediaConnection* conn=new iPediaConnection(*this);
     conn->setTerm(expression);
     conn->setPerformFullTextSearch(true);
-    resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
+    conn->setAddress(iPediaApplication::instance().server());
+    conn->enqueue();
 }
 
 
@@ -170,7 +172,8 @@ void LookupManager::moveHistory(bool forward)
         historyChange_=(forward?historyMoveForward:historyMoveBack);
         iPediaConnection* conn=new iPediaConnection(*this);
         conn->setTerm(lastInputTerm_=(forward?history_.nextTerm():history_.previousTerm()));
-        resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
+        conn->setAddress(iPediaApplication::instance().server());
+        conn->enqueue();
     }
 }
 

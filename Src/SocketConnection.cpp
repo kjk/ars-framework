@@ -3,136 +3,153 @@
 namespace ArsLexis 
 {
 
-    void SocketConnectionManager::addConnection(SocketConnection& connection)
-    {
-        NetSocketRef ref=connection.socket_;
-        assert(ref>=connections_.size() || 0==connections_[ref]);
-        if (ref>=connections_.size())
-            connections_.resize(ref+1);
-        connections_[ref]=&connection;
-    }
-
     void SocketConnectionManager::registerEvent(SocketConnection& connection, SocketSelector::EventType event)
     {
-        NetSocketRef ref=connection.socket_;
-        assert(connections_.size()>ref && &connection==connections_[ref]);
-        selector_.registerSocket(connection.socket_, event);
+        selector_.registerSocket(connection.socket(), event);
     }
     
     void SocketConnectionManager::unregisterEvents(SocketConnection& connection)
     {
-        NetSocketRef ref=connection.socket_;
-        assert(connections_.size()>ref && &connection==connections_[ref]);
-        selector_.unregisterSocket(connection.socket_, SocketSelector::eventRead);
-        selector_.unregisterSocket(connection.socket_, SocketSelector::eventWrite);
-        selector_.unregisterSocket(connection.socket_, SocketSelector::eventException);
-    }
-    
-    void SocketConnectionManager::removeConnection(SocketConnection& connection)
-    {
-        NetSocketRef ref=connection.socket_;
-        assert(connections_.size()>ref && &connection==connections_[ref]);
-        unregisterEvents(connection);
-        connections_[ref]=0;
+        Socket& socket=connection.socket();
+        selector_.unregisterSocket(socket, SocketSelector::eventRead);
+        selector_.unregisterSocket(socket, SocketSelector::eventWrite);
+        selector_.unregisterSocket(socket, SocketSelector::eventException);
     }
     
     SocketConnectionManager::SocketConnectionManager(NetLibrary& netLib):
         netLib_(netLib),
-        selector_(netLib, false)
+        selector_(netLib, false),
+        resolver_(netLib)
     {}
     
     SocketConnectionManager::~SocketConnectionManager()
     {
-        UInt16 connCount=connections_.size();
-        for (UInt16 i=0; i<connCount; ++i)
-            if (connections_[i])
-                connections_[i]->abortConnection();
+        std::for_each(connections_.begin(), connections_.end(), ObjectDeleter<SocketConnection>());
     }
-
+    
+    namespace {
+        template<SocketConnection::State state>
+        struct ConnStateEquals {
+            bool operator()(SocketConnection* conn) const
+            {return state==conn->state();}
+        };
+    }
 
     Err SocketConnectionManager::manageConnectionEvents(Int32 timeout)
     {
-        Err error=selector_.select(timeout);
-        if (!error)
+        Connections_t::iterator it;
+        bool done=false;
+        while (connections_.end()!=(it=std::find_if(connections_.begin(), connections_.end(), ConnStateEquals<SocketConnection::stateFinished>())))
         {
-            UInt16 eventsCount=selector_.eventsCount();
-            assert(eventsCount>0);
-            UInt16 connCount=connections_.size();
-            for (UInt16 i=0; i<connCount; ++i)
+            delete *it;
+            connections_.erase(it);
+            done=true;
+        }
+        if (done)
+            return errNone;
+        it=std::find_if(connections_.begin(), connections_.end(), ConnStateEquals<SocketConnection::stateUnresolved>());
+        if (connections_.end()!=it)
+        {
+            Err error=(*it)->resolve(resolver_);
+            if (error)
             {
-                SocketConnection* conn=connections_[i];
-                if (conn)
-                {
-                    //! @bug There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
-                    //! Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
-                    if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventException))
-                    {
-                        unregisterEvents(*conn);
-                        conn->notifyException();
-                        --eventsCount;                        
-                    }                        
-                    else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
-                    {
-                        unregisterEvents(*conn);
-                        conn->notifyWritable();
-                        --eventsCount;                        
-                    } 
-                    else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
-                    {
-                        unregisterEvents(*conn);
-                        conn->notifyReadable();
-                        --eventsCount;                        
-                    }
-                    if (0==eventsCount)
-                        break;
-                }
+                (*it)->handleError(error);
+                delete *it;
+                connections_.erase(it);
+            }
+            done=true;
+        }
+        if (done)
+            return errNone;
+        it=std::find_if(connections_.begin(), connections_.end(), ConnStateEquals<SocketConnection::stateUnopened>());
+        if (connections_.end()!=it)
+        {
+            Err error=(*it)->open();
+            if (error)
+            {
+                (*it)->handleError(error);
+                delete *it;
+                connections_.erase(it);
+            }
+            done=true;
+        }
+        if (done)
+            return errNone;
+        
+        Err error=selector_.select(timeout);
+        if (error)
+            return error;
+        Connections_t::iterator end=connections_.end();
+        for (it=connections_.begin(); it!=end; ++it)
+        {
+            Err connErr=errNone;
+            SocketConnection* conn=*it;
+            assert(SocketConnection::stateOpened==conn->state());
+            if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
+            {
+                unregisterEvents(*conn);
+                connErr=conn->notifyException();
+            }                        
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
+            {
+                unregisterEvents(*conn);
+                connErr=conn->notifyWritable();
+            } 
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
+            {
+                unregisterEvents(*conn);
+                connErr=conn->notifyReadable();
+            }
+            if (connErr)
+            {
+                conn->handleError(connErr);
+                delete conn;
+                connections_.erase(it);
+                break;
             }
         }
-        return error;
+        return errNone;
     }
     
     
     SocketConnection::SocketConnection(SocketConnectionManager& manager):
         manager_(manager),
+        state_(stateUnresolved),
         transferTimeout_(evtWaitForever),
-//        address_(0),
         log_("SocketConnection"),
         socket_(manager.netLib_)
     {
     }
     
     SocketConnection::~SocketConnection()
+    {}
+    
+    void SocketConnection::abortConnection() 
     {
-        NetSocketRef ref=socket_;
-        if (ref)
-            manager_.removeConnection(*this);
+        setState(stateFinished);
     }
 
     Err SocketConnection::open()
     {
-        assert(address_!=0);
+        assert(stateUnopened==state());
         Err error=socket_.open();
         if (error)
         {
             log().debug()<<"open(): unable to open socket, "<<error;
-            handleError(error);
             return error;
         }
-
-        manager_.addConnection(*this);
 
         //error=socket_.setNonBlocking();
         if (error)
         {
             log().info()<<"open(), can't setNonBlocking(), "<<error;
-            handleError(error);
             return error;
         }
 
         error=socket_.connect(address_, transferTimeout());
         if (netErrWouldBlock==error)
         {
-            // log()<<"open(), got netErrWouldBlock from connect(), changed to errNone";
+            log().info()<<"open(), got netErrWouldBlock from connect(), changed to errNone";
             error=errNone;
         }
 
@@ -142,21 +159,13 @@ namespace ArsLexis
             error=errNone;
         }
 
-        if (error)
-        {
-            log().error()<<"open(): can't connect(), "<<error;
-            handleError(error);
-            return error;
-        }
-
+        setState(stateOpened);
         registerEvent(SocketSelector::eventException);
         registerEvent(SocketSelector::eventWrite);
-
-        assert(errNone==error);
         return error;
     }
 
-    void SocketConnection::notifyException()
+    Err SocketConnection::notifyException()
     {
         Err error=getSocketErrorStatus();
         if (errNone==error)
@@ -167,7 +176,7 @@ namespace ArsLexis
         }
         else
             log().debug()<<"notifyException(): getSocketErrorStatus() returned error, "<<error;
-        handleError(error);
+        return error;
     }
 
     // devnote: seems to return non-PalmOS error codes
@@ -192,6 +201,22 @@ namespace ArsLexis
             log().debug()<<"getSocketErrorStatus(): error status, "<<(Err)status;
         }            
         return (Err)status;
+    }
+    
+    Err SocketConnection::resolve(Resolver& resolver)
+    {
+        assert(stateUnresolved==state());
+        Err error=resolver.resolve(address_, addressString_, 0, transferTimeout());
+        if (!error)
+            setState(stateUnopened);
+        return error;
+    }
+    
+    Err SocketConnection::enqueue()
+    {
+        assert(stateUnresolved==state());
+        manager_.connections_.push_back(this);
+        return errNone;
     }
 
 }

@@ -11,7 +11,7 @@ namespace ArsLexis
     class HTMLCharacterEntityReferenceDecoder
     {
         typedef std::map<const char*, unsigned char, ArsLexis::C_StringLess<char> > Map_t;
-        Map_t map_;
+//        Map_t map_;
         
         void insert(const char* key, unsigned char value);
         
@@ -22,7 +22,8 @@ namespace ArsLexis
         /**
          * @return decoded character on success, @c chrNull on failure.
          */
-        char decode(const char* entityReference) const;
+        char decode(const char* entityReference) const
+        {return char(1);}
         
         char decode(const String& str) const
         {return decode(str.c_str());}

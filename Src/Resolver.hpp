@@ -19,47 +19,25 @@ namespace ArsLexis
         NetLibrary& netLib_;
         
         typedef std::map<String, NetIPAddr> AddressCache_t;
-
-//        typedef std::pair<String, NetIPAddr> CacheEntry_t;
-//        typedef std::list<CacheEntry_t> AddressCache_t;
-
         AddressCache_t cache_;
-        
-        enum {dnsAddressesCount_=2};
-        NetIPAddr dnsAddresses_[dnsAddressesCount_];
-             
         static Err validateAddress(const String& origAddress, String& validAddress, UInt16& port);
         
-        void queryServerAddresses();
-        
-        void blockingResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port);
+        Err blockingResolve(SocketAddress& out, const String& name, UInt16 port, UInt32 timeout);
         
     public:
         
-        enum DNS_Choice
-        {
-            dnsPrimary,
-            dnsSecondary
-        };
-        
-        UInt32 dnsAddress(DNS_Choice choice=dnsPrimary);
-    
         Resolver(NetLibrary& netLibrary);
-        
-        void initialize();
         
        ~Resolver();
        
        void updateCacheEntry(const String& name, NetIPAddr address);
        
-       Err resolveAndConnect(SocketConnection* connection, const String& address, UInt16 port=0);
+       Err resolve(SocketAddress& out, const String& address, UInt16 port=0, UInt32 timeout=evtWaitForever);
        
        friend class ResolverConnection;
 
     private:
     
-        void doResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port, DNS_Choice choice);
-        
     };
     
 }

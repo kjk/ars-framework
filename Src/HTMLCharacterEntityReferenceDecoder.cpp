@@ -5,13 +5,14 @@ namespace ArsLexis
 
     void HTMLCharacterEntityReferenceDecoder::insert(const char* key, unsigned char value)
     {
-        map_[key]=value;
+//        map_[key]=value;
     }
 
     HTMLCharacterEntityReferenceDecoder::HTMLCharacterEntityReferenceDecoder()
     {
         // This is machine generated code. Function insert() is used because it generates 50% smaller code than inline version.
         // Nevertheless this code still sucks and probably we should use gperf to make it suck less...
+  /*      
         insert("quot", 34);
         insert("amp", 38);
         insert("lt", 60);
@@ -115,8 +116,10 @@ namespace ArsLexis
         // Note: these mappings below are formally incorrect, but often used and we should try to display them anyway
         insert("ndash", 150); // 8211
         insert("mdash", 151); // 8212
+        */
     }
 
+/*
     char HTMLCharacterEntityReferenceDecoder::decode(const char* entityReference) const
     {
         char result=chrNull;
@@ -125,5 +128,6 @@ namespace ArsLexis
             result=it->second;
         return result;
     }
+*/
 
 }

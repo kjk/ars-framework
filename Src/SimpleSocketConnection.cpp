@@ -9,24 +9,17 @@ namespace ArsLexis
         sending_(true),
         chunkSize_(256),
         requestBytesSent_(0)
-    {
-    }
+    {}
 
-    SimpleSocketConnection::~SimpleSocketConnection()
-    {
-    }
-
-    void SimpleSocketConnection::notifyWritable()
+    Err SimpleSocketConnection::notifyWritable()
     {
         assert(sending_);
-        Err error=getSocketErrorStatus();
-//        assert(errNone==error);
         UInt16 requestSize=request_.size();
         UInt16 requestLeft=requestSize-requestBytesSent_;
         if (requestLeft>chunkSize_)
             requestLeft=chunkSize_;
         UInt16 dataSize=0;
-        error=socket_.send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
+        Err error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
         if (errNone==error || netErrWouldBlock==error)
         {
             registerEvent(SocketSelector::eventException);
@@ -35,42 +28,39 @@ namespace ArsLexis
             {
                 sending_=false;
                 registerEvent(SocketSelector::eventRead);
-                error=socket_.shutdown(netSocketDirOutput);
+                error=socket().shutdown(netSocketDirOutput);
                 if (error)
-                    log()<<"notifyWritable(): Socket::shutdown() returned error, "<<error;
+                    log().debug()<<"notifyWritable(): Socket::shutdown() returned error, "<<error;
             }
             else
                 registerEvent(SocketSelector::eventWrite);                
             error=notifyProgress();
         }
         else
-            log()<<"notifyWritable(): Socket::send() returned error, "<<error;
-        
-        if (error)
-            handleError(error);
+            log().debug()<<"notifyWritable(): Socket::send() returned error, "<<error;
+
+        return error;        
     }
     
-    void SimpleSocketConnection::notifyReadable()
+    Err SimpleSocketConnection::notifyReadable()
     {
         assert(!sending_);
-        Err error=getSocketErrorStatus();
-//        assert(errNone==error);
         UInt16 dataSize=0;
         UInt16 responseSize=response_.size();
-        error=errNone;
-        bool finished=false;
+        Err error=errNone;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             response_.resize(responseSize+chunkSize_);
-            error=socket_.receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout());
+            error=socket().receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout());
             if (!error)
             {
                 assert(dataSize<=chunkSize_);
                 response_.resize(responseSize+dataSize);
                 if (0==dataSize)
                 {   
-                    finished=true;
                     error=notifyFinished();
+                    if (!error)
+                        abortConnection();                        
                 }
                 else
                 {
@@ -80,15 +70,12 @@ namespace ArsLexis
                 }
             }
             else
-                log()<<"notifyReadable(): Socket::receive() returned error, "<<error;
+                log().debug()<<"notifyReadable(): Socket::receive() returned error, "<<error;
         }
         else
             error=errResponseTooLong;                
             
-        if (error)
-            handleError(error);
-        else if (finished)
-            abortConnection();
+        return error;
     }
         
 }

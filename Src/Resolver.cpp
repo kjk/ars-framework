@@ -1,5 +1,4 @@
 #include <Resolver.hpp>
-#include <ResolverConnection.hpp>
 #include <SysUtils.hpp>
 #include <NetLibrary.hpp>
 #include <cctype>
@@ -14,27 +13,13 @@ namespace ArsLexis
     }
 
     Resolver::~Resolver()
-    {
-    }
-    
-    void Resolver::initialize()
-    {
-        for (int i=0; i<dnsAddressesCount_; ++i)
-            dnsAddresses_[i]=0;
-        queryServerAddresses();
-    }
+    {}
     
     void Resolver::updateCacheEntry(const String& name, NetIPAddr address)
     {
         cache_[name]=address;         
     }
 
-    UInt32 Resolver::dnsAddress(DNS_Choice choice)
-    {
-        assert(choice<dnsAddressesCount_);
-        return dnsAddresses_[choice];
-    }
-    
     Err Resolver::validateAddress(const String& origAddress, String& validAddress, UInt16& port)
     {
         Err error=errNone;
@@ -61,37 +46,14 @@ namespace ArsLexis
         return error;
     }
    
-/*    
-    void Resolver::doResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port, DNS_Choice choice)
-    {
-        UInt32 dnsAddr=dnsAddress(choice);
-        if (0==dnsAddr)
-        {
-            if (dnsPrimary==choice)
-                doResolveAndConnect(connection, name, port, dnsSecondary);
-            else
-                blockingResolveAndConnect(connection, name, port);
-        }
-        else
-        {
-            ResolverConnection* resolverConnection(new ResolverConnection(*this, connection, name, port, choice));
-            INetSocketAddress addr(dnsAddr, 53);
-            resolverConnection->setAddress(addr);
-            resolverConnection->open();
-        }            
-    }
-*/
-    
-    void Resolver::blockingResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port)
+    Err Resolver::blockingResolve(SocketAddress& out, const String& name, UInt16 port, UInt32 timeout)
     {
         std::auto_ptr<NetHostInfoBufType> buffer(new NetHostInfoBufType);
         MemSet(buffer.get(), sizeof(NetHostInfoBufType), 0);
-        Err error=netLib_.getHostByName(name.c_str(), buffer.get(), connection->transferTimeout());
+        assert(!netLib_.closed());
+        Err error=netLib_.getHostByName(name.c_str(), buffer.get(), timeout);
         if (error)
-        {
-            connection->handleError(error);
-            return;
-        }
+            return error;
 
         NetIPAddr resAddr=buffer->address[0];
         assert(resAddr!=0);
@@ -101,55 +63,39 @@ namespace ArsLexis
         char addrStr[32];
         NetLibAddrINToA(netLib_.refNum(), resAddr, addrStr);
         ChildLogger log("Resolver");
-        log<< "Resolver::blockingResolveAndConnect to ip="<<addrStr;
+        log().info()<< "Resolver::blockingResolveAndConnect to ip="<<addrStr;
 #endif
         INetSocketAddress addr(resAddr, port);
-        connection->setAddress(addr);
-        connection->open();
+        out=addr;
+        return errNone;
     }
    
-    Err Resolver::resolveAndConnect(SocketConnection* connection, const String& address, UInt16 port)
+    Err Resolver::resolve(SocketAddress& out, const String& address, UInt16 port, UInt32 timeout)
     {
-        assert(connection!=0);
         String validAddress;                
         Err error=validateAddress(address, validAddress, port);
+        if (error)
+            return error;
         INetSocketAddress addr;
         if (!validAddress.empty() && std::isdigit(validAddress[0]))
         {
             error=netLib_.addrAToIN(validAddress.c_str(), addr);
-            if (!error)
-            {
-                addr.setPort(port);
-                connection->setAddress(addr);
-                connection->open();
-            }
-            return error;
+            if (error)
+                return error;
+            addr.setPort(port);
+            out=addr;
+            return errNone;
         }
-        if (!error)
+        AddressCache_t::const_iterator it=cache_.find(validAddress);
+        if (it!=cache_.end())
         {
-            AddressCache_t::const_iterator it=cache_.find(validAddress);
-            if (it!=cache_.end())
-            {
-                addr.setIpAddress(it->second);
-                addr.setPort(port);
-                connection->setAddress(addr);
-                connection->open();
-            }
-            else
-                blockingResolveAndConnect(connection, validAddress, port);
-//                doResolveAndConnect(connection, validAddress, port, dnsPrimary);
+            addr.setIpAddress(it->second);
+            addr.setPort(port);
+            out=addr;
+            return errNone;
         }
-        return error;            
+        else
+            return blockingResolve(out, validAddress, port, timeout);
     }
    
-    void Resolver::queryServerAddresses()
-    {
-        static const UInt16 dnsPort=53;
-        for (int i=0; i<dnsAddressesCount_; ++i)
-        {
-            UInt16 addressSize=sizeof(NetIPAddr);
-            Err error=netLib_.getSetting(i>0?netSettingSecondaryDNS:netSettingPrimaryDNS, &dnsAddresses_[i], addressSize);
-        }        
-    }
-    
 }

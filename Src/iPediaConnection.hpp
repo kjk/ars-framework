@@ -72,10 +72,12 @@ protected:
     
     Err notifyProgress();
 
-public:
-
     Err open();
     
+public:
+
+    Err enqueue();
+
     iPediaConnection(LookupManager& lm);
     
     ~iPediaConnection();

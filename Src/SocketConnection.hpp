@@ -5,7 +5,8 @@
 #include <ErrBase.h>
 #include <Logging.hpp>
 #include <SocketAddress.hpp>
-#include <vector>
+#include <Resolver.hpp>
+#include <list>
 
 namespace ArsLexis
 {
@@ -16,16 +17,17 @@ namespace ArsLexis
     {
         NetLibrary& netLib_;
         SocketSelector selector_;
-        typedef std::vector<SocketConnection*> Connections_t;
+        Resolver resolver_;
+        
+        typedef std::list<SocketConnection*> Connections_t;
         Connections_t connections_;
         
-        void addConnection(SocketConnection& connection);
-    
         void registerEvent(SocketConnection& connection, SocketSelector::EventType event);
         
         void unregisterEvents(SocketConnection& connection);
         
-        void removeConnection(SocketConnection& connection);
+        NetLibrary& netLibrary()
+        {return netLib_;}
         
     public:
     
@@ -34,44 +36,73 @@ namespace ArsLexis
         ~SocketConnectionManager();
         
         bool active() const
-        {return selector_.active();}
+        {return !connections_.empty();}
         
         Err manageConnectionEvents(Int32 timeout=evtWaitForever);
-        
-        NetLibrary& netLibrary()
-        {return netLib_;}
         
         friend class SocketConnection;
     };
 
     class SocketConnection: private NonCopyable
     {
+    public:
+        enum State
+        {
+            stateUnresolved,
+            stateUnopened,
+            stateOpened,
+            stateFinished
+        };
+
+    private:
         SocketConnectionManager& manager_;
+        State state_;
         Int32 transferTimeout_;
+        ArsLexis::String addressString_;
         SocketAddress address_;
         mutable ChildLogger log_;
+        Socket socket_;
         
     protected:
+    
+        Socket& socket() 
+        {return socket_;}
+        
+        const Socket& socket() const
+        {return socket_;}
 
-        Socket socket_;
-    
         Err getSocketErrorStatus() const;
+        
+        virtual Err resolve(Resolver& resolver);
     
-        virtual void notifyWritable()
-        {}
+        virtual Err notifyWritable()
+        {return errNone;}
         
-        virtual void notifyReadable()
-        {}
+        virtual Err notifyReadable()
+        {return errNone;}
         
-        virtual void notifyException();
+        virtual Err notifyException();
         
-        virtual void abortConnection()
-        {delete this;}
+        virtual void abortConnection();
+        
+        virtual Err open();
+        
+        void setState(State state)
+        {state_=state;}
+        
+        virtual void handleError(Err)
+        {abortConnection();}
+        
+        void registerEvent(SocketSelector::EventType event)
+        {manager_.registerEvent(*this, event);}
         
         SocketConnection(SocketConnectionManager& manager);
         
     public:
-    
+
+        State state() const
+        {return state_;}
+        
         Logger& log() const
         {return log_;}
     
@@ -81,10 +112,12 @@ namespace ArsLexis
             errResponseMalformed,
             errFirstAvailable
         };
-    
-        virtual void handleError(Err)
-        {abortConnection();}
         
+        virtual Err enqueue();
+        
+        void setAddress(const String& address)
+        {addressString_=address;}
+    
         void setTransferTimeout(Int32 timeout)
         {
             transferTimeout_=timeout;
@@ -93,20 +126,7 @@ namespace ArsLexis
         Int32 transferTimeout() const
         {return transferTimeout_;}
         
-        void setAddress(const SocketAddress& address)
-        {address_=address;}
-
-        virtual Err open();
-        
-        void registerEvent(SocketSelector::EventType event)
-        {
-            manager_.registerEvent(*this, event);
-        }
-        
         virtual ~SocketConnection();
-        
-        SocketConnectionManager& manager()
-        {return manager_;}
         
         friend class SocketConnectionManager;
     };

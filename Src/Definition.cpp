@@ -22,11 +22,7 @@ Definition::HotSpot::HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement&
 
 bool Definition::HotSpot::hitTest(const Point& point) const
 {
-    bool result=false;
-    Rectangles_t::const_iterator it=std::find_if(rectangles_.begin(), rectangles_.end(), ArsLexis::Rectangle::HitTest(point));
-    if (it!=rectangles_.end())
-        result=true;
-    return result;
+    return rectangles_.end()!=std::find_if(rectangles_.begin(), rectangles_.end(), ArsLexis::Rectangle::HitTest(point));
 }
 
 Definition::HotSpot::~HotSpot()
@@ -56,7 +52,8 @@ namespace {
     static bool operator<(const ArsLexis::Rectangle& rect1, const ArsLexis::Rectangle& rect2) {
          if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
             return true;
-        return false;
+        else
+            return false;
     }
     
 }
@@ -70,7 +67,7 @@ bool Definition::HotSpot::operator<(const Definition::HotSpot& other) const
 {
     assert(!rectangles_.empty());
     assert(!other.rectangles_.empty());
-    return (*rectangles_.begin())<(*other.rectangles_.begin());
+    return rectangles_.front()<other.rectangles_.front();
 }
 
 
@@ -88,11 +85,11 @@ Definition::Definition():
 
 namespace {
 	
-    struct HotSpotGreater {
+    struct HotSpotNotLess {
 
         const Definition::HotSpot* hotSpot;
 
-        HotSpotGreater(const Definition::HotSpot* hs): hotSpot(hs) {}
+        HotSpotNotLess(const Definition::HotSpot* hs): hotSpot(hs) {}
 
         bool operator()(const Definition::HotSpot* hs) const 
         {return !((*hs)<(*hotSpot));}
@@ -102,7 +99,7 @@ namespace {
 
 void Definition::addHotSpot(HotSpot* hotSpot)
 {
-    hotSpots_.insert(std::find_if(hotSpots_.begin(), hotSpots_.end(), HotSpotGreater(hotSpot)), hotSpot);
+    hotSpots_.insert(std::find_if(hotSpots_.begin(), hotSpots_.end(), HotSpotNotLess(hotSpot)), hotSpot);
 }
 
 void Definition::clearHotSpots()
@@ -505,5 +502,11 @@ void Definition::extendSelection(ArsLexis::Graphics& graphics, const RenderingPr
         }
     }
     if (selectedHotSpot_ && endTracking)
+    {
         selectedHotSpot_->element().performAction(*this);
+        selectionStartProgress_=selectionEndProgress_=LayoutContext::progressCompleted;
+        selectionStartElement_=selectionEndElement_=elements_.end();
+        renderSingleElement(graphics, prefs, selectedHotSpot_->element());
+        selectedHotSpot_=0;
+    }        
 }

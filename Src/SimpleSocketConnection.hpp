@@ -19,9 +19,9 @@ namespace ArsLexis
         
     protected:
         
-        void notifyWritable();
+        Err notifyWritable();
         
-        void notifyReadable();
+        Err notifyReadable();
         
         virtual Err notifyFinished()
         {return errNone;}
@@ -38,8 +38,6 @@ namespace ArsLexis
     public:
 
         SimpleSocketConnection(SocketConnectionManager& manager);
-        
-        ~SimpleSocketConnection();
         
         void setMaxResponseSize(UInt16 size)
         {maxResponseSize_=size;}

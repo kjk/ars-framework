@@ -18,8 +18,6 @@ class MainForm: public iPediaForm
     
     void handleScrollRepeat(const EventType& data);
     
-    void handlePenUp(const EventType& event);
-    
     void handleControlSelect(const EventType& data);
     
     bool handleKeyPress(const EventType& event);
