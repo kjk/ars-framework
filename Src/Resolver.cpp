@@ -102,7 +102,7 @@ namespace ArsLexis
         if (error)
             return error;
         INetSocketAddress addr;
-        if (!validAddress.empty() && std::isdigit(validAddress[0]))
+        if (!validAddress.empty() && isDigit(validAddress[0]))
         {
             error=netLib_.addrAToIN(validAddress.c_str(), addr);
             if (error)

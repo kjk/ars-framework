@@ -15,6 +15,42 @@ namespace ArsLexis
         return std::tolower(chr);
 #endif        
     }
+    
+    inline bool isAlpha(char_t chr)
+    {
+#if defined(_WIN32_WCE) || defined(_WIN32)
+        return _istalpha(chr);
+#else
+        return std::isalpha(chr);
+#endif
+    }
+    
+    inline bool isAlNum(char_t chr)
+    {
+#if defined(_WIN32_WCE) || defined(_WIN32)
+        return _istalnum(chr);
+#else
+        return std::isalnum(chr);
+#endif
+    }
+
+    inline bool isDigit(char_t chr)
+    {
+#if defined(_WIN32_WCE) || defined(_WIN32)
+        return _istdigit(chr);
+#else
+        return std::isdigit(chr);
+#endif
+    }
+
+    inline bool isSpace(char_t chr)
+    {
+#if defined(_WIN32_WCE) || defined(_WIN32)
+        return _istspace(chr);
+#else
+        return std::isspace(chr);
+#endif
+    }
 
     template<class Ch>
     struct C_StringLess

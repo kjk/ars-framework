@@ -1,6 +1,6 @@
 #include "GenericTextElement.hpp"
 #include <BaseTypes.hpp>
-#include <cctype>
+#include <Text.hpp>
 #include <memory>
 
 using ArsLexis::char_t;
@@ -31,7 +31,7 @@ namespace {
     {
         uint_t length=text.length();
         for (uint_t i=fromPos; i<length; ++i)
-            if (std::isspace(text[i]))
+            if (ArsLexis::isSpace(text[i]))
                 return i;
         return length;
     }
@@ -39,7 +39,7 @@ namespace {
     static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
     {
         String::const_reverse_iterator it(text.rend()-start-length);
-        return (text.rend()-std::find_if(it, it+length, std::isspace))-start;
+        return (text.rend()-std::find_if(it, it+length, ArsLexis::isSpace))-start;
     }
 
 }
@@ -86,7 +86,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     top+=(layoutContext.baseLine-baseLine);
     
     if (layoutContext.isFirstInLine())
-        while (std::isspace(*text))
+        while (ArsLexis::isSpace(*text))
         {
             ++text;
             ++layoutContext.renderingProgress;
@@ -104,11 +104,11 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     uint_t width=graphics.textWidth(text, length);
 
     if (text_.length()==layoutContext.renderingProgress+length && 
-        !std::isspace(text_[text_.length()-1]) &&
+        !ArsLexis::isSpace(text_[text_.length()-1]) &&
         layoutContext.nextTextElement && 
         !layoutContext.nextTextElement->breakBefore(layoutContext.preferences) &&
         !layoutContext.nextTextElement->text().empty() &&
-        !std::isspace(layoutContext.nextTextElement->text()[0]))
+        !ArsLexis::isSpace(layoutContext.nextTextElement->text()[0]))
     {
         LayoutContext copy(layoutContext.graphics, layoutContext.preferences, layoutContext.screenWidth);
         copy.baseLine=layoutContext.baseLine;
@@ -126,7 +126,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 
     uint_t charsToDraw=length;
     while (charsToDraw && 
-        std::isspace(*(text+charsToDraw-1)) && 
+        ArsLexis::isSpace(*(text+charsToDraw-1)) && 
         layoutContext.availableWidth()<graphics.textWidth(text, charsToDraw))
         --charsToDraw;
     uint_t dispWidth=graphics.textWidth(text, charsToDraw);
@@ -164,7 +164,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
                 if (render)
                 {
                     uint_t charsToDraw=length;
-                    while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
+                    while (charsToDraw && ArsLexis::isSpace(*(text+charsToDraw-1)))
                         --charsToDraw;
                     drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
                         layoutContext.selectionStart, layoutContext.selectionEnd, Point(left, top));
