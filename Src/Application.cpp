@@ -51,6 +51,7 @@ namespace ArsLexis
     }
     
     Application::Application(UInt32 creatorId):
+        logAllocation_(true),
         eventTimeout_(evtWaitForever),
 #ifdef __MWERKS__        
         formEventHandlerThunk_(Form::routeEventToForm),
@@ -75,7 +76,7 @@ namespace ArsLexis
     {
         Err error=FtrUnregister(creatorId_, featureInstancePointer);
         assert(!error);
-        std::for_each(forms_.begin(), forms_.end(), ObjectDeleter<Form>());
+        std::for_each(forms_.begin(), forms_.end(), ObjectDeleter<Form>());   
     }
 
 #define kPalmOS20Version sysMakeROMVersion(2,0,0,sysROMStageDevelopment,0)

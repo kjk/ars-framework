@@ -45,7 +45,7 @@ namespace ArsLexis
      */
     class Application: private NonCopyable
     {
-
+        
         /**
          * @internal 
          * Type used to store @c Form objects through application's lifetime.
@@ -119,6 +119,8 @@ namespace ArsLexis
         static void sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength) throw();
         
     protected:
+    
+        bool logAllocation_;
     
 #ifdef appFileCreator    
         explicit Application(UInt32 creatorId=appFileCreator);
@@ -256,9 +258,6 @@ namespace ArsLexis
          */
         virtual ~Application();
         
-        virtual void abort()
-        {delete this;}
-
         /**
          * Gets currently registered @c Application instance.
          */
@@ -317,7 +316,7 @@ namespace ArsLexis
         static void sendEvent(UInt16 eventId)
         {sendEvent(eventId, 0, 0);}
         
-        friend void handleBadAlloc();
+        friend void logAllocation(void*, bool, const char*, int);
     };
     
     template<class AppClass, UInt16 alertId> 

@@ -19,7 +19,7 @@
 #include <new>          // I include <new> & <memory> here so that definitions from there are included before I redefine new
 #include <memory>
 #include <cassert>
-
+#include <string>
 
 namespace ArsLexis 
 {

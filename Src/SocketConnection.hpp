@@ -32,6 +32,10 @@ namespace ArsLexis
         
         Err openNetLib();
         
+        bool manageFinishedConnections();
+        bool manageUnresolvedConnections();
+        bool manageUnopenedConnections();
+        
     public:
     
         SocketConnectionManager();

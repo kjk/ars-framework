@@ -24,7 +24,7 @@ iPediaApplication::iPediaApplication():
     log_.addSink(new MemoLogSink(), log_.logError);
 #ifndef NDEBUG    
     log_.addSink(new HostFileLogSink("\\var\\log\\iPedia.log"), log_.logEverything);
-    log_.addSink(new DebuggerLogSink(), log_.logEverything);
+    log_.addSink(new DebuggerLogSink(), log_.logWarning);
 #endif    
 #endif
 }
@@ -66,6 +66,8 @@ iPediaApplication::~iPediaApplication()
     
     if (lookupManager_)
         delete lookupManager_;    
+
+    logAllocation_=false;        
 }
 
 

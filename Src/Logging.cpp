@@ -45,6 +45,11 @@ namespace ArsLexis
         return *this;
     }
 
+    Logger::LineAppender& Logger::LineAppender::operator<<(int i)
+    {
+        return *this<<static_cast<short>(i);
+    }
+
     Logger::LineAppender Logger::operator()(uint_t level)
     {
         return LineAppender(*this, level<=threshold_, level);

@@ -26,14 +26,6 @@ namespace ArsLexis
         std::for_each(connections_.begin(), connections_.end(), ObjectDeleter<SocketConnection>());
     }
     
-    namespace {
-        template<SocketConnection::State state>
-        struct ConnStateEquals {
-            bool operator()(SocketConnection* conn) const
-            {return state==conn->state();}
-        };
-    }
-    
     Err SocketConnectionManager::openNetLib()
     {
         assert(netLib_.closed());
@@ -44,86 +36,123 @@ namespace ArsLexis
         return error;
     }
 
-    Err SocketConnectionManager::manageConnectionEvents(Int32 timeout)
+    bool SocketConnectionManager::manageFinishedConnections()
     {
-        Connections_t::iterator it;
         bool done=false;
-        while (connections_.end()!=(it=std::find_if(connections_.begin(), connections_.end(), ConnStateEquals<SocketConnection::stateFinished>())))
+        Connections_t::iterator it=connections_.begin();
+        while (it!=connections_.end())
         {
-            delete *it;
-            connections_.erase(it);
-            done=true;
+            if (SocketConnection::stateFinished==(*it)->state())
+            {
+                SocketConnection* conn=*it;
+                delete conn;
+                Connections_t::iterator next=it;
+                ++next;
+                connections_.erase(it);
+                done=true;
+                it=next;
+            }
+            else
+                ++it;
         }
         if (done)
         {
             if (connections_.empty())
                 netLib_.close();
-            return errNone;
         }
-        it=std::find_if(connections_.begin(), connections_.end(), ConnStateEquals<SocketConnection::stateUnresolved>());
-        if (connections_.end()!=it)
-        {
-            Err error=errNone;
-            if (netLib_.closed())
-                error=openNetLib();
-            if (!error)                
-                error=(*it)->resolve(resolver_);
-            if (error)
+        return done;
+    }
+
+    bool SocketConnectionManager::manageUnresolvedConnections()
+    {
+        Connections_t::iterator end=connections_.end();
+        for (Connections_t::iterator it=connections_.begin(); it!=end; ++it)
+            if (SocketConnection::stateUnresolved==(*it)->state())
             {
-                (*it)->handleError(error);
-                delete *it;
-                connections_.erase(it);
+                SocketConnection* conn=*it;
+                Err error=errNone;
+                if (netLib_.closed())
+                    error=openNetLib();
+                if (!error)                
+                    error=conn->resolve(resolver_);
+                if (error)
+                {
+                    conn->handleError(error);
+                    delete conn;
+                    connections_.erase(it);
+                }
+                return true;                            
             }
-            done=true;
-        }
-        if (done)
-            return errNone;
-        it=std::find_if(connections_.begin(), connections_.end(), ConnStateEquals<SocketConnection::stateUnopened>());
-        if (connections_.end()!=it)
-        {
-            Err error=(*it)->open();
-            if (error)
-            {
-                (*it)->handleError(error);
-                delete *it;
-                connections_.erase(it);
-            }
-            done=true;
-        }
-        if (done)
-            return errNone;
+        return false;
+    }
         
+    bool SocketConnectionManager::manageUnopenedConnections()
+    {
+        Connections_t::iterator end=connections_.end();
+        for (Connections_t::iterator it=connections_.begin(); it!=end; ++it)
+            if (SocketConnection::stateUnopened==(*it)->state())
+            {
+                SocketConnection* conn=*it;
+                Err error=conn->open();
+                if (error)
+                {
+                    conn->handleError(error);
+                    delete conn;
+                    connections_.erase(it);
+                }
+                return true;
+            }
+        return false;
+    }
+        
+    Err SocketConnectionManager::manageConnectionEvents(Int32 timeout)
+    {
+        if (manageFinishedConnections())            return errNone;
+            
+        if (manageUnresolvedConnections())            
+            return errNone;
+            
+        if (manageUnopenedConnections())
+            return errNone;
+            
         Err error=selector_.select(timeout);
         if (error)
             return error;
+            
         Connections_t::iterator end=connections_.end();
-        for (it=connections_.begin(); it!=end; ++it)
+        for (Connections_t::iterator it=connections_.begin(); it!=end; ++it)
         {
             Err connErr=errNone;
             SocketConnection* conn=*it;
             assert(SocketConnection::stateOpened==conn->state());
+            bool done=false;
             if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
             {
                 unregisterEvents(*conn);
                 connErr=conn->notifyException();
+                done=true;
             }                        
             else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
             {
                 unregisterEvents(*conn);
                 connErr=conn->notifyWritable();
+                done=true;
             } 
             else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
             {
                 unregisterEvents(*conn);
                 connErr=conn->notifyReadable();
+                done=true;
+                
             }
             if (connErr)
             {
                 conn->handleError(connErr);
                 delete conn;
                 connections_.erase(it);
-                break;
             }
+            if (done)
+                break;
         }
         return errNone;
     }
