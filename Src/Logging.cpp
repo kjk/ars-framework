@@ -321,7 +321,11 @@ void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* file
         return;
 
     if (free)
-        HostFPrintF(file, "-\t0x%08lx\n", ptr);
+    {
+        // sometimes free is called with NULL, so don't log those
+        if ( NULL != ptr)
+            HostFPrintF(file, "-\t0x%08lx\n", ptr);
+    }
     else
     {
         if (NULL == fileName)

@@ -82,7 +82,6 @@ public:
     CDynStr *AppendCharPBuf(const char_t *str, UInt32 strLen) { return (CDynStr*)DynStrAppendCharPBuf(this, str, strLen); }
     CDynStr *AppendChar(const char_t c) { return (CDynStr*)DynStrAppendChar(this, c); }
     CDynStr *Append(DynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }
-    CDynStr* Resize(UInt32 newLen) {return (CDynStr*)DynStrResize(this, newLen); }
 };
 
 #ifdef DEBUG
