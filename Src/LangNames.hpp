@@ -1,7 +1,6 @@
-#ifndef ARSLEXIS_LOCALE_HPP__
-#define ARSLEXIS_LOCALE_HPP__
+#ifndef ARSLEXIS_LANG_NAMES_HPP__
+#define ARSLEXIS_LANG_NAMES_HPP__
 
-#include <Debug.hpp>
 #include <BaseTypes.hpp>
 
 namespace ArsLexis {

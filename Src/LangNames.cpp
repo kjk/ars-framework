@@ -1,6 +1,5 @@
-
-#include <Locale.hpp>
-
+#include <Debug.hpp>
+#include <LangNames.hpp>
 
 using namespace ArsLexis;
 
