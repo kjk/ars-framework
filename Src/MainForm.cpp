@@ -142,7 +142,7 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
         ErrTry {
             definition->render(graphics, rect, renderingPreferences(), false);
         }
-        ErrCatch (ex) {
+        ErrCatch (ex) { // Before anybody starts reorganizing this code, please read reference about ErrCatch() and the use of 'volatile'
             error=ex;
         } ErrEndCatch
         if (error) 
@@ -312,6 +312,27 @@ bool MainForm::handleEvent(EventType& event)
                     Application::popupForm(searchResultsForm);
                 else
                     update(redrawProgressIndicator);
+
+                const iPediaApplication& app=iPediaApplication::instance();
+                if (app.inStressMode())
+                {
+                    EventType event;
+                    MemSet(&event, sizeof(event), 0);
+                    event.eType=penDownEvent;
+                    event.penDown=true;
+                    event.tapCount=1;
+                    event.screenX=1;
+                    event.screenY=50;
+                    EvtAddEventToQueue(&event);
+                    MemSet(&event, sizeof(event), 0);
+                    event.eType=penUpEvent;
+                    event.penDown=false;
+                    event.tapCount=1;
+                    event.screenX=1;
+                    event.screenY=50;
+                    EvtAddEventToQueue(&event);
+                    randomArticle();
+                }        
             }
             break;     
             
@@ -358,25 +379,6 @@ void MainForm::updateAfterLookup()
             field.selectWholeText();                    
         }    
         update();
-        if (app.inStressMode())
-        {
-            EventType event;
-            MemSet(&event, sizeof(event), 0);
-            event.eType=penDownEvent;
-            event.penDown=true;
-            event.tapCount=1;
-            event.screenX=1;
-            event.screenY=50;
-            EvtAddEventToQueue(&event);
-            MemSet(&event, sizeof(event), 0);
-            event.eType=penUpEvent;
-            event.penDown=false;
-            event.tapCount=1;
-            event.screenX=1;
-            event.screenY=50;
-            EvtAddEventToQueue(&event);
-            randomArticle();
-        }        
     }
 }
 
