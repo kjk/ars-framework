@@ -6,6 +6,16 @@
 #include <68k/Hs.h>
 #include <ExtendedEvent.hpp>
 
+static void updateForm(int formId, UInt16 updateCode)
+{
+    EventType event;
+    MemSet(&event, sizeof(event), 0);
+    event.eType=frmUpdateEvent;
+    event.data.frmUpdate.formID=formId;
+    event.data.frmUpdate.updateCode=updateCode;
+    EvtAddUniqueEventToQueue(&event, 0, false);
+}
+
 namespace ArsLexis 
 {
 
@@ -50,9 +60,13 @@ namespace ArsLexis
             }
             if (frmInvalidObjectId != form->returnToFormId_)
             {
-                form->deleteOnClose_=false;
+                form->deleteOnClose_ = false;
                 form->handleClose();
                 FrmReturnToForm(form->returnToFormId_);
+                // force update of the form we'rereturning to
+                // if we don't we might get some garbage on the form
+                // (e.g. gadgets from previous form)
+                updateForm(form->returnToFormId_, frmRedrawUpdateCode);
                 form->returnToFormId_ = frmInvalidObjectId;
                 form->form_ = NULL;
                 form->id_ = frmInvalidObjectId;

@@ -38,7 +38,7 @@ namespace {
         saturate(rgb.g, level);
         saturate(rgb.b, level);
     }
-    
+
     static void drawBevel(Graphics& graphics, Rectangle& bounds, const RGBColorType& color, bool doubleDensity)
     {
         RGBColorType oldColor;
@@ -52,12 +52,12 @@ namespace {
         UInt16 origCoordinateSystem;
         if (doubleDensity) 
         {
-            x0*=2;
-            y0*=2;
-            x1*=2;
-            x1+=1;
-            y1*=2;
-            origCoordinateSystem=WinSetCoordinateSystem(kCoordinatesNative);
+            x0 *= 2;
+            y0 *= 2;
+            x1 *= 2;
+            x1 += 1;
+            y1 *= 2;
+            origCoordinateSystem = WinSetCoordinateSystem(kCoordinatesNative);
         }
         graphics.drawLine(x0+1, y0, x1-1, y0);
         graphics.drawLine(x0, y0+1, x0, y1-2);
@@ -144,7 +144,10 @@ void ExtendedList::drawItem(Graphics& graphics, const Rectangle& bounds, uint_t 
     assert(item<itemsCount());
     assert(0!=itemRenderer_);
     RGBColorType oldColor;
-    WinSetBackColorRGB(selected?&selectedItemBackground_:&itemBackground_, &oldColor);
+    if (selected)
+        WinSetBackColorRGB(&selectedItemBackground_, &oldColor);
+    else
+        WinSetBackColorRGB(&itemBackground_, &oldColor);
     Rectangle rect=bounds;
     drawItemBackground(graphics, rect, item, selected);
     itemRenderer_->drawItem(graphics, *this, item, rect);
@@ -358,7 +361,10 @@ void ExtendedList::adjustVisibleItems(RedrawOption ro)
 void ExtendedList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t, bool selected)
 {
     bounds.explode(0, 0, 0, -1);
-    drawBevel(graphics, bounds, selected?selectedItemBackground_:itemBackground_, screenIsDoubleDensity_);
+    if (selected)
+        drawBevel(graphics, bounds, selectedItemBackground_ , screenIsDoubleDensity_);
+    else
+        drawBevel(graphics, bounds, itemBackground_, screenIsDoubleDensity_);
 }
 
 void ExtendedList::drawBackground(Graphics& graphics, const Rectangle& bounds)
