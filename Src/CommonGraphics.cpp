@@ -28,8 +28,7 @@ void Graphics::drawCenteredText(const char_t* str, const Point& topLeft, uint_t 
     drawText(str, len, point);
 }
 
-// TODO: is it uint_t lengthOut or uint_t &lengthOut ???
-void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t lengthOut, uint_t& widthInOut, bool fFullWords)
+void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t& lengthOut, uint_t& widthInOut, bool fFullWords)
 {
     uint_t width = widthInOut;
     uint_t origLen = tstrlen(textInOut);
@@ -45,7 +44,7 @@ void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t lengthOut, uin
 
     assert( newLen < origLen );
 
-    // we need to add "..."
+    // we need to add "..." (remember, that you can't add more than origLen!)
     uint_t ellipsisWidth = 100;
     uint_t ellipsisLength = 3;
     charsInWidth(_T("..."), ellipsisLength, ellipsisWidth);
@@ -56,7 +55,7 @@ void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t lengthOut, uin
     else
         newLen = wordWrap(textInOut, width, width);
 
-    if (origLen > newLen + ellipsisLength)
+    if (origLen < newLen + ellipsisLength)
         newLen = origLen - ellipsisLength;
     textInOut[newLen-1] = _T('.');
     textInOut[newLen+0] = _T('.');
