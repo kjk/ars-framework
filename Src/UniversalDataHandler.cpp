@@ -141,12 +141,13 @@ status_t UniversalDataHandler::handleIncrement(const ArsLexis::String& payload, 
 
 UniversalDataHandler::~UniversalDataHandler() {}
 
-static status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, UniversalDataFormat& out)
+status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, UniversalDataFormat& out)
 {
     BufferedReader reader(origReader, 1024);
     int lineNo = 0;
     long controlDataLength = 0;
     bool eof = false;
+    out.reset();
     while (!eof)
     {
         ArsLexis::String line;
@@ -171,7 +172,6 @@ void readUniversalDataFromStream(const char_t* streamName, UniversalDataFormat& 
     status_t error = openDataStoreReader(streamName, reader);
     if (errNone != error)
         return;
-    out.reset();
     if (errNone != readUniversalDataFromReader(*reader, out))
         out.reset(); //any errors - return empty UDF
 }

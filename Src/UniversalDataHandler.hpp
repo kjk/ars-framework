@@ -13,6 +13,7 @@ namespace ArsLexis {
 typedef std::auto_ptr<ArsLexis::DataStoreReader> DataStoreReaderPtr;
 typedef std::auto_ptr<ArsLexis::DataStoreWriter> DataStoreWriterPtr;
 
+extern ArsLexis::status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, UniversalDataFormat& out);
 extern void readUniversalDataFromStream(const ArsLexis::char_t* streamName, UniversalDataFormat& out);
 
 class UniversalDataHandler: public ArsLexis::LineBufferedPayloadHandler {
