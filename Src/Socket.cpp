@@ -121,7 +121,7 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)            
-            log()<<"getOption(): NetLibSocketOptionGet() returned error, "<<error;
+            log().warning()<<"getOption(): NetLibSocketOptionGet() returned error, "<<error;
         return error;
     }
         

@@ -5,7 +5,7 @@
 namespace ArsLexis
 {
 
-    void Logger::log(const char* text, uint_t length)
+    void Logger::log(const char* text, uint_t length, uint_t level)
     {
         String full;
         // 8=timestamp; 1=tab; 2=braces; 1=colon; 1=tab; 1=newline; 1=null
@@ -14,40 +14,47 @@ namespace ArsLexis
         UInt32 timestamp=TimGetTicks();
         StrPrintF(buffer, "%lx", timestamp);
         full.append(buffer, 8).append("\t[", 2).append(context_, contextLength_).append("]:\t", 3).append(text, length).append(1, '\n');
-        logRaw(full);
+        logRaw(full, level);
     }
     
     Logger::LineAppender& Logger::LineAppender::operator<<(unsigned short ui)
     {
-        char buffer[26];
-        Int16 len=StrPrintF(buffer, "%hu (=0x%hx)", ui, ui);
-        if (len>0)
-            line_.append(buffer, len);
+        if (log_)
+        {
+            char buffer[26];
+            Int16 len=StrPrintF(buffer, "%hu (=0x%hx)", ui, ui);
+            if (len>0)
+                line_.append(buffer, len);
+        }                
         return *this;
     }
 
     Logger::LineAppender& Logger::LineAppender::operator<<(short i)
     {
-        char buffer[26];
-        Int16 len=StrPrintF(buffer, "%hd (=0x%hx)", i, i);
-        if (len>0)
-            line_.append(buffer, len);
+        if (log_)
+        {
+            char buffer[26];
+            Int16 len=StrPrintF(buffer, "%hd (=0x%hx)", i, i);
+            if (len>0)
+                line_.append(buffer, len);
+        }                
         return *this;
     }
 
-    RootLogger::RootLogger(const char* context, LogSink* sink):
-        Logger(context),
-        sink_(sink)
+    RootLogger::RootLogger(const char* context, LogSink* sink, uint_t sinkThreshold):
+        Logger(context)
     {
-        Err error=FtrSet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32>(this));
-        if (error)
-            (*this)<<"Unable to set RootLogger instance pointer, error: "<<error;
+        if (sink)
+            addSink(sink, sinkThreshold);
+        Err err=FtrSet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32>(this));
+        if (err)
+            error()<<"Unable to set RootLogger instance pointer, error: "<<err;
     }
-        
+
     RootLogger::~RootLogger() throw()
     {
         FtrUnregister(Application::creator(), Application::featureRootLoggerPointer);
-        delete sink_;
+        std::for_each(sinks_.begin(), sinks_.end(), deleteSink);        
     }
 
     RootLogger* RootLogger::instance() throw()
@@ -57,6 +64,20 @@ namespace ArsLexis
         if (error)
             assert(false);
         return logger;
+    }
+    
+    void RootLogger::addSink(LogSink* newSink, uint_t threshold) throw()
+    {
+        assert(newSink);
+        sinks_.push_back(SinkWithThreshold(newSink, threshold));
+    }
+
+    void RootLogger::logRaw(const String& text, uint_t level)
+    {
+        Sinks_t::iterator end(sinks_.end());
+        for (Sinks_t::iterator it(sinks_.begin()); it!=end; ++it)
+            if (it->second>=level)
+                it->first->output(text);
     }
 
     FunctionLogger::FunctionLogger(const char* context, Logger& parent):
@@ -74,11 +95,7 @@ namespace ArsLexis
     
     FunctionLogger::~FunctionLogger() throw()
     {
-//        try {
-            log("<<< Exit");
-//        }
-//        catch (...) {
-//        }
+        log("<<< Exit");
     }
 
 #pragma mark -

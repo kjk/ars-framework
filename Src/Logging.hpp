@@ -4,6 +4,7 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 #include <Utility.hpp>
+#include <list>
 
 namespace ArsLexis
 {
@@ -116,39 +117,27 @@ namespace ArsLexis
         const char* context() const throw()
         {return context_;}
         
-        void log(const char* text, uint_t length);
+        void log(const char* text, uint_t length, uint_t level=logLevelDefault);
         
-        void log(const String& text)
-        {log(text.data(), text.length());}
-        
-        void log(const char* text)
-        {log(text, StrLen(text));}
-        
+        void log(const String& text, uint_t level=logLevelDefault)
+        {log(text.data(), text.length(), level);}
         
         class LineAppender
         {
             Logger& logger_;
             String line_;
+            uint_t level_;
             uint_t last_:1;
             uint_t log_:1;
             
             LineAppender& operator=(const LineAppender&);
             
-            LineAppender(Logger& logger, bool doLog):
+            LineAppender(Logger& logger, uint_t level, bool doLog):
                 logger_(logger),
+                level_(level),
                 last_(true),
                 log_(doLog)
             {}
-            
-            friend class Logger;
-            
-        public:
-        
-            ~LineAppender()
-            {
-                if (last_ && log_)
-                    logger_.log(line_);
-            }
             
             LineAppender(LineAppender& prev):
                 logger_(prev.logger_),
@@ -159,7 +148,16 @@ namespace ArsLexis
                 if (log_)
                     line_.swap(prev.line_);
             }
+            
+            friend class Logger;
 
+        public:
+        
+            ~LineAppender()
+            {
+                if (last_ && log_)
+                    logger_.log(line_, level_);
+            }
             
             LineAppender& operator<<(const char* text)
             {
@@ -195,26 +193,26 @@ namespace ArsLexis
         LineAppender operator<<(T val);
         
         LineAppender operator()(uint_t level)
-        {return LineAppender(*this, level<=threshold_);}
+        {return LineAppender(*this, level<=threshold_, level);}
         
         LineAppender critical()
-        {return LineAppender(*this, logCritical<=threshold_);}
+        {return (*this)(logCritical);}
 
         LineAppender error()
-        {return LineAppender(*this, logError<=threshold_);}
+        {return (*this)(logError);}
         
         LineAppender debug()
-        {return LineAppender(*this, logDebug<=threshold_);}
+        {return (*this)(logDebug);}
 
         LineAppender warning()
-        {return LineAppender(*this, logWarning<=threshold_);}
+        {return (*this)(logDebug);}
 
         LineAppender info()
-        {return LineAppender(*this, logInfo<=threshold_);}
+        {return (*this)(logInfo);}
 
     protected:
         
-        virtual void logRaw(const String& text)=0;
+        virtual void logRaw(const String& text, uint_t level)=0;
         
         friend class ChildLogger;
         
@@ -222,37 +220,25 @@ namespace ArsLexis
     
     template<typename T>
     Logger::LineAppender Logger::operator<<(T val)        
-    {
-        return LineAppender(*this, threshold_>=logLevelDefault)<<val;
-    }
+    {return (*this)(logLevelDefault)<<val;}
     
 #pragma mark -
 #pragma mark RootLogger
 
     class RootLogger: public Logger, private NonCopyable
     {
-        LogSink* sink_;
-        
+        typedef std::pair<LogSink*, uint_t> SinkWithThreshold;
+        typedef std::list<SinkWithThreshold> Sinks_t;
+        Sinks_t sinks_;
+   
+        static void deleteSink(SinkWithThreshold& s) 
+        {delete s.first;}            
+     
     public:
     
-        RootLogger(const char* context, LogSink* sink=0);
+        RootLogger(const char* context, LogSink* sink=0, uint_t sinkThreshold=logLevelDefault);
         
-        LogSink* setSink(LogSink* newSink) throw()
-        {
-            LogSink* prev=sink_;
-            sink_=newSink;
-            return prev;
-        }
-        
-        void replaceSink(LogSink* newSink) throw()
-        {
-            delete setSink(newSink);
-        }
-        
-        LogSink* releaseSink() throw()
-        {
-            return setSink(0);
-        }
+        void addSink(LogSink* newSink, uint_t threshold=logLevelDefault) throw();
         
         ~RootLogger() throw();
         
@@ -260,11 +246,7 @@ namespace ArsLexis
         
     protected:
         
-        void logRaw(const String& text)
-        {
-            if (sink_)
-                sink_->output(text);
-        }
+        void logRaw(const String& text, uint_t level);
     
     };
     
@@ -289,10 +271,10 @@ namespace ArsLexis
         
     protected:
     
-        void logRaw(const String& text)
+        void logRaw(const String& text, uint_t level)
         {
             if (parent_)
-                parent_->logRaw(text);
+                parent_->logRaw(text, level);
         }
         
     };

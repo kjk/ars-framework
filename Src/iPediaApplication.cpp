@@ -19,9 +19,9 @@ iPediaApplication::iPediaApplication():
     stressMode_(false)
 {
 #ifndef NDEBUG
-//    log_.replaceSink(new HostFileLogSink("\\log\\iPedia.log"));
-//    log_.replaceSink(new DebuggerLogSink());
-    log_.replaceSink(new MemoLogSink());
+    log_.addSink(new MemoLogSink(), log_.logError);
+    log_.addSink(new HostFileLogSink("\\var\\log\\iPedia.log"), log_.logEverything);
+    log_.addSink(new DebuggerLogSink(), log_.logEverything);
 #endif
 }
 
