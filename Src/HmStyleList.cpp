@@ -11,7 +11,10 @@ HmStyleList::HmStyleList(Form& form, UInt16 id):
     setListBackground(white);
     setItemBackground(white);
     RGBColorType yellow = {0, 255, 255, 0};
-    setSelectedItemBackground(yellow);
+    RGBColorType treoBlue = {0, 156, 207, 206};
+
+    RGBColorType itemBgColor = treoBlue;
+    setSelectedItemBackground(itemBgColor);
     setScrollBarWidth(7);
     setScrollButtonHeight(4);
 }
