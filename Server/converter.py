@@ -8,13 +8,91 @@
 #  -verbose : if used will print a lot of debugging input to stdout. May slow
 #             down conversion process
 #  -one term : will force the conversion of one term. Is always verbose
+#  -force : if used will force converting, even if entries already exist
+#           (I'm not sure if the timestamp-based version of change detection really works anyway)
+#  -limit N : limit the number of converter articles to N. This is good for testing
+#             changes to the converter. It takes a lot of time to fetch all
+#             original articles from enwiki db, this option will limit it to N
+#             articles which should be enough to detect major problems with
+#             the converter
 
 import MySQLdb, sys, datetime, re, unicodedata
 
 #if True, we'll print a lot of debug text to stdout
-g_fVerbose = False
+g_fVerbose       = False
 
-db=MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
+g_connOne        = None
+g_connTwo        = None
+
+def getOneResult(conn,query):
+    cur = conn.cursor()
+    cur.execute(query)
+    row = cur.fetchone()
+    res = row[0]
+    cur.close()
+    return res
+
+g_enwikiRowCount = None
+def getEnwikiRowCount():
+    global g_connOne, g_enwikiRowCount
+    if None == g_enwikiRowCount:
+        g_enwikiRowCount = getOneResult(g_connOne, """SELECT COUNT(*) FROM enwiki.cur WHERE cur_namespace=0;""")
+    return g_enwikiRowCount
+
+g_ipediaRowCount = None
+def getIpediaRowCount():
+    global g_connOne, g_ipediaRowCount
+    if None == g_ipediaRowCount:
+        g_ipediaRowCount = getOneResult(g_connOne, """SELECT COUNT(*) FROM ipedia.definitions;""")
+    return g_ipediaRowCount
+
+# creates all the global stuff that will be used by other functions
+# using globals is ugly but some of it is for performance
+# Q: would using server-side cursor speed up things?
+# g_connOne = MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='enwiki', cursorclass=MySQLdb.cursors.SSCursor)
+def initDatabase():
+    global g_connOne, g_connTwo
+    # the assumption here is that using two connections will speed up things
+    g_connOne = MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='enwiki')
+    g_connTwo = MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
+    enwikiRows = getEnwikiRowCount()
+    ipediaRows = getIpediaRowCount()
+    print "rows in enwiki: %d" % enwikiRows
+    print "rows in ipedia: %d" % ipediaRows
+
+def deinitDatabase():
+    global g_connOne, g_connTwo
+    closeAllNamedCursors()
+    g_connOne.close()
+    g_connTwo.close()
+
+g_namedCursors = {}
+def getNamedCursor(conn,curName):
+    global g_namedCursors
+    # a little pooling of cursors based on their names
+    # the idea is to save time by not calling conn.cursor()/conn.close()
+    if not g_namedCursors.has_key(curName):
+        g_namedCursors[curName] = conn.cursor()
+    return g_namedCursors[curName]
+
+def closeNamedCursor(curName):
+    global g_namedCursors
+    if g_namedCursors.has_key(curName):
+        cur = g_namedCursors[curName]
+        cur.close()
+        del g_namedCursors[curName]
+
+def closeAllNamedCursors():
+    global g_namedCursors
+    for curName in g_namedCursors.keys():
+        cur = g_namedCursors[curName]
+        cur.close()
+    g_namedCursors.clear()
+
+def dbEscape(txt):
+    # it's silly that we need connection just for escaping strings
+    global g_connTwo
+    return g_connTwo.escape_string(txt)
 
 def stripUnconsistentBlocks(text, startPattern, endPattern):
     opened=0
@@ -115,89 +193,133 @@ def convertDefinition(text):
     text+='\n'
     return text
 
-def convertTermWithId(term_id,fForceUpdate=False):
-    global g_fVerbose
-    cursor=db.cursor()
-    cursor.execute("""SELECT cur_title,cur_text,cur_timestamp FROM enwiki.cur WHERE cur_namespace=0 AND cur_id='%s'""" % term_id)
-    defRow=cursor.fetchone()
+def convertTermWithId(term_id,fForceConvert=False):
+    global g_fVerbose, g_connTwo
+
+    cur_data_cur = getNamedCursor(g_connTwo, "cur_data_cur")
+    ipedia_write_cur = getNamedCursor(g_connTwo, "ipedia_write_cur")
+    cur_data_cur.execute("""SELECT cur_title,cur_text,cur_timestamp FROM enwiki.cur WHERE cur_namespace=0 AND cur_id='%s'""" % term_id)
+    defRow=cur_data_cur.fetchone()
     term=defRow[0].replace('_', ' ')
     definition=defRow[1]
     ts=defRow[2]
     timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
     if g_fVerbose:
-        print "Converting term: ", term
+        log_txt = "term: %s " % term
 
-    cursor.execute("""SELECT id, last_modified FROM definitions WHERE term='%s'""" % db.escape_string(term))
-    outRow=cursor.fetchone()
+    check_cur = getNamedCursor(g_connTwo, "check_cur")
+    check_cur.execute("""SELECT id, last_modified FROM definitions WHERE term='%s'""" % dbEscape(term))
+    outRow=check_cur.fetchone()
     if outRow:
-        if g_fVerbose:
-            print "Existing date: ", outRow[1],"; new date: ", timestamp
-        if fForceUpdate or str(outRow[1])<str(timestamp):
+        if g_fVerbose: 
+            log_txt +=  "cur:" + outRow[1] + " new: " + str(timestamp)
+        if fForceConvert or str(outRow[1])<str(timestamp):
             if g_fVerbose:
-                print "Updating existing record id: ", outRow[0]
+                log_txt += " Update existing record id: " + str(outRow[0])
             termId = outRow[0]
             newDef = convertDefinition(definition)
-            cursor.execute("""UPDATE definitions SET definition='%s', last_modified='%s' WHERE id=%d""" % (db.escape_string(newDef), db.escape_string(str(timestamp)), termId))
+            ipedia_write_cur.execute("""UPDATE definitions SET definition='%s', last_modified='%s' WHERE id=%d""" % (dbEscape(newDef), dbEscape(str(timestamp)), termId))
         else:
             if g_fVerbose:
-                print "Skipping record, newer version exists."
+                log_txt += " Skipped record, newer version exists"
     else:
         if g_fVerbose:
-            print "Creating new record." 
+            log_txt += "*New record"
         newDef = convertDefinition(definition)
-        cursor.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (db.escape_string(term), db.escape_string(newDef), db.escape_string(str(timestamp))))
-    cursor.close()
+        ipedia_write_cur.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (dbEscape(term), dbEscape(newDef), dbEscape(str(timestamp))))
 
-def convertAll():
-    query="""SELECT cur_id FROM enwiki.cur where cur_namespace=0 """
+    if g_fVerbose:
+        print log_txt
+    return term
+
+def convertAll(articleLimit,fForceConvert):
+    global g_connOne
+    query="""SELECT cur_id FROM cur WHERE cur_namespace=0"""
     if len(sys.argv)>1:
-        query+=""" AND cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
+        print sys.argv
+        query+=""" AND cur_timestamp>'%s'""" % dbEscape(sys.argv[1])
 
-    cursor=db.cursor()
+    if articleLimit != -1:
+        query+=""" LIMIT %d""" % articleLimit
+
+    cursor = getNamedCursor(g_connOne,"all_cur_ids")
     cursor.execute(query)
+    print "cursor.execute() done"
     rowCount = 0
+    rowsLeft = getEnwikiRowCount()
+
     while True:
         row=cursor.fetchone()
         if not row:
             break
-        convertTermWithId(row[0])
+        term = convertTermWithId(row[0],fForceConvert)
         rowCount += 1
+        rowsLeft -= 1
         if 0 == rowCount % 100:
-            print "processed %d rows, last term=%s" % (rowCount,term)
-    cursor.close()
-    db.close()
+            print "processed %d rows, left %d, last term=%s" % (rowCount,rowsLeft,term)
+
+#    for row in cursor.fetchall():
+#        term = convertTermWithId(row[0],fForceConvert)
+#        rowCount += 1
+#        rowsLeft -= 1
+#        if 0 == rowCount % 100:
+#            print "processed %d rows, left %d, last term=%s" % (rowCount,rowsLeftterm)
 
 def convertOneTerm(term):
-    query="""SELECT cur_id FROM enwiki.cur WHERE cur_namespace=0 AND cur_title='%s'""" % db.escape_string(term)
-    cursor=db.cursor()
+    global g_connTwo
+    query="""SELECT cur_id FROM enwiki.cur WHERE cur_namespace=0 AND cur_title='%s'""" % dbEscape(term)
+    cursor=g_connTwo.cursor()
     cursor.execute(query)
     row=cursor.fetchone()
     if not row:
-        print "Didn't find a row in enwiki.cur with cur_title='%s'" % db.escape_string(term)
+        print "Didn't find a row in enwiki.cur with cur_title='%s'" % dbEscape(term)
     else:
         termId = row[0]
         convertTermWithId(termId,True)
     cursor.close()
-    db.close()
 
 if __name__=="__main__":
+
+    initDatabase()
+    fForceConvert = False
     try:
-        pos = sys.argv.index("-verbose")
-        g_fVerbose = True
+        pos = sys.argv.index("-force")
+        fForceConvert = True
         sys.argv[pos] = []
     except:
         pass
+
+    try:
+        pos = sys.argv.index("-verbose")
+        g_fVerbose = True
+        print sys.argv
+        sys.argv[pos:pos+1] = []
+        print sys.argv
+    except:
+        pass
+
+    articleLimit = -1
+    pos = -1
+    try:
+        pos = sys.argv.index("-limit")
+    except:
+        pass
+    if pos != -1:
+        articleLimit = int(sys.argv[pos+1])
+        #print sys.argv
+        sys.argv[pos:pos+2] = []
+        #print sys.argv
 
     pos = -1
     try:
         pos = sys.argv.index("-one")
     except:
         pass
-
     if pos != -1:
         termToConvert = sys.argv[pos+1]
         g_fVerbose = True
         convertOneTerm(termToConvert)
     else:
-        convertAll()
+        convertAll(articleLimit, fForceConvert)
+    deinitDatabase()
 
