@@ -18,7 +18,6 @@ struct StringListEventData
 
 class StringListForm: public RichForm
 {
-    void handleControlSelect(const EventType& data);
 
     void handleListSelect(const EventType& event);
 
@@ -33,20 +32,21 @@ class StringListForm: public RichForm
 
 protected:
 
+    enum {dontSendEvent = uint_t(-1)};
+
     bool handleEvent(EventType& event);
-
-    bool handleOpen();
-
-    bool handleWindowEnter(const struct _WinEnterEventType& data);
 
     void resize(const ArsLexis::Rectangle& screenBounds);
 
 public:
-    explicit StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId, uint_t eventToSend);
+    explicit StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId, uint_t eventToSend = dontSendEvent);
 
     ~StringListForm();
 
     void SetStringList(int stringCount, char_t* strList[]);
+    
+    int showModalAndGetSelection();
+    
 };
 
 #endif

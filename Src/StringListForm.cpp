@@ -61,33 +61,10 @@ void StringListForm::resize(const ArsLexis::Rectangle& screenBounds)
     update();
 }
 
-void StringListForm::handleControlSelect(const EventType& event)
-{
-    uint_t controlId = event.data.ctlSelect.controlID;
-    if ( controlId == selectButtonId_ )
-    {
-        List list(*this, stringListId_);
-        closePopup();
-        sendEvent(eventToSend_, StringListEventData(list.selection()));
-    }
-    else if ( controlId == cancelButtonId_)
-    {
-        closePopup();
-        sendEvent(eventToSend_, StringListEventData(NOT_SELECTED));
-    }
-#ifdef DEBUG
-    else
-        assert(false);            
-#endif
-}
-
 void StringListForm::handleListSelect(const EventType& event)
 {
-    assert(stringListId_==event.data.lstSelect.listID);
-    assert(event.data.lstSelect.selection < stringCount_);
-
-    closePopup();
-    sendEvent(eventToSend_, StringListEventData(event.data.lstSelect.selection));
+    Control selButton(*this, selectButtonId_);
+    selButton.hit();        
 }
 
 bool StringListForm::handleKeyPress(const EventType& event)
@@ -162,36 +139,11 @@ bool StringListForm::handleKeyPress(const EventType& event)
     return handled;
 }
 
-bool StringListForm::handleOpen()
-{
-    bool handled = RichForm::handleOpen();
-    List list(*this, stringListId_);
-    list.setChoices(strList_, (uint_t)stringCount_);
-    update();
-    return handled;
-}
-
-bool StringListForm::handleWindowEnter(const struct _WinEnterEventType& data)
-{
-    const FormType* form = *this;
-    if (data.enterWindow==static_cast<const void*>(form))
-    {
-        List list(*this, stringListId_);
-        list.setChoices(strList_, (uint_t)stringCount_);
-    }
-    update();
-    return RichForm::handleWindowEnter(data);
-}
-
 bool StringListForm::handleEvent(EventType& event)
 {
     bool handled = false;
     switch (event.eType)
     {
-        case ctlSelectEvent:
-            handleControlSelect(event);
-            handled = true;
-            break;
             
         case lstSelectEvent:
             handleListSelect(event);
@@ -208,3 +160,21 @@ bool StringListForm::handleEvent(EventType& event)
     return handled;
 }
 
+int StringListForm::showModalAndGetSelection()
+{
+    List list(*this, stringListId_);
+    list.setChoices(strList_, stringCount_);
+    uint_t controlId = showModal();
+    if (cancelButtonId_ == controlId)
+        return NOT_SELECTED;
+    else 
+    {
+        assert(selectButtonId_ == controlId);
+        int sel = list.selection();
+        if (noListSelection == sel)
+            return NOT_SELECTED;
+        else
+            return sel;
+    }
+}
+    
