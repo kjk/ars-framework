@@ -7,7 +7,9 @@
 #ifndef _ERR_BASE_H_
 #define _ERR_BASE_H_
 
-#include <BaseTypes.hpp>
+//This breaks noah_palm compilation. if needed for sm, include it in some
+//other place
+//#include <BaseTypes.hpp>
 
 #if !defined(appErrorClass)
 
