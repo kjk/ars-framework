@@ -9,9 +9,6 @@
 #   -get term : get and display a definition of term
 #   -getrandom
 #
-# TODO:
-#   add cmd line options -get term, -get-random for driving the script from cmd line
-#
 import sys, re, socket, random, pickle, time
 
 # server string must be of form "name:port"
@@ -192,7 +189,7 @@ def getDef(term):
     sock.connect((serverName,serverPort))
     #print "Connected to server"
 
-    req = buildGetDefinitionRequest("home")
+    req = buildGetDefinitionRequest(term)
     #print "Sening:", req
     sock.sendall(req)
     #print "Sent all"
@@ -218,7 +215,6 @@ def getRandomDef():
 
 def doGetDef(term):
     global g_cookie
-    term = "home"
     defResponse = getDef(term)
     print "term: %s" % term
     print "##### response:"

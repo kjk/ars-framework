@@ -1,0 +1,6 @@
+# this file contains tests for wikipedia article conversion
+@1
+&mdash;
+@
+-
+

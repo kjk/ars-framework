@@ -295,10 +295,10 @@ def showDiffRandom(fileName):
     showDiff(article)
 
 def findArticle(fileName,title):
-    title = title.replace(" ", "_")
+    title = string.tolower(title.replace(" ", "_"))
     print "looking for article with title %s" % title
     for article in iterArticles(fileName):
-        if article.getTitle() == title:
+        if string.tolower(article.getTitle()) == title:
             return article
     return None
 
