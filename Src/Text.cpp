@@ -658,6 +658,97 @@ ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsig
     return str;
 }
 
+
+uint_t fuzzyTimeInterval(ulong_t interval, char_t* buffer)
+{
+    interval += 30;
+    interval /= 60;
+    const char_t* pattern;
+    if (interval < 14)
+    {
+        if (1 >= interval)
+            pattern = _T("a minute");
+        else
+            pattern = _T("%ld minutes");
+        goto Done;
+    }
+    interval += 8;
+    interval /= 15;
+    if (interval < 3)
+    {
+        if (1 >= interval)
+            pattern = _T("a quarter");
+        else
+            pattern = _T("half an hour");
+        goto Done;
+    }
+    interval += 2;
+    interval /= 4;
+    if (interval < 8)
+    {
+        if (1 >= interval)
+            pattern = _T("an hour");
+        else
+            pattern = _T("%ld hours");
+        goto Done;
+    }
+    if (interval < 15)
+    {
+        pattern = _T("half a day");
+        goto Done;
+    }
+    interval += 12;
+    interval /= 24;
+    if (interval < 6)
+    {
+        if (1 >= interval)
+            pattern = _T("a day");
+        else
+            pattern = _T("%ld days");
+        goto Done;
+    }
+    interval += 4;
+    interval /= 7;
+    if (interval < 4)
+    {
+        if (1 >= interval)
+            pattern = _T("a week");
+        else
+            pattern = _T("%ld weeks");
+        goto Done;
+    }
+    interval *= 7;
+    interval += 11;
+    interval /= 30;
+    if (interval < 5)
+    {
+        if (1 >= interval)
+            pattern = _T("a month");
+        else
+            pattern = _T("%ld months");
+        goto Done;
+    }
+    if (interval < 8)
+    {
+        pattern = _T("half a year");
+        goto Done;
+    }
+    interval += 6;
+    interval /= 12;
+    if (1 >= interval)
+        pattern = _T("a year");
+    else
+        pattern = _T("%ld years");
+Done:
+    uint_t res;
+    if (_T('%') == *pattern)
+        res = tprintf(buffer, pattern, interval);
+    else
+        res = tprintf(buffer, pattern);
+    return res;
+}
+
+
 } // namespace ArsLexis
 
 /*

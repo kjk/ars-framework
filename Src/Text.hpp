@@ -181,6 +181,8 @@ namespace ArsLexis
     
     ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsigned int comma = 0, ArsLexis::char_t commaSymbol = _T('.'), ArsLexis::char_t kSeparator = _T(','));
     
+    uint_t fuzzyTimeInterval(ulong_t seconds, char_t* buffer);
+    
 }
 
 /*
