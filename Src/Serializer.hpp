@@ -96,7 +96,8 @@ namespace ArsLexis {
             dtLong,
             dtULong,
             dtString,
-            dtSerializable
+            dtSerializable,
+            dtIsSequence = 0x8000
         };
         
         struct Record {
@@ -141,6 +142,28 @@ namespace ArsLexis {
         }
         
         Direction direction_;
+        
+        void serializeValue(bool& value);
+        
+        void serializeValue(signed char& value);
+
+        void serializeValue(unsigned char& value);
+
+        void serializeValue(signed short& value);
+
+        void serializeValue(unsigned short& value);
+
+        void serializeValue(signed int& value);
+
+        void serializeValue(unsigned int& value);
+
+        void serializeValue(signed long& value);
+
+        void serializeValue(unsigned long& value);
+        
+        void serializeValue(String& value);
+        
+        void serializeValue(Serializable& value);
     
     };
 

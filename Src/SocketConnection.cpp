@@ -1,5 +1,6 @@
 #include <SocketConnection.hpp>
 #include <algorithm>
+#include <DeviceInfo.hpp>
 
 #if defined(_PALM_OS)
 #include <Application.hpp>
@@ -241,7 +242,7 @@ namespace ArsLexis
     {
 #if defined(_PALM_OS)
         ArsLexis::Application& app=ArsLexis::Application::instance();
-        if (6==app.romVersionMajor())
+        if (6 == app.romVersionMajor())
             return netErrUnimplemented;
 #endif
 
@@ -251,7 +252,14 @@ namespace ArsLexis
         uint_t  size=sizeof(status);
         //! @bug PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
         //! Nevertheless status is also filled in these cases and seems right...
-        status_t error=socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
+#ifdef NDEBUG        
+        status_t error = socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
+#else        
+        status_t error = errNone;
+        if (!(underSimulator() && isTreo600())) // These fatal alerts on Treo600 sim really piss me.
+            error = socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
+#endif
+            
         if (error)
             log().info()<<_T("getSocketErrorStatus(): unable to query socket option, error: ")<<error;
         else 

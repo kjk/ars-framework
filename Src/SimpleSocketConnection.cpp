@@ -1,5 +1,6 @@
 #include <SimpleSocketConnection.hpp>
 #include <SysUtils.hpp>
+#include <DeviceInfo.hpp>
 
 namespace ArsLexis
 {
@@ -8,7 +9,7 @@ namespace ArsLexis
         SocketConnection(manager),
         maxResponseSize_(32768),
         sending_(true),
-        chunkSize_(512),
+        chunkSize_(576),
         requestBytesSent_(0),
         totalReceived_(0)
     {}
@@ -140,11 +141,17 @@ Exit:
         status_t error=SocketConnection::open();
         if (!error)
         {
-            uint_t size;
-            status_t ignore=socket().getMaxTcpSegmentSize(size);
-            if (errNone==ignore)
+            uint_t size = chunkSize_;
+#ifdef NDEBUG
+            status_t ignore = socket().getMaxTcpSegmentSize(size);
+#else
+            status_t ignore = errNone;
+            if (!(underSimulator() && isTreo600())) // These fatal alerts on Treo600 sim really piss me.
+                ignore = socket().getMaxTcpSegmentSize(size);
+#endif                
+            if (errNone == ignore)
             {
-                if (size<=2048)
+                if (size <= 2048)
                 {
                     log().info()<<_T("SimpleSocketConnection::open(): setting chunkSize to ")<<size;
                     setChunkSize(size);

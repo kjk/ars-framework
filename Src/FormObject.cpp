@@ -1,5 +1,6 @@
 #include <FormObject.hpp>
 #include <Graphics.hpp>
+#include <DeviceInfo.hpp>
 
 namespace ArsLexis
 {
@@ -67,6 +68,14 @@ namespace ArsLexis
             
         setBounds(rect);
     }
+    
+    void FormObject::focus()
+    {
+        FormObjectKind kind = type();
+        if (frmFieldObj == kind || frmTableObj == kind || isTreo600())
+            FrmSetFocus(*form_, index_);
+    }
+
     
 #pragma mark -
 

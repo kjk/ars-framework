@@ -232,7 +232,7 @@ ArsLexis::String deviceInfoToken()
     return out;
 }
 
-// return true if running on real Treo 600 device
+// return true if running on Treo 600 device
 bool isTreo600()
 {
     UInt32 id;
@@ -242,9 +242,16 @@ bool isTreo600()
         return false;
 
     FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
-    if (('H101'==id) || ('H102'==id))
+    if (('H101' == id) || ('H102' == id) || ('H201' == id)) // H201 is what simulator reports - I need this to test 
         return true;
 
     return false;
+}
+
+bool underSimulator() 
+{
+    UInt32 processorId;
+    FtrGet(sysFtrCreator, sysFtrNumProcessorID, &processorId);
+    return (sysFtrNumProcessorx86 == (sysFtrNumProcessorMask & processorId));
 }
 

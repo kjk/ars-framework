@@ -5,10 +5,6 @@
 #include <BaseTypes.hpp>
 #include <Utility.hpp>
 
-// Defines a public, abstract interface for a class that provides
-// input for XmlPullParser. We use our own abstraction, instead of using
-// built in C++ functionality, because it's a simple class and we want to
-// provide good Palm implementation
 namespace ArsLexis {
 
     class Reader: private NonCopyable

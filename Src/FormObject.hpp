@@ -76,8 +76,7 @@ namespace ArsLexis
 
         void setBounds(const Rectangle& rect);
 
-        void focus()
-        {FrmSetFocus(*form_, index_);}
+        void focus();
 
         void hide()
         {FrmHideObject(*form_, index_);}
@@ -249,6 +248,7 @@ namespace ArsLexis
         
         const char* label() const
         {return CtlGetLabel(object());}
+        
         
         ~Control();
                 

@@ -47,14 +47,8 @@ strToDouble(const char* str, double *dbl)
         if (str[i] != '.') {
             if (PalmIsDigit(str[i]))
                 result = result * 10.0 + (str[i] - '0');
-            else if (str[i] == ',')
-            {
-                //nothing 
-            }
-            else
-            {
+            else if (',' != str[i]) 
                 return false;
-            }
         }
         else {
             punctPos = i;
