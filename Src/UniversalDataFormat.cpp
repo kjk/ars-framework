@@ -7,7 +7,7 @@
 # pragma far_code
 #endif
 
-UniversalDataFormat::UniversalDataFormat() {}
+UniversalDataFormat::UniversalDataFormat(): headerSize_(0), fNormalized_(false) {}
 
 UniversalDataFormat::~UniversalDataFormat() {}
 
