@@ -199,14 +199,9 @@ void GenericTextElement::setHyperlink(const String& resource, HyperlinkType type
 void GenericTextElement::performAction(Definition& definition)
 {
     assert(isHyperlink());
-    if (hyperlinkBookmark==hyperlink_->type)
-        definition.goToBookmark(hyperlink_->resource);
-    else
-    {        
-        Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
-        if (handler)
-            handler->handleHyperlink(hyperlink_->resource, hyperlink_->type);
-    }
+    Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
+    if (handler) 
+        handler->handleHyperlink(definition, *this);
 }
 
 void GenericTextElement::toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const

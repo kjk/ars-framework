@@ -205,12 +205,13 @@ void Definition::scroll(Graphics& graphics, const RenderingPreferences& prefs, i
     }
 }
 
-void Definition::renderLine(RenderingContext& renderContext, const LinePosition_t& line)
+void Definition::renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint)
 {
     renderContext.usedWidth=0;
     renderContext.usedHeight=line->height;
     
-    renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+    if (0==elementToRepaint)
+        renderContext.graphics.erase(ArsLexis::Rectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
     
     renderContext.baseLine=line->baseLine;
     renderContext.renderingProgress=line->renderingProgress;
@@ -233,11 +234,11 @@ void Definition::renderLine(RenderingContext& renderContext, const LinePosition_
     renderContext.top+=renderContext.usedHeight;
 }
 
-void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, const Definition::LinePosition_t& begin, const Definition::LinePosition_t& end, uint_t topOffset)
+void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences& prefs, const Definition::LinePosition_t& begin, const Definition::LinePosition_t& end, uint_t topOffset, DefinitionElement* elementToRepaint)
 {
     RenderingContext renderContext(graphics, prefs, *this, bounds_.x(), bounds_.y()+topOffset, bounds_.width());
     for (Lines_t::iterator line=begin; line!=end; ++line)
-        renderLine(renderContext, line);
+        renderLine(renderContext, line, elementToRepaint);
 }
 
 void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress)
@@ -344,10 +345,10 @@ void Definition::hitTest(const Point& point)
     }
 }
 
-void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs)
+void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement* elementToRepaint)
 {
     Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
-    renderLineRange(graphics, prefs, lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0);
+    renderLineRange(graphics, prefs, lines_.begin()+firstLine_, lines_.begin()+lastLine_, 0, elementToRepaint);
     uint_t rangeHeight=0;
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;
@@ -359,4 +360,10 @@ void Definition::selectionToText(ArsLexis::String& out) const
     Elements_t::const_iterator end=elements_.end();
     for (Elements_t::const_iterator it=elements_.begin(); it!=end; ++it)
         (*it)->toText(out);
+}
+
+void Definition::renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element)
+{
+    //! @todo Optimize renderSingleElement() do that it really renders single element not all of them.
+    renderLayout(graphics, prefs, &element);
 }

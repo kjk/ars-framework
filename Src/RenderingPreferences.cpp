@@ -17,13 +17,15 @@ RenderingPreferences::RenderingPreferences():
     Err error=WinScreenMode(winScreenModeGet, NULL, NULL, &screenDepths, &color);
     if (screenDepths>=8) // 16+ colors
     {
-        hyperlinkDecorations_[hyperlinkTerm].textColor=40;
+        hyperlinkDecorations_[hyperlinkTerm].textColor=57;
         hyperlinkDecorations_[hyperlinkExternal].textColor=35;
+        hyperlinkDecorations_[hyperlinkClicked].textColor=65;
     }
     else if (screenDepths>=2) // 4 colors
     {
         hyperlinkDecorations_[hyperlinkTerm].textColor=2; // Dark gray
         hyperlinkDecorations_[hyperlinkExternal].textColor=1; // Light gray
+        hyperlinkDecorations_[hyperlinkClicked].textColor=1;
     }
     if (screenDepths>=2)
     {

@@ -8,6 +8,8 @@ class GenericTextElement: public DefinitionElement
 
     ArsLexis::String text_;
     ElementStyle style_;
+
+public:
     
     struct HyperlinkProperties
     {
@@ -18,6 +20,8 @@ class GenericTextElement: public DefinitionElement
         HyperlinkProperties(const ArsLexis::String& res, HyperlinkType t);
 
     };
+
+private:
     
     HyperlinkProperties* hyperlink_;
 
@@ -45,6 +49,12 @@ public:
     {return hyperlink_!=0;}
     
     void setHyperlink(const ArsLexis::String& resource, HyperlinkType type);
+    
+    const HyperlinkProperties* hyperlinkProperties() const 
+    {return hyperlink_;}
+
+    HyperlinkProperties* hyperlinkProperties()
+    {return hyperlink_;}
     
     void setText(const ArsLexis::String& text)
     {text_=text;}

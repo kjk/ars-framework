@@ -1,6 +1,8 @@
 #include "iPediaHyperlinkHandler.hpp"
 #include "iPediaApplication.hpp"
 #include "LookupManager.hpp"
+#include "GenericTextElement.hpp"
+#include <Form.hpp>
 
 void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url)
 {
@@ -40,11 +42,45 @@ iPediaHyperlinkHandler::iPediaHyperlinkHandler(UInt16 viewerCardNo, LocalID view
 {
 }
 
-void iPediaHyperlinkHandler::handleHyperlink(const ArsLexis::String& resource, HyperlinkType type)
+void iPediaHyperlinkHandler::handleHyperlink(Definition& definition, DefinitionElement& element)
 {
-    assert(hyperlinkBookmark!=type);
-    if (hyperlinkExternal==type)
-        handleExternalHyperlink(resource);
-    else
-        handleTermHyperlink(resource);
+    assert(element.isTextElement());
+    GenericTextElement& textElement=static_cast<GenericTextElement&>(element);
+    assert(textElement.isHyperlink());
+    GenericTextElement::HyperlinkProperties* props=textElement.hyperlinkProperties();
+    assert(props!=0);
+    bool makeClicked=false;
+    switch (props->type) 
+    {
+        case hyperlinkBookmark:
+            definition.goToBookmark(props->resource);
+            break;
+    
+        case hyperlinkExternal:
+            handleExternalHyperlink(props->resource);
+            makeClicked=true;
+            break;
+            
+        case hyperlinkTerm:            
+            handleTermHyperlink(props->resource);
+            makeClicked=true;
+            break;
+
+        case hyperlinkClicked:
+            break;            
+            
+        default:
+            assert(false);
+    }            
+    if (makeClicked) 
+    {
+        props->type=hyperlinkClicked;
+        iPediaApplication& app=iPediaApplication::instance();
+        ArsLexis::Form* form=app.getOpenForm(mainForm);
+        if (form) 
+        {
+            ArsLexis::Graphics graphics(form->windowHandle());
+            definition.renderSingleElement(graphics, app.preferences().renderingPreferences, element);
+        }
+    }
 }

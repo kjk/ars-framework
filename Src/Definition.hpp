@@ -111,7 +111,7 @@ public:
     {
     public:
     
-        virtual void handleHyperlink(const ArsLexis::String& resource, HyperlinkType type)=0;
+        virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement)=0;
         
         virtual ~HyperlinkHandler()
         {}
@@ -169,6 +169,8 @@ public:
      * Renders (paints) this @c Definition into bounds.
      */
     void render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
+    
+    void renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element);
     
     uint_t totalLinesCount() const
     {return lines_.size();}
@@ -251,11 +253,11 @@ private:
     
     void calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int delta=0);
     
-    void renderLine(RenderingContext& renderContext, const LinePosition_t& line);
+    void renderLine(RenderingContext& renderContext, const LinePosition_t& line, DefinitionElement* elementToRepaint=0);
     
-    void renderLineRange(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& begin, const LinePosition_t& end, uint_t topOffset);
+    void renderLineRange(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& begin, const LinePosition_t& end, uint_t topOffset, DefinitionElement* elementToRepaint=0);
 
-    void renderLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs);
+    void renderLayout(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement* elementToRepaint=0);
     
     void moveHotSpots(const ArsLexis::Point& delta);
     

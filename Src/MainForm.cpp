@@ -33,7 +33,7 @@ Definition* MainForm::getDefinition()
     return def;
 }        
 
-const LookupHistory& MainForm::getHistory() const
+inline const LookupHistory& MainForm::getHistory() const
 {
     return static_cast<const iPediaApplication&>(application()).history();
 }
@@ -162,7 +162,7 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
 
 void MainForm::draw(UInt16 updateCode)
 {
-    Graphics graphics;
+    Graphics graphics(windowHandle());
     Rectangle rect(bounds());
     Rectangle progressArea(rect.x(), rect.height()-17, rect.width(), 17);
     if (redrawAll==updateCode)
@@ -189,7 +189,7 @@ inline void MainForm::handleScrollRepeat(const EventType& event)
     Definition* definition=getDefinition();
     if (definition)
     {
-        Graphics graphics;
+        Graphics graphics(windowHandle());
         definition->scroll(graphics, renderingPreferences(), event.data.sclRepeat.newValue-event.data.sclRepeat.value);
     }        
 }
@@ -213,7 +213,7 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
     Definition* definition=getDefinition();
     if (definition)
     {
-        Graphics graphics;
+        Graphics graphics(windowHandle());
         if (scrollPage==unit)
             units*=(definition->shownLinesCount());
         definition->scroll(graphics, renderingPreferences(), units);
@@ -314,18 +314,9 @@ void MainForm::handleLookupFinished(const EventType& event)
     }        
 }
 
-void MainForm::handlePenDown(const EventType& event)
+inline void MainForm::handlePenDown(const EventType& event)
 {
-/*
-    Coord x=event.screenX;
-    Coord y=event.screenY;
-    WinDisplayToWindowPt(&x, &y);
-    Point point(x, y);
-    Control control(*this, searchButton);
-    Rectangle bounds(control.bounds());
-    if (bounds && point)
-*/    
-   lastPenDownTimestamp_=TimGetTicks();
+    lastPenDownTimestamp_=TimGetTicks();
 }
 
 bool MainForm::handleEvent(EventType& event)

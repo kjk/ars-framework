@@ -9,7 +9,8 @@ enum HyperlinkType
 {
     hyperlinkBookmark,
     hyperlinkTerm,
-    hyperlinkExternal
+    hyperlinkExternal,
+    hyperlinkClicked
 };
 
 enum ElementStyle
@@ -28,7 +29,7 @@ class RenderingPreferences
 
     enum {
         stylesCount_=2,
-        hyperlinkTypesCount_=3,
+        hyperlinkTypesCount_=4,
     };        
     
     uint_t standardIndentation_;

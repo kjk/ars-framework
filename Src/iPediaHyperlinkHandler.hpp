@@ -19,7 +19,7 @@ public:
     void setViewerLocation(UInt16 viewerCardNo, LocalID viewerDatabaseId)
     {viewerCardNo_=viewerCardNo; viewerDatabaseId_=viewerDatabaseId;}
 
-    void handleHyperlink(const ArsLexis::String& resource, HyperlinkType type);
+    void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement);
     
 };
 
