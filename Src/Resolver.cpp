@@ -8,13 +8,6 @@ namespace ArsLexis
 
     void Resolver::updateCacheEntry(const String& name, UInt32 address)
     {
-/*    
-        AddressCache_t::iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(name));
-        if (it!=cache_.end())
-            it->address=address;
-        else
-            cache_.push_front(CacheEntry(name, address));
-*/
         for (int i=0; i<dnsAddressesCount_; ++i)
             dnsAddresses_[i]=0;
         cache_[name]=address;         
@@ -107,11 +100,9 @@ namespace ArsLexis
         Err error=validateAddress(address, validAddress, port);
         if (!error)
         {
-//            AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
             AddressCache_t::const_iterator it=cache_.find(validAddress);
             if (it!=cache_.end())
             {
-//                INetSocketAddress addr(it->address, port);
                 INetSocketAddress addr(it->second, port);
                 connection->setAddress(addr);
                 connection->open();

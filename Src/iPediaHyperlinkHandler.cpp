@@ -1,5 +1,8 @@
 #include "iPediaHyperlinkHandler.hpp"
+#include "iPediaApplication.hpp"
+#include "MainForm.hpp"
 
+using namespace ArsLexis;
 
 void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url)
 {
@@ -24,6 +27,7 @@ void iPediaHyperlinkHandler::handleExternalHyperlink(const ArsLexis::String& url
 
 void iPediaHyperlinkHandler::handleTermHyperlink(const ArsLexis::String& term)
 {
+    iPediaApplication& app=static_cast<iPediaApplication&>(Application::instance());
 }
 
 

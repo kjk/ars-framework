@@ -119,6 +119,15 @@ namespace ArsLexis
         }
         
         void setBounds(const RectangleType& bounds);
+        
+        void hideObject(UInt16 index)
+        {FrmHideObject(form_, index);}
+        
+        void showObject(UInt16 index)
+        {FrmShowObject(form_, index);}
+        
+        void* getObject(UInt16 index) const
+        {return FrmGetObjectPtr(form_, index);}
 
         friend class Application;
     };

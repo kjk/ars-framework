@@ -136,6 +136,7 @@ void GenericTextElement::applyHyperlinkDecorations(const RenderingPreferences& p
         const RenderingPreferences::HyperlinkDecoration& decor=preferences.hyperlinkDecoration(hyperlink_->type);
         WinSetUnderlineMode(decor.underlineMode);
         WinSetTextColor(decor.textColor);
+        WinSetForeColor(decor.textColor);
     }
 }
 
@@ -144,6 +145,7 @@ void GenericTextElement::applyFormatting(const RenderingPreferences& preferences
     const RenderingPreferences::StyleFormatting& format=preferences.styleFormatting(style_);
     FntSetFont(format.fontId);
     WinSetTextColor(format.textColor);
+    WinSetForeColor(format.textColor);
     applyHyperlinkDecorations(preferences);
 }
 

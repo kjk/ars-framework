@@ -249,10 +249,7 @@ void Definition::calculateLayout(const ElementPosition_t& firstElement, UInt16 r
         (*current)->calculateLayout(layoutContext);
         
         if (current==firstElement && progressBefore<=renderingProgress && layoutContext.renderingProgress>renderingProgress)
-        {
-            topOffset_=topOffset;
             firstLine_=lines_.size();
-        }
         
         bool startNewLine=false;    
         if (layoutContext.isElementCompleted())

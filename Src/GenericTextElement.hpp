@@ -41,7 +41,7 @@ public:
     
     void render(RenderingContext& rc);
     
-    Boolean isHyperlink() const
+    bool isHyperlink() const
     {return hyperlink_!=0;}
     
     void setHyperlink(const ArsLexis::String& resource, HyperlinkType type);

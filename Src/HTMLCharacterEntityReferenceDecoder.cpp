@@ -114,7 +114,7 @@ namespace ArsLexis
         insert("yuml", 255);
     }
 
-    char HTMLCharacterEntityReferenceDecoder::decode(const String& entityReference) const
+    char HTMLCharacterEntityReferenceDecoder::decode(const char* entityReference) const
     {
         char result=chrNull;
         Map_t::const_iterator it=map_.find(entityReference);

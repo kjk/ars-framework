@@ -27,6 +27,9 @@ namespace ArsLexis
             originalFontId_(FntSetFont(fontId))
         {}
         
+        void changeTo(FontID fontId)
+        {FntSetFont(fontId);}
+        
         ~FontSetter()
         {
             FntSetFont(originalFontId_);
@@ -95,6 +98,8 @@ namespace ArsLexis
     void trim(String& str);
     
     Boolean isWhitespace(char chr);
+    
+    void drawCenteredChars(const char* str, Coord left, Coord top, Coord width);
     
 }
 

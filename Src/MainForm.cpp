@@ -4,6 +4,19 @@
 #include "iPediaConnection.hpp"
 #include "SocketAddress.hpp"
 
+using namespace ArsLexis;
+
+MainForm::MainForm(iPediaApplication& app):
+    iPediaForm(app, mainForm),
+    displayMode_(showSplashScreen)
+{
+}
+
+MainForm::~MainForm()
+{
+}
+
+
 void MainForm::resize(const RectangleType& screenBounds)
 {
     setBounds(screenBounds);
@@ -35,20 +48,63 @@ void MainForm::resize(const RectangleType& screenBounds)
     update();    
 }
 
+void MainForm::drawSplashScreen(ArsLexis::Rectangle& bounds)
+{
+    UInt16 index=getObjectIndex(definitionScrollBar);
+    hideObject(index);
+    const iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    BackgroundColorSetter setBackground(app.renderingPreferences().backgroundColor());
+    bounds.explode(0, 15, 0, -33);
+    WinEraseRectangle(bounds, 0);
+    UInt16 currentY=bounds.y()+20;
+    FontSetter font(largeFont);
+    drawCenteredChars("ArsLexis iPedia", bounds.x(), currentY, bounds.width());
+    currentY+=16;
+#ifdef DEMO
+    drawCenteredChars("Ver 0.5 (demo)", bounds.x(), currentY, bounds.width());
+#else
+  #ifdef DEBUG
+    drawCenteredChars("Ver 0.5 (beta)", bounds.x(), currentY, bounds.width());
+  #else
+    drawCenteredChars("Ver 0.5", bounds.x(), currentY, bounds.width());
+  #endif
+#endif
+    currentY+=20;
+    
+    font.changeTo(boldFont);
+    drawCenteredChars("Copyright (c) ArsLexis", bounds.x(), currentY, bounds.width());
+    currentY+=24;
+
+    font.changeTo(largeFont);
+    drawCenteredChars("http://www.arslexis.com", bounds.x(), currentY, bounds.width());
+}
+
+void MainForm::drawDefinition(ArsLexis::Rectangle& bounds)
+{
+    const iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    BackgroundColorSetter setBackground(app.renderingPreferences().backgroundColor());
+    bounds.explode(0, 15, 0, -33);
+    WinEraseRectangle(bounds, 0);
+    
+    bounds.explode(2, 2, -12, -4);
+    definition_.render(bounds, app.renderingPreferences());
+    
+    UInt16 index=getObjectIndex(definitionScrollBar);
+    showObject(index);
+    ScrollBarType* scrollBar=static_cast<ScrollBarType*>(getObject(index));
+    SclSetScrollBar(scrollBar, definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
+}
+
+
 void MainForm::draw(UInt16 updateCode)
 {
     iPediaForm::draw(updateCode);
     ArsLexis::Rectangle rect=bounds();
     WinPaintLine(rect.x(), rect.height()-18, rect.width(), rect.height()-18);
-
-    rect.explode(2, 18, -12, -36);
-
-    const iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    definition_.render(rect, app.renderingPreferences());
-    
-    UInt16 index=getObjectIndex(definitionScrollBar);
-    ScrollBarType* scrollBar=static_cast<ScrollBarType*>(FrmGetObjectPtr(*this, index));
-    SclSetScrollBar(scrollBar, definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
+    if (showSplashScreen==displayMode())
+        drawSplashScreen(rect);
+    else
+        drawDefinition(rect);
 }
 
 
@@ -77,11 +133,9 @@ void MainForm::handlePenUp(const EventType& event)
         definition_.hitTest(point); 
 }
 
-void MainForm::handleControlSelect(const ctlSelect& data)
+void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
 {
-    assert(data.controlID==goButton);
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    using namespace ArsLexis;
     SocketConnectionManager* manager=0;
     Err error=app.getConnectionManager(manager);
     if (!error)
@@ -92,8 +146,29 @@ void MainForm::handleControlSelect(const ctlSelect& data)
         assert(resolver);
         iPediaConnection* conn=new iPediaConnection(*manager);
         conn->setTransferTimeout(app.ticksPerSecond()*15L);
-        conn->setTerm("Science fiction");
+        conn->setTerm(newTerm);
         resolver->resolveAndConnect(conn, "localhost:9000");
+    }
+    else ;
+        //! @todo Show alert that connection failed.
+}
+
+void MainForm::handleControlSelect(const ctlSelect& data)
+{
+    assert(data.controlID==goButton);
+    UInt16 index=getObjectIndex(termInputField);
+    const FieldType* field=static_cast<const FieldType*>(getObject(index));
+    const char* textPtr=FldGetTextPtr(field);
+    if (textPtr!=0)
+    {
+        String newTerm(textPtr);
+        if (newTerm!=term())
+            startLookupConnection(newTerm);
+        else if (showDefinition!=displayMode())
+        {
+            setDisplayMode(showDefinition);
+            update();
+        }
     }
 }
 

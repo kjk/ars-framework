@@ -105,8 +105,6 @@ class Definition
      */
     ArsLexis::Rectangle bounds_;
     
-    Coord topOffset_;
-    
 public:
 
     class HyperlinkHandler

@@ -193,6 +193,8 @@ void iPediaConnection::finalize()
         if (form)
         {
             parser_->updateDefinition(form->definition());
+            form->setTerm(definitionForTerm_);
+            form->setDisplayMode(MainForm::showDefinition);
             form->update();
         }
     }

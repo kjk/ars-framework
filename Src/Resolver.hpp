@@ -2,7 +2,6 @@
 #define __ARSLEXIS_RESOLVER_HPP__
 
 #include "SocketAddress.hpp"
-//#include <list>
 #include <map>
 
 namespace ArsLexis
@@ -14,39 +13,7 @@ namespace ArsLexis
     
     class Resolver
     {
-/*    
-        struct CacheEntry
-        {
-            String name;
-            UInt32 address;
 
-            CacheEntry():
-                address(0)
-            {}
-            
-            CacheEntry(const String& n, UInt32 a):
-                name(n),
-                address(a)
-            {}
-        };
-        
-        struct CacheEntryComparator
-        {
-            const String& name;
-            
-            bool operator ()(const CacheEntry& entry) const
-            {return entry.name==name;}
-            
-            CacheEntryComparator(const String& n):
-                name(n)
-            {}
-        };
-        
-        // Painful, but std::map<> doesn't compile with our Allocator (that's a mystery why), so we have to use std::list<>
-        // Anyway this list probably won't ever contain more than few addresses, so there's no problem with performance
-        typedef std::list<CacheEntry, Allocator<CacheEntry> > AddressCache_t;
-        AddressCache_t cache_;
-   */
         NetLibrary& netLib_;
         typedef std::map<String, UInt32> AddressCache_t;
         AddressCache_t cache_;

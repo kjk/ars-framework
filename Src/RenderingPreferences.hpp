@@ -35,7 +35,6 @@ public:
         repaint,
         recalculateLayout
     };
-        
 
     /**
      * @todo Implement RenderingPreferences::synchronize()

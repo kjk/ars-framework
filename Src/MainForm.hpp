@@ -7,10 +7,15 @@
 class MainForm: public iPediaForm
 {
     Definition definition_;
+    ArsLexis::String term_;
     
     void handleScrollRepeat(const sclRepeat& data);
     void handlePenUp(const EventType& event);
     void handleControlSelect(const ctlSelect& data);
+    
+    void drawSplashScreen(ArsLexis::Rectangle& bounds);
+    void drawDefinition(ArsLexis::Rectangle& bounds);
+    void startLookupConnection(const ArsLexis::String& term);
     
 protected:
 
@@ -25,13 +30,35 @@ protected:
 
 public:
     
-    MainForm(iPediaApplication& app):
-        iPediaForm(app, mainForm)
-    {}
+    MainForm(iPediaApplication& app);
+    
+    ~MainForm();
 
-    //! @todo Make the following don't compromise encapsulation...
     Definition& definition()
-    {return definition_;}    
+    {return definition_;}
+    
+    void setTerm(const ArsLexis::String& term)
+    {term_=term;}
+    
+    const ArsLexis::String& term() const
+    {return term_;}
+    
+    enum DisplayMode
+    {
+        showSplashScreen,
+        showDefinition
+    };
+    
+    DisplayMode displayMode() const
+    {return displayMode_;}
+    
+    void setDisplayMode(DisplayMode displayMode)
+    {displayMode_=displayMode;}
+    
+private:
+    
+    DisplayMode displayMode_;
+    
 };
 
 #endif
