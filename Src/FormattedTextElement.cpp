@@ -2,6 +2,7 @@
 
 using ArsLexis::Graphics;
 using ArsLexis::String;
+using ArsLexis::FontEffects;
 
 FormattedTextElement::FormattedTextElement(const String& text):
     GenericTextElement(text)
@@ -11,11 +12,6 @@ void FormattedTextElement::applyFormatting(Graphics& graphics, const RenderingPr
 {
     GenericTextElement::applyFormatting(graphics, preferences);
     const RenderingPreferences::StyleFormatting& styleFormat=preferences.styleFormatting(style());
-    if (formatting_.strength()!=FormattingProperties::strengthPlain)
-    {
-        Graphics::Font_t originalFont=styleFormat.font;
-        graphics.setFont(graphics.makeBold(originalFont));
-    }
-    if (formatting_.underline())
-        WinSetUnderlineMode(preferences.standardUnderline());
+    Graphics::Font_t font=styleFormat.font;
+    font.addEffects(fontEffects());    graphics.setFont(font);
 }

@@ -224,7 +224,7 @@ namespace ArsLexis
                 aliases_.push_front(name);
             else if (1==qtype && 4==rdlength)
             {
-                UInt32 address=NetNToHL((const UInt32&)(*data));
+                NetIPAddr address=NetNToHL((const NetIPAddr&)(*data));
                 resolvedAddress_=address;
                 aliases_.push_front(name);
             }

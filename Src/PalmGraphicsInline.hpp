@@ -37,20 +37,20 @@ namespace ArsLexis
         return WinSetTextColor(color);
     }
     
-    inline NativeFont_t Graphics::setFont(NativeFont_t font)
+    inline uint_t Graphics::fontHeight() const
     {
-        return FntSetFont(font);
+        uint_t height=FntLineHeight();
+        if (support_.font.effects().superscript() || support_.font.effects().subscript())
+            height*=1.333;
+        return height;
     }
-
-    inline Graphics::State_t Graphics::pushState()
+    
+    inline uint_t Graphics::fontBaseline() const
     {
-        WinPushDrawState();
-        return 0;
-    }
-
-    inline void Graphics::popState(Graphics::State_t)
-    {
-        WinPopDrawState();
+        uint_t baseline=FntBaseLine();
+        if (support_.font.effects().superscript())
+            baseline+=(FntLineHeight()*0.333);
+        return baseline;
     }
 
 }

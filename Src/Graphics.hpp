@@ -2,6 +2,7 @@
 #define __ARSLEXIS_GRAPHICS_HPP__
 
 #include "Geometry.hpp"
+#include "BaseTypes.hpp"
 #include "NativeGraphics.hpp"
 
 namespace ArsLexis
@@ -10,6 +11,8 @@ namespace ArsLexis
     class Graphics
     {
         NativeGraphicsHandle_t handle_;
+        
+        NativeGraphicsSupport support_;
 
     public:
     
@@ -18,9 +21,9 @@ namespace ArsLexis
         typedef NativeFont_t Font_t;
         typedef NativeGraphicsState_t State_t;
 
-        explicit Graphics(const NativeGraphicsHandle_t& handle
+        explicit Graphics(const Handle_t& handle
 #ifdef USE_DEFAULT_NATIVE_GRAPHICS_HANDLE
-            =NativeGraphicsHandle_t(0)
+            =Handle_t(0)
 #endif
         );
         
@@ -85,7 +88,7 @@ namespace ArsLexis
             
         };  
         
-        Font_t setFont(Font_t font);
+        Font_t setFont(const Font_t& font);
         
         class FontSetter
         {
@@ -93,7 +96,7 @@ namespace ArsLexis
             Font_t originalFont_;
         public:
         
-            FontSetter(Graphics& graphics, Font_t font):
+            FontSetter(Graphics& graphics, const Font_t& font):
                 graphics_(graphics),
                 originalFont_(graphics_.setFont(font))
             {}
@@ -101,17 +104,14 @@ namespace ArsLexis
             ~FontSetter()
             {graphics_.setFont(originalFont_);}
             
-            void changeTo(Font_t font)
+            void changeTo(const Font_t& font)
             {graphics_.setFont(font);}
             
         };
         
-        Font_t makeBold(Font_t font);
-        Font_t makeItalic(Font_t font);
-        
         State_t pushState();
 
-        void popState(State_t state);
+        void popState(const State_t& state);
         
         class StateSaver
         {
@@ -125,7 +125,10 @@ namespace ArsLexis
             
             ~StateSaver()
             {graphics_.popState(state_);}
-        };            
+        };      
+        
+        uint_t fontHeight() const;
+        uint_t fontBaseline() const;      
 
     };                    
 

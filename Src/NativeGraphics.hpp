@@ -6,7 +6,14 @@ namespace ArsLexis
 
 #if defined(__PALMOS_H__)
 
-    typedef FontID NativeFont_t;
+}
+
+#include "PalmFont.hpp"
+
+namespace ArsLexis
+{
+
+    typedef PalmFont NativeFont_t;
 
     typedef IndexedColorType NativeColor_t;
     
@@ -14,7 +21,12 @@ namespace ArsLexis
     
     #define USE_DEFAULT_NATIVE_GRAPHICS_HANDLE 1    
 
-    typedef int NativeGraphicsState_t;
+    typedef NativeFont_t NativeGraphicsState_t;
+    
+    struct NativeGraphicsSupport
+    {
+        NativeFont_t font;
+    };
 
 #elif defined(_WIN32_WCE)
 
@@ -35,6 +47,10 @@ namespace ArsLexis
 { 
 
     typedef Font NativeFont_t;
+    
+    struct NativeGraphicsSupport
+    {
+    };
 
 #else
 

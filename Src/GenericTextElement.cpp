@@ -2,6 +2,7 @@
 #include "Utility.hpp"
 
 using ArsLexis::String;
+using ArsLexis::char_t;
 using ArsLexis::Rectangle;
 using ArsLexis::isWhitespace;
 using ArsLexis::Graphics;
@@ -40,14 +41,12 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
 {
     assert(!layoutContext.isElementCompleted());
     applyFormatting(layoutContext.graphics, layoutContext.preferences);
-    
-    uint_t indent=indentation();
-    if (layoutContext.usedWidth<indent)
-        layoutContext.usedWidth=indent;
 
-    uint_t baseLine=FntBaseLine();
-    uint_t lineHeight=FntLineHeight();
-    const char* text=text_.c_str()+layoutContext.renderingProgress;
+    layoutContext.usedWidth=std::max(layoutContext.usedWidth, indentation());
+    uint_t baseLine=layoutContext.graphics.fontBaseline();
+    uint_t lineHeight=layoutContext.graphics.fontHeight();
+    
+    const char_t* text=text_.c_str()+layoutContext.renderingProgress;
     left+=layoutContext.usedWidth;
     top+=(layoutContext.baseLine-baseLine);
 
@@ -144,7 +143,6 @@ void GenericTextElement::applyFormatting(Graphics& graphics, const RenderingPref
     const RenderingPreferences::StyleFormatting& format=preferences.styleFormatting(style_);
     graphics.setFont(format.font);
     graphics.setTextColor(format.textColor);
-    graphics.setForegroundColor(format.textColor);
     applyHyperlinkDecorations(graphics, preferences);
 }
 

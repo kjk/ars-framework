@@ -2,11 +2,11 @@
 #define __FORMATTED_TEXT_ELEMENT_HPP__
 
 #include "GenericTextElement.hpp"
-#include "FormattingProperties.hpp"
+#include "FontEffects.hpp"
 
 class FormattedTextElement: public GenericTextElement
 {
-    FormattingProperties formatting_;
+    ArsLexis::FontEffects fontEffects_;
     
 protected:
 
@@ -16,11 +16,11 @@ public:
 
     FormattedTextElement(const ArsLexis::String& text=ArsLexis::String());
 
-    FormattingProperties& formatting()
-    {return formatting_;}
+    ArsLexis::FontEffects& fontEffects()
+    {return fontEffects_;}
     
-    const FormattingProperties& formatting() const
-    {return formatting_;}
+    const ArsLexis::FontEffects& fontEffects() const
+    {return fontEffects_;}
         
 };
 

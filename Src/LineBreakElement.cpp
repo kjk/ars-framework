@@ -10,7 +10,7 @@ void LineBreakElement::calculateOrRender(LayoutContext& layoutContext, bool rend
     {
         const RenderingPreferences::StyleFormatting& style=layoutContext.preferences.styleFormatting(styleDefault);
         Graphics::FontSetter setFont(layoutContext.graphics, style.font);
-        layoutContext.extendHeight(FntLineHeight(), FntBaseLine());
+        layoutContext.extendHeight(layoutContext.graphics.fontHeight(), layoutContext.graphics.fontBaseline());
     }
     layoutContext.markElementCompleted(0);
 }

@@ -20,10 +20,9 @@ namespace ArsLexis
         Resolver::DNS_Choice dnsChoice_;
         UInt16 requestId_;
         const char* data_;
-        UInt32 resolvedAddress_;
+        NetIPAddr resolvedAddress_;
         
         typedef std::list<String> Aliases_t;
-//        typedef std::list<String, Allocator<String> > Aliases_t;
         Aliases_t aliases_;
         
         

@@ -6,7 +6,7 @@
 namespace ArsLexis
 {
 
-    void Resolver::updateCacheEntry(const String& name, UInt32 address)
+    void Resolver::updateCacheEntry(const String& name, NetIPAddr address)
     {
         for (int i=0; i<dnsAddressesCount_; ++i)
             dnsAddresses_[i]=0;
@@ -82,7 +82,7 @@ namespace ArsLexis
         Err error=netLib_.getHostByName(name.c_str(), buffer, connection->transferTimeout());
         if (!error)
         {
-            UInt32 resAddr=buffer->address[0];
+            NetIPAddr resAddr=buffer->address[0];
             assert(resAddr!=0);
             INetSocketAddress addr(resAddr, port);
             connection->setAddress(addr);
@@ -118,7 +118,7 @@ namespace ArsLexis
         static const UInt16 dnsPort=53;
         for (int i=0; i<dnsAddressesCount_; ++i)
         {
-            UInt16 addressSize=sizeof(UInt32);
+            UInt16 addressSize=sizeof(NetIPAddr);
             Err error=netLib_.getSetting(i>0?netSettingSecondaryDNS:netSettingPrimaryDNS, &dnsAddresses_[i], addressSize);
         }        
     }

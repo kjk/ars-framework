@@ -11,6 +11,14 @@
 
 #include <PalmOS.h>
 
+#ifndef SetBits
+#define SetBits( b, len )      ( ( ( 1U << ( ( len ) - 1 ) ) - 1U + ( 1U << ( ( len ) - 1 ) ) ) << ( b ) )
+#endif
+
+#ifndef pinMaxConstraintSize
+#define pinMaxConstraintSize 	SetBits( 0, ( sizeof( Coord) * 8 ) - 1 )
+#endif
+
 namespace ArsLexis 
 {
 

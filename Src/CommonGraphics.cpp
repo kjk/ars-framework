@@ -4,11 +4,6 @@
 namespace ArsLexis
 {
     
-    Graphics::Graphics(const NativeGraphicsHandle_t& handle):
-        handle_(handle)
-    {
-    }
-
     Graphics::~Graphics()
     {
     }

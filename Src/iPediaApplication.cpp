@@ -150,7 +150,7 @@ Err iPediaApplication::initializeForm(Form& form)
 {
     Err error=Application::initializeForm(form);
     if (!error && diaSupport_.available())
-        diaSupport_.configureForm(form, 160, 160, 225, 160,160, 225);
+        diaSupport_.configureForm(form, 160, pinMaxConstraintSize, pinMaxConstraintSize, 160, pinMaxConstraintSize, pinMaxConstraintSize);
     return error;
 }
 

@@ -102,15 +102,11 @@ namespace ArsLexis
             error=FrmSetDIAPolicyAttr(formPtr, frmDIAPolicyCustom);
             if (!error)
             {
-                error=PINSetInputTriggerState(pinInputTriggerEnabled);
-                if (!error) 
-                {
-                    WinHandle wh=FrmGetWindowHandle(formPtr);
-                    assert(wh);
-                    error=WinSetConstraintsSize(wh, minH, prefH, maxH, minW, prefW, maxW);
-                    if (!error)
-                        error=PINSetInputAreaState(pinInputAreaUser);
-                }
+                PINSetInputTriggerState(pinInputTriggerEnabled);
+                WinHandle wh=FrmGetWindowHandle(formPtr);
+                assert(wh);
+                WinSetConstraintsSize(wh, minH, prefH, maxH, minW, prefW, maxW);
+                PINSetInputAreaState(pinInputAreaUser);
             }
         }
         if (pinErrNoSoftInputArea==error) 

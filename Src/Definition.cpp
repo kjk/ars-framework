@@ -43,7 +43,7 @@ void Definition::HotSpot::move(const Point& delta, const Rectangle& validArea)
         rect+=delta;
         Rectangles_t::iterator next=it;
         ++next;
-        if (!(rect && validArea))
+        if (!(validArea && rect))
             rectangles_.erase(it);
         it=next;
     }
@@ -79,7 +79,7 @@ void Definition::clear()
     clearHotSpots();
     clearLines();
     std::for_each(elements_.begin(), elements_.end(), ObjectDeleter<DefinitionElement>());
-    bounds_=Rectangle();
+    bounds_.clear();
 }
 
 Definition::~Definition()

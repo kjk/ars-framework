@@ -16,11 +16,11 @@ namespace ArsLexis
     {
 
         NetLibrary& netLib_;
-        typedef std::map<String, UInt32> AddressCache_t;
+        typedef std::map<String, NetIPAddr> AddressCache_t;
         AddressCache_t cache_;
         
         enum {dnsAddressesCount_=2};
-        UInt32 dnsAddresses_[dnsAddressesCount_];
+        NetIPAddr dnsAddresses_[dnsAddressesCount_];
              
         static Err validateAddress(const String& origAddress, String& validAddress, UInt16& port);
         
@@ -42,7 +42,7 @@ namespace ArsLexis
         
        ~Resolver();
        
-       void updateCacheEntry(const String& name, UInt32 address);
+       void updateCacheEntry(const String& name, NetIPAddr address);
        
        Err resolveAndConnect(SocketConnection* connection, const String& address, UInt16 port=0);
        

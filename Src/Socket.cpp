@@ -72,6 +72,7 @@ namespace ArsLexis
     {
         assert(socket_!=0);
         Err error=errNone;
+        
         Int16 result=NetLibReceive(netLib_, socket_, buffer, bufferLength, flags, 0, 0, timeout, &error);
         if (result>=0)
         {

@@ -9,6 +9,7 @@
 
 using ArsLexis::String;
 using ArsLexis::isWhitespace;
+using ArsLexis::FontEffects;
 
 DefinitionParser::DefinitionParser(const String& text, UInt16 initialOffset):
     openEmphasize_(false),
@@ -68,21 +69,23 @@ Boolean DefinitionParser::isPlainText() const
 void DefinitionParser::applyCurrentFormatting(FormattedTextElement* element)
 {
     assert(element);
-    FormattingProperties& formatting=element->formatting();
+    FontEffects& fontEffects=element->fontEffects();
     if (openEmphasize_)
-        formatting.setStrength(FormattingProperties::strengthEmphasize);
+        fontEffects.setItalic(true);
     if (openStrong_)
-        formatting.setStrength(FormattingProperties::strengthStrong);
+        fontEffects.setWeight(FontEffects::weightBold);
     if (openVeryStrong_)
-        formatting.setStrength(FormattingProperties::strengthVeryStrong);
-    if (openTypewriter_)
-        formatting.setTypewriterFont(true);
+        fontEffects.setWeight(FontEffects::weightBlack);
+        
+//    if (openTypewriter_)
+//        fontEffects.setTypewriterFont(true);
+
     if (openSmall_)
-        formatting.setSmall(true);
+        fontEffects.setSmall(true);
     if (openStrikeout_)
-        formatting.setStrikeOut(true);
+        fontEffects.setStrikeOut(true);
     if (openUnderline_)
-        formatting.setUnderline(true);
+        fontEffects.setUnderline(FontEffects::underlineSolid);
 }
 
 static const char entityReferenceStart='&';
