@@ -37,7 +37,7 @@ namespace ArsLexis
                 for(int i=0; i<24; i++)
                     if(UnicodeToPalm[i][0]==in)
                         return (char)UnicodeToPalm[i][1];
-                assert(true); //we never shall reach this point
+                assert(false); //we never shall reach this point
                 return 0;
             }
         }
