@@ -273,8 +273,16 @@ static HANDLE g_hConnection = NULL;
 // return true if ConnMgr* connection has already been established
 bool FDataConnectionEstablished()
 {
-    if (NULL!=g_hConnection)
+    if (NULL==g_hConnection)
+        return false;
+
+    DWORD connStatus;
+
+    (*g_hConnMgrConnectionStatus)(&g_hConnection,&connStatus);
+
+    if (CONNMGR_STATUS_CONNECTED==connStatus)
         return true;
+
     return false;
 }
 

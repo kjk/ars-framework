@@ -14,7 +14,7 @@ HmStyleList::HmStyleList(Form& form, UInt16 id):
     setSelectedItemBackground(yellow);
     setScrollBarWidth(7);
     setScrollButtonHeight(4);
-}    
+}
 
 HmStyleList::~HmStyleList()
 {}

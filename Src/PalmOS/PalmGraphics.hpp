@@ -32,7 +32,7 @@ namespace ArsLexis {
          * @param rect @c Rectangle to erase.
          */        
         void erase(const Rectangle& rect);
-	        
+
         /**
          * Copies specified rectangular area (bitmap) from this @c Graphics system into @c targetSystem.
          * @param sourceArea bounds of source bitmap in this @c Graphics system.
