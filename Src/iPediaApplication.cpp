@@ -155,6 +155,17 @@ bool iPediaApplication::handleApplicationEvent(EventType& event)
         else
             log().debug()<<"Alert: "<<data.alertId;
     }
+    else if (appDisplayCustomAlertEvent==event.eType)
+    {
+        assert(!customAlerts_.empty());            
+        DisplayAlertEventData& data=reinterpret_cast<DisplayAlertEventData&>(event.data);
+        if (!inStressMode())
+            FrmCustomAlert(data.alertId, customAlerts_.front().c_str(), "", "");
+        else
+            log().debug()<<"Custom alert: "<<data.alertId<<'['<<customAlerts_.front()<<']';
+        customAlerts_.pop_front();
+    }
+    
     if (lookupManager_ && appLookupEventFirst<=event.eType && appLookupEventLast>=event.eType)
         lookupManager_->handleLookupEvent(event);
     else
@@ -230,3 +241,8 @@ OnError:
     return;
 }
 
+void iPediaApplication::sendDisplayCustomAlertEvent(UInt16 alertId, const ArsLexis::String& text1)
+{
+    customAlerts_.push_back(text1);
+    sendEvent(appDisplayCustomAlertEvent, DisplayAlertEventData(alertId));
+}

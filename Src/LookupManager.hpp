@@ -122,6 +122,8 @@ private:
     
     void handleServerError(ServerError serverError);
     
+    void handleDefinitionMissing();
+    
     void handleConnectionError(Err error);
     
     void handleDefinition();

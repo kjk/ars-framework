@@ -18,18 +18,19 @@ class iPediaApplication: public ArsLexis::Application
 {
     mutable ArsLexis::RootLogger log_;
     ArsLexis::DIA_Support diaSupport_;
-    bool diaNotifyRegistered_;
     UInt16 ticksPerSecond_;
     iPediaHyperlinkHandler hyperlinkHandler_;
     LookupHistory history_;
     LookupManager* lookupManager_;
     ArsLexis::String server_;
-    bool stressMode_;
-    bool hasHighDensityFeatures_;    
     
+    typedef std::list<ArsLexis::String> CustomAlerts_t;
+    CustomAlerts_t customAlerts_;
+
     void detectViewer();
     
     void loadPreferences();
+
     void savePreferences();
     
 protected:
@@ -100,6 +101,7 @@ public:
     enum Event
     {
         appDisplayAlertEvent=appFirstAvailableEvent,
+        appDisplayCustomAlertEvent,
         appLookupStartedEvent,
         appLookupEventFirst=appLookupStartedEvent,
         appLookupProgressEvent,
@@ -118,6 +120,8 @@ public:
     
     static void sendDisplayAlertEvent(UInt16 alertId)
     {sendEvent(appDisplayAlertEvent, DisplayAlertEventData(alertId));}
+    
+    void sendDisplayCustomAlertEvent(UInt16 alertId, const ArsLexis::String& text1);
     
     ArsLexis::Logger& log() const
     {return log_;}
@@ -149,6 +153,11 @@ public:
 private:
     
     Preferences preferences_;
+
+    bool diaNotifyRegistered_:1;
+    bool stressMode_:1;
+    bool hasHighDensityFeatures_:1;
+    
 };
 
 

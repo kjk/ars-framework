@@ -327,6 +327,13 @@ void MainForm::handleLookupFinished(const EventType& event)
         case data.outcomeList:
             Application::popupForm(searchResultsForm);
             break;
+            
+        case data.outcomeNotFound:
+            {
+                Field field(*this, termInputField);
+                field.select();
+            }
+            break;
 
         default:
             update();

@@ -79,6 +79,13 @@ void LookupManager::handleDefinition()
     }
 }
 
+void LookupManager::handleDefinitionMissing()
+{
+    iPediaApplication& app=iPediaApplication::instance();
+    app.sendDisplayCustomAlertEvent(definitionNotFoundAlert, lastInputTerm());
+}
+
+
 void LookupManager::handleLookupFinishedInForm(const LookupFinishedEventData& data)
 {
     switch (data.outcome)
@@ -92,7 +99,7 @@ void LookupManager::handleLookupFinishedInForm(const LookupFinishedEventData& da
             break;
             
         case data.outcomeNotFound:
-            iPediaApplication::sendDisplayAlertEvent(definitionNotFoundAlert);
+            handleDefinitionMissing();
             break;
     }
 }

@@ -71,7 +71,7 @@ ALERT ID definitionNotFoundAlert
     ERROR
 BEGIN
     TITLE "Definition Missing"
-    MESSAGE "The definition for searched term was not found."
+    MESSAGE "Encyclopedia article for '^1' was not found."
     BUTTONS "OK"
 END
 
