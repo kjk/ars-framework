@@ -3,7 +3,7 @@
 
 using ArsLexis::String;
 using ArsLexis::Rectangle;
-
+using ArsLexis::isWhitespace;
 
 GenericTextElement::HyperlinkProperties::HyperlinkProperties(const ArsLexis::String& res, HyperlinkType t):
     resource(res),
@@ -69,7 +69,9 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
 
     if (render)
     {
-        WinDrawChars(text, length, left, top);
+        Int16 charsToDraw=length;
+        while (isWhitespace(*(text+charsToDraw-1)))            --charsToDraw;
+        WinDrawChars(text, charsToDraw, left, top);
         if (isHyperlink())
             defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
     }
@@ -95,6 +97,9 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
 
                 if (render)
                 {
+                    Int16 charsToDraw=length;
+                    while (isWhitespace(*(text+charsToDraw-1)))
+                        --charsToDraw;
                     WinDrawChars(text, length, left, top);
                     if (isHyperlink())
                         defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
