@@ -18,6 +18,17 @@ class HistorySupport
     uint_t popupMenuId_;
     uint_t historyButtonId_;
     
+    enum ActionType 
+    {
+        actionSelect,
+        actionNewSearch
+    };
+    ActionType lastAction_;
+    
+    bool move(bool next);
+    
+    bool selectEntry(HistoryCache& cache, ulong_t index);
+    
 public:
 
     typedef status_t (* PopupMenuFillHandler_t)(const HistoryCache& cache, PopupMenuModel& model, void* userData);
@@ -46,6 +57,15 @@ public:
      * return false if index not found
      */
     bool fetchHistoryEntry(ulong_t index); 
+    
+    void lookupFinished(bool success, const char_t* entryTitle);
+    
+    bool moveNext() {return move(true);}
+    
+    bool movePrevious() {return move(false);}
+    
+    bool loadLastEntry();
+    
 };
 
 #endif

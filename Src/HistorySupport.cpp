@@ -45,7 +45,8 @@ HistorySupport::HistorySupport(Form& form):
     historyButtonId_(frmInvalidObjectId),
     popupMenuFillHandler(FillPopupMenuModelFromHistory),
     popupMenuFillHandlerData(NULL),
-    hyperlinkHandler(NULL)
+    hyperlinkHandler(NULL),
+    lastAction_(actionNewSearch)
 {
 }
 
@@ -90,10 +91,13 @@ bool HistorySupport::handleEventInForm(EventType& event)
     FrmGetObjectBounds(form_, FrmGetObjectIndex(form_, historyButtonId_), &rect);
     Point point(rect.topLeft.x + rect.extent.x / 2, rect.topLeft.y + rect.extent.y / 2);
     
+    lastAction_ = actionSelect;
     Int16 sel = popupMenu_.popup(popupMenuId_, point);
     if (noListSelection == sel)
+    {
+        lastAction_ = actionNewSearch;
         return true;
-        
+    }   
     currentHistoryIndex_ = sel;
     
     return true;
@@ -111,7 +115,6 @@ ulong_t HistorySupport::setEntryTitleForUrl(const char_t* title, const char_t* u
         return HistoryCache::entryNotFound;
         
     cache.setEntryTitle(index, title);
-    cache.close();
     return index;
 }
 
@@ -129,25 +132,82 @@ ulong_t HistorySupport::setLastEntryTitle(const char_t* title)
     return cache.entriesCount() - 1;
 }
 
+bool HistorySupport::selectEntry(HistoryCache& cache, ulong_t index)
+{
+    assert(NULL != hyperlinkHandler);
+    if (index >= cache.entriesCount())
+        return false;
+    
+    String url = cache.entryUrl(index);
+    currentHistoryIndex_ = index;
+    lastAction_ = actionSelect;
+    cache.close();
+    hyperlinkHandler->handleHyperlink(url, NULL);
+    return true;
+}
+
+
 bool HistorySupport::fetchHistoryEntry(ulong_t index)
 {
     HistoryCache cache;
     status_t err = cache.open(cacheName_);
     if (errNone != err)
         return false;
-    
-    if (index >= cache.entriesCount())
-    {
-        cache.close(); 
-        return false;
-    }
-    //TODO: this is ugly!
-    String url = cache.entryUrl(index);
-    cache.close(); 
 
-    Point point;
-    point.x = 10;
-    point.y = 10;
-    hyperlinkHandler->handleHyperlink(url, &point);
-    return true;
+    return selectEntry(cache, index);    
 }
+
+void HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
+{
+    
+    if (!success)
+    {
+        lastAction_ = actionNewSearch;    
+        return;
+    }
+        
+    HistoryCache cache;
+    status_t err = cache.open(cacheName_);
+    if (errNone != err)
+        return;
+    
+    if (actionNewSearch == lastAction_)
+    {
+        currentHistoryIndex_ = cache.entriesCount() - 1;
+        cache.setEntryTitle(currentHistoryIndex_, entryTitle);
+    }
+    lastAction_ = actionNewSearch;
+}
+
+bool HistorySupport::move(bool next)
+{
+    long index = long(currentHistoryIndex_);
+    if (next)
+        ++index;
+    else
+        --index;
+    
+    if (index < 0)
+        return false;
+        
+    HistoryCache cache;
+    status_t err = cache.open(cacheName_);
+    if (errNone != err)
+        return false;
+        
+    return selectEntry(cache, index);    
+}
+
+bool HistorySupport::loadLastEntry()
+{
+    HistoryCache cache;
+    status_t err = cache.open(cacheName_);
+    if (errNone != err)
+        return false;
+    
+    if (0 == cache.entriesCount())
+        return false;
+        
+    return selectEntry(cache, cache.entriesCount() - 1);    
+}
+    

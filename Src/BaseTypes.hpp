@@ -88,7 +88,6 @@ namespace ArsLexis
 
     typedef UInt32 tick_t;
     
-    // One would ask: why some stupid status_t and not error_t? Because PalmOS Cobalt is coming...
     typedef Err status_t;
     
     typedef std::basic_string<char>   NarrowString;
@@ -101,7 +100,7 @@ namespace ArsLexis
 #  define tstrlen StrLen
 #  define strlen  StrLen
 #  define tstrcmp StrCompare
-#  define tstrcpy StrCpy
+#  define tstrcpy StrCopy
 #  define tstrncmp StrNCompare
 #  define memmove  MemMove
 // yes, MemSet has different order than memset
