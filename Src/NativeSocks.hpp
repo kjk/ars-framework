@@ -10,6 +10,8 @@
 
 namespace ArsLexis 
 {
+    
+    const int netFeatureUnimplemented=-1;
 
 #if defined(_PALM_OS)
 
@@ -22,7 +24,7 @@ namespace ArsLexis
     typedef NetSocketAddrEnum NativeSockAddrFamily_t;
     typedef NetSocketTypeEnum NativeSocketType_t;
     
-    const NativeSocket_t invalidSock = -1;
+    const NativeSocket_t invalidSocket = -1;
     const NetSocketAddrEnum socketAddrINET = netSocketAddrINET;
     const NetSocketTypeEnum socketTypeStream = netSocketTypeStream;
     const NetSocketOptLevelEnum socketOptLevelSocket  = netSocketOptLevelSocket;
@@ -46,14 +48,14 @@ namespace ArsLexis
     typedef int NativeSockAddrFamily_t;
     typedef int NativeSocketType_t;
     
-    const NativeSocket_t invalidSock = INVALID_SOCKET;
+    const NativeSocket_t invalidSocket = INVALID_SOCKET;
     const short socketTypeStream = SOCK_STREAM;
     const short socketAddrINET = AF_INET;
     const int socketOptSockLinger = SO_LINGER;
     const int socketOptLevelSocket = SOL_SOCKET;
-//    const int socketOptLevelTCP = 
+    const int socketOptLevelTCP = IPPROTO_TCP;
     const int  socketOptSockErrorStatus= SO_ERROR ;
-//    const int socketOptTCPMaxSeg=
+    const int socketOptTCPMaxSeg=netFeatureUnimplemented;
     const int netSocketDirOutput = 1;
     //TODO: Move errors to ErrBase.h and correct return values returned 
     //in WinNetLibrary
@@ -65,11 +67,6 @@ namespace ArsLexis
     #define netFDIsSet(n,p) FD_ISSET(n,p)
     #define netFDZero(p) FD_ZERO(p)
     
-    // Maybe bettert idea to get rid of this stuff
-    class Library
-    {
-    };
-
     #define evtWaitForever	-1
 	
 #else
@@ -119,7 +116,7 @@ namespace ArsLexis
         }
     };
 
-#elif defined(_WIN32_WCE)	
+#elif defined(_WIN32)	
     
     class HostInfoBuffer {
         struct hostent *hostInfo_;
@@ -138,15 +135,19 @@ namespace ArsLexis
 
 }
 
-#if defined(_WIN32_WCE)	
-    const ArsLexis::status_t memErrorClass = 0x0100;
-    const ArsLexis::status_t netErrorClass = 0x1200;
+#if defined(_WIN32)	
+
+    const ArsLexis::status_t netErrorClass = WSABASEERR;
     const ArsLexis::status_t netErrParamErr = netErrorClass | 4;
     const ArsLexis::status_t netErrTimeout = netErrorClass | 18;
     const ArsLexis::status_t netErrSocketClosedByRemote = netErrorClass | 20;
     const ArsLexis::status_t netErrWouldBlock = netErrorClass | 47;
     const ArsLexis::status_t netErrSocketBusy = netErrorClass | 9;
+    const ArsLexis::status_t netErrUnimplemented = WSAEOPNOTSUPP;
+    
+    const ArsLexis::status_t memErrorClass = 0x0100;
     const ArsLexis::status_t memErrNotEnoughSpace = memErrorClass | 2;
+    
 #endif
 
 #endif //__ARSLEXIS_NATIVESOCKS_HPP__

@@ -78,7 +78,7 @@ namespace ArsLexis
         const Socket& socket() const
         {return socket_;}
 
-        status_t getSocketErrorStatus() const;
+        status_t getSocketErrorStatus(status_t& out) const;
         
         virtual status_t resolve(Resolver& resolver);
     

@@ -218,23 +218,17 @@ namespace ArsLexis
 
     status_t SocketConnection::notifyException()
     {
-        status_t error=getSocketErrorStatus();
+        status_t status=errNone;
+        status_t error=getSocketErrorStatus(status);
         if (errNone==error)
-        {
-            log().debug()<<_T("notifyException(): getSocketErrorStatus() returned errNone.");
-            assert(false);
-            error=netErrTimeout;
-        }
-        else
-            log().debug()<<_T("notifyException(): getSocketErrorStatus() returned error, ")<<error;
-            
-        return error;
+            log().debug()<<_T("notifyException(): getSocketErrorStatus() returned status: ")<<status;
+        return status;
     }
 
     // devnote: seems to return non-PalmOS error codes
     // e.g. 10061 is WSAECONNREFUSED (http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winsock/winsock/windows_sockets_error_codes_2.asp)
     // those seem to be defined in Core\System\Unix\sys_errno.h but without the 10000 (0x2710) prefix 
-    status_t SocketConnection::getSocketErrorStatus() const
+    status_t SocketConnection::getSocketErrorStatus(status_t& out) const
     {
         NativeSocket_t socketRef=socket_;
         assert(socketRef!=0);
@@ -244,15 +238,11 @@ namespace ArsLexis
         //! Nevertheless status is also filled in these cases and seems right...
         status_t error=socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
         if (error)
-        {
-            log().error()<<_T("getSocketErrorStatus(): unable to query socket option, ")<<error;
-            return error;
-        }
-        if (status)
-        {
-            log().debug()<<_T("getSocketErrorStatus(): error status, ")<<(status_t)status;
-        }            
-        return (status_t)status;
+            log().error()<<_T("getSocketErrorStatus(): unable to query socket option, error: ")<<error;
+        else 
+            out=status;
+        out=status;
+        return error;
     }
     
     status_t SocketConnection::resolve(Resolver& resolver)

@@ -11,33 +11,37 @@ namespace ArsLexis
     SocketBase::SocketBase(NetLibrary& netLib):
         log_(_T("SocketBase")),
         netLib_(netLib),
-        socket_(0)
+        socket_(invalidSocket)
     {}
+    
+    void SocketBase::close() 
+    {
+        assert(isOpen());        
+        status_t error;
+        int result=netLib_.socketClose(socket_, evtWaitForever, error);
+        if (-1==result || errNone!=error)
+            log().error()<<_T("close(): NetLibSocketClose() returned error: ")<<error;
+        socket_=invalidSocket;
+    }
     
     SocketBase::~SocketBase()
     {
-        if (socket_!=0)
-        {
-            status_t error;
-            int result=netLib_.socketClose(socket_, evtWaitForever, error);
-            if (-1==result || error)
-                log().error()<<_T("~SocketBase(): NetLibSocketClose() returned error, ")<<error;
-        }
+        if (isOpen())
+            close();
     }
     
     status_t SocketBase::open(NativeSockAddrFamily_t domain, NativeSocketType_t type, short protocol, long timeout)
     {
-        assert(!socket_);
+        assert(!isOpen());
         status_t error;
         socket_= netLib_.socketOpen(domain, type, protocol, timeout, error);
-        //Shouldn't be here socket_!=-1
-        assert(error || (socket_!=0));
+        assert(error || isOpen());
         return error;
     }
     
     status_t SocketBase::shutdown(short direction, long timeout)
     {
-        assert(socket_!=0);
+        assert(isOpen());
         status_t error=errNone;
         int result=netLib_.socketShutdown(socket_, direction, timeout, error);
         if (-1==result)
@@ -45,13 +49,13 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)
-            log().debug()<<_T("shutdown(): NetLibSocketShutdown() returned error, ")<<error;
+            log().debug()<<_T("shutdown(): NetLibSocketShutdown() returned error: ")<<error;
         return error;
     }
     
     status_t SocketBase::send(uint_t& sent, const void* buffer, uint_t bufferLength, long timeout, uint_t flags,  const SocketAddress* address)
     {
-        assert(socket_!=0);
+        assert(isOpen());
         status_t error=errNone;
         const SocketAddr* addr=0;
         uint_t addrLen=0;
@@ -76,7 +80,7 @@ namespace ArsLexis
     
     status_t SocketBase::receive(uint_t& received, void* buffer, uint_t bufferLength, long timeout, uint_t flags)
     {
-        assert(socket_!=0);
+        assert(isOpen());
         status_t error=errNone;
         int result=netLib_.socketReceive(socket_, buffer, bufferLength, flags, 0, 0, timeout, error);
         if (result>=0)
@@ -98,7 +102,9 @@ namespace ArsLexis
 
     status_t SocketBase::setOption(uint_t level, uint_t option, const void* optionValue, uint_t valueLength, long timeout)
     {
-        assert(socket_!=0);
+        assert(isOpen());
+        if (netFeatureUnimplemented==level || netFeatureUnimplemented==option)
+            return netErrUnimplemented;
         status_t error=errNone;
         int result=netLib_.socketOptionSet(socket_, level, option, const_cast<void*>(optionValue), valueLength, timeout, error);
         if (-1==result)
@@ -106,14 +112,15 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)            
-            log().debug()<<_T("setOption(): NetLibSocketOptionSet() returned error, ")<<error;
-            
+            log().debug()<<_T("setOption(): NetLibSocketOptionSet() returned error: ")<<error;
         return error;
     }
     
     status_t SocketBase::getOption(uint_t level, uint_t option, void* optionValue, uint_t& valueLength, long timeout) const
     {
-        assert(socket_!=0);
+        assert(isOpen());
+        if (netFeatureUnimplemented==level || netFeatureUnimplemented==option)
+            return netErrUnimplemented;
         status_t error=errNone;
         int result=netLib_.socketOptionGet(socket_, level, option, optionValue, valueLength, timeout, error);
         if (-1==result)
@@ -121,13 +128,13 @@ namespace ArsLexis
         else
             assert(!error);
         if (error)            
-            log().warning()<<_T("getOption(): NetLibSocketOptionGet() returned error, ")<<error;
+            log().warning()<<_T("getOption(): NetLibSocketOptionGet() returned error: ")<<error;
         return error;
     }
         
     status_t Socket::connect(const SocketAddress& address, long timeout)
     {
-        assert(socket_!=0);
+        assert(isOpen());
         status_t error=errNone;
         const SocketAddr* addr=address;
         uint_t addrLen=address.size();
@@ -141,14 +148,12 @@ namespace ArsLexis
 
     status_t SocketBase::setLinger(const SocketLinger& linger)
     {
-        assert(socket_!=0);
         status_t error=setOption(socketOptLevelSocket, socketOptSockLinger, &linger, sizeof(linger));
         return error;
     }
     
     status_t SocketBase::getMaxTcpSegmentSize(uint_t& size)
     {
-        assert(socket_!=0);
         uint_t len=sizeof(size);
         status_t error=getOption(socketOptLevelTCP, socketOptTCPMaxSeg, &size, len);
         assert(sizeof(size)==len);

@@ -33,6 +33,8 @@ namespace ArsLexis
     {
 
         mutable ChildLogger log_;
+        
+        void close();
 
     protected:
     
@@ -89,6 +91,9 @@ namespace ArsLexis
         status_t setLinger(const SocketLinger& linger);
         
         status_t getMaxTcpSegmentSize(uint_t& size);
+        
+        bool isOpen() const
+        {return invalidSocket!=socket_;}
         
         //status_t getLinger(CommonSocketLinger_t& linger) const;
                 
