@@ -3,9 +3,7 @@
 
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
-import MySQLdb
-import random
-import _mysql_exceptions
+import MySQLdb, random, _mysql_exceptions, datetime
 
 lineSeparator =     "\n"
 fieldSeparator =    ": "
@@ -279,6 +277,18 @@ class iPediaProtocol(basic.LineReceiver):
                 else:
                     history.append(self.term)
         return result
+
+    def preprocessDefinition(self, definition):
+        definition=definition.replace("__NOTOC__", '')
+        definition=definition.replace("{{CURRENTMONTH}}", str(datetime.date.today().month));
+        definition=definition.replace("{{CURRENTMONTHNAME}}", datetime.date.today().strftime("%B"))
+        definition=definition.replace("{{CURRENTMONTHNAMEGEN}}", datetime.date.today().strftime("%B"))
+        definition=definition.replace("{{CURRENTDAY}}", str(datetime.date.today().day))
+        definition=definition.replace("{{CURRENTDAYNAME}}", datetime.date.today().strftime("%A"))
+        definition=definition.replace("{{CURRENTYEAR}}", str(datetime.date.today().year))
+        definition=definition.replace("{{CURRENTTIME}}", datetime.date.today().strftime("%X"))
+        definition=definition.replace("{{NUMBEROFARTICLES}}", str(self.factory.articleCount))
+        return definition
         
     def handleDefinitionRequest(self):
         cursor=None
@@ -296,7 +306,7 @@ class iPediaProtocol(basic.LineReceiver):
             return False;
             
         if definition:
-            self.outputDefinition(definition)
+            self.outputDefinition(self.preprocessDefinition(definition))
         else:
             self.outputField(definitionNotFoundField)
         return True
@@ -377,7 +387,8 @@ class iPediaFactory(protocol.ServerFactory):
         cursor=db.cursor()
         cursor.execute("""select count(*) from definitions""")
         row=cursor.fetchone()
-        print "Number of Wikipedia articles: ", row[0]
+        self.articleCount=row[0]
+        print "Number of Wikipedia articles: ", self.articleCount
         cursor.close()
         db.close()
 
