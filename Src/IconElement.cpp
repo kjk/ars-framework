@@ -45,15 +45,14 @@ void IconElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
                 {
                     ArsRectangle rect(left, top, totalWidth, totalHeight);
                     defineHotSpot(*definition, rect);
-                    if (layoutContext.selectionIsHyperlink)
+                    if (layoutContext.selectionIsHyperlink &&
+                        0 == layoutContext.selectionStart &&
+                        layoutContext.progressCompleted == layoutContext.selectionEnd)
                     {
-                        if (0 == layoutContext.selectionStart
-                            && layoutContext.progressCompleted == layoutContext.selectionEnd)
-                            layoutContext.graphics.invertRectangle(rect);
-                        else
-                            layoutContext.graphics.erase(rect);
-                        
+                        layoutContext.graphics.invertRectangle(rect);
                     }
+                    else
+                        layoutContext.graphics.erase(rect);
                 }
                 WinDrawBitmap(bmp, left + margin_, top + margin_);
                 MemHandleUnlock(handle);
