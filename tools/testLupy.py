@@ -151,6 +151,11 @@ def index(fileName,limit):
     # create a new index in a directory
     indexer = IndexWriter(g_indexPath, True)
 
+    # supposed to speed up indexing by avoiding disk i/o
+    # that's how many documents to index in memory before flushing
+    # to disk
+    indexer.mergeFactor = 1100
+
     count = 0
     failedCount = 0
     for (title,ns,txt) in iterGetArticle(fileName):
