@@ -15,11 +15,8 @@ using namespace KXml2;
 #include <sstream>
 #include <string>
 
-
-
 //from XmlPullParser
 #define NO_NAMESPACE ""
-
 
 /*Init TYPES (we don't have XmlPullParser.cpp)*/
 const String XmlPullParser::TYPES[] = 
@@ -40,8 +37,6 @@ const String XmlPullParser::TYPES[] =
 
 String XmlPullParser::FEATURE_PROCESS_NAMESPACES = "http://xmlpull.org/v1/doc/features.html#process-namespaces";
 
-
-/* KXmlParser() */
 KXmlParser::KXmlParser()
 {
     fRelaxed_ = false;    
@@ -58,6 +53,7 @@ KXmlParser::KXmlParser()
 }
 
 KXmlParser::~KXmlParser() {}
+
 /* PRIVATE */
 void KXmlParser::ensureCapacity(vector<String>& vect, int size)
 {
@@ -195,8 +191,8 @@ error_t KXmlParser::read(int& ret)
     return eNoError;
 }
 
-
-String KXmlParser::get(int pos) {
+String KXmlParser::get(int pos)
+{
         return txtBuf_.substr (pos, txtPos_ - pos);
 }
 
@@ -264,7 +260,8 @@ error_t KXmlParser::pushEntity() {
     if (token_ && type_ == ENTITY_REF)
         name_ = code;
 
-    if (code[0] == '#') {
+    if (code[0] == '#')
+     {
         char_t *endPtr;
 
         int c =
@@ -306,14 +303,15 @@ error_t KXmlParser::readName(String& ret)
         && c != ':'
         && c < 0x0c0)
         return eNameExpected;
-    do {
+
+    do
+    {
         if((error=read(c))!=eNoError)
             return error;
         push(c);
         if((error=peek(c,0))!=eNoError)
             return error;
-    }
-    while ((c >= 'a' && c <= 'z')
+    } while ((c >= 'a' && c <= 'z')
         || (c >= 'A' && c <= 'Z')
         || (c >= '0' && c <= '9')
         || c == '_'
@@ -972,11 +970,7 @@ error_t KXmlParser::nextImpl(){
         }
 }
 
-
-
-
-
- /* PUBLIC */
+/* PUBLIC */
 error_t KXmlParser::setInput(XmlReader *reader)
 {
     reader_ = reader;
@@ -1086,66 +1080,79 @@ error_t KXmlParser::next(int& ret)
 
 String KXmlParser::getText()
 {
-    return type_ < TEXT
-        || (type_ == ENTITY_REF && unresolved_) ? "" : get(0);
+    if ( (type_ < TEXT) || (type_ == ENTITY_REF && unresolved_))
+        return "";
+    else
+        return get(0);
 }
-
 
 error_t KXmlParser::getPositionDescription(String& ret)
 {
     error_t error;
         
-        String buf = (type_ < TYPESLENGHT ? TYPES[type_] : "unknown");
-        buf += ' ';
+    String buf;
+    if (type_ < TYPESLENGHT)
+        buf = TYPES[type_];
+    else
+        buf = "unknown";
 
-        if (type_ == START_TAG || type_ == END_TAG) {
-            if (degenerated_)
-                buf += "(empty) ";
-            buf += '<';
-            if (type_ == END_TAG)
-                buf += '/';
+    buf += ' ';
 
-            if (prefix_ != "")
-                buf += "{" + nameSpace_ + "}" + prefix_ + ":";
-            buf += name_;
+    if (type_ == START_TAG || type_ == END_TAG)
+    {
+        if (degenerated_)
+            buf += "(empty) ";
+        buf += '<';
+        if (type_ == END_TAG)
+            buf += '/';
 
-            int cnt = attributeCount_ << 2;
-            for (int i = 0; i < cnt; i += 4) {
-                buf += ' ';
-                if (attributes_[i + 1] != "")
-                    buf += "{" + attributes_[i] + "}" + attributes_[i + 1] + ":";
-                buf += attributes_[i + 2] + "='" + attributes_[i + 3] + "'";
-            }
+        if (prefix_ != "")
+            buf += "{" + nameSpace_ + "}" + prefix_ + ":";
+        buf += name_;
 
-            buf += '>';
-        }
-        else if (type_ == IGNORABLE_WHITESPACE);
-        else if (type_ != TEXT)
+        int cnt = attributeCount_ << 2;
+        for (int i = 0; i < cnt; i += 4)
         {
-               buf += getText();
-        }
-        else if (isWhitespace_)
-            buf += "(whitespace)";
-        else {
-            String text = getText();
-            if (text.length() > 16)
-                text = text.substr(0, 16) + "...";
-            buf.append(text);            
+            buf += ' ';
+            if (attributes_[i + 1] != "")
+                buf += "{" + attributes_[i] + "}" + attributes_[i + 1] + ":";
+            buf += attributes_[i + 2] + "='" + attributes_[i + 3] + "'";
         }
 
-        MUSTDO //better version
+        buf += '>';
+    }
+    else if (type_ == IGNORABLE_WHITESPACE);
+    else if (type_ != TEXT)
+    {
+        String text = getText();
+        if ( ((ENTITY_REF == type_) || (END_DOCUMENT == type_)) && (""==text))
+            text = "null";
 
-        std::stringstream tempBuf;
-        String tempStr;
+       buf += text;
+    }
+    else if (isWhitespace_)
+        buf += "(whitespace)";
+    else
+    {
+        String text = getText();
+        if (text.length() > 16)
+            text = text.substr(0, 16) + "...";
+        buf.append(text);            
+    }
 
-        buf += " @";
-        tempBuf << line_ << ":" << column_;
-        tempBuf >> tempStr;
-        buf += tempStr;
-        //buf += ":";
-        //buf << (int)column_;
-        
-        ret = buf;
+    MUSTDO //better version
+
+    std::stringstream tempBuf;
+    String tempStr;
+
+    buf += " @";
+    tempBuf << line_ << ":" << column_;
+    tempBuf >> tempStr;
+    buf += tempStr;
+    //buf += ":";
+    //buf << (int)column_;
+    
+    ret = buf;
     return eNoError;
 }
 
