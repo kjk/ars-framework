@@ -3,6 +3,7 @@
 
 namespace ArsLexis
 {
+
     Graphics::Graphics(const NativeGraphicsHandle_t& handle, HWND hwnd):
         handle_(handle), hwnd_(hwnd)
     {
@@ -67,7 +68,14 @@ namespace ArsLexis
         WinDrawChars(text, length, topLeft.x, top);
         */
         
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            setEffects(fx.weight(), fx.italic());
+
         ExtTextOut(handle_, topLeft.x, topLeft.y, 0, NULL, text, length, NULL);
+        
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            resetEffects();
+
         if (fx.strikeOut())
         {
             uint_t baseline=fontBaseline();
@@ -179,6 +187,7 @@ namespace ArsLexis
         //uint_t baseline=FntBaseLine();
         //if (support_.font.effects().superscript())
             //baseline+=(FntLineHeight()*0.333);
+        const FontEffects fx=font_.effects();
         TEXTMETRIC ptm;
         GetTextMetrics(handle_, &ptm);
         return ptm.tmDescent;
@@ -193,8 +202,14 @@ namespace ArsLexis
         int     len;
         SIZE    size;
         int     textLen = tstrlen(text);
+        FontEffects fx=font_.effects();
 
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            setEffects(fx.weight(), fx.italic());
         GetTextExtentExPoint(handle_, text, textLen, width, &len, NULL, &size);
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            resetEffects();
+
         if (len==textLen)
             return len;
 
@@ -217,16 +232,27 @@ namespace ArsLexis
 
     uint_t Graphics::textWidth(const char_t* text, uint_t length)
     {
+        FontEffects fx=font_.effects();
         SIZE size;
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            setEffects(fx.weight(),fx.italic());
         GetTextExtentPoint(handle_, text, length, &size);
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            resetEffects();
         return size.cx;
     }
     
     void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
     {
+        FontEffects fx=font_.effects();
         int   len;
         SIZE  size;
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            setEffects(fx.weight(),fx.italic());
         GetTextExtentExPoint(handle_, text, length, width, &len, NULL, &size ); 
+        if((fx.weight() != FontEffects::weightPlain)||fx.italic())
+            resetEffects();
+
         length = len;
         width = size.cx;
     }
