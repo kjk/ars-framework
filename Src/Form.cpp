@@ -219,7 +219,12 @@ namespace ArsLexis
     {
         const FormType* form=*this;
         if (data.exitWindow==static_cast<const void*>(form))
+        {
+            UInt16 index = FrmGetFocus(form);
+            if (noFocus != index)
+                focusControlId_ = FrmGetObjectId(form, index);
             releaseFocus();
+        }
         return false;
     }
     
