@@ -428,15 +428,22 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=
                 break
             if fIsRedirectLine(title):
                 redirect = fo.readline()
-                title = title.strip()
                 if title == REDIRECT_MARK:
                     #need this to remove stupid redirecto of 0xa0=>Space_(punctuation)
                     print "title after stripping is equal to '%s' (REDIRECT_MARK), so skipping" % REDIRECT_MARK
                     continue
                 redirect = redirect[:-len(REDIRECT_MARK)]
+                title = title.strip()
+                if len(title)==0:
+                    print "title after stripping is empty string, so skipping '%s'" % redirect
+                    continue
                 article = WikipediaArticleRedirect(title,redirect.strip())
             else:
+                title = title.strip()
                 line = fo.readline()
+                if len(title)==0:
+                    print "title after stripping is empty string, so skipping '%s'" % line.strip()
+                    continue
                 lineParts = line.split(",")
                 #try:
                 ns = int(lineParts[0])
