@@ -1,4 +1,18 @@
+# Copyright: Krzysztof Kowalczyk
+# Owner: Andrzej Ciarkowski
+#
+# Converts the original wiki database in enwiki.cur to the format used
+# by iPedia server
+# 
+# Command line parameters:
+#  -verbose : if used will print a lot of debugging input to stdout. May slow
+#             down conversion process
+#  -one term : will force the conversion of one term. Is always verbose
+
 import MySQLdb, sys, datetime, re, unicodedata
+
+#if True, we'll print a lot of debug text to stdout
+g_fVerbose = False
 
 db=MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
 
@@ -81,6 +95,7 @@ def convertEntities(text):
 
 def convertDefinition(text):
     text=text.replace('\r','')
+    text=text.replace('&minus;', '-') # no idea why would someone use &minus; but it happens e.g. in "electron"
     text=replaceRegExp(text, commentRe, '')     # This should be safe, as it's illegal in html to nest comments
     
     text=stripBlocks(text, 'div')
@@ -100,53 +115,89 @@ def convertDefinition(text):
     text+='\n'
     return text
 
-def main():
-    #query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 """
-    query="""select cur_title, cur_timestamp from enwiki.cur where cur_namespace=0 """
+def convertTermWithId(term_id,fForceUpdate=False):
+    global g_fVerbose
+    cursor=db.cursor()
+    cursor.execute("""SELECT cur_title,cur_text,cur_timestamp FROM enwiki.cur WHERE cur_namespace=0 AND cur_id='%s'""" % term_id)
+    defRow=cursor.fetchone()
+    term=defRow[0].replace('_', ' ')
+    definition=defRow[1]
+    ts=defRow[2]
+    timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
+    if g_fVerbose:
+        print "Converting term: ", term
 
-    if len(sys.argv)>1:
-        query+=""" and cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
-
-    srcCursor=db.cursor()
-    targetCursor=db.cursor()
-    defCursor=db.cursor()
-    srcCursor.execute(query)
-    row=srcCursor.fetchone()
-    rowCount = 0
-    while row:
-        defCursor.execute("""SELECT cur_text FROM enwiki.cur WHERE cur_namespace=0 AND cur_title='%s'""" % db.escape_string(row[0]))
-        defRow=defCursor.fetchone()
-        term=row[0].replace('_', ' ')
-        #definition=row[1]
-        definition=defRow[0]
-        ts=row[1]
-        timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
-        #print "Converting term: ", term
-        
-        targetCursor.execute("""select id, last_modified from definitions where term='%s'""" % db.escape_string(term))
-        outRow=targetCursor.fetchone()
-        if outRow:
-            #print "Existing date: ", outRow[1],"; new date: ", timestamp
-            if str(outRow[1])<str(timestamp):
-                #print "Updating existing record id: ", outRow[0]
-                targetCursor.execute("""update definitions set definition='%s', last_modified='%s' where id=%d""" % (db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp)), outRow[0]))
-            else:
-                #print "Skipping record, newer version exists."
-                pass
+    cursor.execute("""SELECT id, last_modified FROM definitions WHERE term='%s'""" % db.escape_string(term))
+    outRow=cursor.fetchone()
+    if outRow:
+        if g_fVerbose:
+            print "Existing date: ", outRow[1],"; new date: ", timestamp
+        if fForceUpdate or str(outRow[1])<str(timestamp):
+            if g_fVerbose:
+                print "Updating existing record id: ", outRow[0]
+            termId = outRow[0]
+            newDef = convertDefinition(definition)
+            cursor.execute("""UPDATE definitions SET definition='%s', last_modified='%s' WHERE id=%d""" % (db.escape_string(newDef), db.escape_string(str(timestamp)), termId))
         else:
-            #print "Creating new record." 
-            targetCursor.execute("""insert into definitions (term, definition, last_modified) values ('%s', '%s', '%s')""" % (db.escape_string(term), db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp))))
-        
-        row=srcCursor.fetchone()
+            if g_fVerbose:
+                print "Skipping record, newer version exists."
+    else:
+        if g_fVerbose:
+            print "Creating new record." 
+        newDef = convertDefinition(definition)
+        cursor.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (db.escape_string(term), db.escape_string(newDef), db.escape_string(str(timestamp))))
+    cursor.close()
+
+def convertAll():
+    query="""SELECT cur_id FROM enwiki.cur where cur_namespace=0 """
+    if len(sys.argv)>1:
+        query+=""" AND cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
+
+    cursor=db.cursor()
+    cursor.execute(query)
+    rowCount = 0
+    while True:
+        row=cursor.fetchone()
+        if not row:
+            break
+        convertTermWithId(row[0])
         rowCount += 1
         if 0 == rowCount % 100:
             print "processed %d rows, last term=%s" % (rowCount,term)
+    cursor.close()
+    db.close()
 
-    srcCursor.close()
-    targetCursor.close()
-
+def convertOneTerm(term):
+    query="""SELECT cur_id FROM enwiki.cur WHERE cur_namespace=0 AND cur_title='%s'""" % db.escape_string(term)
+    cursor=db.cursor()
+    cursor.execute(query)
+    row=cursor.fetchone()
+    if not row:
+        print "Didn't find a row in enwiki.cur with cur_title='%s'" % db.escape_string(term)
+    else:
+        termId = row[0]
+        convertTermWithId(termId,True)
+    cursor.close()
     db.close()
 
 if __name__=="__main__":
-    main()
+    try:
+        pos = sys.argv.index("-verbose")
+        g_fVerbose = True
+        sys.argv[pos] = []
+    except:
+        pass
+
+    pos = -1
+    try:
+        pos = sys.argv.index("-one")
+    except:
+        pass
+
+    if pos != -1:
+        termToConvert = sys.argv[pos+1]
+        g_fVerbose = True
+        convertOneTerm(termToConvert)
+    else:
+        convertAll()
 
