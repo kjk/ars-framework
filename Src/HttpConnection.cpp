@@ -330,6 +330,7 @@ charAvailable:
                 return errNone;
             }
         }
+        num=range;
         return errNone;      
     }
 
@@ -388,7 +389,7 @@ charAvailable:
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;
-            if ('\n'!=c)
+            if ('\n'!=c && npos!=c) // The 2nd option is added to workaround bug in Yahoo Movies server, which terminates connection prematurely.
                 return SocketConnection::errResponseMalformed;
             if (stateAfterBodyLf==state_)
             {

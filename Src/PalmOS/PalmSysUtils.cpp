@@ -178,7 +178,7 @@ bool ArsLexis::highDensityFeaturesPresent()
     return (errNone==error && version>=4);
 }
 
-void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize)
+void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool unique)
 {
     EventType event;
     MemSet(&event, sizeof(event), 0);
@@ -188,6 +188,9 @@ void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize)
         assert(dataSize<=sizeof(event.data));
         MemMove(&event.data, data, dataSize);
     }
-    EvtAddEventToQueue(&event);
+    if (unique)
+        EvtAddUniqueEventToQueue(&event, 0, false);
+    else
+        EvtAddEventToQueue(&event);
 }
 
