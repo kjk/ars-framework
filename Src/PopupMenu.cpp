@@ -6,7 +6,8 @@ PopupMenu::PopupMenu(Form& form):
     list(form),
     model_(new_nt PopupMenuModel),
     hyperlinkHandler(NULL),
-    initialSelection(noListSelection)
+    initialSelection(noListSelection),
+    modelOwner_(ownModel)
 {
 }
 
@@ -17,7 +18,8 @@ PopupMenu::~PopupMenu()
         list.form()->removeObject(list.index());
         list.detach();
     }
-    delete model_;
+    if (ownModel == modelOwner_)
+        delete model_;
 }
 
 bool PopupMenu::handleEventInForm(EventType& event)
@@ -110,11 +112,13 @@ Int16 PopupMenu::popup(UInt16 id, const Point& point)
     return sel;
 }
 
-void PopupMenu::setModel(PopupMenuModel* model)
+void PopupMenu::setModel(PopupMenuModel* model, ModelOwnerFlag owner)
 {
     assert(NULL != model);
-    delete model_;
+    if (ownModel == modelOwner_)
+        delete model_;
     model_ = model;
+    modelOwner_ = owner;
 }
 
 uint_t PopupMenuModel::itemsCount() const

@@ -3,6 +3,7 @@
 
 #include <FormGadget.hpp>
 #include <Definition.hpp>
+#include <PopupMenu.hpp>
 
 class TextRenderer: public FormGadget 
 {
@@ -25,6 +26,17 @@ class TextRenderer: public FormGadget
     bool handleNavigatorKey(Definition::NavigatorKey navKey);
     
 public:
+
+    typedef PopupMenuModel* (*SelectionMenuModelBuilder)(const String& text);
+    
+    SelectionMenuModelBuilder selectionMenuModelBuilder;
+    uint_t selectionMenuId;
+    
+    void setupSelectionMenu(SelectionMenuModelBuilder modelBuilder, uint_t id)
+    {
+        selectionMenuModelBuilder = modelBuilder;
+        selectionMenuId = id;
+    }
 
     TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* scrollBar = NULL);
 

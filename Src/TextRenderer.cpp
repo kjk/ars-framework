@@ -2,6 +2,22 @@
 #include <Application.hpp>
 #include <68k/Hs.h>
 
+static void ShowSelectionPopupMenu(const Point& point, const String& text, void* context)
+{
+    TextRenderer* renderer = static_cast<TextRenderer*>(context);
+    if (NULL == renderer->selectionMenuModelBuilder)
+        return;
+    
+    if (frmInvalidObjectId == renderer->selectionMenuId)
+        return;
+    
+    PopupMenuModel* model = renderer->selectionMenuModelBuilder(text);
+    PopupMenu menu(*renderer->form());
+    menu.setModel(model);
+    menu.hyperlinkHandler = renderer->hyperlinkHandler();
+    menu.popup(renderer->selectionMenuId, point);
+}
+
 TextRenderer::RenderingErrorListener::~RenderingErrorListener() {}
 
 TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* scrollBar):
@@ -12,7 +28,9 @@ TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* s
     drawingWindowIsOffscreen_(false),
     lastRenderingError_(errNone),
     renderingErrorListener_(NULL),
-    scheduledScrollDirection_(scheduledScrollAbandoned)
+    scheduledScrollDirection_(scheduledScrollAbandoned),
+    selectionMenuModelBuilder(NULL),
+    selectionMenuId(frmInvalidObjectId)
 {
     setInteractionBehavior(  
         behavMouseSelection 
@@ -21,6 +39,7 @@ TextRenderer::TextRenderer(Form& form, RenderingPreferences& prefs, ScrollBar* s
 //        | behavDoubleClickSelection
         | behavMenuBarCopyButton
     );
+    definition_.setupSelectionClickHandler(ShowSelectionPopupMenu, this);
 }
 
 TextRenderer::~TextRenderer() {

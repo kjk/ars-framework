@@ -64,10 +64,21 @@ public:
 
     Int16 popup(UInt16 id, const Point& point);
     
+    enum ModelOwnerFlag
+    {
+        ownModelNot,
+        ownModel
+    };
+       
+    
     // Passes model ownership to PopupMenu and deletes previous model
-    void setModel(PopupMenuModel* model);
+    void setModel(PopupMenuModel* model, ModelOwnerFlag owner = ownModel);
     
     PopupMenuModel* model() {return model_;}
+
+private:
+    
+    ModelOwnerFlag modelOwner_;    
    
 };
 
