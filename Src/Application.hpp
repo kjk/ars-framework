@@ -38,9 +38,10 @@ namespace ArsLexis
      * the proper way to use @c Application class should be through call to 
      * @c Application::main(), passing actual subclass as template argument.
      * Each subclass should declare the following static variables: 
-     *  * static const UInt32 requiredRomVersion
-     *  * static const UInt32 creatorId=appFileCreator;
-     *  * static const UInt16 notEnoughMemoryAlertId;
+     *  <li>static const UInt32 requiredRomVersion
+     *  <li>static const UInt32 creatorId=appFileCreator;
+     *  <li>static const UInt16 notEnoughMemoryAlertId;
+     *  <li>static const UInt16 romIncompatibleAlertId;
      * They are required for proper working of @c Appliation::main().
      */
     class Application: private NonCopyable
@@ -279,7 +280,7 @@ namespace ArsLexis
          * @note This function is designed so that it should be the only code called from @c PilotMain() function,
          * unless you know what you're doing.
          */
-        template<class AppClass, UInt16 alertId> 
+        template<class AppClass> 
         static Err main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
         
         static void gotoForm(UInt16 formId)
@@ -287,6 +288,9 @@ namespace ArsLexis
         
         static void popupForm(UInt16 formId)
         {FrmPopupForm(formId);}
+        
+        static void alert(UInt16 alertId)
+        {FrmAlert(alertId);}
         
         UInt32 romVersion() const
         {return romVersion_;}
@@ -319,10 +323,10 @@ namespace ArsLexis
         friend void logAllocation(void*, bool, const char*, int);
     };
     
-    template<class AppClass, UInt16 alertId> 
+    template<class AppClass> 
     Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     {
-        Err error=Application::checkRomVersion(AppClass::requiredRomVersion, launchFlags, alertId);
+        Err error=Application::checkRomVersion(AppClass::requiredRomVersion, launchFlags, AppClass::romIncompatibleAlertId);
         if (!error)
         {
             AppClass* volatile app=static_cast<AppClass*>(getInstance(AppClass::creatorId));
@@ -349,7 +353,7 @@ namespace ArsLexis
                     } ErrEndCatch
                     delete app;
                     if (memErrNotEnoughSpace==error)
-                        FrmAlert(AppClass::notEnoughMemoryAlertId);
+                        Application::alert(AppClass::notEnoughMemoryAlertId);
                 }
             }
         }
@@ -372,7 +376,7 @@ namespace ArsLexis { \
     } \
     \
     UInt32 Application::creator() {\
-        return creatorId; \
+        return (creatorId); \
     }\
 } 
 

@@ -125,6 +125,19 @@ void MainForm::updateScrollBar()
     scrollBar.show();
 }
 
+Err MainForm::renderDefinition(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& rect)
+{
+    volatile Err error=errNone;
+    ErrTry {
+        definition_.render(graphics, rect, renderingPreferences(), false);
+    }
+    ErrCatch (ex) {
+        error=ex;
+    } ErrEndCatch
+    return error;
+}
+
+
 void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bounds)
 {
     assert(!definition_.empty());
@@ -134,38 +147,34 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
     graphics.erase(rect);
     rect.explode(2, 2, -12, -4);
     Err error=errNone;
-    ErrTry {
-        bool doubleBuffer=true;
-        const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
-        if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
-            doubleBuffer=false;
-            
-        if (doubleBuffer)
+    bool doubleBuffer=true;
+    const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+    if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
+        doubleBuffer=false;
+        
+    if (doubleBuffer)
+    {
+        WinHandle wh=WinCreateOffscreenWindow(bounds.width(), bounds.height(), windowFormat(), &error);
+        if (wh!=0)
         {
-            WinHandle wh=WinCreateOffscreenWindow(bounds.width(), bounds.height(), windowFormat(), &error);
-            if (wh!=0)
             {
-                WinSetDrawWindow(wh);
-                Graphics offscreen(wh);
-                definition_.render(offscreen, rect, renderingPreferences(), false);
-                WinSetDrawWindow(windowHandle());
+            Graphics offscreen(wh);
+            ActivateGraphics act(offscreen);
+            error=renderDefinition(offscreen, rect);
+            if (!error)
                 offscreen.copyArea(rect, graphics, rect.topLeft);
-                WinDeleteWindow(wh, false);
-                wh=0;
             }
-            else 
-                doubleBuffer=false;
+            WinDeleteWindow(wh, false);
         }
-        if (!doubleBuffer)
-            definition_.render(graphics, rect, renderingPreferences(), false);
-        error=errNone;
+        else 
+            doubleBuffer=false;
     }
-    ErrCatch (ex) { // Before anybody starts reorganizing this code, please read reference about ErrCatch() and the use of 'volatile'
-        error=ex;
-    } ErrEndCatch
-    if (error) 
+    if (!doubleBuffer)
+        error=renderDefinition(graphics, rect);
+    if (errNone!=error) 
     {
         definition_.clear();
+        setTitle(appName);
         setDisplayMode(showSplashScreen);
         update();
         iPediaApplication::sendDisplayAlertEvent(notEnoughMemoryAlert);
@@ -230,12 +239,13 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit, bool updat
         WinHandle wh=WinCreateOffscreenWindow(b.width(), b.height(), windowFormat(), &error);
         if (wh!=0)
         {
+            {
             Graphics offscreen(wh);
+            ActivateGraphics act(offscreen);
             graphics.copyArea(b, offscreen, Point(0, 0));
-            WinSetDrawWindow(wh);
             definition_.scroll(offscreen, renderingPreferences(), units);
             offscreen.copyArea(b, graphics, Point(0, 0));
-            WinSetDrawWindow(thisWindow);
+            }
             WinDeleteWindow(wh, false);
         }
         else
@@ -690,6 +700,7 @@ MainForm::RenderingProgressReporter::RenderingProgressReporter(MainForm& form):
     waitText_.c_str(); // We don't want reallocation to occur while rendering...
 }
         
+#define IPEDIA_USES_TEXT_RENDERING_PROGRESS 0
 
 void MainForm::RenderingProgressReporter::reportProgress(uint_t percent) 
 {
@@ -725,17 +736,30 @@ void MainForm::RenderingProgressReporter::reportProgress(uint_t percent)
     Graphics graphics(form_.windowHandle());
     Rectangle bounds=form_.bounds();
     bounds.explode(2, 17, -12, -37);
-    
+
+    ActivateGraphics act(graphics);
+#if IPEDIA_USES_TEXT_RENDERING_PROGRESS
     Font f;
     Graphics::FontSetter fset(graphics, f);
     uint_t height=graphics.fontHeight();
     Rectangle rect(bounds.x(), bounds.y()+(bounds.height()-height)/2, bounds.width(), height);
     graphics.erase(rect);
-
     char buffer[100];
     StrPrintF(buffer, waitText_.c_str(), percent);
-
-    WinHandle wh=WinSetDrawWindow(form_.windowHandle());
     graphics.drawCenteredText(buffer, rect.topLeft, rect.width());
-    WinSetDrawWindow(wh);
+#else
+    uint_t height=10;
+    Rectangle rect(bounds.x()+16, bounds.y()+(bounds.height()-height)/2, bounds.width()-22, height);
+    PatternType oldPattern=WinGetPatternType();
+    WinSetPatternType(blackPattern);
+    RectangleType nativeRec=toNative(rect);
+    nativeRec.extent.x*=percent;
+    nativeRec.extent.x/=100;
+    WinPaintRectangle(&nativeRec, 0);
+    nativeRec.topLeft.x+=nativeRec.extent.x;
+    nativeRec.extent.x=rect.width()-nativeRec.extent.x;
+    WinSetPatternType(grayPattern);
+    WinPaintRectangle(&nativeRec, 0);
+    WinSetPatternType(oldPattern);        
+#endif    
 }

@@ -145,6 +145,9 @@ namespace ArsLexis
         uint_t textWidth(const char_t* text, uint_t length);
         
         void charsInWidth(const char_t* text, uint_t& length, uint_t& width);
+        
+        Handle_t handle() 
+        {return handle_;}
 
     };
     

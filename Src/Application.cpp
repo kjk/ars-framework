@@ -28,7 +28,7 @@ namespace ArsLexis
     }
 
     namespace {
-        static Metrowerks::compile_assert<sizeof(Application*)<=sizeof(UInt32)> may_store_app_pointer_as_feature;
+        static StaticAssert<sizeof(Application*)<=sizeof(UInt32)> may_store_app_pointer_as_feature;
     }
     
     Err Application::setInstance(UInt32 creatorId, Application* app) throw()
@@ -92,7 +92,7 @@ namespace ArsLexis
                 (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp))
             {
                 if (frmInvalidObjectId!=alertId)
-                    FrmAlert (alertId);
+                    alert(alertId);
                 if (romVersion < kPalmOS20Version)
                     AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
             }

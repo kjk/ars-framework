@@ -53,6 +53,8 @@ class MainForm: public iPediaForm
     void updateNavigationButtons();
     
     void handleExtendSelection(const EventType& event, bool endTracking=false);
+    
+    Err renderDefinition(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& rect);
 
     class RenderingProgressReporter: public Definition::RenderingProgressReporter
     {

@@ -90,6 +90,19 @@ namespace ArsLexis
         WinPopDrawState();
     }
     
+    class ActivateGraphics: private NonCopyable
+    {
+        Graphics::Handle_t handle_;
+    public:
+        explicit ActivateGraphics(Graphics& g):
+            handle_(WinSetDrawWindow(g.handle()))
+        {}
+        
+        ~ActivateGraphics()
+        {WinSetDrawWindow(handle_);}
+        
+    };
+    
 }
 
 #endif
