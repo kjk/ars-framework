@@ -59,6 +59,9 @@ namespace ArsLexis
          */
         Forms_t forms_;
 
+
+        Forms_t enqueuedForms_;
+        
         /**
          * @internal 
          * Adds to internal store. Used internally by @c Form class constructor.
@@ -286,6 +289,10 @@ namespace ArsLexis
         static void popupForm(UInt16 formId)
         {FrmPopupForm(formId);}
         
+        void gotoForm(Form* form) {startForm(form, false);}
+        
+        void popupForm(Form* form) {startForm(form, true);}
+        
         static void alert(UInt16 alertId)
         {FrmAlert(alertId);}
         
@@ -313,6 +320,10 @@ namespace ArsLexis
         friend void logAllocation(void*, size_t, bool, const char*, int);
         friend void processReadyUiEvents();
         friend class FormGadget;
+        
+    private:
+        
+        void startForm(Form* form, bool popup);        
     };
     
     template<class AppClass> 

@@ -42,11 +42,11 @@ protected:
     void resize(const ArsLexis::Rectangle& screenBounds);
 
 public:
-    explicit StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId);
+    explicit StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId, uint_t eventToSend);
 
     ~StringListForm();
 
-    void SetStringList(int stringCount, char_t* strList[], uint_t eventToSend);
+    void SetStringList(int stringCount, char_t* strList[]);
 };
 
 #endif

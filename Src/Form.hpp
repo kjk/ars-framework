@@ -161,6 +161,10 @@ namespace ArsLexis
         
         UInt16 getGraffitiStateIndex() const;
         
+        void popup();
+        
+        void run();
+        
         friend class Application;
         friend class FormGadget;
     };

@@ -174,6 +174,8 @@ namespace ArsLexis
     void replaceCharInString(char_t *str, char_t orig, char_t replacement);
 
     void ReverseStringList(char_t **strList, int strListLen);
+    
+    void FreeStringList(char_t* strList[], int strListLen);
 
     void convertFloatStringToUnsignedLong(const ArsLexis::String str, unsigned long& value, unsigned int& digitsAfterComma, ArsLexis::char_t commaSeparator = _T('.'));
     

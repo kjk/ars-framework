@@ -96,6 +96,7 @@ namespace ArsLexis
         Err error=FtrUnregister(creatorId_, featureInstancePointer);
         assert(!error);
         std::for_each(forms_.begin(), forms_.end(), ObjectDeleter<Form>());   
+        std::for_each(enqueuedForms_.begin(), enqueuedForms_.end(), ObjectDeleter<Form>());   
     }
 
 #define kPalmOS20Version sysMakeROMVersion(2,0,0,sysROMStageDevelopment,0)
@@ -179,7 +180,14 @@ namespace ArsLexis
     void Application::loadForm(UInt16 formId)
     {
         Err error;
-        Form* form(createForm(formId));
+        Form* form;
+        if (!enqueuedForms_.empty() && enqueuedForms_.front()->id() == formId)
+        {
+            form = enqueuedForms_.front();
+            enqueuedForms_.pop_front();
+        }
+        else
+            form = createForm(formId);
         if (form)
         {
             error=form->initialize();
@@ -270,6 +278,15 @@ namespace ArsLexis
         Application* app=getInstance(crId=creator());
         assert(app!=0); \
         return  *app;\
+    }
+    
+    void Application::startForm(Form* form, bool popup)
+    {
+        enqueuedForms_.push_back(form);
+        if (popup)
+            popupForm(form->id());
+        else
+            gotoForm(form->id());                
     }
     
 }

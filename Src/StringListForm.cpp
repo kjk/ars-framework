@@ -3,34 +3,29 @@
 #include <StringListForm.hpp>
 #include <FormObject.hpp>
 
-using ArsLexis::String;
-using ArsLexis::FormObject;
-using ArsLexis::List;
-using ArsLexis::Rectangle;
-using ArsLexis::Control;
-using ArsLexis::sendEvent;
+using namespace ArsLexis;
 
-StringListForm::StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId):
-    RichForm(app, formId, false)
+StringListForm::StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId, uint_t eventToSend):
+    RichForm(app, formId, false),
+    stringCount_(0),
+    strList_(NULL),
+    stringListId_(stringListId),
+    selectButtonId_(selectButtonId),
+    cancelButtonId_(cancelButtonId),
+    eventToSend_(eventToSend)
 {
-    stringCount_ = 0;
-    strList_ = NULL;
-    stringListId_ = stringListId;
-    selectButtonId_ = selectButtonId;
-    cancelButtonId_ = cancelButtonId;
 }
 
 StringListForm::~StringListForm()
 {
 }
 
-void StringListForm::SetStringList(int stringCount, char_t *strList[], uint_t eventToSend)
+void StringListForm::SetStringList(int stringCount, char_t *strList[])
 {
     assert(stringCount>0);
 
     stringCount_ = stringCount;
     strList_ = strList;
-    eventToSend_ = eventToSend;
 }
 
 void StringListForm::resize(const ArsLexis::Rectangle& screenBounds)

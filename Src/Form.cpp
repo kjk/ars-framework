@@ -216,6 +216,17 @@ namespace ArsLexis
                 return index;
         return frmInvalidObjectId;
     }
+
+
+    void Form::popup()
+    {
+        application().popupForm(this);
+    }
+    
+    void Form::run()
+    {
+        application().gotoForm(this);
+    }
     
 }
 

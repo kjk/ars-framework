@@ -565,6 +565,14 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
     }
     return strList;
 }
+
+void FreeStringList(char_t* strList[], int strListLen)
+{
+    for (int i = 0; i < strListLen; ++i)
+        delete [] strList[i];
+    delete [] strList;
+}
+
    
 String join(const std::vector<ArsLexis::String>& vec, const String& joiner)
 {
