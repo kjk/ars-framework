@@ -18,18 +18,18 @@ UniversalDataFormat::~UniversalDataFormat() {}
 void UniversalDataFormat::normalize()
 {
     //run it only one time!
-    if (fNormalized)
+    if (fNormalized_)
         return;
-    fNormalized = true;
+    fNormalized_ = true;
     VectorRange offset = 0;
-    for (uint_t i = 0; i < header.size(); i++)
+    for (uint_t i = 0; i < header_.size(); i++)
     {
-        for (uint_t j = 0; j < header[i].size(); j++)
+        for (uint_t j = 0; j < header_[i].size(); j++)
         {
-            VectorRange len = header[i][j];
-            header[i][j] = offset;
+            VectorRange len = header_[i][j];
+            header_[i][j] = offset;
             offset += len;
-            data[offset] = _T('\0');
+            data_[offset] = _T('\0');
             offset++;
         }
     }    
@@ -37,28 +37,28 @@ void UniversalDataFormat::normalize()
 
 int UniversalDataFormat::getItemsCount()
 {
-    assert(headerSize == header.size());
+    assert(headerSize_ == header_.size());
 
-    return headerSize;
+    return headerSize_;
 }
    
 int UniversalDataFormat::getItemElementsCount(int itemNo)
 {
-    assert(0 <= itemNo && itemNo < header.size());
+    assert(0 <= itemNo && itemNo < header_.size());
 
-    return header[itemNo].size();
+    return header_[itemNo].size();
 }
    
 const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo)
 {
-    assert(0 <= itemNo && itemNo < header.size());
-    assert(0 <= elemNo && elemNo < header[itemNo].size());
+    assert(0 <= itemNo && itemNo < header_.size());
+    assert(0 <= elemNo && elemNo < header_[itemNo].size());
 
-    if (!fNormalized)
+    if (!fNormalized_)
         normalize();
     //get offset of data
-    uint_t offset = header[itemNo][elemNo];
-    return data.data() + offset;
+    uint_t offset = header_[itemNo][elemNo];
+    return data_.data() + offset;
 }
     
 ArsLexis::String UniversalDataFormat::getItemTextAsString(int itemNo, int elemNo)

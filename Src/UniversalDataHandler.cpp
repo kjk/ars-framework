@@ -26,7 +26,7 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
                 return SocketConnection::errResponseMalformed;
             out.setHeaderSize(resultLong);
         }
-        else if (lineNo <= out.headerSize)
+        else if (lineNo <= out.headerSize_)
         {
             UniversalDataFormat::Vector_t vec;
             //read values from vector
@@ -41,14 +41,14 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
                 vec.push_back(resultLong);
                 dataOffset = dataOffsetEnd + 1;
             }
-            out.header.push_back(vec);
+            out.header_.push_back(vec);
         }
         else
         {
-            if (lineNo == out.headerSize + 1)
-                out.data.assign(line);
+            if (lineNo == out.headerSize_ + 1)
+                out.data_.assign(line);
             else
-                out.data.append(line);
+                out.data_.append(line);
         }
          lineNo++;
     }

@@ -13,17 +13,17 @@ struct UniversalDataFormat
 
 private:
 
-    int                 headerSize;
-    bool                fNormalized;
-    VectorOfVectors_t   header;
-    ArsLexis::String    data;
+    int                 headerSize_;
+    bool                fNormalized_;
+    VectorOfVectors_t   header_;
+    ArsLexis::String    data_;
 
     void normalize();
 
     void setHeaderSize(int size)
     {
-        headerSize = size;
-        fNormalized = false;    
+        headerSize_ = size;
+        fNormalized_ = false;    
     }
   
 public:
