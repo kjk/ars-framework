@@ -61,9 +61,11 @@ namespace ArsLexis
     
     typedef std::basic_string<unsigned char>   NarrowString;
 
-# define tstrlen _tcslen
-# define tprintf _stprintf
-# define ticks   GetTickCount
+# define tstrlen   _tcslen
+# define tstrcmp   _tcscmp
+# define tstrncmp  _tcsncmp
+# define tprintf   _stprintf
+# define ticks     GetTickCount
 
     static inline tick_t ticksPerSecond() { return 1000; } // Win32 uses fixed 1-millisecond ticks.
 
@@ -96,11 +98,12 @@ namespace ArsLexis
 #  define tprintf StrPrintF
 #  define tstrlen StrLen
 #  define tstrcmp StrCompare
+#  define tstrncmp StrNCompare
 #  define malloc MemPtrNew        
 #  define free MemPtrFree
     
 # else
-        
+
 #  define tprintf sprintf
 #  define tstrlen strlen
 #  define tstrcmp strcmp
