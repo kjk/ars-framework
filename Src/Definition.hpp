@@ -244,9 +244,6 @@ public:
     
     ~Definition();
 
-
-    void replaceElements(Elements_t& elements);
-    
     /**
      * Adds hot spot to the collection of this definition's hot spots. Definition takes ownership 
      * of the hot spot.
@@ -298,8 +295,6 @@ public:
     
     bool extendSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount = 0);
     
-    status_t setElements(const Elements_t& elems, bool owner = false);
-    
     /**
      * Resets this definition to its default state (without any elements, hot spots etc.).
      */
@@ -311,9 +306,6 @@ public:
     void setHyperlinkHandler(HyperlinkHandlerBase* handler)
     {hyperlinkHandler_=handler;}
     
-    void goToBookmark(const ArsLexis::String&)
-    {}
-
     void allToText(ArsLexis::String& out) const;
 
     void selectionToText(ArsLexis::String& out) const;
@@ -445,7 +437,6 @@ private:
 
     bool navigatingUp_;
     bool navigatingDown_;
-    bool elementsOwner_;
     bool trackingSelection_;
     bool selectionIsHyperlink_;
 

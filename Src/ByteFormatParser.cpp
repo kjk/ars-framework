@@ -86,11 +86,13 @@ void ByteFormatParser::reset()
     headerParsed_ = false;
 }
 
+/*
 void ByteFormatParser::replaceElements(Definition::Elements_t& el)
 {
     el.swap(elems);
 }
-
+ */
+ 
 bool ByteFormatParser::parseParam()
 {
     if (currentElementParamsLength_ == 0)

@@ -125,9 +125,10 @@ Definition::Definition():
     navOrderOptions_(0),
     navigatingUp_(false),
     navigatingDown_(false),
-    elementsOwner_(true),
     selectionClickHandler(NULL),
-    selectionClickHandlerContext(NULL)
+    selectionClickHandlerContext(NULL),
+    model_(NULL),
+    modelOwner_(ownModelNot)
 {}
 
 namespace {
@@ -167,14 +168,38 @@ void Definition::clear()
 {
     clearHotSpots();
     clearLines();
-    if (elementsOwner_)
-        DestroyElements(elements_);
-    else
-        elements_.clear();
-    selectionStartElement_=elements_.end();
-    selectionEndElement_=elements_.end();
-    elementsOwner_ = true;
+    
+    if (ownModel == modelOwner_)
+    {
+        delete model_;
+        model_ = NULL;
+        modelOwner_ = ownModelNot;
+    }
+    elements_.clear();
+
+    selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
+        inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+    selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
+    trackingSelection_ = false;
+    selectionIsHyperlink_ = false;
+
     bounds_.clear();
+}
+
+void Definition::setModel(DefinitionModel* model, ModelOwnerFlag owner)
+{
+    clear();
+    model_ = model;
+    modelOwner_ = owner;
+    if (NULL != model_)
+        elements_ = model_->elements;
+
+
+    selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
+        inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+    selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
+    trackingSelection_ = false;
+    selectionIsHyperlink_ = false;
 }
 
 Definition::~Definition()
@@ -952,6 +977,7 @@ Definition::LineHeader::LineHeader():
     leftMargin(0)
 {}
 
+/*
 void Definition::replaceElements(Elements_t& elements)
 {
     clear();
@@ -963,6 +989,7 @@ void Definition::replaceElements(Elements_t& elements)
     selectionIsHyperlink_ = false;
     elementsOwner_ = true;
 }
+*/
 
 bool Definition::mouseDown(Graphics& graphics, const RenderingPreferences& prefs, const Point& point)
 {
@@ -1294,25 +1321,25 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
 }
 #endif
 
-status_t Definition::setElements(const Elements_t& elems, bool owner)
+DefinitionModel::DefinitionModel():
+    styles_(NULL),
+    styleCount_(0)
 {
-    clear();
-//    volatile status_t err = errNone;
-//    ErrTry {
-        elements_ = elems;
-        selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
-            inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
-        selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
-        trackingSelection_ = false;
-        selectionIsHyperlink_ = false;
-        elementsOwner_ = owner;
-//    }
-//    ErrCatch(ex) {
-//        err = ex;
-//    } ErrEndCatch
-//    return err;
-    return errNone;
 }
+
+DefinitionModel::~DefinitionModel()
+{
+    DestroyElements(elements);
+    delete [] styles_;
+}
+
+void DefinitionModel::swap(DefinitionModel& other)
+{
+    elements.swap(other.elements);
+    std::swap(styles_, other.styles_);
+    std::swap(styleCount_, other.styleCount_);
+}
+
 
 #if defined(_PALM_OS)
 #pragma segment Segment1

@@ -51,8 +51,9 @@ public:
     const_iterator end() const {return definition_.end();}
     bool empty() const {return definition_.empty();}
 
-    typedef Definition::Elements_t Elements_t;
-    void replaceElements(Elements_t& elements) {definition_.replaceElements(elements);}
+    typedef Definition::ModelOwnerFlag ModelOwnerFlag;
+
+    void setModel(DefinitionModel* model, ModelOwnerFlag owner = Definition::ownModelNot) {definition_.setModel(model, owner);}
 
     uint_t linesCount() const {return definition_.totalLinesCount();}
 
