@@ -194,7 +194,7 @@ namespace ArsLexis
         return error;
     }
 
-    Err ErrWebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, char *parameterP, UInt32 *resultP)
+    Err WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, char *parameterP, UInt32 *resultP)
     {
         UInt16  cardNo;
         LocalID dbID;
