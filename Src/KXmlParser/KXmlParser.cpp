@@ -1359,7 +1359,7 @@ String KXmlParser::resolveEntity(const String& entity)
 
     EntityMap_t::const_iterator it=entityMap_.find(entity);
     if (it==entityMap_.end())
-        return ""; // TODO: an exception? //RE TODO: Why? We dont need to throw exception
+        return "";
     return (*it).second;
 }
 
