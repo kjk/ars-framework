@@ -312,7 +312,7 @@ void TextRenderer::drawFocusRing()
 void TextRenderer::removeFocusRing()
 {
     assert(form()->application().runningOnTreo600());
-    HsNavRemoveFocusRing(*form());
+//    HsNavRemoveFocusRing(*form());
 }
 
 bool TextRenderer::copySelection() const
