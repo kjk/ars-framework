@@ -27,15 +27,19 @@ GenericTextElement::~GenericTextElement()
     delete hyperlink_;
 }
 
-static uint_t findNextWhitespace(const String& text, uint_t fromPos)
-{
-    return std::find_if(text.begin()+fromPos, text.end(), std::isspace)-text.begin();
-}
+namespace {
 
-static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
-{
-    String::const_reverse_iterator it(text.rend()-start-length);
-    return text.rend()-std::find_if(it, it+length, std::isspace);
+    static uint_t findNextWhitespace(const String& text, uint_t fromPos)
+    {
+        return std::find_if(text.begin()+fromPos, text.end(), std::isspace)-text.begin();
+    }
+
+    static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
+    {
+        String::const_reverse_iterator it(text.rend()-start-length);
+        return text.rend()-std::find_if(it, it+length, std::isspace);
+    }
+
 }
 
 void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)

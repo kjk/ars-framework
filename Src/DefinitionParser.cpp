@@ -109,8 +109,12 @@ void DefinitionParser::applyCurrentFormatting(FormattedTextElement* element)
         fontEffects.setSuperscript(true);
 }
 
-static const char entityReferenceStart='&';
-static const char entityReferenceEnd=';';
+namespace {
+
+    static const char entityReferenceStart='&';
+    static const char entityReferenceEnd=';';
+
+}    
 
 void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
 {
@@ -156,18 +160,22 @@ void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
     }
 }
 
-static const char indentLineChar=':';
-static const char bulletChar='*';
-static const char numberedListChar='#';
-static const char headerChar='=';
-static const char strongChar='\'';
-static const char htmlTagStart='<';
-static const char htmlTagEnd='>';
-static const char htmlClosingTagChar='/';
-static const char horizontalLineChar='-';
-static const char definitionListChar=';';
-static const char linkOpenChar='[';
-static const char linkCloseChar=']';
+namespace {
+
+    static const char indentLineChar=':';
+    static const char bulletChar='*';
+    static const char numberedListChar='#';
+    static const char headerChar='=';
+    static const char strongChar='\'';
+    static const char htmlTagStart='<';
+    static const char htmlTagEnd='>';
+    static const char htmlClosingTagChar='/';
+    static const char horizontalLineChar='-';
+    static const char definitionListChar=';';
+    static const char linkOpenChar='[';
+    static const char linkCloseChar=']';
+
+}
 
 #define horizontalLineString "----"
 #define sectionString "=="
@@ -380,9 +388,13 @@ bool DefinitionParser::detectHyperlink(uint_t end)
     return isHyperlink;
 }
 
-inline static bool isNewline(char chr)
-{
-    return chr=='\n';
+namespace {
+
+    inline static bool isNewline(char chr)
+    {
+        return chr=='\n';
+    }
+
 }
 
 void DefinitionParser::parseText(uint_t end, ElementStyle style)
@@ -766,7 +778,6 @@ void DefinitionParser::parseListElementLine()
     parseText(lineEnd_, styleDefault);
 }
 
-//! @todo Implement DefinitionParser::parseDefinitionListLine()
 void DefinitionParser::parseDefinitionListLine()
 {
     while (parsePosition_<lineEnd_ && (definitionListChar==(*text_)[parsePosition_] || std::isspace((*text_)[parsePosition_])))
