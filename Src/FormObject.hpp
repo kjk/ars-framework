@@ -151,6 +151,9 @@ namespace ArsLexis
         
         bool enabled() const
         {return CtlEnabled(object());}
+        
+        void setGraphics(DmResID bitmapId, DmResID selBitmapId=NULL)
+        {CtlSetGraphics(object(), bitmapId, selBitmapId);}
                 
     };        
     

@@ -29,7 +29,7 @@ class iPediaApplication: public ArsLexis::Application
     ArsLexis::String termList_;
         
     void detectViewer();
-
+    
 protected:
 
     Err handleSystemNotify(SysNotifyParamType& notify);

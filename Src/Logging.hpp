@@ -25,7 +25,14 @@ namespace ArsLexis
         const char* context() const
         {return context_;}
         
-        void log(const String& text);
+        void log(const char* text, uint_t length);
+        
+        void log(const String& text)
+        {log(text.data(), text.length());}
+        
+        void log(const char* text)
+        {log(text, StrLen(text));}
+        
         
         class LineAppender
         {

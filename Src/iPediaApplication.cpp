@@ -17,6 +17,7 @@ iPediaApplication::iPediaApplication():
     ticksPerSecond_(SysTicksPerSecond()),
     resolver_(0)
 {
+    log()<<"iPedia Application instantiated.";
 }
 
 inline void iPediaApplication::detectViewer()
@@ -64,6 +65,7 @@ iPediaApplication::~iPediaApplication()
     if (resolver_)
         delete resolver_;
 
+    log()<<"iPediaApplication deleted.";
 }
 
 

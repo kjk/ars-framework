@@ -54,12 +54,12 @@ void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
     
     object.attach(backButton);
     object.bounds(bounds);
-    bounds.y()=screenBounds.extent.y-13;
+    bounds.y()=screenBounds.extent.y-14;
     object.setBounds(bounds);
 
     object.attach(forwardButton);
     object.bounds(bounds);
-    bounds.y()=screenBounds.extent.y-13;
+    bounds.y()=screenBounds.extent.y-14;
     object.setBounds(bounds);
         
     update();    
@@ -304,10 +304,15 @@ void MainForm::synchronizeWithHistory()
 
     UInt16 buttonsWidth=0;
     Control control(*this, backButton);
-    control.setEnabled(history().hasPrevious());
+    bool enabled=history().hasPrevious();
+    control.setEnabled(enabled);
+    control.setGraphics(enabled?backBitmap:backDisabledBitmap);
+    
         
     control.attach(forwardButton);
-    control.setEnabled(history().hasNext());
+    enabled=history().hasNext();
+    control.setEnabled(enabled);
+    control.setGraphics(enabled?forwardBitmap:forwardDisabledBitmap);
 }
 
 bool MainForm::handleKeyPress(const EventType& event)

@@ -4,15 +4,15 @@
 namespace ArsLexis
 {
 
-    void Logger::log(const String& text)
+    void Logger::log(const char* text, uint_t length)
     {
         String full;
         // 8=timestamp; 1=tab; 2=braces; 1=colon; 1=tab; 1=newline; 1=null
-        full.reserve(8+1+2+contextLength_+1+1+text.length()+1+1);
+        full.reserve(8+1+2+contextLength_+1+1+length+1+1);
         char buffer[9];
         UInt32 timestamp=TimGetTicks();
         StrPrintF(buffer, "%lx", timestamp);
-        full.append(buffer, 8).append("\t[", 2).append(context_, contextLength_).append("]:\t", 3).append(text).append(1, '\n');
+        full.append(buffer, 8).append("\t[", 2).append(context_, contextLength_).append("]:\t", 3).append(text, length).append(1, '\n');
         logRaw(full);
     }
 
