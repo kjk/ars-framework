@@ -88,6 +88,24 @@ void LookupManager::handleDefinition()
     }
 }
 
+void LookupManager::handleLookupFinishedInForm(const LookupFinishedEventData& data)
+{
+    switch (data.outcome)
+    {
+        case data.outcomeError:
+            handleConnectionError(data.error);
+            break;
+        
+        case data.outcomeServerError:
+            handleServerError(data.serverError);
+            break;
+            
+        case data.outcomeNotFound:
+            iPediaApplication::sendDisplayAlertEvent(definitionNotFoundAlert);
+            break;
+    }
+}
+
 void LookupManager::handleLookupEvent(const EventType& event)
 {
     switch (event.eType)
@@ -100,24 +118,8 @@ void LookupManager::handleLookupEvent(const EventType& event)
             {
                 lookupInProgress_=false;
                 const LookupFinishedEventData& data=reinterpret_cast<const LookupFinishedEventData&>(event.data);
-                switch (data.outcome)
-                {
-                    case data.outcomeError:
-                        handleConnectionError(data.error);
-                        break;
-                    
-                    case data.outcomeServerError:
-                        handleServerError(data.serverError);
-                        break;
-                        
-                    case data.outcomeNotFound:
-                        iPediaApplication::sendDisplayAlertEvent(definitionNotFoundAlert);
-                        break;
-                        
-                    case data.outcomeDefinition:
-                        handleDefinition();
-                        break;
-                }                        
+                if (data.outcome==data.outcomeDefinition)
+                    handleDefinition();
             }
             break;                    
     }

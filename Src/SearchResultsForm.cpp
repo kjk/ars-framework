@@ -131,7 +131,7 @@ void SearchResultsForm::refineSearch()
     lookupManager->search(expression);
 }
 
-inline void SearchResultsForm::handleControlSelect(const EventType& event)
+void SearchResultsForm::handleControlSelect(const EventType& event)
 {
     switch (event.data.ctlSelect.controlID)
     {
@@ -266,6 +266,9 @@ bool SearchResultsForm::handleEvent(EventType& event)
                     updateSearchResults();
                 else
                     update();
+                LookupManager* lookupManager=static_cast<iPediaApplication&>(application()).getLookupManager();
+                assert(lookupManager);
+                lookupManager->handleLookupFinishedInForm(data);
             }
             break;     
             

@@ -125,6 +125,8 @@ public:
     const ArsLexis::String& lastInputTerm() const
     {return lastInputTerm_;}
     
+    void handleLookupFinishedInForm(const LookupFinishedEventData& data);
+    
 private:
     
     void handleServerError(ServerError serverError);

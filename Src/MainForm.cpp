@@ -299,8 +299,12 @@ void MainForm::handleLookupFinished(const EventType& event)
         default:
             update();
     }
+    
+    iPediaApplication& app=iPediaApplication::instance();
+    LookupManager* lookupManager=app.getLookupManager();
+    assert(lookupManager);
+    lookupManager->handleLookupFinishedInForm(data);
 
-    const iPediaApplication& app=iPediaApplication::instance();
     if (app.inStressMode())
     {
         EventType event;
