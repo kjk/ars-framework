@@ -1,7 +1,6 @@
 /**
  * @file DeviceInfo.cpp
  *
- *
  * Copyright (C) 2000-2003 Krzysztof Kowalczyk
  *
  * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
@@ -11,6 +10,12 @@
 #include <DLServer.h>
 #include <68K/Hs.h>
 #include <Text.hpp>
+
+static status_t getPlatform(String& out)
+{
+    out.append("Palm");
+    return errNone;
+}
 
 namespace ArsLexis
 {
@@ -115,6 +120,25 @@ namespace ArsLexis
         return error;
     }
 
+    status_t getHsSerialNum(String out)
+    {
+        char  versionStr[hsVersionStringSize];
+    
+        if (!isTreo600())
+            return sysErrNotAllowed;
+    
+        MemSet (versionStr, hsVersionStringSize, 0);
+        if (HsGetVersionString (hsVerStrSerialNo, versionStr, NULL) != errNone)
+            return sysErrNotAllowed;
+    
+        if (0==versionStr[0])
+            return sysErrNotAllowed;
+    
+        out.append((char*)versionStr);
+        return errNone;
+    }
+
+
     namespace {
 
         typedef status_t (TokenGetter)(String&);
@@ -139,12 +163,13 @@ namespace ArsLexis
         String out;
         renderDeviceIdentifierToken(out, "HS", getHotSyncName);
         renderDeviceIdentifierToken(out, "SN", getDeviceSerialNumber);
+        RenderDeviceIdentifierToken(out, "HN", getHsSerialNum);
         renderDeviceIdentifierToken(out, "PN", getPhoneNumber);
+        renderDeviceIdentifierToken(out, "PL", getPlatform);
         renderDeviceIdentifierToken(out, "OC", getOEMCompanyId);
         renderDeviceIdentifierToken(out, "OD", getOEMDeviceId);
         return out;
     }
-
 
     // return true if running on real Treo 600 device
     bool isTreo600()
@@ -156,10 +181,10 @@ namespace ArsLexis
             return false;
 
         FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
-        if (id != 'H101')
-            return false;
+        if (('H101'==id) || ('H102'==id))
+            return true;
 
-        return true;
+        return false;
     }
 
 }
