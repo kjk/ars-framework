@@ -1,8 +1,7 @@
 #ifndef __ARSLEXIS_WINSYSUTILS_HPP__
 #define __ARSLEXIS_WINSYSUTILS_HPP__
 
-#include <Debug.hpp>
-#include <BaseTypes.hpp>
+#include <Text.hpp>
 
 namespace ArsLexis
 {
@@ -16,7 +15,10 @@ using ArsLexis::String;
 
 void GetEditWinText(HWND hwnd, String &txtOut);
 void SetEditWinText(HWND hwnd, const String& txt);
-bool FGetListSelectedItemText(HWND ctrl, String& txtOut);
+
+void ListCtrlFillFromList(HWND ctrlList, CharPtrList_t& strList, bool fRemoveDups);
+bool ListCtrlGetSelectedItemText(HWND ctrl, String& txtOut);
+
 bool GotoURL(const ArsLexis::char_t *url);
 bool GetSpecialFolderPath(String& pathOut, BOOL fCreate=TRUE);
 

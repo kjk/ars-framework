@@ -40,7 +40,7 @@ void ArsLexis::processReadyUiEvents()
 
 // Put the text of currently selected item in list control into txtOut
 // return false if no item is currently selected 
-bool FGetListSelectedItemText(HWND ctrl, String& txtOut)
+bool ListCtrlGetSelectedItemText(HWND ctrl, String& txtOut)
 {
     int idx = SendMessage(ctrl, LB_GETCURSEL, 0, 0);
     if (-1==idx)
@@ -79,6 +79,28 @@ void GetEditWinText(HWND hwnd, ArsLexis::String &txtOut)
 void SetEditWinText(HWND hwnd, const ArsLexis::String& txt)
 {
     SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)txt.c_str());
+}
+
+void ListCtrlFillFromList(HWND ctrlList, CharPtrList_t& strList, bool fRemoveDups)
+{
+    CharPtrList_t::iterator iter = strList.begin();
+    CharPtrList_t::iterator iterEnd = strList.end();
+
+    const char_t *str;
+    do {
+        str = *iter;
+        if (fRemoveDups)
+        {
+            int idx = SendMessage(ctrlList, LB_FINDSTRINGEXACT, 0, (LPARAM)str);
+            if (LB_ERR == idx)
+                SendMessage(ctrlList, LB_ADDSTRING, 0, (LPARAM)str);
+        }
+        else
+        {
+            SendMessage(ctrlList, LB_ADDSTRING, 0, (LPARAM)str);
+        }
+        iter++;
+    } while (iter!=iterEnd);
 }
 
 // try to launch built-in web browser with a given url

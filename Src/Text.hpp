@@ -133,6 +133,13 @@ namespace ArsLexis
     void HexBinEncodeBlob(unsigned char *blob, int blobSize, String& out);
 
     String GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd);
+
+    char_t *StringCopy(const String& str);
+
+    void FreeStringsFromCharPtrList(CharPtrList_t& strList);
+
+    int AddLinesToList(const String& txt, CharPtrList_t& strList);
+
 }
 
 #endif

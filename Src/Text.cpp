@@ -8,161 +8,160 @@ namespace ArsLexis
 {
 
 #if defined(_WIN32)    
-    char_t PalmToUnicode[160-128] = 
-    {
-     8364, 129 , 8218,  131, 8222, 8230, 8224, 8225,  710, 8240, 
-      352, 8249,  338, 9674,  142,  143,  144, 8216, 8217, 8220, 
-     8221, 8226, 8211, 8212, 8776, 8482,  353, 8250,  339,  157, 
-      158,  159
-    };
+char_t PalmToUnicode[160-128] = 
+{
+ 8364, 129 , 8218,  131, 8222, 8230, 8224, 8225,  710, 8240, 
+  352, 8249,  338, 9674,  142,  143,  144, 8216, 8217, 8220, 
+ 8221, 8226, 8211, 8212, 8776, 8482,  353, 8250,  339,  157, 
+  158,  159
+};
 
-    char_t UnicodeToPalm[24][2] = 
-    {
-      338, 140,  339, 156,  352, 138,  353, 154,  710, 136, 
-     8211, 150, 8212, 151, 8216, 145, 8217, 146, 8218, 130, 
-     8220, 147, 8221, 148, 8222, 132, 8224, 134, 8225, 135,
-     8226, 149, 8230, 133, 8240, 137, 8249, 139, 8250, 155,
-     8364, 128, 8482, 153, 8776, 152, 9674, 141
-    };
-    struct CharToByte
-    { 
-        char operator()(char_t in) 
-        {   
-            if (in<=255)
-            {
-                // is it common code ?
-                return char(in);
-            }
-            else // it's unicode char
-            {
-                // Maybe binary search - MS doesn't support 
-                // as always standard and bsearch
-                for (int i=0; i<24; i++)
-                {
-                    if (UnicodeToPalm[i][0]==in)
-                        return (char)UnicodeToPalm[i][1];
-                }
-                assert(false); //we never shall reach this point
-                return 0;
-            }
-        }
-    };
-    
-    struct ByteToChar 
-    { 
-        char_t operator()(unsigned char in)
+char_t UnicodeToPalm[24][2] = 
+{
+  338, 140,  339, 156,  352, 138,  353, 154,  710, 136, 
+ 8211, 150, 8212, 151, 8216, 145, 8217, 146, 8218, 130, 
+ 8220, 147, 8221, 148, 8222, 132, 8224, 134, 8225, 135,
+ 8226, 149, 8230, 133, 8240, 137, 8249, 139, 8250, 155,
+ 8364, 128, 8482, 153, 8776, 152, 9674, 141
+};
+
+struct CharToByte
+{ 
+    char operator()(char_t in) 
+    {   
+        if (in<=255)
         {
-            if ((in>=128)&&(in<=159))
-                return PalmToUnicode[in-128];
-            else
-            {
-                if ('\t'==in)
-                {
-                    // special case for tab - Palm ignores it, wince displays
-                    // as a rectangle
-                    return char_t(' ');
-                }
-                return char_t(in);
-            }
+            // is it common code ?
+            return char(in);
         }
-    };
-#endif
-    
-    void TextToByteStream(const String& inTxt, NarrowString& outStream)
+        else // it's unicode char
+        {
+            // Maybe binary search - MS doesn't support 
+            // as always standard and bsearch
+            for (int i=0; i<24; i++)
+            {
+                if (UnicodeToPalm[i][0]==in)
+                    return (char)UnicodeToPalm[i][1];
+            }
+            assert(false); //we never shall reach this point
+            return 0;
+        }
+    }
+};
+
+struct ByteToChar 
+{ 
+    char_t operator()(unsigned char in)
     {
+        if ((in>=128)&&(in<=159))
+            return PalmToUnicode[in-128];
+        else
+        {
+            if ('\t'==in)
+            {
+                // special case for tab - Palm ignores it, wince displays
+                // as a rectangle
+                return char_t(' ');
+            }
+            return char_t(in);
+        }
+    }
+};
+#endif
+
+void TextToByteStream(const String& inTxt, NarrowString& outStream)
+{
 #if defined(_WIN32)
-        /*Why this doesn't work I have no idea
-        char *out=NULL;
-        int size = WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, 0, NULL,NULL);
-        out=new char[size];
-        WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
-        outStream.assign(out);
-        delete []out;*/
-        outStream.reserve(inTxt.length());
-        std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
+    /*Why this doesn't work I have no idea
+    char *out=NULL;
+    int size = WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, 0, NULL,NULL);
+    out=new char[size];
+    WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
+    outStream.assign(out);
+    delete []out;*/
+    outStream.reserve(inTxt.length());
+    std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
 #else
-        outStream.assign(inTxt);
+    outStream.assign(inTxt);
 #endif
-    }
+}
 
-    void ByteStreamToText(const NarrowString& inStream, String& outTxt)
-    {
+void ByteStreamToText(const NarrowString& inStream, String& outTxt)
+{
 #if defined(_WIN32)
-        /*Why this doesn't work I have no idea
-        char_t *out=NULL;
-        int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
-        out=new char_t[size];
-        MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
-        outTxt.assign(out);
-        delete []out;*/
-        outTxt.reserve(inStream.length());
-        std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
+    /*Why this doesn't work I have no idea
+    char_t *out=NULL;
+    int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
+    out=new char_t[size];
+    MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
+    outTxt.assign(out);
+    delete []out;*/
+    outTxt.reserve(inStream.length());
+    std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
 #else
-        outTxt.assign(inStream);
+    outTxt.assign(inStream);
 #endif
-    }
+}
 
-    bool startsWith(const String& text, const char_t* start, uint_t startOffset)
+bool startsWith(const String& text, const char_t* start, uint_t startOffset)
+{
+    while (startOffset<text.length() && *start)
     {
-        while (startOffset<text.length() && *start)
+        if (*start==text[startOffset])
         {
-            if (*start==text[startOffset])
-            {
-                ++start;
-                ++startOffset;
-            }
-            else
-                return false;
+            ++start;
+            ++startOffset;
         }
-        return 0==*start;
+        else
+            return false;
     }
-    
-    bool startsWith(const String& text, const String& start, uint_t startOffset)
-    {
-        uint_t pos=0;
-        while (startOffset<text.length() && pos<start.length())
-        {
-            if (text[startOffset]==start[pos])
-            {
-                ++startOffset;
-                ++pos;
-            }
-            else
-                return false;
-        }
-        return pos==start.length();
-    }
-    
-    bool startsWithIgnoreCase(const String& text, const char_t* start, uint_t startOffset)
-    {
-        while (startOffset<text.length() && *start)
-        {
-            if (toLower(*start)==toLower(text[startOffset]))
-            {
-                ++start;
-                ++startOffset;
-            }
-            else
-                return false;
-        }
-        return 0==*start;
-    }
+    return 0==*start;
+}
 
-    bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end)
+bool startsWith(const String& text, const String& start, uint_t startOffset)
+{
+    uint_t pos=0;
+    while (startOffset<text.length() && pos<start.length())
     {
-        while (s1start!=s1end && s2start!=s2end)
+        if (text[startOffset]==start[pos])
         {
-            if (toLower(*s1start)==toLower(*s2start))
-            {
-                ++s1start;
-                ++s2start;
-            }
-            else 
-                return false;
+            ++startOffset;
+            ++pos;
         }
-        return (s1start==s1end && s2start==s2end);
+        else
+            return false;
     }
+    return pos==start.length();
+}
     
+bool startsWithIgnoreCase(const String& text, const char_t* start, uint_t startOffset)
+{
+    while (startOffset<text.length() && *start)
+    {
+        if (toLower(*start)==toLower(text[startOffset]))
+        {
+            ++start;
+            ++startOffset;
+        }
+        else
+            return false;
+    }
+    return 0==*start;
+}
+
+bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end)
+{
+    while (s1start!=s1end && s2start!=s2end)
+    {
+        if (toLower(*s1start)==toLower(*s2start))
+        {
+            ++s1start;
+            ++s2start;
+        }
+        else 
+            return false;
+    }
+    return (s1start==s1end && s2start==s2end);
 }
 
 ArsLexis::status_t ArsLexis::numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
@@ -356,7 +355,7 @@ int ArsLexis::formatNumber(long num, char_t* buf, int bufSize)
 // from the string. Updates curPos so that it can be called in sequence.
 // Sets fEnd to true if there are no more lines.
 // Handles the following kinds of new lines: "\n", "\r", "\n\r", "\r\n"
-ArsLexis::String ArsLexis::GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd)
+String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
 {
     fEnd = false;
     if (curPos==str.length())
@@ -391,4 +390,57 @@ ArsLexis::String ArsLexis::GetNextLine(const ArsLexis::String& str, String::size
     String::size_type lineLen = lineEndPos - lineStartPos;
     return str.substr(lineStartPos, lineLen);
 }
+
+// note: caller needs to free memory with delete
+char_t *StringCopy(const String& str)
+{
+    const char_t *curStr = str.c_str();
+    int len = tstrlen(curStr);
+    char_t *newStr = new char_t[len+1];
+    if (NULL==newStr)
+        return NULL;
+
+    memcpy(newStr,curStr,(len+1)*sizeof(char_t));
+    return newStr;
+}
+
+// given a list of strings, free memory taken by each string in the list.
+void FreeStringsFromCharPtrList(CharPtrList_t& strList)
+{
+    CharPtrList_t::iterator iter = strList.begin();
+    CharPtrList_t::iterator iterEnd = strList.end();
+
+    const char_t *strToDelete;
+    do {
+        strToDelete = *iter;
+        delete [] (char_t*)strToDelete;
+        iter++;
+    } while (iter!=iterEnd);
+}
+
+// given a string txt containing a new-line separated list of strings,
+// edd each line of text to strList. Return number of added strings
+// Makes copies of the string so client needs to delete those strings
+// after use e.g. using FreeStringsFromCharPtrList
+int AddLinesToList(const String& txt, CharPtrList_t& strList)
+{
+    const char_t *wordTxt;
+    String::size_type curPos = 0;
+    bool fEnd;
+    String word;
+
+    int  count = 0;
+    while (true)
+    {
+        word = ArsLexis::GetNextLine(txt, curPos, fEnd);
+        if (fEnd)
+            break;
+        wordTxt = StringCopy(word);
+        strList.push_back(wordTxt);
+        ++count;
+    }
+    return count;
+}
+
+} // namespace ArsLexis
 

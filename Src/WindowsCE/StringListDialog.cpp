@@ -27,8 +27,8 @@ static bool    fRemoveDups = false;
 #define SELECT_PRESSED  1
 #define CANCEL_PRESSED  2
 
-static CharPtrList_t g_strList;
-static String        selectedWord;
+static CharPtrList_t * g_strList = NULL;
+static String          selectedWord;
 
 const int hotKeyCode = 0x32;
 
@@ -72,38 +72,20 @@ static BOOL InitStringList(HWND hDlg)
     
     g_hRecentLookupDlg = hDlg;
 
-    HWND ctrl = GetDlgItem(hDlg, IDC_STRING_LIST);
-    g_oldListWndProc = (WNDPROC)SetWindowLong(ctrl, GWL_WNDPROC, (LONG)ListWndProc);
-    RegisterHotKey(ctrl, hotKeyCode, 0, VK_TACTION);
+    HWND ctrlList = GetDlgItem(hDlg, IDC_STRING_LIST);
+    g_oldListWndProc = (WNDPROC)SetWindowLong(ctrlList, GWL_WNDPROC, (LONG)ListWndProc);
+    RegisterHotKey(ctrlList, hotKeyCode, 0, VK_TACTION);
 
-    const char_t *str;
+    ListCtrlFillFromList(ctrlList, *g_strList, fRemoveDups);
 
-    CharPtrList_t::iterator iter = g_strList.begin();
-    CharPtrList_t::iterator iterEnd = g_strList.end();
-
-    do {
-        str = *iter;
-        if (fRemoveDups)
-        {
-            int idx = SendMessage(ctrl, LB_FINDSTRINGEXACT, 0, (LPARAM)str);
-            if (LB_ERR == idx)
-                SendMessage(ctrl, LB_ADDSTRING, 0, (LPARAM)str);
-        }
-        else
-        {
-            SendMessage(ctrl, LB_ADDSTRING, 0, (LPARAM)str);
-        }
-        iter++;
-    } while (iter!=iterEnd);
-
-    SendMessage (ctrl, LB_SETCURSEL, 0, 0);
+    SendMessage (ctrlList, LB_SETCURSEL, 0, 0);
     return TRUE;
 }
 
 static void DoSelect(HWND hDlg)
 {
     HWND ctrl = GetDlgItem(hDlg, IDC_STRING_LIST);    
-    bool fSelected = FGetListSelectedItemText(ctrl, selectedWord);
+    bool fSelected = ListCtrlGetSelectedItemText(ctrl, selectedWord);
     if (fSelected)
         EndDialog(hDlg, SELECT_PRESSED);
 }
@@ -144,9 +126,9 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
     return FALSE;
 }
 
-bool FGetStringFromList(HWND hwnd, CharPtrList_t strList, ArsLexis::String& strOut)
+bool FGetStringFromList(HWND hwnd, CharPtrList_t& strList, String& strOut)
 {
-    g_strList = strList;
+    g_strList = &strList;
     fRemoveDups = false;
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
     if (SELECT_PRESSED==result)
@@ -158,9 +140,9 @@ bool FGetStringFromList(HWND hwnd, CharPtrList_t strList, ArsLexis::String& strO
     return false;
 }
 
-bool FGetStringFromListRemoveDups(HWND hwnd, CharPtrList_t strList, String& strOut)
+bool FGetStringFromListRemoveDups(HWND hwnd, CharPtrList_t& strList, String& strOut)
 {
-    g_strList = strList;
+    g_strList = &strList;
     fRemoveDups = true;
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
     if (SELECT_PRESSED==result)
