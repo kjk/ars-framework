@@ -336,6 +336,7 @@ int ArsLexis::formatNumber(long num, char_t* buf, int bufSize)
     return lenOut;
 }
 
+// GetNextLine is for iterating over lines in a string.
 // given a string str and curPos which is a valid index within str, return
 // a substring from curPos until newline or end of string. Removes the newline
 // from the string. Updates curPos so that it can be called in sequence.

@@ -34,7 +34,7 @@ status_t getSystemParameter(String& out, UINT uiAction)
         delete [] buffer;
 
         buffer = new char_t[bufChars];
-        memset(buffer,0,bufSize);
+        ZeroMemory(buffer,bufSize);
 
         fOk = SystemParametersInfo(uiAction, bufSize, buffer, 0);
         if (fOk)
@@ -64,7 +64,7 @@ status_t getPhoneNumber(String& out)
 {
 #ifdef WIN32_PLATFORM_WFSP  // smartphone
     SMS_ADDRESS address;
-    memset(&address,0,sizeof(SMS_ADDRESS));
+    ZeroMemory(&address,sizeof(address));
     HRESULT res = SmsGetPhoneNumber(&address);
     if (SUCCEEDED(res))
     {
@@ -191,7 +191,7 @@ static status_t getPlatform(String& out)
     long osMinor = (int)osvi.dwMinorVersion;
 
     char_t buffer[32];
-    memset(&buffer,0,sizeof(buffer));
+    ZeroMemory(buffer,sizeof(buffer));
 
     int len = tprintf(buffer, _T(" %ld.%ld"), osMajor, osMinor);
     out.append(buffer);
