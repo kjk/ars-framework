@@ -67,7 +67,7 @@ class iPediaProtocol(basic.LineReceiver):
 					termEnd=result.find(termEndDelimiter)
 					self.term=result[termStart:termEnd]
 				else:
-					result=result.replace('\r', '')
+					result=result.replace('\r', '').replace("<b>","\'\'\'").replace("</b>","\'\'\'").replace("<i>","\'\'").replace("</i>","\'\'").replace("<em>","\'\'").replace("</em>","\'\'")
 					finished=True
 			else: 
 				finished = True
@@ -94,7 +94,8 @@ class iPediaProtocol(basic.LineReceiver):
 
 		self.transport.loseConnection()
 		del self.db
-		print "Done!"
+		print "--------------------------------------------------------------------------------"
+		print ""
 
 	def extractFieldValue(self, line):
 		index=line.find(fieldSeparator)

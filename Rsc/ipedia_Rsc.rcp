@@ -33,6 +33,24 @@ BEGIN
     BUTTONS "OK"
 END
 
+ALERT ID networkUnavailableAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Network Unavailable"
+    MESSAGE "Unable to initialize network subsystem."
+    BUTTONS "OK"
+END
+
+ALERT ID definitionNotFoundAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Definition Missing"
+    MESSAGE "The definition for searched term was not found."
+    BUTTONS "OK"
+END
+
 ALERT ID notEnoughMemoryAlert
     DEFAULTBUTTON 0
     ERROR
