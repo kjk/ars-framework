@@ -218,7 +218,7 @@ def convertFile(inName,limit):
     stats = WikipediaStats()
     count = 0
     startTiming()
-    for article in iterWikipediaArticles(inName):
+    for article in wikipediasql.iterWikipediaArticles(inName):
         #print sqlArgs
         stats.addStats(article)
         title = article.getTitle().strip()

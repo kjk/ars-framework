@@ -33,7 +33,7 @@ class WikipediaArticle:
     def getNs(self): return int(self.row[CUR_NAMESPACE])
     def getTitle(self): return self.row[CUR_TITLE]
     def getText(self): return self.row[CUR_TEXT]
-    def fRediret(self):  return int(self.row[CUR_IS_REDIRECT])==1
+    def fRedirect(self):  return int(self.row[CUR_IS_REDIRECT])==1
     def getViewCount(self): return int(self.row[CUR_COUNTER])
 
 BEG_TXT = "INSERT INTO cur VALUES "
