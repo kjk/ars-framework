@@ -11,6 +11,7 @@
 #             future will be replaced with -verbose flag (i.e. we'll be silent
 #             by default)
 #   -usepsyco : will use psyco, if available
+#    -db name : use database name
 
 import sys, re, random, datetime, MySQLdb, _mysql_exceptions
 import arsutils,iPediaDatabase
@@ -532,10 +533,11 @@ class iPediaProtocol(basic.LineReceiver):
 class iPediaFactory(protocol.ServerFactory):
 
     def createConnection(self):
-        return MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
+        return MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db=self.dbName)
         
-    def __init__(self):
+    def __init__(self, dbName):
         global g_articleCount
+        self.dbName=dbName
         db=self.createConnection()
         cursor=db.cursor()
         cursor.execute("""select count(*), min(id), max(id) from definitions""")
@@ -547,11 +549,60 @@ class iPediaFactory(protocol.ServerFactory):
         cursor.close()
         db.close()
 
+    def changeDatabase(self, newDb):
+        self.dbName=newDb
+        
     protocol = iPediaProtocol
+    
+class iPediaTelnetProtocol(basic.LineReceiver):
+
+    listRe=re.compile(r'\s*list\s*', re.I)
+    useDbRe=re.compile(r'\s*use\s+(\w+)\s*', re.I)
+    
+    def listDatabases(self):
+        db=None
+        cursor=None
+        try:
+            db=self.factory.iPediaFactory.createConnection()
+            cursor=db.cursor()
+            cursor.execute("show databases like 'ipedia%'")
+            row=cursor.fetchone()
+            while row:
+                self.transport.write(row[0]+'\r\n')
+                row=cursor.fetchone()
+        except _mysql_exceptions.Error, ex:
+            print ex
+            self.transport.write("exception\r\n")
+        if cursor:            
+            cursor.close()
+        if db:            
+            db.close()
+
+    def useDatabase(self, dbName):
+        self.factory.iPediaFactory.changeDatabase(dbName)
+                    
+    def lineReceived(self, request):
+        if iPediaTelnetProtocol.listRe.match(request):
+            self.listDatabases()
+        else:
+            match=iPediaTelnetProtocol.useDbRe.match(request)
+            if match:
+                self.useDatabase(match.group(1))
+            else:
+                self.transport.loseConnection()
+                
+    
+class iPediaTelnetFactory(protocol.ServerFactory):
+
+    def __init__(self, otherFactory):
+        self.iPediaFactory=otherFactory 
+    
+    protocol=iPediaTelnetProtocol
+        
 
 def main():
     global g_fVerbose, g_fPsycoAvailable
-    g_fVerbose, iPediaDatabase.g_fVerbose = True, True
+    g_fVerbose=iPediaDatabase.g_fVerbose = True
     if arsutils.fDetectRemoveCmdFlag( "-silent" ):
         g_fVerbose, iPediaDatabase.g_fVerbose = False, False
 
@@ -560,7 +611,13 @@ def main():
         print "using psyco"
         psyco.full()
 
-    reactor.listenTCP(9000, iPediaFactory())
+    dbName=arsutils.fDetectRemoveCmdFlag("-db")
+    if not dbName: 
+        dbName='ipedia'
+                
+    factory=iPediaFactory(dbName)
+    reactor.listenTCP(9000, factory)
+    reactor.listenTCP(9001, iPediaTelnetFactory(factory))
     reactor.run()
 
 if __name__ == "__main__":
