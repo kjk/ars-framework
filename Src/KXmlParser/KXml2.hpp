@@ -2,6 +2,7 @@
 #define __KXML2_KXML2_HPP__
 
 #include "..\BaseTypes.hpp"
+#include "..\ErrBase.h"
 
 namespace KXml2 {
 

@@ -200,7 +200,7 @@ void KXmlParser::push(int c)
 {
     isWhitespace_ &= c <= ' ';
 
-    if (txtPos_ == txtBuf_.length()) 
+    if (txtPos_ == (int)txtBuf_.length()) 
         txtBuf_.resize((txtBuf_.size()*4)/3 + 4);
     txtBuf_[txtPos_++] = (char) c;
 }
