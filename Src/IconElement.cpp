@@ -86,6 +86,7 @@ IconElement::IconElement(uint_t bitmapId):
                 BmpGetDimensions(bmp, &bmpW, &bmpH, &rowSize);
                 width_ = bmpW;
                 height_ = bmpH;
+                MemHandleUnlock(handle);
             }
             DmReleaseResource(handle);
         }
