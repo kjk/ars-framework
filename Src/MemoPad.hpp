@@ -4,6 +4,6 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 
-void CreateNewMemo(const ArsLexis::String& memoHeader, const ArsLexis::String& memoBody);
+void CreateNewMemo(const char_t* memoHeader, const char_t* memoBody);
 
 #endif

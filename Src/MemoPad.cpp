@@ -6,7 +6,7 @@
     - put body in header category
 
 */
-static void CreateNewMemoRec(DmOpenRef dbMemo, const ArsLexis::String& header, const ArsLexis::String& body)
+static void CreateNewMemoRec(DmOpenRef dbMemo, const char_t* header, const char_t* body)
 {
     UInt16      newRecNo;
     MemHandle   newRecHandle;
@@ -15,7 +15,7 @@ static void CreateNewMemoRec(DmOpenRef dbMemo, const ArsLexis::String& header, c
     char        null = '\0';
 //  UInt16      attr;
 
-    uint_t bodySize = body.length();
+    uint_t bodySize = tstrlen(body);
     newRecSize = bodySize + 1;
 
     newRecHandle = DmNewRecord(dbMemo,&newRecNo,newRecSize);
@@ -24,7 +24,7 @@ static void CreateNewMemoRec(DmOpenRef dbMemo, const ArsLexis::String& header, c
 
     newRecData = MemHandleLock(newRecHandle);
 
-    DmWrite(newRecData,0,body.data(),bodySize);
+    DmWrite(newRecData,0,body,bodySize);
     DmWrite(newRecData,bodySize,&null,1);
     
 //  UInt16 category = 2;
@@ -41,7 +41,7 @@ static void CreateNewMemoRec(DmOpenRef dbMemo, const ArsLexis::String& header, c
     DmReleaseRecord(dbMemo,newRecNo,true);
 }
 
-void CreateNewMemo(const ArsLexis::String& memoHeader, const ArsLexis::String& memoBody)
+void CreateNewMemo(const char_t* memoHeader, const char_t* memoBody)
 {
     LocalID     id;
     UInt16      cardno;
