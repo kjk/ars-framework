@@ -87,7 +87,7 @@ public:
     ~PrefsStoreReader();
 };
 
-#define MAX_PREFS_ITEMS   60
+#define MAX_PREFS_ITEMS   80
 
 class PrefsStoreWriter NON_COPYABLE
 {
