@@ -61,58 +61,6 @@ def usageAndExit():
     print "Usage: diffConvert.py [-limit N] [-random] [-title foo] fileName"
     sys.exit(0)
 
-def getBaseFileName(fileName):
-    suf = ".bz2"
-    sufLen = len(suf)
-    if len(fileName)>sufLen and suf == fileName[-sufLen:]:
-        fileName = fileName[:-sufLen]
-        #print "new file name is %s" % fileName
-
-    suf = ".sql"
-    sufLen = len(suf)
-    if len(fileName)>sufLen and suf == fileName[-sufLen:]:
-        fileName = fileName[:-sufLen]
-        #print "new file name is %s" % fileName
-    else:
-        print "%s is not a valid input file. Must be a *.sql or *.sql.bz2 file"
-        sys.exit(0)
-    return fileName
-
-def genBaseAndSuffix(inFileName,suffix):
-    return getBaseFileName(inFileName) + suffix
-
-def getIdxFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_idx.txt")
-
-def getRedirectsFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_redirects.txt")
-
-def getBodyFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_body.txt")
-
-def getTxt(sqlFileName,txtOff,txtLen):
-    fn = getBodyFileName(sqlFileName)
-    fo = open(fn,"rb")
-    fo.seek(txtOff)
-    txt = fo.read(txtLen)
-    fo.close()
-    return txt
-
-class ArticleInfo:
-    def __init__(self,sqlFileName,title,ns,txtOffset,txtLen,md5Hash):
-        self.sqlFileName = sqlFileName
-        self.title = title
-        self.ns = ns
-        self.txtOffset = txtOffset
-        self.txtLen = txtLen
-        self.md5Hash = md5Hash
-    def getTitle(self): return self.title
-    def getNamespace(self): return self.ns
-    def getHash(self): return self.md5Hash
-    def getTxt(self): return getTxt(self.sqlFileName, self.txtOffset, self.txtLen)
-
-NS_MAIN = 0
-
 def iterArticles(sqlFileName,fSkipNonMain=True):
     fileName = getIdxFileName(sqlFileName)
     fo = open(fileName,"rb")
