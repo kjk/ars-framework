@@ -48,9 +48,7 @@ namespace ArsLexis {
         chunkedBodyFinished_(false),
         contentLength_(contentLengthUnavailable),
         readContentLength_(0)
-    {
-        log().setThreshold(Logger::logEverything);
-    }        
+    {}        
 
     HttpConnection::~HttpConnection() 
     {
@@ -428,7 +426,6 @@ charAvailable:
                 connection_.chunkedBodyFinished_=true;
                 connection_.insideResponseHeaders_=true;
                 chr=npos;
-                connection_.registerEvent(SocketSelector::eventException);
                 connection_.registerEvent(SocketSelector::eventRead);
                 return errNone;
             }

@@ -210,8 +210,8 @@ namespace ArsLexis
         if (!error)
         {
             setState(stateOpened);
-            registerEvent(SocketSelector::eventException);
             registerEvent(SocketSelector::eventWrite);
+            registerEvent(SocketSelector::eventRead); // For purpose of detecting connection close
         }
         return error;
     }
@@ -238,7 +238,7 @@ namespace ArsLexis
         //! Nevertheless status is also filled in these cases and seems right...
         status_t error=socket_.getOption(socketOptLevelSocket, socketOptSockErrorStatus, &status, size);
         if (error)
-            log().error()<<_T("getSocketErrorStatus(): unable to query socket option, error: ")<<error;
+            log().info()<<_T("getSocketErrorStatus(): unable to query socket option, error: ")<<error;
         else 
             out=status;
         out=status;

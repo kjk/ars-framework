@@ -38,12 +38,11 @@ namespace ArsLexis
         status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
         if (errNone==error || netErrWouldBlock==error)
         {
-            registerEvent(SocketSelector::eventException);
+            registerEvent(SocketSelector::eventRead);
             requestBytesSent_+=dataSize;
             if (requestBytesSent_==requestSize)
             {
                 sending_=false;
-                registerEvent(SocketSelector::eventRead);
                 error=socket().shutdown(netSocketDirOutput);
                 if (error)
                     log().debug()<<_T("notifyWritable(): Socket::shutdown() returned error: ")<<error;
@@ -60,10 +59,20 @@ namespace ArsLexis
     
     status_t SimpleSocketConnection::notifyReadable()
     {
-        assert(!sending_);
+        if (sending_) 
+            log().debug()<<_T("notifyReadable(): called while sending data, probably some connection error occured");
+        status_t status=errNone;
+        status_t error=getSocketErrorStatus(status);
+        if (errNone==error)
+            error=status;
+        else {
+            log().info()<<_T("notifyReadable(): getSocketErrorStatus() returned error (ignored): ")<<error;
+            error=errNone;
+        }
+        if (errNone!=error)
+            goto Exit;
         uint_t dataSize=0;
         uint_t responseSize=response_.size();
-        status_t error=errNone;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             error=resizeResponse(responseSize+chunkSize_);
@@ -86,7 +95,6 @@ namespace ArsLexis
             }
             else
             {
-                registerEvent(SocketSelector::eventException);
                 registerEvent(SocketSelector::eventRead);
                 error=notifyProgress();
             }
