@@ -10,7 +10,7 @@
 #    so that we can use a diffing tool to compare them and see
 #    changes (e.g. using -orig orig_dump.txt -converted converted_dump.txt)
 #    Those should be good stress tool for diffing tools.
-import MySQLdb, sys, datetime, re, unicodedata
+import MySQLdb, sys, datetime, re, unicodedata, converter
 
 g_conn        = None
 
@@ -78,7 +78,7 @@ def dumpAll(articleLimit):
 
     rowCount = 0
     rowsLeft = getEnwikiRowCount()
-    rowsPerQuery = 500
+    rowsPerQuery = 2500
     curOffset = 0
     cursor = getNamedCursor(g_conn,"all_cur_ids")
     while True:
@@ -95,13 +95,59 @@ def dumpAll(articleLimit):
             rowCount += 1
             rowsLeft -= 1
             processedInOneFetch += 1
-            if 0 == rowCount % 500:
+            if 0 == rowCount % 1000:
                 sys.stderr.write("processed %d rows, left %d, last term=%s\n" % (rowCount,rowsLeft,row[0]))
             if articleLimit and rowCount >= articleLimit:
                 return
         if 0 == processedInOneFetch:
             break
         curOffset += rowsPerQuery
+
+# dump all articles to a file. if articleLimit != None
+# limit the number of articles to dump
+def dumpAllWithConverted(articleLimit,fileOrig,fileConverted):
+    global g_conn
+
+    foOrig = open(fileOrig, "wb")
+    foConverted = open(fileConverted, "wb")
+
+    rowCount = 0
+    rowsLeft = getEnwikiRowCount()
+    rowsPerQuery = 2500
+    curOffset = 0
+    cursor = getNamedCursor(g_conn,"all_cur_ids")
+    while True:
+        query="""SELECT cur_title,cur_text,cur_timestamp FROM cur WHERE cur_namespace=0"""
+        if len(sys.argv)>1:
+            query+=""" AND cur_timestamp>'%s'""" % dbEscape(sys.argv[1])
+        query+=""" LIMIT %d,%d""" % (curOffset, rowsPerQuery)
+        #print query
+        cursor.execute(query)
+        processedInOneFetch = 0
+        for row in cursor.fetchall():
+            title = "^" + row[0] + "\n"
+            cur_txt = row[1]
+            foOrig.write(title)
+            foConverted.write(title)
+
+            foOrig.write(cur_txt)
+            foOrig.write("\n")
+            converted = converter.convertDefinition(cur_txt)
+            foConverted.write(converted)
+            foConverted.write("\n")
+            rowCount += 1
+            rowsLeft -= 1
+            processedInOneFetch += 1
+            if 0 == rowCount % 1000:
+                sys.stderr.write("processed %d rows, left %d, last term=%s\n" % (rowCount,rowsLeft,row[0]))
+            if articleLimit and rowCount >= articleLimit:
+                processedInOneFetch # a hack so that we exit the loop but not by doing return
+                break
+        if 0 == processedInOneFetch:
+            break
+        curOffset += rowsPerQuery
+    foOrig.close()
+    foConverted.close()
 
 def fDetectRemoveCmdFlag(flag):
     fFlagPresent = False
@@ -132,6 +178,10 @@ if __name__=="__main__":
     limit = getRemoveCmdArg("-limit")
     if limit:
         limit = int(limit)
-    dumpAll(limit)
+    origFile = getRemoveCmdArg("-orig")
+    convertedFile = getRemoveCmdArg("-converted")
+    if origFile and convertedFile:
+        dumpAllWithConverted(limit,origFile,convertedFile)
+    else:
+         dumpAll(limit)
     deinitDatabase()
-
