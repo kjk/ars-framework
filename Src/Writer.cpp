@@ -7,14 +7,11 @@
 
 namespace ArsLexis {
 
-    status_t Writer::write(const String& str, typename String::size_type startOffset, typename String::size_type length)
+    status_t Writer::write(const char_t* begin, const char_t* end)
     {
-        const char_t* data=str.data()+startOffset;
-        if (str.npos==length)
-            length=str.length()-startOffset;
-        while (length)
+        while (begin!=end)
         {
-            status_t error=write(*data++);
+            status_t error=write(*begin++);
             if (errNone!=error)
                 return error;
         }

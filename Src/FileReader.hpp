@@ -35,7 +35,6 @@ namespace ArsLexis {
         
 #elif defined(_WIN32)
 
-        //! @todo Transform parameter names into human-readable form. 
         //! @note If all the parameters except fileName will have sensible default values then it'll be possible to use the same call to open() on both platforms.
         status_t open(const char_t* fileName, 
             ulong_t access=GENERIC_READ,

@@ -50,16 +50,15 @@ namespace ArsLexis {
         return error;        
     }
     
-    status_t FileWriter::write(const String& str, String::size_type startOffset, String::size_type length)
+    status_t FileWriter::write(const char_t* begin, const char_t* end)
     {
         assert(isOpen());
-        const char_t* data=str.data()+startOffset;
-        if (str.npos==length)
-            length=str.length()-startOffset;
+        assert(end>=begin);
+        ulong_t length=end-begin;
         if (0==length)
             return errNone;
         status_t error;
-        long written=FileWrite(handle_, data, length, 1, &error);
+        long written=FileWrite(handle_, begin, length, 1, &error);
         if (errNone!=error)
             FileClearerr(handle_);
         if (0==written && errNone==error)
