@@ -394,7 +394,10 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
                     break;
                 
                 case DefinitionElement::justifyCenter:
-                    lastLine.leftMargin=(layoutContext.screenWidth-layoutContext.usedWidth)/2;
+                    if (layoutContext.usedWidth>layoutContext.screenWidth) // This means line ends with whitespace we should ignore...
+                        lastLine.leftMargin=0;
+                    else
+                        lastLine.leftMargin=(layoutContext.screenWidth-layoutContext.usedWidth)/2;
                     break;
                     
                 default:
