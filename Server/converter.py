@@ -5,7 +5,7 @@ db=MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia'
 def replaceRegExp(text, regExp, repl):
 	match=regExp.search(text)
 	while match:
-		print "Replacing: ", text[match.start():match.end()], " with: ", repl
+		#print "Replacing: ", text[match.start():match.end()], " with: ", repl
 		text=text[0:match.start()]+repl+text[match.end():]
 		match=regExp.search(text)
 	return text
@@ -45,27 +45,32 @@ srcCursor=db.cursor()
 targetCursor=db.cursor()
 srcCursor.execute(query)
 row=srcCursor.fetchone()
+rowCount = 0
 while row:
 	term=row[0].replace('_', ' ')
 	definition=row[1]
 	ts=row[2]
 	timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
-	print "Converting term: ", term
+	#print "Converting term: ", term
 	
 	targetCursor.execute("""select id, last_modified from definitions where term='%s'""" % db.escape_string(term))
 	outRow=targetCursor.fetchone()
 	if outRow:
-		print "Existing date: ", outRow[1],"; new date: ", timestamp
+		#print "Existing date: ", outRow[1],"; new date: ", timestamp
 		if str(outRow[1])<str(timestamp):
-			print "Updating existing record id: ", outRow[0]
+			#print "Updating existing record id: ", outRow[0]
 			targetCursor.execute("""update definitions set definition='%s', last_modified='%s' where id=%d""" % (db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp)), outRow[0]))
 		else:
-			print "Skipping record, newer version exists."
+			#print "Skipping record, newer version exists."
+			pass
 	else:
-		print "Creating new record." 
+		#print "Creating new record." 
 		targetCursor.execute("""insert into definitions (term, definition, last_modified) values ('%s', '%s', '%s')""" % (db.escape_string(term), db.escape_string(convertDefinition(definition)), db.escape_string(str(timestamp))))
 	
 	row=srcCursor.fetchone()
+	rowCount += 1
+	if 0 == rowCount % 100:
+		print "processed %d rows" % rowCount
 
 srcCursor.close()
 targetCursor.close()
