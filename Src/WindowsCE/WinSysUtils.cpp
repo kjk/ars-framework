@@ -74,10 +74,13 @@ bool GotoURL(const ArsLexis::char_t *url)
     return false;
 }
 
+// see http://www.opennetcf.org/Forums/post.asp?method=TopicQuote&TOPIC_ID=95&FORUM_ID=12 for
+// more possibilities
 // return false on failure, true if ok
 bool GetSpecialFolderPath(String& pathOut)
 {
 #ifdef CSIDL_APPDATA
+    // this doesn't seem to be defined on sm 2002
     TCHAR szPath[MAX_PATH];
     BOOL  fOk = SHGetSpecialFolderPath(NULL, szPath, CSIDL_APPDATA, FALSE);
     if (!fOk)
@@ -85,13 +88,20 @@ bool GetSpecialFolderPath(String& pathOut)
     pathOut.assign(szPath);
     return true;
 #else
-    // Pocket PC doesn't have this defined so put our directory 
-    // at the root. This will likely change 
-    // in the future and this code should still work.
-    // TODO: see if SHGetSpecialFolderPath return path that ends with '\'
-    // pathOut.assign(_T("\\");
+  #ifdef CSIDL_PERSONAL
+      // this is defined on sm 2002 and goes to "\My Documents".
+      // Not sure if I should use it
+      TCHAR szPath[MAX_PATH];
+      BOOL  fOk = SHGetSpecialFolderPath(NULL, szPath, CSIDL_PERSONAL, FALSE);
+      if (!fOk)
+          return false;
+      pathOut.assign(szPath);
+      return true;
+ #else
+    // if all else fails, just put it in root "\"
     pathOut.assign(_T(""));
     return true;
+ #endif
 #endif
 }
 
