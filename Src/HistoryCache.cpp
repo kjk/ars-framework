@@ -201,8 +201,7 @@ void HistoryCache::setEntryTitle(ulong_t index, const char_t* str)
         len = maxCacheEntryTitleLength;
     
     IndexEntry& entry = indexEntries_[index];
-    using namespace std;
-    memcpy(entry.title, str, len * sizeof(char_t));
+    memmove(entry.title, str, len * sizeof(char_t));
     entry.title[len] = _T('\0');
 }
 
@@ -214,9 +213,8 @@ status_t HistoryCache::removeEntry(ulong_t index)
     status_t err = dataStore->removeStream(streamName);
     if (errNone != err)
         return err;
-        
-    for (ulong_t i = index + 1; i <indexEntriesCount_; ++i)
-        indexEntries_[i - 1] = indexEntries_[i];
+    
+    memmove(indexEntries_ + index, indexEntries_ + index + 1, (indexEntriesCount_ - (index + 1)) * sizeof(IndexEntry));
     --indexEntriesCount_;
     return errNone;
 }
@@ -234,6 +232,8 @@ status_t HistoryCache::removeEntriesAfter(ulong_t from)
 
 status_t HistoryCache::appendEntry(const char_t* url, ulong_t& index)
 {
+    assert(0 != tstrlen(url));
+
     status_t err;
     if (indexEntriesCount_ == indexCapacity_)
         if (errNone != (err = removeEntry(0UL)))
@@ -244,7 +244,7 @@ status_t HistoryCache::appendEntry(const char_t* url, ulong_t& index)
         len = maxCacheEntryUrlLength;
     
     IndexEntry& entry = indexEntries_[indexEntriesCount_];
-    memcpy(entry.url, url, len * sizeof(char_t));
+    memmove(entry.url, url, len * sizeof(char_t));
     entry.url[len] = _T('\0');
     
     tprintf(entry.streamName, _T("_History %lx%lx"), ticks(), random(ULONG_MAX));
@@ -260,6 +260,8 @@ status_t HistoryCache::appendEntry(const char_t* url, ulong_t& index)
 
 status_t HistoryCache::appendLink(const char_t* url, const char_t* title)
 {
+    assert(0 != tstrlen(url));
+
     ulong_t index;
     status_t err = appendEntry(url, index);
     if (errNone != err)
@@ -272,6 +274,8 @@ status_t HistoryCache::appendLink(const char_t* url, const char_t* title)
 
 status_t HistoryCache::insertLink(ulong_t index, const char_t* url, const char_t* title)
 {
+    assert(0 != tstrlen(url));
+    
     status_t err = appendLink(url, title);
     if (errNone != err)
         return err;
@@ -285,23 +289,24 @@ status_t HistoryCache::insertLink(ulong_t index, const char_t* url, const char_t
     memmove(indexEntries_ + (index + 1), indexEntries_ + index, count * sizeof(IndexEntry));
     memmove(indexEntries_ + index, tmp, sizeof(IndexEntry));
     
-    memzero(tmp, sizeof(*tmp));
     delete tmp;
     return errNone;    
 }
 
 
-status_t HistoryCache::replaceEntries(ulong_t from, const char_t* newEntry)
+status_t HistoryCache::replaceEntries(ulong_t from, const char_t* newEntryUrl)
 {
     status_t err = removeEntriesAfter(from);
     if (errNone != err)
         return err;
-    return appendEntry(newEntry, from);
+    return appendEntry(newEntryUrl, from);
 }
 
 DataStoreReader* HistoryCache::readerForEntry(ulong_t index)
 {
     assert(index < indexEntriesCount_);
+    assert(!indexEntries_[index].onlyLink);
+    
     DataStoreReader* reader = new_nt DataStoreReader(*dataStore);
     if (NULL == reader)
         return NULL;
@@ -317,6 +322,8 @@ DataStoreReader* HistoryCache::readerForEntry(ulong_t index)
 DataStoreWriter* HistoryCache::writerForEntry(ulong_t index)
 {
     assert(index < indexEntriesCount_);
+    assert(!indexEntries_[index].onlyLink);
+
     DataStoreWriter* writer = new_nt DataStoreWriter(*dataStore);
     if (NULL == writer)
         return NULL;
@@ -344,7 +351,6 @@ status_t HistoryCache::moveEntryToEnd(ulong_t& index)
     memmove(indexEntries_ + index, indexEntries_ + (index + 1), (indexEntriesCount_ - (index + 1)) * sizeof(*tmp));
     memmove(indexEntries_ + (indexEntriesCount_ - 1), tmp, sizeof(*tmp));
     
-    memzero(tmp, sizeof(*tmp));
     delete tmp;
     
     index = (indexEntriesCount_ - 1);
