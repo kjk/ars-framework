@@ -9,6 +9,7 @@ class MainForm: public iPediaForm
 {
     Definition definition_;
     LookupHistory history_;
+    ArsLexis::String server_;
     
     void handleScrollRepeat(const sclRepeat& data);
     void handlePenUp(const EventType& event);
@@ -34,6 +35,8 @@ protected:
     Boolean handleEvent(EventType& event);
     
     Boolean handleOpen();
+    
+    Boolean handleMenuCommand(UInt16 itemId);
 
 public:
     

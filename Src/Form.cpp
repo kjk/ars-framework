@@ -64,6 +64,10 @@ namespace ArsLexis
             case frmUpdateEvent:
                 handled=handleUpdate(event.data.frmUpdate.updateCode);
                 break;
+                
+            case menuEvent:
+                handled=handleMenuCommand(event.data.menu.itemID);
+                break;
 
         }
         return handled;

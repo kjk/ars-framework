@@ -7,9 +7,13 @@
 
 using namespace ArsLexis;
 
+#define serverLocalhost             "localhost:9000"
+#define serverDictPcArslexis    "dict-pc.arslexis.com:9000"
+
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
-    displayMode_(showSplashScreen)
+    displayMode_(showSplashScreen),
+    server_(serverLocalhost)
 {
 }
 
@@ -167,7 +171,7 @@ void MainForm::handlePenUp(const EventType& event)
         definition_.hitTest(point); 
 }
 
-static void startLookupConnection(ArsLexis::Application& application, LookupHistory& history, const String& term, iPediaConnection::HistoryChange historyChange)
+static void startLookupConnection(ArsLexis::Application& application, LookupHistory& history, const String& term, iPediaConnection::HistoryChange historyChange, const String& server)
 {
     iPediaApplication& app=static_cast<iPediaApplication&>(application);
     SocketConnectionManager* manager=0;
@@ -200,20 +204,20 @@ static void startLookupConnection(ArsLexis::Application& application, LookupHist
                     assert(false);
             }
             conn->setHistoryChange(historyChange);
-            resolver->resolveAndConnect(conn, "localhost:9000");
+            resolver->resolveAndConnect(conn, server);
         }            
     }
 }
 
 void MainForm::startHistoryLookup(bool forward)
 {
-    ::startLookupConnection(application(), history(), String(), forward?iPediaConnection::historyMoveForward:iPediaConnection::historyMoveBack);
+    ::startLookupConnection(application(), history(), String(), forward?iPediaConnection::historyMoveForward:iPediaConnection::historyMoveBack, server_);
 }
 
 
 void MainForm::startLookupConnection(const ArsLexis::String& newTerm)
 {
-    ::startLookupConnection(application(), history(), newTerm, iPediaConnection::historyReplaceForward);
+    ::startLookupConnection(application(), history(), newTerm, iPediaConnection::historyReplaceForward, server_);
 }
 
 void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
@@ -254,7 +258,8 @@ void MainForm::handleControlSelect(const ctlSelect& data)
             break;
         
         case forwardButton:
-            startHistoryLookup(true);            break;
+            startHistoryLookup(true);
+            break;
         
         default:
             assert(false);
@@ -361,3 +366,25 @@ bool MainForm::handleKeyPress(const EventType& event)
     }
     return handled;
 }
+
+Boolean MainForm::handleMenuCommand(UInt16 itemId)
+{
+    Boolean handled=false;
+    switch (itemId)
+    {
+        case useDictPcMenuItem:
+            server_=serverDictPcArslexis;
+            handled=true;
+            break;
+            
+        case useLocalhostMenuItem:
+            server_=serverLocalhost;
+            handled=true;
+            break;
+            
+        default:
+            handled=iPediaForm::handleMenuCommand(itemId);
+    }
+    return handled;
+}
+

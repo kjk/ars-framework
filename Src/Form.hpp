@@ -53,6 +53,9 @@ namespace ArsLexis
         
         WinHandle windowHandle() const
         {return FrmGetWindowHandle(form_);}
+        
+        virtual Boolean handleMenuCommand(UInt16 itemId)
+        {return false;}
             
     public:
         

@@ -22,6 +22,12 @@ BEGIN
     END
 
 
+	PULLDOWN "Server"
+	BEGIN
+        	MENUITEM "localhost" ID useLocalhostMenuItem  "L"
+            MENUITEM "dict-pc.arslexis.com" ID useDictPcMenuItem   "D" 
+	
+END
 END	
 
 ALERT ID romIncompatibleAlert
