@@ -58,10 +58,10 @@ namespace ArsLexis {
         int topItem() const
         {return topItem_;}
 
-        void setSelectionDelta(int delta);
+        void setSelectionDelta(int delta, RedrawOption ro=redraw);
         
         //! @note this @c ExtendedList doesn't take ownership of @c ItemRenderer. 
-        void setItemRenderer(ItemRenderer* itemRenderer);
+        void setItemRenderer(ItemRenderer* itemRenderer, RedrawOption ro=redrawNot);
         
         //! For compatibility with List.
         typedef ItemRenderer CustomDrawHandler;
@@ -70,11 +70,14 @@ namespace ArsLexis {
         void setCustomDrawHandler(CustomDrawHandler* customDrawHandler)
         {setItemRenderer(customDrawHandler);}
         
-        typedef List::KeyHandlerOptions KeyHandlerOptions;
-        
+        enum KeyHandlerOptions {
+            optionScrollPagesWithLeftRight=1,
+            optionFireListSelectOnCenter=2
+        };
+
         bool handleKeyDownEvent(const EventType& event, uint_t options=0);
         
-//        void adjustVisibleItems();
+        void adjustVisibleItems(RedrawOption ro=redrawNot);
         
         void setTopItem(uint_t item, RedrawOption ro=redrawNot);
 
@@ -91,6 +94,7 @@ namespace ArsLexis {
         {return scrollBarWidth_;}
         
         uint_t height() const;
+        
 
     protected:
     

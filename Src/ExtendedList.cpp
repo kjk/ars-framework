@@ -77,7 +77,8 @@ uint_t ExtendedList::visibleItemsCount() const
 {
     if (noListSelection==topItem_) 
     {
-        assert(0==itemsCount());        return 0;
+        assert(0==itemsCount());
+        return 0;
     }
     uint_t itemsCount=this->itemsCount();
     uint_t itemsBelow=itemsCount-topItem_;
@@ -147,6 +148,132 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
         }
     }
 }
+
+void ExtendedList::setItemRenderer(ItemRenderer* itemRenderer, RedrawOption ro)
+{
+    if (0!=(itemRenderer_=itemRenderer) && 0!=itemRenderer->itemsCount())
+        topItem_=0;
+    else 
+        topItem_=noListSelection;
+    selection_=noListSelection;
+    if (redraw==ro)
+        draw();
+}
+
+void ExtendedList::adjustVisibleItems(RedrawOption ro) 
+{
+    int total=itemsCount();
+    if (0==total) 
+        return;
+    int visible=visibleItemsCount();
+    if (total-topItem_<visible)
+    {
+        topItem_=std::max(0, total-visible);
+        if (redraw==ro)
+            draw();
+    }
+}
+
+void ExtendedList::drawItemBackground(Graphics& graphics, const Rectangle& bounds, uint_t item, bool selected)
+{
+}
+
+void ExtendedList::drawBackground(Graphics& graphics, const Rectangle& bounds)
+{
+}
+
+void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
+{
+}
+
+ExtendedList::ItemRenderer::ItemRenderer()
+{}
+
+ExtendedList::ItemRenderer::~ItemRenderer()
+{}
+
+bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
+{
+    assert(valid());
+    Form& form=*this->form();
+    assert(keyDownEvent==event.eType);
+    bool handled=false;
+    int delta=0;
+    int page=height()/itemHeight_;
+    if (form.fiveWayUpPressed(&event))
+        delta=-1;
+    else if (form.fiveWayDownPressed(&event))
+        delta=1;
+    else if ((optionScrollPagesWithLeftRight & options) && form.fiveWayLeftPressed(&event))
+        delta=-page;
+    else if ((optionScrollPagesWithLeftRight & options) && form.fiveWayRightPressed(&event))
+        delta=page;
+    else if ((optionFireListSelectOnCenter & options) && form.fiveWayCenterPressed(&event))
+    {
+        EventType e;
+        MemSet(&e, sizeof(e), 0);
+/*        
+        if (noListSelection!=(e.data.lstSelect.selection=selection()))
+        {
+            e.eType=lstSelectEvent;
+            e.data.lstSelect.listID=id();
+            e.data.lstSelect.pList=object();
+            EvtAddEventToQueue(&e);
+            handled = true;
+        }
+*/        
+    }
+    else {
+        switch (event.data.keyDown.chr)
+        {
+            case chrPageDown:
+                delta=page;
+                break;
+                
+            case chrPageUp:
+                delta=-page;
+                break;
+            
+            case chrDownArrow:
+                delta=1;
+                break;
+
+            case chrUpArrow:
+                delta=-1;
+                break;
+                
+            case chrLeftArrow:
+                if (optionScrollPagesWithLeftRight & options)
+                    delta=-page;
+                break;
+                
+            case chrRightArrow:
+                if (optionScrollPagesWithLeftRight & options)
+                    delta=page;
+                break;
+        }
+    }
+    if (0!=delta)
+    {
+        setSelectionDelta(delta);
+        handled=true;
+    }
+    return handled;
+}
+
+void ExtendedList::setSelectionDelta(int delta, RedrawOption ro)
+{
+    uint_t itemsCount=0;
+    if (0==delta || 0==(itemsCount=this->itemsCount()))
+        return;
+    int sel=(noListSelection==selection_)?0:selection_;
+    sel+=delta;
+    sel=std::max(0, std::min<int>(sel, itemsCount-1));
+    selection_=sel;
+    if (redraw==ro)
+        draw();
+}
+
 
 
 
