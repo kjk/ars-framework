@@ -98,25 +98,12 @@ namespace ArsLexis {
         
         uint_t height() const;
         
-        void setItemBackground(const RGBColorType& color)
-        {itemBackground_ = color;}
-        
-        void setSelectedItemBackground(const RGBColorType& color)
-        {selectedItemBackground_ = color;}
-        
-        void setListBackground(const RGBColorType& color)
-        {listBackground_ = color;}
-        
-        void setForeground(const RGBColorType& color)
-        {foreground_ = color;}
-        
-        const RGBColorType& itemBackground() const {return itemBackground_;}
-        
-        const RGBColorType& selectedItemBackground() const {return selectedItemBackground_;}
-        
-        const RGBColorType& listBackground() const {return listBackground_;}
-        
-        const RGBColorType& foreground() const {return foreground_;}
+        RGBColorType itemBackgroundColor;
+        RGBColorType selectedItemBackgroundColor;
+        RGBColorType noFocusItemBackgroundColor;
+        RGBColorType listBackgroundColor;
+        RGBColorType foregroundColor;
+        RGBColorType selectedForegroundColor;
         
         void setUpBitmapId(uint_t id) {upBitmapId_ = id;}
 
@@ -158,7 +145,9 @@ namespace ArsLexis {
         void handleNilEvent();
         
         uint_t scrollButtonHeight() {return scrollButtonHeight_;}
-        
+
+        void handleFocusChange(FocusChange change);
+
     private:
     
         void drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item, bool showScrollbar);
@@ -183,11 +172,7 @@ namespace ArsLexis {
         uint_t scrollBarWidth_; 
         uint_t scrollButtonHeight_;
  
-        RGBColorType itemBackground_;
-        RGBColorType selectedItemBackground_;
-        RGBColorType listBackground_;
-        RGBColorType foreground_;
-        
+       
         bool hasHighDensityFeatures_;
         bool screenIsDoubleDensity_;
         bool windowSettingsChecked_;

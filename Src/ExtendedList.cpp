@@ -125,15 +125,17 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     if (errNone==error && 4<=version)
         hasHighDensityFeatures_=true;
 
-    /*setRgbColor(listBackground_, 255, 255, 255);
-    setRgbColor(itemBackground_, 70, 163, 255);
-    setRgbColor(selectedItemBackground_, 0, 107, 215);
-    setRgbColor(foreground_, 255, 255, 255);*/
+    /*setRgbColor(listBackgroundColor, 255, 255, 255);
+    setRgbColor(itemBackgroundColor, 70, 163, 255);
+    setRgbColor(selectedItemBackgroundColor, 0, 107, 215);
+    setRgbColor(foregroundColor, 255, 255, 255);*/
 
-    setRgbColor(listBackground_, 255, 255, 255);
-    setRgbColor(itemBackground_, 156, 207, 206);
-    setRgbColor(selectedItemBackground_, 99, 154, 206);
-    setRgbColor(foreground_, 0, 0, 0);
+    setRgbColor(listBackgroundColor, 255, 255, 255);
+    setRgbColor(itemBackgroundColor, 156, 207, 206);
+    setRgbColor(selectedItemBackgroundColor, 99, 154, 206);
+    setRgbColor(noFocusItemBackgroundColor, 99, 154, 206);
+    setRgbColor(foregroundColor, 0, 0, 0);
+    setRgbColor(selectedForegroundColor, 0, 0, 0);
     
 }
 
@@ -146,9 +148,14 @@ void ExtendedList::drawItem(Graphics& graphics, const Rectangle& bounds, uint_t 
     assert(0!=itemRenderer_);
     RGBColorType oldColor;
     if (selected)
-        WinSetBackColorRGB(&selectedItemBackground_, &oldColor);
+    {
+        if (form()->application().runningOnTreo600() && !hasFocus())
+            WinSetBackColorRGB(&noFocusItemBackgroundColor, &oldColor);
+        else
+            WinSetBackColorRGB(&selectedItemBackgroundColor, &oldColor);
+    }
     else
-        WinSetBackColorRGB(&itemBackground_, &oldColor);
+        WinSetBackColorRGB(&itemBackgroundColor, &oldColor);
     Rectangle rect=bounds;
     drawItemBackground(graphics, rect, item, selected);
     itemRenderer_->drawItem(graphics, *this, item, rect);
@@ -170,9 +177,26 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
     }
     Graphics::ClipRectangleSetter setClip(graphics, clipRectangle);
     bool selected = false;
+    
+    RGBColorType newFore;
+    
     if (selection_==item)
+    {
+        newFore = selectedForegroundColor;
         selected = true;
+    }
+    else
+        newFore = foregroundColor;
+        
+    RGBColorType oldFore, oldText;
+    WinSetForeColorRGB(&newFore, &oldFore);
+    WinSetTextColorRGB(&newFore, &oldText);
+
     drawItem(graphics, itemBounds, item, selected);    
+    
+    WinSetTextColorRGB(&oldText, 0);
+    WinSetForeColorRGB(&oldFore, 0);
+    
 }
 
 void ExtendedList::handleDraw(Graphics& graphics)
@@ -188,15 +212,15 @@ void ExtendedList::handleDraw(Graphics& graphics)
     {
         windowSettingsChecked_=true;
 /*        
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackground_);
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foreground_);
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackground_);
-        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuForeground), &selectedItemBackground_);
-        if (rgbEqual(itemBackground_, selectedItemBackground_))
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackgroundColor);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foregroundColor);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackgroundColor);
+        WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuForeground), &selectedItemBackgroundColor);
+        if (rgbEqual(itemBackgroundColor, selectedItemBackgroundColor))
         {
-            saturate(selectedItemBackground_, 64);
-            if (rgbEqual(itemBackground_, selectedItemBackground_))
-                saturate(selectedItemBackground_, -64);
+            saturate(selectedItemBackgroundColor, 64);
+            if (rgbEqual(itemBackgroundColor, selectedItemBackgroundColor))
+                saturate(selectedItemBackgroundColor, -64);
         }
 */        
         if (hasHighDensityFeatures_)
@@ -223,13 +247,8 @@ void ExtendedList::handleDraw(Graphics& graphics)
     uint_t itemsBelow=itemsCount-topItem_;
     bool showScrollbar=(itemsCount>viewCapacity);
     itemsToDisplay=std::min(itemsToDisplay, itemsBelow);
-    RGBColorType oldFore, oldText;
-    WinSetForeColorRGB(&foreground_, &oldFore);
-    WinSetTextColorRGB(&foreground_, &oldText);
     for (uint_t i=0; i<itemsToDisplay; ++i)
         drawItemProxy(graphics, listBounds, topItem_+i, showScrollbar);
-    WinSetTextColorRGB(&oldText, 0);
-    WinSetForeColorRGB(&oldFore, 0);
     if (showScrollbar)
     {
         listBounds.x()=listBounds.x()+listBounds.width()-visibleScrollBarWidth();
@@ -362,15 +381,15 @@ void ExtendedList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uin
 {
     bounds.explode(0, 0, 0, -1);
     if (selected)
-        drawBevel(graphics, bounds, selectedItemBackground_ , screenIsDoubleDensity_);
+        drawBevel(graphics, bounds, selectedItemBackgroundColor , screenIsDoubleDensity_);
     else
-        drawBevel(graphics, bounds, itemBackground_, screenIsDoubleDensity_);
+        drawBevel(graphics, bounds, itemBackgroundColor, screenIsDoubleDensity_);
 }
 
 void ExtendedList::drawBackground(Graphics& graphics, const Rectangle& bounds)
 {
     RGBColorType oldColor;
-    WinSetBackColorRGB(&listBackground_, &oldColor);
+    WinSetBackColorRGB(&listBackgroundColor, &oldColor);
     graphics.erase(bounds);
     WinSetBackColorRGB(&oldColor, 0);
 }
@@ -380,19 +399,19 @@ void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
     const int width = scrollBarWidth_-1;
     const int height = scrollButtonHeight_-1;
     RGBColorType oldBgColor;
-    WinSetBackColorRGB(&itemBackground_, &oldBgColor);
+    WinSetBackColorRGB(&itemBackgroundColor, &oldBgColor);
     RGBColorType oldFgColor;
-    WinSetForeColorRGB(&foreground_, &oldFgColor);
+    WinSetForeColorRGB(&foregroundColor, &oldFgColor);
     Rectangle buttonBounds(bounds.x()+1, bounds.y(), width, height);
     Rectangle orig=buttonBounds;
-    drawBevel(graphics, buttonBounds, itemBackground_, screenIsDoubleDensity_);
+    drawBevel(graphics, buttonBounds, itemBackgroundColor, screenIsDoubleDensity_);
     const int bmpWidth = 7;
     const int bmpHeight = 4;
     if (frmInvalidObjectId != upBitmapId_)
         graphics.drawBitmap(upBitmapId_, Point(buttonBounds.x()+(buttonBounds.width()-bmpWidth)/2, buttonBounds.y()+(buttonBounds.height()-bmpHeight)/2));
     buttonBounds=orig;
     buttonBounds.y()+=(bounds.height()-height);
-    drawBevel(graphics, buttonBounds, itemBackground_, screenIsDoubleDensity_);
+    drawBevel(graphics, buttonBounds, itemBackgroundColor, screenIsDoubleDensity_);
     if (frmInvalidObjectId != downBitmapId_)
         graphics.drawBitmap(downBitmapId_, Point(buttonBounds.x()+(buttonBounds.width()-bmpWidth)/2, buttonBounds.y()+(buttonBounds.height()-bmpHeight)/2));
     buttonBounds=orig;
@@ -409,7 +428,7 @@ void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
     WinSetForeColorRGB(&oldFgColor, NULL);
     buttonBounds.y()+=(long(topItem_)*totalHeight)/itemsCount;
     buttonBounds.height()=traktorHeight;
-    drawBevel(graphics, buttonBounds, selectedItemBackground_, screenIsDoubleDensity_);
+    drawBevel(graphics, buttonBounds, selectedItemBackgroundColor, screenIsDoubleDensity_);
 }
 
 ExtendedList::ItemRenderer::ItemRenderer()
@@ -808,3 +827,25 @@ bool ExtendedList::scroll(WinDirectionType direction, uint_t items)
     return true;
 }
 
+void ExtendedList::handleFocusChange(FocusChange change)
+{
+    FormGadget::handleFocusChange(change);
+    int sel = selection();
+    if (noListSelection != sel)
+    {
+        uint_t itemsCount = this->itemsCount();
+        Rectangle listBounds;
+        bounds(listBounds);
+        if (noListSelection == topItem_)
+            topItem_=0;
+        assert(itemsCount > topItem_);
+        uint_t viewCapacity=listBounds.height()/itemHeight_;
+        if (sel < topItem_)
+            return;
+        if (sel >= topItem_ + viewCapacity)
+            return;
+        bool showScrollbar = (itemsCount > viewCapacity);
+        Graphics graphics(form()->windowHandle());
+        drawItemProxy(graphics, listBounds, sel, showScrollbar);
+    }
+}

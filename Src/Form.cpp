@@ -164,16 +164,19 @@ namespace ArsLexis
         const frmObjectFocusTake& data = reinterpret_cast<const frmObjectFocusTake&>(event.data);
         assert(id_ == data.formID);
         UInt16 index = FrmGetObjectIndex(form_, data.objectID);
-        if (frmInvalidObjectId != focusedControlIndex_ && frmGadgetObj == FrmGetObjectType(form_, focusedControlIndex_) && taking && index != focusedControlIndex_)
+
+        UInt16 lastIndex = focusedControlIndex_;
+        if (taking)
+            focusedControlIndex_ = index;
+
+        if (frmInvalidObjectId != lastIndex && frmGadgetObj == FrmGetObjectType(form_, lastIndex) && taking && index != lastIndex)
         {
-            gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, focusedControlIndex_));
+            gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, lastIndex));
             assert(NULL != gadget);
             gadget->handleFocusChange(FormGadget::focusLosing);
         }
         if (frmInvalidObjectId == index)
             return false;
-        if (taking)
-            focusedControlIndex_ = index;
         FormObjectKind kind = FrmGetObjectType(form_, index);
         if (taking && frmFieldObj == kind && application().runningOnTreo600())
         {

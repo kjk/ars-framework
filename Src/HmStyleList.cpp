@@ -1,5 +1,6 @@
 #include <HmStyleList.hpp>
 #include <Graphics.hpp>
+#include <68k/Hs.h>
 
 using namespace ArsLexis;
 
@@ -7,14 +8,28 @@ HmStyleList::HmStyleList(Form& form, UInt16 id):
     ExtendedList(form, id)
 {
     setRgbColor(breakColor_, 128, 128, 128);
+    
+    UIColorGetTableEntryRGB(UIObjectFill, &listBackgroundColor);
+    itemBackgroundColor = listBackgroundColor;
+    UIColorGetTableEntryRGB(UIObjectForeground, &foregroundColor);
+    UIColorGetTableEntryRGB(UIObjectSelectedForeground, &selectedForegroundColor);
+    UIColorGetTableEntryRGB(UIObjectSelectedFill, &selectedItemBackgroundColor);
+    noFocusItemBackgroundColor = selectedItemBackgroundColor;
+    
+    if (form.application().runningOnTreo600())
+        HsNavGetFocusColor(hsNavFocusColorSecondaryHighlight, &noFocusItemBackgroundColor);
+
+/*    
     RGBColorType white = {0, 255, 255, 255};
     setListBackground(white);
     setItemBackground(white);
     RGBColorType yellow = {0, 255, 255, 0};
     RGBColorType treoBlue = {0, 156, 207, 206};
-
+    
     RGBColorType itemBgColor = treoBlue;
     setSelectedItemBackground(itemBgColor);
+    
+*/    
     setScrollBarWidth(7);
     setScrollButtonHeight(4);
 }
@@ -36,9 +51,9 @@ void HmStyleList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint
 void HmStyleList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
 {
     RGBColorType oldBgColor;
-    WinSetBackColorRGB(&listBackground(), &oldBgColor);
+    WinSetBackColorRGB(&listBackgroundColor, &oldBgColor);
     RGBColorType oldFgColor;
-    WinSetForeColorRGB(&foreground(), &oldFgColor);
+    WinSetForeColorRGB(&foregroundColor, &oldFgColor);
     const int bmpWidth = 7;
     const int bmpHeight = 4;
     if (frmInvalidObjectId != upBimapId())
@@ -71,12 +86,12 @@ void HmStyleList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
     traktorHeight = std::max(traktorHeight, minTraktorHeight);
 
     PatternType oldPattern = WinGetPatternType();
-    WinSetBackColorRGB(&foreground(), NULL);
-    WinSetForeColorRGB(&listBackground(), NULL);
+    WinSetBackColorRGB(&foregroundColor, NULL);
+    WinSetForeColorRGB(&listBackgroundColor, NULL);
     WinSetPatternType(grayPattern);
     RectangleType rect = {{traktorX, boundsY + scrollButtonHeight + resMulti}, {traktorWidth, totalHeight}};
     WinPaintRectangle(&rect, 0);
-    WinSetBackColorRGB(&foreground(), NULL);
+    WinSetBackColorRGB(&foregroundColor, NULL);
     WinSetPatternType(blackPattern);
     graphics.erase(Rectangle(traktorX, traktorY, traktorWidth, traktorHeight));
 
