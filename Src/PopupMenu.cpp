@@ -1,4 +1,4 @@
-#include <PopupMenu.hpp>
+ #include <PopupMenu.hpp>
 #include <Graphics.hpp>
 #include <Text.hpp>
 
@@ -29,11 +29,16 @@ bool PopupMenu::handleEventInForm(EventType& event)
 
 Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
 {
+    assert(!list.valid());
+
+/*    
     if (list.valid())
     {
         list.form()->removeObject(list.index());
         list.detach();
     }
+ */
+    
     if (NULL == model_)
         return noListSelection;
         
@@ -94,6 +99,9 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
     }
     list.hide();
 
+    list.form()->removeObject(list.index());
+    list.detach();
+
     if (NULL != hyperlinkHandler && NULL != hyperlink)
     {
         Point p;
@@ -125,7 +133,7 @@ PopupMenuModel::PopupMenuModel():
 
 PopupMenuModel::~PopupMenuModel()
 {
-    delete [] items;
+    setItems(NULL, 0);
 }
 
 PopupMenuModel::Item::Item()
@@ -247,7 +255,6 @@ enum PopupMenuItemFlag
 
 void PopupMenuModel::setItems(Item* items, uint_t itemsCount)
 {
-    assert(NULL != items);
     delete [] this->items;
     this->items = items;
     this->count = itemsCount;
