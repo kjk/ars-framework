@@ -224,7 +224,7 @@ ArsLexis::status_t numericValue(const char_t* begin, const char_t* end, long& re
 
     while (begin != end) 
     {
-        num = charToNumber(*begin);
+        num = charToNumber(*begin++);
         if (num >= base)
         {   
             error = sysErrParamErr;
