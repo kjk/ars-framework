@@ -154,7 +154,8 @@ class iPediaProtocol(basic.LineReceiver):
         self.delimiter='\n'
         self.transactionId=None
         self.deviceInfoToken=None
-        self.db=None
+        self.dbManagement=None
+        self.dbArticles=None
         self.error=0
         self.clientVersion=None
         self.protocolVersion=None
@@ -169,11 +170,15 @@ class iPediaProtocol(basic.LineReceiver):
         self.linesCount=0
         self.getArticleCount=False
         self.searchExpression=None
-        
-    def getDatabase(self):
-        if not self.db:
-            self.db=self.factory.createConnection()
-        return self.db
+
+    def getManagementDatabase(self):
+        if not self.dbManagement:
+            self.dbManagement=self.factory.createManagementConnection()
+
+    def getArticlesDatabase():
+        if not self.dbArticles:
+            self.dbArticles=self.factory.createArticlesConnection()
+        return self.dbArticles
 
     def outputField(self, name, value=None):
         global g_fVerbose
@@ -196,7 +201,7 @@ class iPediaProtocol(basic.LineReceiver):
     def logRequest(self):
         cursor=None
         try:
-            db=self.getDatabase()
+            db=self.getManagementDatabase()
             trIdStr='0'
             if self.transactionId:
                 trIdStr=str(int(self.transactionId, 16))
@@ -269,7 +274,7 @@ class iPediaProtocol(basic.LineReceiver):
             
         cursor=None
         try:
-            db=self.getDatabase()
+            db=self.getManagementDatabase()
             cursor=db.cursor()
             cursor.execute("""select id, cookie from cookies where device_info_token='%s'""" % db.escape_string(self.deviceInfoToken))
             row=cursor.fetchone()
@@ -302,7 +307,7 @@ class iPediaProtocol(basic.LineReceiver):
 
         cursor=None
         try:
-            db=self.getDatabase()
+            db=self.getManagementDatabase()
             cursor=db.cursor()
             cursor.execute("""select id, cookie_id from registered_users where serial_number='%s'""" % db.escape_string(self.serialNumber))
             row=cursor.fetchone()
@@ -334,7 +339,7 @@ class iPediaProtocol(basic.LineReceiver):
         if not self.cookieId:
             cursor=None
             try:
-                db=self.getDatabase()
+                db=self.getManagementDatabase()
                 cursor=db.cursor()
                 cursor.execute("""select cookies.id as cookieId, registered_users.id as userId from cookies left join registered_users on cookies.id=registered_users.cookie_id where cookie='%s'""" % db.escape_string(self.cookie))
                 row=cursor.fetchone()
@@ -378,7 +383,7 @@ class iPediaProtocol(basic.LineReceiver):
         cursor=None
         definition=None
         try:
-            db=self.getDatabase()
+            db=self.getArticlesDatabase()
             cursor=db.cursor()
             idTermDef=iPediaDatabase.findExactDefinition(db, cursor, self.requestedTerm)
             if idTermDef:
@@ -407,7 +412,7 @@ class iPediaProtocol(basic.LineReceiver):
     def handleSearchRequest(self):
         cursor=None
         try:
-            db=self.getDatabase()
+            db=self.getArticlesDatabase()
             cursor=db.cursor()
             self.termList=iPediaDatabase.findFullTextMatches(db, cursor, self.searchExpression)
             if self.termList:
@@ -431,7 +436,7 @@ class iPediaProtocol(basic.LineReceiver):
         cursor=None
         definition=None
         try:
-            db=self.getDatabase()
+            db=self.getArticlesDatabase()
             cursor=db.cursor()
             idTermDef=None
             while not idTermDef:
@@ -454,7 +459,7 @@ class iPediaProtocol(basic.LineReceiver):
         cursor=None
         result=True
         try:
-            db=self.getDatabase()
+            db=self.getManagementDatabase()
             cursor=db.cursor()
             assert None==self.userId
             assert None!=self.cookieId
@@ -576,17 +581,19 @@ class iPediaProtocol(basic.LineReceiver):
 class iPediaFactory(protocol.ServerFactory):
 
     def createArticlesConnection(self):
+        print "creating articles connection"
         return MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db=self.dbName)
 
     def createManagementConnection(self):
-        return MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db='ipediamanage')
+        print "creating management connection"
+        return MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db=MANAGEMENT_DB)
 
     def __init__(self, dbName):
         global g_articleCount
         self.dbName=dbName
         db=self.createArticlesConnection()
         cursor=db.cursor()
-        cursor.execute("""select count(*), min(id), max(id) from definitions""")
+        cursor.execute("""select count(*), min(id), max(id) from articles""")
         row=cursor.fetchone()
         g_articleCount=self.articleCount=row[0]
         self.minDefinitionId=row[1]
@@ -600,19 +607,20 @@ class iPediaFactory(protocol.ServerFactory):
         
     protocol = iPediaProtocol
 
+ipediaRe = re.compile("ipedia_[0-9]{8}", re.I)
+
 def getDbList():
-    conn = MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db='ipediamanage')
+    conn = MySQLdb.Connect(host=DB_HOST, user=DB_USER, passwd=DB_PWD, db=MANAGEMENT_DB)
     cur = conn.cursor()
     cur.execute("SHOW DATABASES;")
     dbs = []
     for row in cur.fetchall():
         dbName = row[0]
-        if 0==dbName.find("ipedia"):
-            dbs.append(row[0])
+        if ipediaRe.match(dbName):
+            dbs.append(dbName)
     cur.close()
     conn.close()
     return dbs    
-
 
 class iPediaTelnetProtocol(basic.LineReceiver):
 
@@ -673,10 +681,32 @@ def main():
         print "using psyco"
         psyco.full()
 
+    dbs = getDbList()
+    if 0==len(dbs):
+        print "No databases available"
+
+    dbs.sort()
+
+    fListDbs = arsutils.fDetectRemoveCmdFlag("-listdbs")
+    if fListDbs:
+        for dbName in dbs:
+            print dbName
+        sys.exit(0)
+
     dbName=arsutils.fDetectRemoveCmdFlag("-db")
-    if not dbName: 
-        dbName='ipedia'
-                
+
+    if dbName:
+        if dbName in dbs:
+            print "Using database '%s'" % dbName
+        else:
+            print "Database '%s' doesn't exist" % dbName
+            print "Available databases:"
+            for name in dbs:
+                print "  %s" % name
+            sys.exit(0)
+    else: 
+        dbName=dbs[-1] # use the latest database
+
     factory=iPediaFactory(dbName)
     reactor.listenTCP(9000, factory)
     reactor.listenTCP(9001, iPediaTelnetFactory(factory))
