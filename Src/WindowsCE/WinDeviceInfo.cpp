@@ -152,7 +152,7 @@ static void renderDeviceIdentifierToken(String& out, const char_t* prefix, Token
     }
 }
 
-String deviceInfoToken()
+String ArsLexis::deviceInfoToken()
 {
     String out;
     renderDeviceIdentifierToken(out, _T("SN"), getUUID);
