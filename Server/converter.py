@@ -19,7 +19,10 @@
 #             database, we should never have duplicates. If we have it means that we're loosing
 #             some of the original definitions. With this flag we dump dups to stdout.
 #             Don't use if ipedia.definitions isn't empty
-
+# -slow     : use the older, slower version of conversion. The code used by default
+#             is optimized for bulk conversion to an empty ipedia database
+#             but doesn't support -ts argument and has less reporting
+# -ts timestamp : limit the rows we update to those that have timestamp greater than the one give
 import MySQLdb, sys, datetime, re, unicodedata, time
 
 # if True, we'll print a lot of debug text to stdout
@@ -29,8 +32,15 @@ g_fVerbose       = False
 # shouldn't happen if it was empty to begin with
 g_fShowDups      = False
 
+# set by -force command line argument
+g_fForceConvert  = False
+
+# if True use the older, slower version
+g_fSlowVersion   = False
 g_connOne        = None
 g_connTwo        = None
+# set by -ts command line argument
+g_timestamp      = None
 
 def getOneResult(conn,query):
     cur = conn.cursor()
@@ -204,8 +214,39 @@ def convertDefinition(text):
 
 # definition is cur_text from the table
 # ts is cur_timestamp from the table
-def convertTerm(cur_title,definition,ts,fForceConvert=False):
+# this is a newer, faster versio but doesn't support some stuff from the old one
+def convertTerm(cur_title,definition,ts):
     global g_fVerbose, g_fShowDups, g_connTwo
+
+    ipedia_write_cur = getNamedCursor(g_connTwo, "ipedia_write_cur")
+
+    term=cur_title.replace('_', ' ')
+    timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
+    if g_fVerbose:
+        log_txt = "term: %s " % term
+
+    newDef = convertDefinition(definition)
+
+    try:
+        ipedia_write_cur.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (dbEscape(term), dbEscape(newDef), dbEscape(str(timestamp))))
+        if g_fVerbose:
+            log_txt += "*New record"
+    except:
+        # assuming that the exception happend because of 
+        if g_fShowDups:
+            print "dup: " + cur_title
+        if g_fVerbose:
+            log_txt += "Update existing record"
+        #print "exception happened for %s" % term
+        ipedia_write_cur.execute("""UPDATE definitions SET definition='%s', last_modified='%s' WHERE term='%s'""" % (dbEscape(newDef), dbEscape(str(timestamp)), dbEscape(term)))
+    if g_fVerbose:
+        print log_txt
+
+# definition is cur_text from the table
+# ts is cur_timestamp from the table
+# this is the older, slower version
+def convertTermSlow(cur_title,definition,ts):
+    global g_fVerbose, g_fShowDups, g_connTwo, g_fForceConvert
 
     ipedia_write_cur = getNamedCursor(g_connTwo, "ipedia_write_cur")
 
@@ -225,7 +266,7 @@ def convertTerm(cur_title,definition,ts,fForceConvert=False):
             print "dup: " + cur_title
         if g_fVerbose:
             log_txt +=  "cur:" + outRow[1] + " new: " + str(timestamp)
-        if fForceConvert or str(outRow[1])<str(timestamp):
+        if g_fForceConvert or str(outRow[1])<str(timestamp):
             if g_fVerbose:
                 log_txt += " Update existing record id: " + str(outRow[0])
             termId = outRow[0]
@@ -243,8 +284,8 @@ def convertTerm(cur_title,definition,ts,fForceConvert=False):
     if g_fVerbose:
         print log_txt
 
-def convertAll(articleLimit,fForceConvert):
-    global g_connOne
+def convertAll(articleLimit):
+    global g_connOne, g_fSlowVersion
 
     rowCount = 0
     rowsLeft = getEnwikiRowCount()
@@ -253,14 +294,17 @@ def convertAll(articleLimit,fForceConvert):
     cursor = getNamedCursor(g_connOne,"all_cur_ids")
     while True:
         query="""SELECT cur_title,cur_text,cur_timestamp FROM cur WHERE cur_namespace=0"""
-        if len(sys.argv)>1:
+        if g_timestamp:
             query+=""" AND cur_timestamp>'%s'""" % dbEscape(sys.argv[1])
         query+=""" LIMIT %d,%d""" % (curOffset, rowsPerQuery)
         #print query
         cursor.execute(query)
         processedInOneFetch = 0
         for row in cursor.fetchall():
-            convertTerm(row[0],row[1],row[2],fForceConvert)
+            if g_fSlowVersion:
+                convertTermSlow(row[0],row[1],row[2])
+            else:
+                convertTerm(row[0],row[1],row[2])
             rowCount += 1
             rowsLeft -= 1
             processedInOneFetch += 1
@@ -329,9 +373,15 @@ if __name__=="__main__":
 
     initDatabase()
 
-    fForceConvert = fDetectRemoveCmdFlag( "-force" )
+    g_fForceConvert = fDetectRemoveCmdFlag( "-force" )
     g_fVerbose = fDetectRemoveCmdFlag( "-verbose" )
     g_fShowDups = fDetectRemoveCmdFlag( "-showdups" )
+    g_timestamp = getRemoveCmdArg( "-ts" )
+    g_fSlowVersion = fDetectRemoveCmdFlag( "-slow" )
+
+    if g_timestamp and not g_fSlowVersion:
+        print "-ts only supported if -slow is used"
+        sys.exit(0)
 
     #print "g_fShowDups=%d" % g_fShowDups
     articleLimit = getRemoveCmdArg("-limit")
@@ -344,7 +394,7 @@ if __name__=="__main__":
         g_fVerbose = True
         convertOneTerm(termToConvert)
     else:
-        convertAll(articleLimit, fForceConvert)
+        convertAll(articleLimit)
     endTiming()
     deinitDatabase()
     dumpTimingInfo()
