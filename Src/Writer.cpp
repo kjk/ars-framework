@@ -7,18 +7,6 @@
 
 namespace ArsLexis {
 
-    status_t Writer::write(const char_t* begin, uint_t length)
-    {
-        const char_t* end=begin+length;
-        while (begin!=end)
-        {
-            status_t error=write(*begin++);
-            if (errNone!=error)
-                return error;
-        }
-        return errNone;
-    }
-    
     Writer::~Writer()
     {}
 

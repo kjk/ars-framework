@@ -11,13 +11,16 @@ namespace ArsLexis {
     {
     public:
     
-        virtual status_t write(char_t chr)=0;
+        status_t write(char_t chr)
+        {
+            return writeRaw(&chr, sizeof(chr));
+        }
 
-        /**
-         * I provide a default implementation, but it's based on write(char_t), so please override it whenever possible.
-         */        
-        virtual status_t write(const char_t* begin, uint_t length);
-    
+        status_t write(const char_t* buffer, uint_t length)
+        {
+            return writeRaw(buffer, sizeof(*buffer)*length);
+        }
+
         status_t write(const char_t* text)
         {
             using namespace std; 
@@ -30,6 +33,8 @@ namespace ArsLexis {
         }
         
         virtual status_t flush()=0;
+        
+        virtual status_t writeRaw(const void* buffer, uint_t length)=0;
         
         virtual ~Writer();
     

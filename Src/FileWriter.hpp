@@ -36,9 +36,7 @@ namespace ArsLexis {
 #endif
         
 
-        status_t write(char_t chr);
-
-        status_t write(const char_t* begin, uint_t length);
+        status_t writeRaw(const void* begin, uint_t length);
         
         status_t flush();
         

@@ -40,10 +40,7 @@ namespace ArsLexis {
         bool isOpen() const
         {return file_.isOpen();}
 
-        status_t read(int& ret);
-
-        status_t read(char_t* buffer, uint_t& length);
-        
+        status_t readRaw(void* buffer, uint_t& length);
     };
     
 }

@@ -3,6 +3,32 @@
 
 namespace ArsLexis {
 
+    status_t Reader::read(int& chr)
+    {
+        char_t c;
+        uint_t length=sizeof(c);
+        status_t error = readRaw(&c, length);
+        if (errNone != error)
+            return error;
+        if (0 == length)
+            chr = npos;
+        else
+            chr = c;
+        return errNone;
+    }
+
+    status_t Reader::read(char_t* buffer, uint_t& length)
+    {
+        uint_t toRead = sizeof(char_t) * length;
+        status_t error = readRaw(buffer, toRead);
+        if (errNone != error)
+            return error;
+//        if (toRead % sizeof(char_t) != 0)
+//            return DataStore::errStoreCorrupted;
+        length = toRead / sizeof(char_t);
+        return errNone;    
+    }
+
     status_t Reader::readLine(bool& eof, String& out, char_t delimiter)
     {
         volatile status_t error=errNone;

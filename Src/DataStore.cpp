@@ -499,32 +499,6 @@ status_t DataStoreReader::readRaw(void* buffer, uint_t& length)
     return store_.readStream(*position_, buffer, length);
 }
 
-status_t DataStoreReader::read(int& chr)
-{
-    char_t c;
-    uint_t length=sizeof(c);
-    status_t error = readRaw(&c, length);
-    if (errNone != error)
-        return error;
-    if (0 == length)
-        chr = npos;
-    else
-        chr = c;
-    return errNone;
-}
-
-status_t DataStoreReader::read(char_t* buffer, uint_t& length)
-{
-    uint_t toRead = sizeof(char_t) * length;
-    status_t error = readRaw(buffer, toRead);
-    if (errNone != error)
-        return error;
-    if (toRead % sizeof(char_t) != 0)
-        return DataStore::errStoreCorrupted;
-    length = toRead / sizeof(char_t);
-    return errNone;    
-}
-
 DataStoreWriter::DataStoreWriter(DataStore& store): store_(store) {}
 
 DataStoreWriter::~DataStoreWriter() 
@@ -549,16 +523,6 @@ status_t DataStoreWriter::writeRaw(const void* buffer, uint_t length)
 {
     assert(NULL != position_.get());
     return store_.writeStream(*position_, buffer, length);
-}
-
-status_t DataStoreWriter::write(char_t chr)
-{
-    return writeRaw(&chr, sizeof(chr));
-}
-
-status_t DataStoreWriter::write(const char_t* buffer, uint_t length)
-{
-    return writeRaw(buffer, sizeof(char_t)*length);
 }
 
 status_t DataStoreWriter::flush()

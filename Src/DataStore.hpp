@@ -152,10 +152,6 @@ namespace ArsLexis {
         
         status_t open(const String& name);
         
-        status_t read(int& chr);
-        
-        status_t read(char_t* buffer, uint_t& length);
-        
         status_t readRaw(void* buffer, uint_t& length);
         
     };
@@ -172,10 +168,6 @@ namespace ArsLexis {
         ~DataStoreWriter();
         
         status_t open(const String& name, bool dontCreate = false);
-        
-        status_t write(char_t chr);
-
-        status_t write(const char_t* buffer, uint_t length);
         
         status_t writeRaw(const void* buffer, uint_t length);
         

@@ -1,5 +1,27 @@
-#ifndef __ARSLEXIS_BASE_TYPES_HPP__
-#define __ARSLEXIS_BASE_TYPES_HPP__
+#ifndef ARSLEXIS_BASE_TYPES_HPP__
+#define ARSLEXIS_BASE_TYPES_HPP__
+
+#if defined(_MSC_VER)
+
+namespace std {
+    
+    typedef __int8 int8_t;
+    
+    typedef unsigned __int8 uint8_t;
+    
+    typedef __int16 int16_t;
+    
+    typedef unsigned __int16 int16_t;
+    
+    typedef __int32 int32_t;
+    
+    typedef unsigned __int32 uint32_t;
+    
+}
+
+#else
+#  include <cstdint>
+#endif
 
 #include <string>
 #include <ErrBase.h>
@@ -17,7 +39,6 @@ typedef unsigned long ulong_t;
 # include <windows.h>
 # include <tchar.h>
 
-// I don't see a point in naming these macros different than PalmOS one (and why T? They don't use TCHARs in any way). 
 # define ErrTry __try
 # define ErrCatch(theErr) __except (EXCEPTION_EXECUTE_HANDLER) { DWORD theErr=GetExceptionCode();
 # define ErrEndCatch }
@@ -98,5 +119,5 @@ namespace ArsLexis
 # define chrNull _T('\0')
 #endif
 
-#endif // __ARSLEXIS_BASE_TYPES_HPP__
+#endif // ARSLEXIS_BASE_TYPES_HPP__
 

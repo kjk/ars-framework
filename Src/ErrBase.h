@@ -75,6 +75,8 @@
 
 #define dsErrorClass appErrorClass+0x0400
 
+#define serializerErrorClass appErrorClass+0x0500 // Serializer.hpp
+
 #if !defined(errNone)
 # define errNone 0
 #endif
