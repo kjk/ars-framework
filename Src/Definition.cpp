@@ -1378,6 +1378,56 @@ void DefinitionModel::swap(DefinitionModel& other)
     std::swap(styleCount_, other.styleCount_);
 }
 
+
+void Definition::setSelection(Graphics& graphics, const ElementPosition_t& startElement, uint_t startProgress, const ElementPosition_t& endElement, uint_t endProgress, bool isHyperlink)
+{
+    clearSelection(graphics);
+    
+    assert(startElement >= begin());
+    assert(startElement < end());
+    assert(endElement >= begin());
+    assert(endElement < end());
+    
+
+    selectionStartElement_ = inactiveSelectionStartElement_ = startElement;
+    selectionEndElement_ = inactiveSelectionEndElement_ = endElement;
+    selectionStartProgress_ = startProgress;
+    selectionEndProgress_ = endProgress;
+    
+    selectionIsHyperlink_ = isHyperlink;
+    if (isHyperlink)
+        extendSelectionToFullHyperlink();
+                
+    renderElementRange(graphics, startElement, endElement);
+}
+
+void Definition::highlightHyperlink(Graphics& graphics, const ElementPosition_t& hyperlinkElement)
+{
+    assert((*hyperlinkElement)->isHyperlink());
+    setSelection(graphics, hyperlinkElement, 0, hyperlinkElement, LayoutContext::progressCompleted, true);
+}
+
+void Definition::highlightHyperlink(Graphics& graphics, uint_t index)
+{
+    ElementPosition_t pos = begin();
+    ElementPosition_t end = this->end();
+    uint_t count = 0;
+    while (pos != end)
+    {
+        if ((*pos)->isHyperlink())
+            if (count == index)
+            {
+                highlightHyperlink(graphics, pos);
+                return;
+            }
+            else
+                ++count;
+                
+        ++pos;
+    }
+}
+
+
 #if defined(_PALM_OS)
 #pragma segment Segment1
 #endif

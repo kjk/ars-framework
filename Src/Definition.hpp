@@ -393,6 +393,12 @@ public:
         selectionClickHandler = handler;
         selectionClickHandlerContext = context;
     }
+    
+    void setSelection(Graphics& graphics, const ElementPosition_t& startElement, uint_t startProgress, const ElementPosition_t& endElement, uint_t endProgress, bool isHyperlink = false);
+    
+    void highlightHyperlink(Graphics& graphics, const ElementPosition_t& hyperlinkElement);
+    
+    void highlightHyperlink(Graphics& graphics, uint_t index);
 
 private:
 
