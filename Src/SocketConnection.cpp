@@ -145,51 +145,44 @@ namespace ArsLexis
         if (manageUnopenedConnections())
             return errNone;
         
-        while (true)
-        {    
-            status_t error=selector_.select(timeout);
-            if (errNone != error)
-                return error;
-                
-            for (int i=0; i<connectionsCount_; i++)
+        status_t error=selector_.select(timeout);
+        if (errNone != error)
+            return error;
+            
+        for (int i=0; i<connectionsCount_; i++)
+        {
+            status_t connErr=errNone;
+            SocketConnection* conn = connections_[i];
+            assert(SocketConnection::stateOpened==conn->state());
+            bool done=false;
+            if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
             {
-                status_t connErr=errNone;
-                SocketConnection* conn = connections_[i];
-                assert(SocketConnection::stateOpened==conn->state());
-                bool done=false;
-                if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
-                {
-                    unregisterEvents(*conn);
-                    connErr=conn->notifyException();
-                    done=true;
-                }                        
-                else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
-                {
-                    unregisterEvents(*conn);
-                    connErr=conn->notifyWritable();
-                    done=true;
-                } 
-                else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
-                {
-                    unregisterEvents(*conn);
-                    connErr=conn->notifyReadable();
-                    done=true;
-                }
-                if (connErr)
-                {
-                    conn->handleError(connErr);
-                    delete conn;
-                    connections_[i]=NULL;
-                }
-                if (done)
-                    break;
+                unregisterEvents(*conn);
+                connErr=conn->notifyException();
+                done=true;
+            }                        
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
+            {
+                unregisterEvents(*conn);
+                connErr=conn->notifyWritable();
+                done=true;
+            } 
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
+            {
+                unregisterEvents(*conn);
+                connErr=conn->notifyReadable();
+                done=true;
             }
-            compactConnections();
-            if (0 == connectionsCount_)
-                break;
-            if (selector_.isInputEvent())
+            if (connErr)
+            {
+                conn->handleError(connErr);
+                delete conn;
+                connections_[i]=NULL;
+            }
+            if (done)
                 break;
         }
+        compactConnections();
         return errNone;
     }
 
