@@ -37,14 +37,11 @@ void KXmlParser::setInput(XmlReader *reader)
     depth_ = 0;
 
     if (entityMap_)
-        delete entityMap_
+    {
+        delete entityMap_;
+        entityMap_ = NULL;
+    }
 
-    entityMap_ = new ArsLexis::Hashtable();
-    entityMap_->put("amp", "&");
-    entityMap_->put("apos", "'");
-    entityMap_->put("gt", ">");
-    entityMap_->put("lt", "<");
-    entityMap_->put("quot", "\"");
 }
 
 void KXmlParser::setFeature(String feature, bool flag)
@@ -76,3 +73,33 @@ int KXmlParser::getEventType()
 {
     return END_DOCUMENT;
 }
+
+// TODO: is this the right interface? What to do in case of not finding the substitution
+String KXmlParser::resolveEntity(String entity)
+{
+    // first resolve standard entities
+    // TODO: could be optimized further by doing case on first letter first
+    if (entity=="amp") return "&";
+    if (entity=="apos") return "'";
+    if (entity=="gt") return ">";
+    if (entity=="lt") return "<";
+    if (entity=="quot") return "\"";
+
+    if (NULL==entityMap_)
+    {
+        return ""; // TODO: an exception?
+    }
+
+    String value = entityMap_->get(entity);
+    return value;
+}
+
+void KXmlParser::defineEntityReplacementText(String entity, String value)
+{
+    // TODO: should we check if a given replacement already exists?
+    if (NULL==entityMap_)
+        entityMap_ = new ArsLexis::Hashtable();
+
+    entityMap_->put(entity, value);
+}
+

@@ -18,6 +18,7 @@ namespace KXml2{
             virtual void    next() = 0;
             virtual String  getPositionDescription() = 0;
             virtual int     getEventType() = 0;
+            virtual void    defineEntityReplacementText(String entity, String value) = 0;
     };
 }
 

@@ -67,7 +67,10 @@ namespace KXml2{
         bool wasCR;
         bool unresolved;
         bool token;
-    
+
+    private:
+        String  resolveEntity(String entity);
+
     public:
         KXmlParser();
         void    setInput(XmlReader *reader);
@@ -76,6 +79,7 @@ namespace KXml2{
         void    next();
         String  getPositionDescription();
         int     getEventType();
+        void    defineEntityReplacementText(String entity, String value);
     };
 }
 
