@@ -9,8 +9,6 @@
 
 #include "Definition.hpp"
 
-class Definition;
-
 class DefinitionElement;
 
 class GenericTextElement;
@@ -109,7 +107,7 @@ class DefinitionParser: public ArsLexis::FieldPayloadProtocolConnection::Payload
      */
     void manageListNesting(const ArsLexis::String& newNesting);
     
-    Definition definition_;
+    Definition::Elements_t elements_;
     const ArsLexis::String* text_;
     uint_t parsePosition_;
     uint_t lineEnd_;
@@ -175,8 +173,9 @@ public:
     DefinitionParser();
     
     Err handleIncrement(const ArsLexis::String& text, ulong_t& length, bool finish=false);
-    
-    void updateDefinition(Definition& definition);
+
+    Definition::Elements_t& elements()
+    {return elements_;}    
     
     ~DefinitionParser();
 

@@ -141,6 +141,9 @@ public:
     
     bool hasHighDensityFeatures() const
     {return hasHighDensityFeatures_;}
+
+    iPediaHyperlinkHandler& hyperlinkHandler()
+    {return hyperlinkHandler_;}    
     
 private:
     

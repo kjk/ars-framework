@@ -4,13 +4,12 @@
 #include "iPediaForm.hpp"
 #include "Definition.hpp"
 
-class Definition;
 class LookupHistory;
 class RenderingPreferences;
 
 class MainForm: public iPediaForm
 {
-    Definition* getDefinition();
+    Definition definition_;
     
     const LookupHistory& getHistory() const;
     
@@ -27,7 +26,7 @@ class MainForm: public iPediaForm
     
     void drawDefinition(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds);
     
-    void updateScrollBar(const Definition& def);
+    void updateScrollBar();
  
     void randomArticle();
     

@@ -49,7 +49,8 @@ void DefinitionParser::clear()
     currentNumberedList_.clear();
     numListsStack_.clear();
     lastListNesting_.clear();
-    definition_.clear();
+    std::for_each(elements_.begin(), elements_.end(), ArsLexis::ObjectDeleter<DefinitionElement>());
+    elements_.clear();
 }
     
 DefinitionParser::~DefinitionParser()
@@ -581,7 +582,7 @@ void DefinitionParser::manageListNesting(const String& requestedNesting)
 void DefinitionParser::appendElement(DefinitionElement* element)
 {
     element->setParent(currentParent());
-    definition_.appendElement(element);
+    elements_.push_back(element);
 }
 
 DefinitionParser::LineType DefinitionParser::detectLineType(uint_t start, uint_t end) const
@@ -748,13 +749,6 @@ Err DefinitionParser::handleIncrement(const String& text, ulong_t& length, bool 
         error=ex;
     } ErrEndCatch        
     return error;
-}
-
-void DefinitionParser::updateDefinition(Definition& definition)
-{
-    Definition::HyperlinkHandler* handler=definition.hyperlinkHandler();
-    definition.swap(definition_); 
-    definition.setHyperlinkHandler(handler);
 }
 
 //! @todo Add header indexing

@@ -27,7 +27,12 @@ class Definition: private ArsLexis::NonCopyable
      * Type used to store @c DefinitonElement objects that represent various parts of definition.
      */
 //    typedef std::list<DefinitionElement*> Elements_t;
+
+public:
+
     typedef std::vector<DefinitionElement*> Elements_t;
+
+private:
     
     /**
      * @internal
@@ -192,14 +197,13 @@ public:
     Definition();
     
     ~Definition();
-    
-    void swap(Definition& other);
-    
-    /**
-     * Appends element to the end of this definition's element list. Definition takes ownership 
-     * of the appended element.
-     */
-    void appendElement(DefinitionElement* element);
+
+
+    void replaceElements(Elements_t& elements)
+    {
+        clear();
+        elements_.swap(elements);
+    }
     
     /**
      * Adds hot spot to the collection of this definition's hot spots. Definition takes ownership 
@@ -289,14 +293,5 @@ private:
     HotSpot* selectedHotSpot_;
     RenderingProgressReporter* renderingProgressReporter_; 
 };
-
-#ifdef __MWERKS__
-
-template<> 
-inline void std::swap(Definition& def1, Definition& def2)
-{def1.swap(def2);}
-
-#endif // __MWERKS__
-
 
 #endif

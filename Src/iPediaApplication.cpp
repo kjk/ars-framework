@@ -98,7 +98,7 @@ LookupManager* iPediaApplication::getLookupManager(bool create)
 {
     Err error=errNone;
     if (!lookupManager_ && create)
-        lookupManager_=new LookupManager(history_, &hyperlinkHandler_);
+        lookupManager_=new LookupManager(history_);
     return lookupManager_;
 }
 

@@ -17,7 +17,7 @@ class LookupManager: private ArsLexis::NonCopyable
 {
     LookupHistory& history_;
     ArsLexis::SocketConnectionManager connectionManager_;
-    Definition lastDefinition_;
+    Definition::Elements_t lastDefinitionElements_;
 
     ArsLexis::String lastInputTerm_;
     ArsLexis::String lastFoundTerm_;
@@ -74,14 +74,12 @@ public:
         {}
     };
 
-    LookupManager(LookupHistory& history, Definition::HyperlinkHandler* hyperlinkHandler=0):
+    LookupManager(LookupHistory& history):
         history_(history),
         historyChange_(historyMoveForward),
         percentProgress_(percentProgressDisabled),
         lookupInProgress_(false)
-    {
-        lastDefinition_.setHyperlinkHandler(hyperlinkHandler);
-    }
+    {}
     
     ~LookupManager();
 
@@ -98,8 +96,8 @@ public:
 
     void handleLookupEvent(const EventType& event);
 
-    Definition& lastDefinition() 
-    {return lastDefinition_;}
+    Definition::Elements_t& lastDefinitionElements() 
+    {return lastDefinitionElements_;}
     
     void search(const ArsLexis::String& expression);
 

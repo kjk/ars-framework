@@ -421,30 +421,6 @@ void Definition::render(Graphics& graphics, const ArsLexis::Rectangle& bounds, c
     renderLayout(graphics, prefs);
 }
  
-void Definition::swap(Definition& other)
-{
-    elements_.swap(other.elements_);
-    lines_.swap(other.lines_);
-    std::swap(firstLine_, other.firstLine_);
-    std::swap(lastLine_, other.lastLine_);
-    std::swap(bounds_, other.bounds_);
-    hotSpots_.swap(other.hotSpots_);
-    std::swap(hyperlinkHandler_, other.hyperlinkHandler_);
-    std::swap(selectionStart_, other.selectionStart_);
-    std::swap(selectionEnd_, other.selectionEnd_);
-    std::swap(selectionStartElement_, other.selectionStartElement_);
-    std::swap(selectionEndElement_, other.selectionEndElement_);
-    std::swap(selectionStartProgress_, other.selectionStartProgress_);
-    std::swap(selectionEndProgress_, other.selectionEndProgress_);
-
-}
-
-void Definition::appendElement(DefinitionElement* element)
-{
-    elements_.push_back(element);
-    selectionStartElement_=selectionEndElement_=elements_.end();
-}
-
 void Definition::click(const Point& point)
 {
     HotSpots_t::iterator end=hotSpots_.end();

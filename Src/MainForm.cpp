@@ -6,18 +6,16 @@
 
 using namespace ArsLexis;
 
-namespace 
-{
-    
-}
-
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
     renderingProgressReporter_(*this),
     displayMode_(showSplashScreen),
     lastPenDownTimestamp_(0),
     updateDefinitionOnEntry_(false)
-{}
+{
+    definition_.setRenderingProgressReporter(&renderingProgressReporter_);
+    definition_.setHyperlinkHandler(&app.hyperlinkHandler());
+}
 
 MainForm::~MainForm()
 {}
@@ -28,16 +26,6 @@ bool MainForm::handleOpen()
     updateNavigationButtons();
     return result;
 }
-
-Definition* MainForm::getDefinition()
-{
-    Definition* def=0;
-    iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    LookupManager* lm=app.getLookupManager();
-    if (lm)
-        def=&lm->lastDefinition();
-    return def;
-}        
 
 inline const LookupHistory& MainForm::getHistory() const
 {
@@ -130,65 +118,60 @@ void MainForm::drawSplashScreen(Graphics& graphics, const ArsLexis::Rectangle& b
     graphics.drawCenteredText("http://www.arslexis.com", point, rect.width());
 }
 
-void MainForm::updateScrollBar(const Definition& definition)
+void MainForm::updateScrollBar()
 {
     ScrollBar scrollBar(*this, definitionScrollBar);
-    scrollBar.setPosition(definition.firstShownLine(), 0, definition.totalLinesCount()-definition.shownLinesCount(), definition.shownLinesCount());
+    scrollBar.setPosition(definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
     scrollBar.show();
 }
 
 void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bounds)
 {
-    Definition* definition=getDefinition();
-    if (definition)
-    {
-        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, renderingPreferences().backgroundColor());
-        definition->setRenderingProgressReporter(&renderingProgressReporter_);
-        Rectangle rect(bounds);
-        rect.explode(0, 15, 0, -33);
-        graphics.erase(rect);
-        rect.explode(2, 2, -12, -4);
-        Err error=errNone;
-        ErrTry {
-            bool doubleBuffer=true;
-            const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
-            if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
-                doubleBuffer=false;
-                
-            if (doubleBuffer)
-            {
-                WinHandle wh=WinCreateOffscreenWindow(bounds.width(), bounds.height(), windowFormat(), &error);
-                if (wh!=0)
-                {
-                    WinSetDrawWindow(wh);
-                    Graphics offscreen(wh);
-                    definition->render(offscreen, rect, renderingPreferences(), false);
-                    WinSetDrawWindow(windowHandle());
-                    offscreen.copyArea(rect, graphics, rect.topLeft);
-                    WinDeleteWindow(wh, false);
-                    wh=0;
-                }
-                else 
-                    doubleBuffer=false;
-            }
-            if (!doubleBuffer)
-                definition->render(graphics, rect, renderingPreferences(), false);
-            error=errNone;
-        }
-        ErrCatch (ex) { // Before anybody starts reorganizing this code, please read reference about ErrCatch() and the use of 'volatile'
-            error=ex;
-        } ErrEndCatch
-        definition->setRenderingProgressReporter(0);
-        if (error) 
+    assert(!definition_.empty());
+    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, renderingPreferences().backgroundColor());
+    Rectangle rect(bounds);
+    rect.explode(0, 15, 0, -33);
+    graphics.erase(rect);
+    rect.explode(2, 2, -12, -4);
+    Err error=errNone;
+    ErrTry {
+        bool doubleBuffer=true;
+        const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+        if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
+            doubleBuffer=false;
+            
+        if (doubleBuffer)
         {
-            definition->clear();
-            setDisplayMode(showSplashScreen);
-            update();
-            iPediaApplication::sendDisplayAlertEvent(notEnoughMemoryAlert);
+            WinHandle wh=WinCreateOffscreenWindow(bounds.width(), bounds.height(), windowFormat(), &error);
+            if (wh!=0)
+            {
+                WinSetDrawWindow(wh);
+                Graphics offscreen(wh);
+                definition_.render(offscreen, rect, renderingPreferences(), false);
+                WinSetDrawWindow(windowHandle());
+                offscreen.copyArea(rect, graphics, rect.topLeft);
+                WinDeleteWindow(wh, false);
+                wh=0;
+            }
+            else 
+                doubleBuffer=false;
         }
-        else            
-            updateScrollBar(*definition);    
+        if (!doubleBuffer)
+            definition_.render(graphics, rect, renderingPreferences(), false);
+        error=errNone;
     }
+    ErrCatch (ex) { // Before anybody starts reorganizing this code, please read reference about ErrCatch() and the use of 'volatile'
+        error=ex;
+    } ErrEndCatch
+    if (error) 
+    {
+        definition_.clear();
+        setDisplayMode(showSplashScreen);
+        update();
+        iPediaApplication::sendDisplayAlertEvent(notEnoughMemoryAlert);
+    }
+    else            
+        updateScrollBar();    
 }
 
 void MainForm::draw(UInt16 updateCode)
@@ -222,48 +205,46 @@ inline void MainForm::handleScrollRepeat(const EventType& event)
 
 void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit, bool updateScrollbar)
 {
-    Definition* definition=getDefinition();
-    if (definition)
-    {
-        WinHandle thisWindow=windowHandle();
-        Graphics graphics(thisWindow);
-        if (scrollPage==unit)
-            units*=(definition->shownLinesCount());
+    if (definition_.empty())
+        return;
+    WinHandle thisWindow=windowHandle();
+    Graphics graphics(thisWindow);
+    if (scrollPage==unit)
+        units*=(definition_.shownLinesCount());
+    
+    bool doubleBuffer=true;
+    if (-1==units || 1==units)
+        doubleBuffer=false;
         
-        bool doubleBuffer=true;
-        if (-1==units || 1==units)
-            doubleBuffer=false;
-            
-        const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
-        if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
-            doubleBuffer=false;
+    const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+    if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
+        doubleBuffer=false;
 
-        if (doubleBuffer)
+    if (doubleBuffer)
+    {
+        Rectangle b=bounds();
+        Rectangle rect=b;
+        rect.explode(2, 17, -12, -37);
+        Err error=errNone;
+
+        WinHandle wh=WinCreateOffscreenWindow(b.width(), b.height(), windowFormat(), &error);
+        if (wh!=0)
         {
-            Rectangle b=bounds();
-            Rectangle rect=b;
-            rect.explode(2, 17, -12, -37);
-            Err error=errNone;
-
-            WinHandle wh=WinCreateOffscreenWindow(b.width(), b.height(), windowFormat(), &error);
-            if (wh!=0)
-            {
-                Graphics offscreen(wh);
-                graphics.copyArea(b, offscreen, Point(0, 0));
-                WinSetDrawWindow(wh);
-                definition->scroll(offscreen, renderingPreferences(), units);
-                offscreen.copyArea(b, graphics, Point(0, 0));
-                WinSetDrawWindow(thisWindow);
-                WinDeleteWindow(wh, false);
-            }
-            else
-                doubleBuffer=false;
-        }            
-        if (!doubleBuffer)
-            definition->scroll(graphics, renderingPreferences(), units);
-        if (updateScrollbar)
-            updateScrollBar(*definition);
-    }
+            Graphics offscreen(wh);
+            graphics.copyArea(b, offscreen, Point(0, 0));
+            WinSetDrawWindow(wh);
+            definition_.scroll(offscreen, renderingPreferences(), units);
+            offscreen.copyArea(b, graphics, Point(0, 0));
+            WinSetDrawWindow(thisWindow);
+            WinDeleteWindow(wh, false);
+        }
+        else
+            doubleBuffer=false;
+    }            
+    if (!doubleBuffer)
+        definition_.scroll(graphics, renderingPreferences(), units);
+    if (updateScrollbar)
+        updateScrollBar();
 }
 
 void MainForm::moveHistory(bool forward)
@@ -378,12 +359,11 @@ void MainForm::handleExtendSelection(const EventType& event, bool finish)
     const LookupManager* lookupManager=app.getLookupManager();
     if (lookupManager && lookupManager->lookupInProgress())
         return;
-    Definition* definition=getDefinition();
-    if (!definition)
+    if (definition_.empty())
         return;
     ArsLexis::Point point(event.screenX, event.screenY);
     Graphics graphics(windowHandle());
-    definition->extendSelection(graphics, app.preferences().renderingPreferences, point, finish);
+    definition_.extendSelection(graphics, app.preferences().renderingPreferences, point, finish);
 }
 
 inline void MainForm::handlePenDown(const EventType& event)
@@ -456,11 +436,12 @@ void MainForm::updateNavigationButtons()
 
 void MainForm::updateAfterLookup()
 {
-    const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
-    const LookupManager* lookupManager=app.getLookupManager();
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    LookupManager* lookupManager=app.getLookupManager();
     assert(lookupManager!=0);
     if (lookupManager)
     {
+        definition_.replaceElements(lookupManager->lastDefinitionElements());
         setDisplayMode(showDefinition);
         const LookupHistory& history=getHistory();
         if (history.hasCurrentTerm())
@@ -613,11 +594,10 @@ void MainForm::copySelectionToClipboard()
 {
     if (showDefinition!=displayMode())
         return;
-    Definition* definition=getDefinition();
-    if (!definition)
+    if (definition_.empty())
         return;
     ArsLexis::String text;
-    definition->selectionToText(text);
+    definition_.selectionToText(text);
     ClipboardAddItem(clipboardText, text.data(), text.length());
 }
 
@@ -665,7 +645,7 @@ void MainForm::handleAbout()
     }
     else 
     {
-        if (getDefinition())
+        if (!definition_.empty())
         {
             setDisplayMode(showDefinition);
             update();

@@ -233,7 +233,7 @@ Err iPediaConnection::notifyFinished()
             iPediaApplication& app=iPediaApplication::instance();
             if (definitionParser_!=0)
             {
-                definitionParser_->updateDefinition(lookupManager_.lastDefinition());
+                std::swap(definitionParser_->elements(), lookupManager_.lastDefinitionElements());
                 lookupManager_.setLastFoundTerm(resultsFor_);
                 data.outcome=data.outcomeDefinition;
             }
