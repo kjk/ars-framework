@@ -10,6 +10,7 @@ typedef unsigned long ulong_t;
 #if defined(_WIN32_WCE) || defined(_WIN32)
 
 #include <windows.h>
+#include <tchar.h>
 
 namespace ArsLexis
 {
@@ -23,7 +24,7 @@ namespace ArsLexis
 # define tstrlen _tcslen
 # define tprintf _stprintf
 # define ticks	GetTickCount
-    
+
 #else
     
 namespace ArsLexis
