@@ -1,6 +1,11 @@
 # this file contains tests for wikipedia article conversion
 @1
+# explanaition of all the dash'es: http://www.p22.com/terminal/dash.html
 &mdash;
+@
+-
+@2
+&minus;
 @
 -
 

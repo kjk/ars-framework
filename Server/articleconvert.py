@@ -65,25 +65,43 @@ multipleLinesRe=re.compile("\n{3,100}")
 def stripMultipleNewLines(txt):
     txt=replaceRegExp(txt,multipleLinesRe,"\n\n")
     return txt
-    
 
-wikiStubText=""
-wikiSpoilerText="'''Warning:''' Plot details follow."
-wikiDisambigText="This is a disambiguation page; that is, one that points to other pages that might otherwise have the same name."
-wikiCopyVio1Text=""
-wikiCopyVio2Text=""
-wikiNPOVText=""
-wikiDisputedText=""
-wikiInclusionText=""
-wikiProtectedText=""
-wikiInUseText=""
-wikiControversialText=""
+wikiMacrosReplacements = {
+    "{{msg:stub}}"     : "",
+    "{{msg:spoiler}}"  : "'''Warning:''' Plot details follow.",
+    "{{msg:disambig}}" : "This is a disambiguation page; that is, one that points to other pages that might otherwise have the same name.",
+#    "{{msg:copyvio1}}"   : "",
+#    "{{msg:copyvio2}}"   : "",
+#    "{{msg:NPOV}}"       : "",
+#    "{{msg:disputed}}"   : "",
+#    "{{msg:inclusion}}"  : "",
+#    "{{msg:protected}}"  : "",
+#    "{{msg:inuse}}"      : "",
+#    "{{msg:controversial}}" : "",
+}
+
+# TODO: old code, remove
+#wikiStubText=""                                                                                    
+#wikiSpoilerText="'''Warning:''' Plot details follow."
+#wikiDisambigText="This is a disambiguation page; that is, one that points to other pages that might otherwise have the same name."
+#wikiCopyVio1Text=""
+#wikiCopyVio2Text=""
+#wikiNPOVText=""
+#wikiDisputedText=""
+#wikiInclusionText=""
+#wikiProtectedText=""
+#wikiInUseText=""
+#wikiControversialText=""
 wikiMacroRe=re.compile("\{\{(msg)|(subst)\:.*?\}\}", re.I)
 
 def replaceWikiMacros(term, text):
-    text=text.replace("{{msg:stub}}", wikiStubText)
-    text=text.replace("{{msg:spoiler}}", wikiSpoilerText)
-    text=text.replace("{{msg:disambig}}", wikiDisambigText)
+
+    for (macro,replacement) in wikiMacrosReplacements.items():
+        text = text.replace(macro, replacement)
+# TODO: old code, remove
+#    text=text.replace("{{msg:stub}}", wikiStubText)
+#    text=text.replace("{{msg:spoiler}}", wikiSpoilerText)
+#    text=text.replace("{{msg:disambig}}", wikiDisambigText)
 #    text=text.replace("{{msg:copyvio1}}", wikiCopyVio1Text)
 #    text=text.replace("{{msg:copyvio2}}", wikiCopyVio2Text)
 #    text=text.replace("{{msg:NPOV}}", wikiNPOVText)

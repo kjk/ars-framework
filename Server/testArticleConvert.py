@@ -5,6 +5,15 @@
 #   Automated unit testing of Wikipedia article conversion routines
 # Usage:
 #   testFileName : file with tests to use
+#
+# TODO:
+#   Maybe add syntax for short tests to make them easier to write e.g. instead:
+#        @2
+#        &minus;
+#        @
+#        -
+#   just:
+#        @s2 &minus;*-
 
 import sys,os,os.path,string,time,md5,bz2,articleconvert
 try:
@@ -12,14 +21,6 @@ try:
     psyco.full()
 except:
     print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
-
-def fFileExists(filePath):
-    try:
-        st = os.stat(filePath)
-    except OSError:
-        # TODO: should check that Errno is 2
-        return False
-    return True
 
 def getRemoveCmdArg(argName):
     argVal = None
@@ -41,84 +42,9 @@ def fDetectRemoveCmdFlag(flag):
         pass
     return fFlagPresent
 
-g_startTime = None
-g_endTime = None
-
-def startTiming():
-    global g_startTime
-    g_startTime = time.clock()
-
-def endTiming():
-    global g_endTime
-    g_endTime = time.clock()
-
-def dumpTiming():
-    global g_startTime, g_endTime
-    dur = g_endTime - g_startTime
-    str = "duration %f seconds\n" % dur
-    sys.stderr.write(str)
-
 def usageAndExit():
     print "Usage: testArticleConvert.py testFileName"
     sys.exit(0)
-
-def convertFile(inName,limit,fJustStats=False,fSkipIfExists=False):
-    if not fJustStats:
-        txtName = getBodyFileName(inName)
-        idxFileName = getIdxFileName(inName)
-        redirectsFileName = getRedirectsFileName(inName)
-
-        if fFileExists(txtName) and fFileExists(idxFileName) and fFileExists(redirectsFileName):
-            if fSkipIfExists:
-                print "files exist and fSkipIfExists==True so skipping creation"
-                return
-            else:
-                print "files exist bug fSkipIfExists==False so create anyway"
-
-        foIdx = open(idxFileName,"wb")
-        foTxt = open(txtName, "wb")
-        foRedirects = open(redirectsFileName, "wb")
-    stats = WikipediaStats()
-    count = 0
-    startTiming()
-    curPos = 0
-    for article in wikipediasql.iterWikipediaArticles(inName):
-        #print sqlArgs
-        stats.addStats(article)
-        title = article.getTitle().strip()
-        viewCount = article.getViewCount()
-        registerMostViewed(title,viewCount)
-        if not fJustStats:
-            ns = article.getNs()
-            txt = article.getText()
-
-            if article.fRedirect():
-                foRedirects.write("%s\n" % title)
-                foRedirects.write("%s\n" % txt)
-            else:
-                if 0==txt.find("#REDIRECT [["):
-                    print "%s is a REDIRECT without being marked as such" % txt
-                txtLen = len(txt)
-                md5Hash = md5.new(txt)
-
-                foIdx.write("%s\n" % title)
-                foIdx.write("%d,%d,%d,%s\n" % (ns, curPos, txtLen, md5Hash.hexdigest()))
-                curPos += txtLen
-                foTxt.write(txt)
-
-        count += 1
-        if 0 == count % 2000:
-            print "processed %d items" % count
-        if count>=limit:
-            break
-    if not fJustStats:
-        foTxt.close()
-        foIdx.close()
-        foRedirects.close()
-    endTiming()
-    stats.dumpStats()
-    dumpMostViewed()
-    dumpTiming()
 
 class ConvertTest:
     def __init__(self,name,orig,expected):
@@ -143,6 +69,9 @@ def iterTests(fileName):
             continue
         break
 
+    # we skip comments (lines beginning with '#') if they appear
+    # right after new test mark (line beginning with '@')
+    fSkipComments = False
     while len(line) != 0:
         # we have a line to process from the code above
         if line[0] != '@':
@@ -155,6 +84,7 @@ def iterTests(fileName):
         expected = ""
         fReadingOrig = True
         line = fo.readline()
+        fSkipComments = True
         while True:
             if len(line)==0:
                 if fReadingOrig:
@@ -175,10 +105,15 @@ def iterTests(fileName):
                     yield test
                     break
             else:
-                if fReadingOrig:
-                    orig += line
+                if fSkipComments and line[0]=='#':
+                    #do nothing
+                    pass
                 else:
-                    expected += line
+                    fSkipComments = False
+                    if fReadingOrig:
+                        orig += line
+                    else:
+                        expected += line
             line = fo.readline()
     # and end of iterTests
 
@@ -186,9 +121,9 @@ failedList = []
 def dumpFailed():
     for test in failedList:
         print "Test with name '%s' failed" % test.name
-        print "orig: '%s'" % test.orig.strip()
-        print "expe: '%s'" % test.expected.strip()
-        print "got : '%s'" % test.converted.strip()
+        print "orig    : '%s'" % test.orig.strip()
+        print "expected: '%s'" % test.expected.strip()
+        print "got     : '%s'" % test.converted.strip()
 
 def testTests(fileName):
     for test in iterTests(fileName):
