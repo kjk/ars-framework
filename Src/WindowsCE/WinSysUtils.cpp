@@ -2,10 +2,11 @@
 
 #ifdef WIN32_PLATFORM_WFSP
 #include <tpcshell.h>
+#include <winuserm.h> // for VK_TBACK
 #endif
 
 #include <aygshell.h>
-#include <winuserm.h> // for VK_TBACK
+
 
 #include <Shellapi.h>
 #include "SysUtils.hpp"
