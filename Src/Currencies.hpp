@@ -27,6 +27,7 @@ namespace ArsLexis {
     
     uint_t getCurrenciesCount();
     ArsLexis::Currency getCurrency(int pos);
+    int getCurrencyIndexByFirstChar(ArsLexis::char_t inChar);
 }
 
 #endif //__ARSLEXIS_CURRENCIES

@@ -162,17 +162,31 @@ namespace ArsLexis{
         {_T("ZAR"), _T("South Africa Rand"), _T("Lesotho") },
         {_T("ZMK"), _T("Kwacha"), _T("Zambia") },
         {_T("ZWD"), _T("Zimbabwe Dollars"), _T("Zimbabwe") }
-};
+    };
 
     uint_t getCurrenciesCount()
     {
         return CURRENCY_COUNT;
     }
 
-    ArsLexis::Currency getCurrency(int pos)
+    Currency getCurrency(int pos)
     {
         assert (pos<CURRENCY_COUNT);
         return Currency(currencies[pos].name, currencies[pos].abbrev, currencies[pos].countries);
         
     }
+        // always return index value in (0, statesCount-1)   
+    int getCurrencyIndexByFirstChar(ArsLexis::char_t inChar)
+    {
+        inChar = ArsLexis::toLower(inChar);
+        // skip four first currencies USD, EUR, GBP and JPY
+        // the rest is set alphabetically
+        for (int i = 4; i < getCurrenciesCount(); i++)
+        {
+            char_t foundChar = ArsLexis::toLower(currencies[i].abbrev[0]);
+            if (inChar <= foundChar)
+                return i;
+        }
+        return getCurrenciesCount()-1;
+    }    
 }
