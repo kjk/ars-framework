@@ -19,7 +19,7 @@ namespace ArsLexis
         WSADATA wsaData;
         WORD wVersionRequested = MAKEWORD( 1, 1 );
         status_t error = WSAStartup(wVersionRequested , &wsaData);
-        
+        ifError = errNone;    
         if (!error)
             closed_=false;
         return error;      
