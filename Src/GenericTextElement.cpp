@@ -3,6 +3,11 @@
 #include <Text.hpp>
 #include <memory>
 
+#if defined(__MWERKS__)
+//# pragma inline_depth(100)
+//# pragma inline_bottom_up on
+#endif
+
 using ArsLexis::char_t;
 using ArsLexis::String;
 using ArsLexis::Graphics;

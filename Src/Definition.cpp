@@ -10,6 +10,11 @@
 #include "GenericTextElement.hpp"
 #include <algorithm>
 
+#if defined(__MWERKS__)
+//# pragma inline_depth(100)
+//# pragma inline_bottom_up on
+#endif
+
 using ArsLexis::Point;
 using ArsLexis::ObjectDeleter;
 using ArsLexis::Graphics;

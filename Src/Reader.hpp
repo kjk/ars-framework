@@ -16,9 +16,6 @@ namespace ArsLexis {
     
         enum {npos=-1};
 
-//  Is there any reasonable semantics for getActPosition() when Reader is based on some abstract stream, say socket?    
-//        virtual long getActPosition() = 0;
-
         /**
          * Reads single character from stream.
          * @param chr on succesful return contains read character or @c Reader::npos if end of stream is encountered.
@@ -35,7 +32,6 @@ namespace ArsLexis {
         
         virtual ~Reader() {}
         
-    	// TODO: and probably some more
     };
     
 }

@@ -3,6 +3,12 @@
 using ArsLexis::Graphics;
 using ArsLexis::String;
 
+#if defined(__MWERKS__)
+//# pragma inline_depth(100)
+//# pragma inline_bottom_up on
+#endif
+
+
 namespace {
     const ArsLexis::char_t chrBullet=_T('\x95');
 }    

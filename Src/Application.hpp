@@ -359,6 +359,8 @@ namespace ArsLexis
  * @param creatorId application creator id. In most apps this would be stationery-generated @c appFileCreator.
  */
 #define IMPLEMENT_APPLICATION_INSTANCE(creatorId) \
+
+/*
 namespace ArsLexis { \
     Application& Application::instance() { \
         Application* app=getInstance((creatorId)); \
@@ -370,5 +372,6 @@ namespace ArsLexis { \
         return (creatorId); \
     }\
 } 
+*/
 
 #endif
