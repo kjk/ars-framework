@@ -16,14 +16,17 @@ protected:
     
 public:
 
-    ListNumberElement(uint_t number);
+    ListNumberElement(uint_t number = 0);
 
     uint_t number() const
     {return number_;}
     
+    void setNumber(uint_t number)
+    {number_=number;}
+
     void setTotalCount(uint_t totalCount)
     {totalCount_=totalCount;}
-    
+
     uint_t totalCount() const
     {return totalCount_;}
 
