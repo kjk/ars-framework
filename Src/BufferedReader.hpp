@@ -43,6 +43,8 @@ namespace ArsLexis {
         
         status_t readRaw(void* buffer, uint_t& length);
         
+        ulong_t position() const {return position_;}
+        
     private:
 
         bool isMarked_;    

@@ -33,11 +33,16 @@ namespace ArsLexis {
         BufferedReader* reader_;
         Writer* writer_;
         bool isIndexed_;
+        bool skipLastRecord_;
         
         typedef std::map<std::uint32_t, uint_t> RecordIndex_t;
         RecordIndex_t recordIndex_;
         
+        bool indexNextRecord();
+
         void loadIndex();
+        
+        void assureIndexed() { if (!isIndexed_) loadIndex();}
     
     public:
     
@@ -126,7 +131,7 @@ namespace ArsLexis {
             Record() {}
             
             Record(DataType dt, uint_t i): type(dt), id(i) {}
-            
+
         };
         
         void serializeChunk(void* buffer, uint_t length);
@@ -141,8 +146,7 @@ namespace ArsLexis {
         Serializer& serializeSimpleType(T& value, uint_t id)
         {
             Record record(dt, id);
-            if (directionOutput == direction_)
-                record.value = value;
+            record.value = value;
             serializeRecord(record);
             if (directionInput == direction_)
                 value = record.value;

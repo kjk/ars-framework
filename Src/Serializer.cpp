@@ -16,16 +16,20 @@ Serializable::~Serializable() {}
 Serializer::Serializer(Reader& reader): 
     reader_(new BufferedReader(reader)), 
     writer_(NULL), 
-    direction_(directionInput) {
+    direction_(directionInput),
+    isIndexed_(false),
+    skipLastRecord_(false) {
     reader_->mark();
 }
 
-Serializer::Serializer(Writer& writer): reader_(NULL), writer_(&writer), direction_(directionOutput) {}
+Serializer::Serializer(Writer& writer): reader_(NULL), writer_(&writer), direction_(directionOutput), isIndexed_(false), skipLastRecord_(false) {}
 
 Serializer::Serializer(Reader& reader, Writer& writer, Direction dir): 
     reader_(new BufferedReader(reader)), 
     writer_(&writer), 
-    direction_(dir) {
+    direction_(dir),
+    isIndexed_(false),
+    skipLastRecord_(false) {
     reader_->mark();
 }
 
@@ -50,9 +54,60 @@ void Serializer::serializeChunk(void* buffer, uint_t length)
         ErrThrow(error);
 }
 
+bool Serializer::indexNextRecord()
+{
+    Record record;
+    uint_t length = sizeof(record);
+    status_t error = reader_->readRaw(&record, length);
+    if (errNone != error)
+        ErrThrow(error);
+    if (0 == length)
+        return false;
+    if (sizeof(record) != length)
+        ErrThrow(errCorrupted);
+    if (unusedId != record.id)
+        recordIndex_[record.id] = reader_->position() - length;
+    if (dtString == record.type) // String is currently only data type that writes something after Record. We have to skip its data...
+    { 
+        length = record.stringLength;
+        String buffer(length, _T('\0'));
+        error = reader_->readRaw(&buffer[0], length);
+        if (errNone != error)
+            ErrThrow(errCorrupted);
+        if (buffer.size() != length)
+            ErrThrow(errCorrupted);
+    }
+    return true;
+}
+
+void Serializer::loadIndex() 
+{
+    assert(!isIndexed_);
+    isIndexed_ = true;
+    bool goOn = true;
+    while (goOn)
+        goOn = indexNextRecord();
+}
+
 void Serializer::serializeRecordIn(Record& record)
 {
     Record buffer;
+    assureIndexed();
+    skipLastRecord_ = false;
+    if (unusedId != record.id)
+    {
+        RecordIndex_t::const_iterator it = recordIndex_.find(record.id);
+        if (recordIndex_.end() == it) // Don't try loading missing records with explicit ids. Skip them assuming that they are initialized to some reasonable defaults.
+        {
+            skipLastRecord_ = true;
+            return;  
+        }
+        if (reader_->position() != it->second)
+        {
+            status_t error = reader_->seek(it->second, BufferedReader::seekFromBeginning);
+            assert(errNone == error); // This is correct assumption as we must have already read entire stream once to know record's position.
+        }
+    }
     serializeChunk(&buffer, sizeof(buffer));
     if (buffer.type != record.type || buffer.id != record.id)
         ErrThrow(errCorrupted);
@@ -123,7 +178,7 @@ Serializer& Serializer::operator()(String& value, uint_t id)
     serializeSimpleType<String::size_type, dtString>(length, id);
     if (directionOutput == direction_)
         serializeChunk(&value[0], sizeof(char_t)*value.length());
-    else 
+    else if (!skipLastRecord_)
     {
         value.resize(length/sizeof(char_t));
         serializeChunk(&value[0], length);
@@ -139,7 +194,7 @@ Serializer& Serializer::operator()(char_t array[], uint_t arraySize, uint_t id)
     serializeSimpleType<String::size_type, dtString>(length, id);
     if (directionOutput == direction_)
         serializeChunk(array, length*sizeof(*array));
-    else
+    else if (!skipLastRecord_)
     {
         if (arraySize <= length + 1)
             ErrThrow(errBufferTooSmall);
@@ -157,6 +212,8 @@ Serializer& Serializer::operator()(Serializable& object, uint_t id)
     {
         uint_t storedSchemaVersion = schemaVersion;
         serializeSimpleType<uint_t, dtSerializable>(storedSchemaVersion, id);
+        if (skipLastRecord_)
+            return *this;
         if (storedSchemaVersion == schemaVersion)
             object.serialize(*this);
         else 
