@@ -5,6 +5,7 @@ namespace ArsLexis {
 
     status_t Reader::readLine(bool& eof, String& out, char_t delimiter)
     {
+        volatile status_t error=errNone;
         ErrTry {
             while (true)
             {
@@ -21,12 +22,12 @@ namespace ArsLexis {
                     break;
                 }
             }
-            return errNone;
         }
         ErrCatch (ex) {
-            return ex;
+            error=ex;
         }
         ErrEndCatch
+        return error;
     }
     
     Reader::~Reader()
