@@ -18,24 +18,24 @@ void ArsLexis::getScreenBounds(RectangleType& bounds)
     bounds.extent.y=y;
 }
 
-std::uint32_t ArsLexis::random(std::uint32_t range)
+ulong_t ArsLexis::random(ulong_t range)
 {
-    std::uint32_t rand1=SysRandom(0);
+    ulong_t rand1=SysRandom(0);
 //        if ( 2 == (rand1 % 3) )
 //            rand1 = SysRandom(TimGetTicks());
 
-    std::uint32_t rand2=SysRandom(0);
+    ulong_t rand2=SysRandom(0);
 //        if ( 2 == (rand2 % 3) )
 //            rand2 = SysRandom(TimGetTicks());
 
 //        std::uint32_t result = rand1*sysRandomMax + rand2;
-    std::uint32_t rand3=SysRandom(0);
-    std::uint32_t result = (rand1<<30)|(rand2<<15)|rand3;
+    ulong_t rand3=SysRandom(0);
+    ulong_t result = (rand1<<30)|(rand2<<15)|rand3;
     result = result % range;
     return result;
 }
 
-Err ArsLexis::numericValue(const char* begin, const char* end, std::int32_t& result, uint_t base)
+Err ArsLexis::numericValue(const char* begin, const char* end, long& result, uint_t base)
 {
     Err error=errNone;
     bool negative=false;

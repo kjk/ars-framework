@@ -16,11 +16,11 @@ namespace ArsLexis
      * that.
      * @note Shamelessly ripped from Noah's noah_pro_2nd_segment.c ;-)
      */
-    std::uint32_t random(std::uint32_t range);
+    ulong_t random(ulong_t range);
     
-    Err numericValue(const char* begin, const char* end, std::int32_t& result, uint_t base=10);
+    Err numericValue(const char* begin, const char* end, long& result, uint_t base=10);
     
-    inline Err numericValue(const String& text, std::int32_t& result, uint_t base=10)
+    inline Err numericValue(const String& text, long& result, uint_t base=10)
     {
         return numericValue(text.data(), text.data()+text.length(), result, base);
     }

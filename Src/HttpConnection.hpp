@@ -49,7 +49,6 @@ namespace ArsLexis {
 
     private:
     
-        void renderRequestLine(String& out);
         
         uint_t protocolVersionMajor_:4;
         uint_t protocolVersionMinor_:4;
@@ -66,11 +65,15 @@ namespace ArsLexis {
         typedef std::vector<RequestField_t> RequestFields_t;
         RequestFields_t requestFields_;
 
+        void renderRequestLine(String& out);
+
         void renderHeaderField(String& out, const RequestField_t& field);
-        
+
         void commitRequest();
         
     protected:
+    
+        Err open();
     
         virtual Err handleResponseField(const String& field, const String& value);
         

@@ -9,25 +9,14 @@ namespace KXml2 {
 
     typedef ArsLexis::String String;
     typedef ArsLexis::char_t char_t; 
+    typedef ArsLexis::status_t error_t;
 
-    // Other common stuff goes here...
-    // Error code returned
-#if defined(_PALM_OS)
-    //typedef Err error_t;
-    typedef unsigned long error_t;
-#elif defined(_WIN32)
-    //typedef HRESULT error_t;
-    typedef unsigned long error_t;
-#else
-#error "What the hell?"
-#endif
     //Error values
     enum ErrorCodes
     {
          //TODO: make it work!!!
-         //eNoError = kxmlParserErrorClass,
-         eNoError = 0x0900,
-         eExpectedCharNotEqual,     //read(c) if (a = read()) != c
+         eNoError = errNone,
+         eExpectedCharNotEqual=kxmlErrorClass,     //read(c) if (a = read()) != c
          eUnterminatedEntityRef,    //unterminated entity ref
          eUnresolvedCode,           //pushEntity
          eNameExpected,             //readName

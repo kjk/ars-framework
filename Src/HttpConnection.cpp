@@ -97,4 +97,10 @@ namespace ArsLexis {
         return error;
     }
     
+    Err HttpConnection::open() 
+    {
+        commitRequest();
+        return SimpleSocketConnection::open();
+    }
+    
 }
