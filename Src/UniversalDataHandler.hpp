@@ -6,13 +6,22 @@
 
 namespace ArsLexis {
     class Reader;
+    class DataStoreReader;
+    class DataStoreWriter;
 }
 
-extern ArsLexis::status_t readUniversalDataFromStream(ArsLexis::Reader& reader, UniversalDataFormat& out);
+typedef std::auto_ptr<ArsLexis::DataStoreReader> DataStoreReaderPtr;
+typedef std::auto_ptr<ArsLexis::DataStoreWriter> DataStoreWriterPtr;
+
+extern void readUniversalDataFromStream(const ArsLexis::char_t* streamName, UniversalDataFormat& out);
 
 class UniversalDataHandler: public ArsLexis::LineBufferedPayloadHandler {
 
-    int                 lineNo;
+    DataStoreWriterPtr      writer_;
+    const ArsLexis::char_t* writerStreamName_;
+    bool                    fIsWriterAvailable_;
+    
+    int                     lineNo;
     
 protected:    
     
@@ -23,6 +32,8 @@ public:
     UniversalDataFormat universalData_;
 
     UniversalDataHandler();
+
+    UniversalDataHandler(const ArsLexis::char_t* streamName);
 
     ~UniversalDataHandler();
 
