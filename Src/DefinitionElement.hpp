@@ -107,7 +107,7 @@ public:
     
     Justification justification() const;
 
-    virtual void setStyle(ElementStyle style) = 0;
+//    virtual void setStyle(ElementStyle style) = 0;
 
     const DefinitionStyle* getStyle() const;
 
@@ -117,7 +117,7 @@ public:
         ownStyle
     };     
     
-    void setStyle(DefinitionStyle* style, StyleOwnerFlag own=ownStyleNot);
+    void setStyle(const DefinitionStyle* style, StyleOwnerFlag own=ownStyleNot);
    
 private:
     

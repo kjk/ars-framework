@@ -10,13 +10,13 @@ GenericTextElement::HyperlinkProperties::HyperlinkProperties(const String& res, 
 {}
 
 GenericTextElement::GenericTextElement(const String& text):
-    text_(text),
-    style_(styleDefault)
+    text_(text)//,
+//    style_(styleDefault)
 {}
 
 GenericTextElement::GenericTextElement(const char_t* text):
-    text_(text),
-    style_(styleDefault)
+    text_(text)//,
+//    style_(styleDefault)
 {}
 
 GenericTextElement::~GenericTextElement()
@@ -311,21 +311,18 @@ void GenericTextElement::applyHyperlinkDecorations(Graphics& graphics, const Ren
 {
     if (isHyperlink())
     {
-        const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlinkProperties()->type);
-        Font f=graphics.font();
-        f.addEffects(decor.font.effects());
-        graphics.setFont(f);
-        graphics.setTextColor(decor.textColor);
-        graphics.setForegroundColor(decor.textColor);
+//        const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlinkProperties()->type);
+//        Font f=graphics.font();
+//        f.addEffects(decor.font.effects());
+//        graphics.setFont(f);
+//        graphics.setTextColor(decor.textColor);
+//        graphics.setForegroundColor(decor.textColor);
     }
 }
 
 void GenericTextElement::applyFormatting(Graphics& graphics, const RenderingPreferences& preferences)
 {
-    const RenderingPreferences::StyleFormatting& format=preferences.styleFormatting(style_);
-    graphics.setFont(format.font);
-    graphics.setTextColor(format.textColor);
-    applyHyperlinkDecorations(graphics, preferences);
+    graphics.applyStyle(*getStyle(), isHyperlink());
 }
 
 void GenericTextElement::toText(String& appendTo, uint_t from, uint_t to) const

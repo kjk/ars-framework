@@ -12,8 +12,11 @@ void LineBreakElement::calculateOrRender(LayoutContext& layoutContext, bool rend
     assert(0==layoutContext.usedWidth);
     if (!render)
     {
-        const RenderingPreferences::StyleFormatting& style=layoutContext.preferences.styleFormatting(styleDefault);
-        Graphics::FontSetter setFont(layoutContext.graphics, style.font);
+        //const RenderingPreferences::StyleFormatting& style=layoutContext.preferences.styleFormatting(styleDefault);
+        //Graphics::FontSetter setFont(layoutContext.graphics, style.font);
+        Graphics graphics;
+        graphics.applyStyle(*getStyle(), isHyperlink());
+
         uint_t reqHeight = layoutContext.graphics.fontHeight();
         reqHeight = reqHeight * mult_;
         reqHeight = reqHeight / div_;

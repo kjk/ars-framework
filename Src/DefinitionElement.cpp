@@ -73,11 +73,11 @@ void DefinitionElement::setHyperlink(const ArsLexis::String& resource, Hyperlink
     }
 }
 
-void DefinitionElement::setStyle(DefinitionStyle* style, StyleOwnerFlag own)
+void DefinitionElement::setStyle(const DefinitionStyle* style, StyleOwnerFlag own)
 {
     if (ownStyle == styleOwner_)
         delete definitionStyle_;
-    definitionStyle_ = style;
+    definitionStyle_ = (DefinitionStyle*) style;
     styleOwner_ = own;
 }    
 

@@ -43,7 +43,7 @@ const char* getStaticStyleName(uint_t index);
 
 const DefinitionStyle* getStaticStyle(uint_t index);
 
-const DefinitionStyle* getStaticStyle(const char* name, uint_t length);
+const DefinitionStyle* getStaticStyle(const char* name, uint_t length = (uint_t)(-1));
 
 DefinitionStyle* parseStyle(const char* style, ulong_t length);
 

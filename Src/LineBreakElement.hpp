@@ -44,8 +44,8 @@ public:
     
     ~LineBreakElement();
     
-    void setStyle(ElementStyle style)
-    {}
+//    void setStyle(ElementStyle style)
+//    {}
 
 };
 

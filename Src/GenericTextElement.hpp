@@ -7,7 +7,7 @@ class GenericTextElement: public DefinitionElement
 {
 
     ArsLexis::String text_;
-    ElementStyle     style_;
+//    ElementStyle     style_;
 
     void drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rectangle& area, bool hyperlink);
 
@@ -42,11 +42,11 @@ public:
     void swapText(ArsLexis::String& text)
     {text_.swap(text);}
 
-    void setStyle(ElementStyle style)
-    {style_=style;}
+//    void setStyle(ElementStyle style)
+//    {style_=style;}
     
-    ElementStyle style() const
-    {return style_;}
+//    ElementStyle style() const
+//    {return style_;}
     
     bool isTextElement() const
     {return true;}

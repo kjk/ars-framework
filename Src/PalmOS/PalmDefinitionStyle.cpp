@@ -32,8 +32,8 @@ StaticAssert<COLOR_NOT_DEF_INDEX != COLOR_DEF_INDEX>;
 #define YELLOW   RGB(255,255,0)
 #define GRAY     RGB(127,127,127)
 
-#define COLOR_UI_MENU_SELECTED_FILL   RGB(0,0,196)
-#define COLOR_UI_FORM_FRAME           RGB(0,0,196)
+#define COLOR_UI_MENU_SELECTED_FILL   RGB(51,0,153)
+#define COLOR_UI_FORM_FRAME           RGB(51,0,153)
 
 #define FONT_NOT_DEF  FontID(-1)
 #define NOT_DEF          DefinitionStyle::notDefined
@@ -55,7 +55,7 @@ static const StaticStyleEntry staticStyleTable[] =
 {
     //do not touch .xxx styles (keep them 
     {styleNameDefault, {BLACK, WHITE, stdFont, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, noUnderline}},
-    {styleNameHyperlink, {BLUE, COLOR_NOT_DEF, FONT_NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, grayUnderline}},
+    {styleNameHyperlink, {COLOR_UI_FORM_FRAME, COLOR_NOT_DEF, FONT_NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, grayUnderline}},
 
     COLOR(styleNameBlack,BLACK),
     COLOR(styleNameBlue,BLUE),
@@ -68,7 +68,7 @@ static const StaticStyleEntry staticStyleTable[] =
     COLOR_BOLD(styleNameHeader, COLOR_UI_FORM_FRAME),
     COLOR_AND_FONT(styleNameLarge, COLOR_NOT_DEF, largeFont),
     COLOR_AND_FONT(styleNameLargeBlue, BLUE, largeFont),
-    COLOR_AND_FONT(styleNamePageTitle, COLOR_UI_MENU_SELECTED_FILL, largeFont),
+    COLOR_AND_FONT_BOLD(styleNamePageTitle, COLOR_UI_MENU_SELECTED_FILL, largeFont),
     COLOR(styleNameRed,RED),
     COLOR(styleNameSmallHeader, COLOR_UI_FORM_FRAME),
     COLOR_BOLD(styleNameStockPriceDown, RED),
@@ -97,6 +97,9 @@ const DefinitionStyle* getStaticStyle(uint_t index)
 
 const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
 {
+    if ((uint_t)(-1) == length)
+        length = strlen(name);
+
     if (NULL == name || 0 == length)
         return NULL;
     char* nameBuf = StringCopy2N(name, length);
@@ -139,7 +142,7 @@ void DefinitionStyle::reset()
 
 inline static bool isColorDefined(const RGBColorType& col)
 {
-    return COLOR_NOT_DEF_INDEX != col.index;
+    return ((UInt8)COLOR_NOT_DEF_INDEX) != col.index;
 }
 
 DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)

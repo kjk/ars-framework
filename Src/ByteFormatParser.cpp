@@ -185,11 +185,11 @@ bool ByteFormatParser::parseParam()
             switch(inText_[start_])
             {
                 case _T('b'):
-                    currentElement_->setStyle(styleBoldBlack);
+                    currentElement_->setStyle(getStaticStyle(styleNameBold));
                     break;
                     
                 case _T('g'):
-                    currentElement_->setStyle(styleGray);
+                    currentElement_->setStyle(getStaticStyle(styleNameGray));
                     break;
                 //TODO: add more styles?
             }

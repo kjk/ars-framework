@@ -234,9 +234,11 @@ uint_t Graphics::wordWrap(const char_t* text, uint_t width)
     return FntWordWrap(text, width);
 }
 
-void Graphics::applyStyle(const DefinitionStyle& style)
+void Graphics::applyStyle(const DefinitionStyle& style, bool isHyperlink)
 {
     DefinitionStyle s = *getStaticStyle(styleIndexDefault);
+    if (isHyperlink)
+        s |= *getStaticStyle(styleIndexHyperlink);
     s |= style;
     
     FontEffects fx;
