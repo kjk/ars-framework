@@ -17,6 +17,7 @@
 
 class DefinitionElement;
 class Definition;
+class PopupMenu;
 
 class HyperlinkHandlerBase
 {
@@ -131,7 +132,7 @@ private:
     
     void elementAtWidth(Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word = false);
     
-    void removeSelection(Graphics& graphics, const RenderingPreferences& prefs);
+    void removeSelectionOrShowPopup(const Point& point, Graphics& graphics, const RenderingPreferences& prefs);
     
 public:
 
@@ -241,7 +242,9 @@ public:
         behavDoubleClickSelection = 1,
         behavMouseSelection = 2,
         behavUpDownScroll = 4,
-        behavHyperlinkNavigation = 8
+        behavHyperlinkNavigation = 8,
+        behavSelectionClickAction = 16,
+        behavLast = 32
     };
     
     void setInteractionBehavior(uint_t ib) { interactionBehavior_ = ib;}
@@ -337,7 +340,17 @@ public:
             return false;
     }
 
-    private:
+    typedef void (*SelectionClickHandler)(const Point& point, const String& text, void* context);
+    SelectionClickHandler selectionClickHandler;
+    void* selectionClickHandlerContext;
+    
+    void setupSelectionClickHandler(SelectionClickHandler handler, void* context)
+    {
+        selectionClickHandler = handler;
+        selectionClickHandlerContext = context;
+    }
+
+private:
 
     void renderSingleElement(Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t element);
 
@@ -400,7 +413,7 @@ public:
     bool elementsOwner_;
     bool trackingSelection_;
     bool selectionIsHyperlink_;
-    
+
     bool navigateHyperlink(Graphics& graphics, const RenderingPreferences& prefs, bool next);
 };
 

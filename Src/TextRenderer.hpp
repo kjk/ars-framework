@@ -87,7 +87,8 @@ public:
         behavMouseSelection = Definition::behavMouseSelection,
         behavUpDownScroll = Definition::behavUpDownScroll,
         behavHyperlinkNavigation = Definition::behavHyperlinkNavigation,
-        behavMenuBarCopyButton = behavHyperlinkNavigation << 1,
+        behavSelectionClickAction = Definition::behavSelectionClickAction,
+        behavMenuBarCopyButton = Definition::behavLast,
     };
     
     void setInteractionBehavior(uint_t ib) {definition_.setInteractionBehavior(ib);}

@@ -332,6 +332,6 @@ void GenericTextElement::toText(String& appendTo, uint_t from, uint_t to) const
 {
     if (LayoutContext::progressCompleted==to)
         to = String::npos;
-    appendTo.append(text(), from, to);
+    appendTo.append(text(), from, to - from);
 }
 

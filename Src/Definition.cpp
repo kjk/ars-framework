@@ -125,7 +125,9 @@ Definition::Definition():
     navOrderOptions_(0),
     navigatingUp_(false),
     navigatingDown_(false),
-    elementsOwner_(true)
+    elementsOwner_(true),
+    selectionClickHandler(NULL),
+    selectionClickHandlerContext(NULL)
 {}
 
 namespace {
@@ -807,15 +809,46 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
     return end;
 }
 
-void Definition::removeSelection(Graphics& graphics, const RenderingPreferences& prefs)
+void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphics, const RenderingPreferences& prefs)
 {
     ElementPosition_t start = selectionStartElement_;
     ElementPosition_t end = selectionEndElement_;
+    
+    bool same = (start == end) && (selectionStartProgress_ == selectionEndProgress_);
+    String text;
+    bool inside = true;
+    if (!same && usesInteractionBehavior(behavSelectionClickAction) && NULL != selectionClickHandler)
+    {
+        selectionToText(text);  
+
+        Point p(point.x - bounds_.x(), point.y - bounds_.y());
+        if (p.y < 0)
+            p.x = 0;
+        ElementPosition_t elem;
+        uint_t progress;
+        LinePosition_t line = lineAtHeight(p.y);
+        uint_t wordEnd;
+        elementAtWidth(graphics, prefs, line, p.x, elem, progress, wordEnd, false);
+        
+        if (elem < start || (elem == start && progress < selectionStartProgress_))
+            inside = false;
+        
+        if (inside && (elem > end || (elem == end && progress >= selectionEndProgress_)))
+            inside = false;    
+    }
+    else
+        inside = false;
+          
     if (elements_.end() != end)
         ++end;
+
+
     selectionStartElement_ = selectionEndElement_ = elements_.end();
     selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
     renderElementRange(graphics, prefs, start, end);
+    
+    if (inside)
+        selectionClickHandler(point, text, selectionClickHandlerContext);
 }
 
 
@@ -904,7 +937,7 @@ bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences&
     if (!trackingSelection_ && !(bounds_ && point))
         return false;
     if (!trackingSelection_ && elements_.end() != selectionStartElement_)
-        removeSelection(graphics, prefs);
+        removeSelectionOrShowPopup(point, graphics, prefs);
     if (trackHyperlinkHighlight(graphics, prefs, point, clickCount))
         return true;
     if (usesMouseSelection())
