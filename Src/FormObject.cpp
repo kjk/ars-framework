@@ -88,6 +88,14 @@ namespace ArsLexis
         insert(text, std::min(maxLength(), length));
     }
     
+    void Field::setText(MemHandle handle)
+    {
+        MemHandle oldHandle = FldGetTextHandle(object());
+        FldSetTextHandle(object(), handle);
+        if (NULL != oldHandle)
+            MemHandleFree(oldHandle);
+    }
+    
     status_t Field::setEditableText(const char* data, uint_t length)
     {
         MemHandle handle=MemHandleNew(length+1);

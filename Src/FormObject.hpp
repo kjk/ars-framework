@@ -159,8 +159,7 @@ namespace ArsLexis
         void draw()
         {FldDrawField(object());}
 
-        void setText(MemHandle handle)
-        {FldSetTextHandle(object(), handle);}
+        void setText(MemHandle handle);
         
         status_t setEditableText(const char* text, uint_t length);
         
