@@ -4,7 +4,6 @@
 #ifdef __MWERKS__
 # pragma pcrelconstdata on
 # pragma far_code
-//# pragma inline_bottom_up on
 #endif
 
 namespace ArsLexis {
@@ -50,7 +49,6 @@ namespace ArsLexis {
         contentLength_(contentLengthUnavailable),
         readContentLength_(0)
     {
-        setChunkSize(1024);
     }        
 
     HttpConnection::~HttpConnection() 

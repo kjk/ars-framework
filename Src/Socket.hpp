@@ -12,7 +12,7 @@
 #include <Utility.hpp>
 #include <NativeSocks.hpp>
 
-#ifdef _WIN32_WCE
+#ifdef _MSC_VER
 //disable performance warning while casting int to bool
 #pragma warning (disable : 4800)
 #endif

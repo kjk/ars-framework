@@ -4,8 +4,8 @@
 #include <SocketConnection.hpp>
 #include <BaseTypes.hpp>
 
-#ifdef _WIN32_WCE
-#pragma warning ( disable : 4068)
+#ifdef _MSC_VER
+# pragma warning(disable: 4068)
 #endif
 
 namespace ArsLexis 
@@ -20,6 +20,8 @@ namespace ArsLexis
         
         bool sending_;
         uint_t requestBytesSent_;
+        
+        status_t resizeResponse(String::size_type size);
         
     protected:
         

@@ -11,6 +11,19 @@ namespace ArsLexis
         chunkSize_(256),
         requestBytesSent_(0)
     {}
+    
+    status_t SimpleSocketConnection::resizeResponse(String::size_type size)
+    {
+        status_t error=errNone;
+        ErrTry {
+            response_.resize(size);
+        }
+        ErrCatch(ex) {
+            error=ex;
+        } ErrEndCatch
+        return error;
+    }
+
 
     status_t SimpleSocketConnection::notifyWritable()
     {
@@ -53,32 +66,32 @@ namespace ArsLexis
         status_t error=errNone;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
-            response_.resize(responseSize+chunkSize_);
+            error=resizeResponse(responseSize+chunkSize_);
+            if (errNone!=error)
+                goto Exit;            
             processReadyUiEvents();
             error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
-//            error=socket().receive(dataSize, &response_[responseSize], chunkSize_, 0);
-            if (!error)
-            {
-                assert(dataSize<=chunkSize_);
-                response_.resize(responseSize+dataSize);
-                if (0==dataSize)
-                {   
-                    error=notifyFinished();
-                    abortConnection();
-                }
-                else
-                {
-                    registerEvent(SocketSelector::eventException);
-                    registerEvent(SocketSelector::eventRead);
-                    error=notifyProgress();
-                }
+            if (errNone!=error)
+                goto Exit;
+            assert(dataSize<=chunkSize_);
+            resizeResponse(responseSize+dataSize);
+            if (0==dataSize)
+            {   
+                error=notifyFinished();
+                abortConnection();
             }
             else
-                log().error()<<_T("notifyReadable(): Socket::receive() returned error, ")<<error;
+            {
+                registerEvent(SocketSelector::eventException);
+                registerEvent(SocketSelector::eventRead);
+                error=notifyProgress();
+            }
         }
         else
-            error=errResponseTooLong;                
-            
+            error=errResponseTooLong;
+Exit:
+        if (errNone!=error)
+            log().error()<<_T("notifyReadable(): Socket::receive() returned error, ")<<error;
         return error;
     }
     

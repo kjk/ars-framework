@@ -10,11 +10,6 @@
 #include "GenericTextElement.hpp"
 #include <algorithm>
 
-#if defined(__MWERKS__)
-//# pragma inline_depth(100)
-//# pragma inline_bottom_up on
-#endif
-
 using ArsLexis::Point;
 using ArsLexis::ObjectDeleter;
 using ArsLexis::Graphics;
@@ -525,9 +520,6 @@ void Definition::extendSelection(ArsLexis::Graphics& graphics, const RenderingPr
     }        
 }
 
-Definition::HyperlinkHandler::~HyperlinkHandler()
-{}
-
 Definition::LineHeader::LineHeader():
     renderingProgress(0),
     height(0),
@@ -541,4 +533,9 @@ void Definition::replaceElements(Elements_t& elements)
     elements_.swap(elements);
 }
 
+
+#pragma segment Segment1
+
+Definition::HyperlinkHandler::~HyperlinkHandler()
+{}
 

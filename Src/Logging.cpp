@@ -8,7 +8,6 @@
 #ifdef __MWERKS__
 # pragma far_code
 # pragma inline_bottom_up on
-//# pragma inline_depth(100)
 #endif
 
 
@@ -84,6 +83,15 @@ namespace ArsLexis
         return *this<<static_cast<short>(i);
 #else
         return *this<<static_cast<long>(i);
+#endif        
+    }
+
+    Logger::LineAppender& Logger::LineAppender::operator<<(unsigned int i)
+    {
+#if defined(_PALM_OS)    
+        return *this<<static_cast<unsigned short>(i);
+#else
+        return *this<<static_cast<unsigned long>(i);
 #endif        
     }
 

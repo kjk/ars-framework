@@ -118,15 +118,11 @@ namespace ArsLexis
         
     protected:
         
-#ifdef appFileCreator    
-        explicit Application(UInt32 creatorId=appFileCreator);
-#else
         /**
          * Constructor. 
          * Initializes @c Application object and sets it as current instance through the call to @c FtrSet().
          */
-        explicit Application(UInt32 creatorId);
-#endif
+        Application();
 
         /**
          * Checks if the ROM version is high enough to run application.

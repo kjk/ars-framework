@@ -7,7 +7,7 @@
 #include <list>
 
 #ifdef _MSC_VER
-# pragma warning ( disable : 4068)
+# pragma warning(disable: 4068)
 #endif
 
 namespace ArsLexis

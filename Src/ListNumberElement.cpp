@@ -3,11 +3,6 @@
 using ArsLexis::String;
 using ArsLexis::char_t;
 
-#if defined(__MWERKS__)
-//# pragma inline_depth(100)
-//# pragma inline_bottom_up on
-#endif
-
 ListNumberElement::ListNumberElement(uint_t number):
     number_(number),
     childIndentation_(0)

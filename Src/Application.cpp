@@ -2,12 +2,6 @@
 #include <Form.hpp>
 #include <memory>
 
-#if defined(__MWERKS__)
-//# pragma inline_depth(100)
-//# pragma inline_bottom_up on
-#endif
-
-
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
 template class std::basic_string<ArsLexis::char_t>;
 //template class std::char_traits<ArsLexis::char_t>;
@@ -55,14 +49,14 @@ namespace ArsLexis
         return app;
     }
     
-    Application::Application(UInt32 creatorId):
+    Application::Application():
         eventTimeout_(evtWaitForever),
 #ifdef __MWERKS__        
         formEventHandlerThunk_(Form::routeEventToForm),
 #endif // __MWERKS__        
         cardNo_(0),
         databaseId_(0),
-        creatorId_(creatorId),
+        creatorId_(creator()),
         romVersion_(0)
     {
         Err error=SysCurAppDatabase(&cardNo_, &databaseId_);

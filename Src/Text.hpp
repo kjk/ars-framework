@@ -1,16 +1,17 @@
 #ifndef __ARSLEXIS_TEXT_HPP__
 #define __ARSLEXIS_TEXT_HPP__
 
+#include <Debug.hpp>
 #include <BaseTypes.hpp>
 
-#if !(defined(_WIN32_WCE) || defined(_WIN32))
+#if !defined(_WIN32)
 #include <cctype>
 #endif
 
 #if defined(_MSC_VER)
 // disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
 // TODO: move it to a more centrilsed place (like BaseTypes.hpp) ?
-#pragma warning( disable : 4800 )
+# pragma warning( disable : 4800 )
 #endif
 
 namespace ArsLexis
@@ -18,7 +19,7 @@ namespace ArsLexis
 
     inline char_t toLower(char_t chr)
     {
-#if defined(_WIN32_WCE) || defined(_WIN32)
+#if defined(_WIN32)
         return static_cast<char_t>(_totlower(chr));
 #else
         return std::tolower(chr);
@@ -27,7 +28,7 @@ namespace ArsLexis
     
     inline bool isAlpha(char_t chr)
     {
-#if defined(_WIN32_WCE) || defined(_WIN32)
+#if defined(_WIN32)
         return _istalpha(chr);
 #else
         return std::isalpha(chr);
@@ -36,7 +37,7 @@ namespace ArsLexis
     
     inline bool isAlNum(char_t chr)
     {
-#if defined(_WIN32_WCE) || defined(_WIN32)
+#if defined(_WIN32)
         return _istalnum(chr);
 #else
         return std::isalnum(chr);
@@ -45,7 +46,7 @@ namespace ArsLexis
 
     inline bool isDigit(char_t chr)
     {
-#if defined(_WIN32_WCE) || defined(_WIN32)
+#if defined(_WIN32)
         return _istdigit(chr);
 #else
         return std::isdigit(chr);
@@ -54,7 +55,7 @@ namespace ArsLexis
 
     inline bool isSpace(char_t chr)
     {
-#if defined(_WIN32_WCE) || defined(_WIN32)
+#if defined(_WIN32)
         return _istspace(chr);
 #else
         return std::isspace(chr);
