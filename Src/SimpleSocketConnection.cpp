@@ -84,7 +84,7 @@ namespace ArsLexis
                 goto Exit;
             totalReceived_+=dataSize;
             if (dataSize!=chunkSize_)
-                log().debug()<<"notifyReadable(): dataSize!=chunkSize_; totalReceived: "<<totalReceived_<<"; dataSize: "<<dataSize;
+                log().debug()<<_T("notifyReadable(): dataSize!=chunkSize_; totalReceived: ")<<totalReceived_<<_T("; dataSize: ")<<dataSize;
             assert(dataSize<=chunkSize_);
             resizeResponse(responseSize+dataSize);
             if (0==dataSize)
