@@ -348,7 +348,10 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
     LayoutContext layoutContext(graphics, prefs, bounds_.width());
     LineHeader lastLine;
     lastLine.firstElement=element;
-    DefinitionElement::Justification justify=(element!=end?(*element)->justification():DefinitionElement::justifyLeft);
+    DefinitionElement::Justification justify = DefinitionElement::justifyLeft;
+    if (element!=end)
+        justify = (*element)->justification();
+
     while (element!=end)
     {
         if (renderingProgressReporter_)
@@ -432,8 +435,10 @@ void Definition::doRender(Graphics& graphics, const ArsLexis::Rectangle& bounds,
     }
     else {
         clearHotSpots();
-        bool heightChanged=(bounds_.height()!=bounds.height());
-        bounds_=bounds;
+        bool heightChanged = false;
+        if (bounds_.height()!=bounds.height())
+            heightChanged = true;
+        bounds_ = bounds;
         if (heightChanged)
             calculateVisibleRange(firstLine_, lastLine_);
     }
