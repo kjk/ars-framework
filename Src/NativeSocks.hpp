@@ -138,11 +138,11 @@ namespace ArsLexis
 #if defined(_WIN32)	
 
     const ArsLexis::status_t netErrorClass = WSABASEERR;
-    const ArsLexis::status_t netErrParamErr = netErrorClass | 4;
-    const ArsLexis::status_t netErrTimeout = netErrorClass | 18;
-    const ArsLexis::status_t netErrSocketClosedByRemote = netErrorClass | 20;
-    const ArsLexis::status_t netErrWouldBlock = netErrorClass | 47;
-    const ArsLexis::status_t netErrSocketBusy = netErrorClass | 9;
+    const ArsLexis::status_t netErrParamErr = WSAEINVAL;
+    const ArsLexis::status_t netErrTimeout = WSAETIMEDOUT;
+    const ArsLexis::status_t netErrSocketClosedByRemote = WSAECONNRESET;
+    const ArsLexis::status_t netErrWouldBlock = WSAEWOULDBLOCK;
+    const ArsLexis::status_t netErrSocketBusy = WSAEADDRINUSE;
     const ArsLexis::status_t netErrUnimplemented = WSAEOPNOTSUPP;
     
     const ArsLexis::status_t memErrorClass = 0x0100;
