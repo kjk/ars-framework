@@ -180,7 +180,7 @@ public:
     /**
      * Renders (paints) this @c Definition into bounds.
      */
-    ArsLexis::status_t render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate);
+    ArsLexis::status_t render(ArsLexis::Graphics& graphics, const ArsLexis::Rectangle& bounds, const RenderingPreferences& prefs, bool forceRecalculate = false);
     
     void renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, DefinitionElement& element);
     
