@@ -177,3 +177,17 @@ bool ArsLexis::highDensityFeaturesPresent()
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
     return (errNone==error && version>=4);
 }
+
+void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize)
+{
+    EventType event;
+    MemSet(&event, sizeof(event), 0);
+    event.eType=static_cast<eventsEnum>(e);
+    if (data && dataSize)
+    {
+        assert(dataSize<=sizeof(event.data));
+        MemMove(&event.data, data, dataSize);
+    }
+    EvtAddEventToQueue(&event);
+}
+

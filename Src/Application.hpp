@@ -116,8 +116,6 @@ namespace ArsLexis
         
         UInt32 romVersion_;
         
-        static void sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength) throw();
-        
     protected:
     
         bool logAllocation_;
@@ -312,13 +310,6 @@ namespace ArsLexis
             appFirstAvailableEvent=firstUserEvent
         };
 
-        template<typename Data>
-        static void sendEvent(UInt16 eventId, const Data& data)
-        {sendEvent(eventId, &data, sizeof(data));}
-        
-        static void sendEvent(UInt16 eventId)
-        {sendEvent(eventId, 0, 0);}
-        
         friend void logAllocation(void*, bool, const char*, int);
     };
     

@@ -232,17 +232,4 @@ namespace ArsLexis
         EvtGetEvent(&event, eventTimeout_);
     }
     
-    void Application::sendEvent(UInt16 eventId, const void* eventData, UInt16 dataLength) throw()
-    {
-        EventType event;
-        MemSet(&event, sizeof(event), 0);
-        event.eType=static_cast<eventsEnum>(eventId);
-        if (eventData && dataLength)
-        {
-            assert(dataLength<=sizeof(event.data));
-            MemMove(&event.data, eventData, dataLength);
-        }
-        EvtAddEventToQueue(&event);
-    }
-   
 }

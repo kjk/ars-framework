@@ -1,10 +1,14 @@
 #ifndef __ARSLEXIS_NATIVE_GEOMETRY_HPP__
 #define __ARSLEXIS_NATIVE_GEOMETRY_HPP__
 
+#if defined(_WIN32_WCE)
+# include <windows.h>
+#endif
+
 namespace ArsLexis 
 {
 
-#if defined(__PALMOS_H__)
+#if defined(_PALM_OS)
 
     typedef RectangleType NativeRectangle_t;
     typedef PointType NativePoint_t;

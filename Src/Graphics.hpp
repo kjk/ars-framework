@@ -2,9 +2,9 @@
 #define __ARSLEXIS_GRAPHICS_HPP__
 
 #if defined(_PALM_OS)
-# include <PalmGraphics.hpp>
+# include <PalmOS/PalmGraphics.hpp>
 #elif defined(_WIN32_WCE)
-# include <WinGraphics.hpp>
+# include <WindowsCE/WinGraphics.hpp>
 #else
 # error "Define Graphics system for your build target."
 #endif
