@@ -21,7 +21,7 @@ namespace ArsLexis
         return *this;
     }
 
-    inline Rectangle& Rectangle::operator=(const NativeRectangle_t& nativeRect)
+    Rectangle& Rectangle::operator=(const NativeRectangle_t& nativeRect)
     {
         topLeft=nativeRect.topLeft;
         extent=nativeRect.extent;

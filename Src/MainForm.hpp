@@ -11,8 +11,8 @@ class MainForm: public iPediaForm
     Definition definition_;
     ArsLexis::String term_;
     typedef std::deque<ArsLexis::String> TermHistory_t;
-    TermHistory_t termHistory_;
-    TermHistory_t::iterator historyPosition_; 
+//    TermHistory_t termHistory_;
+//    TermHistory_t::iterator historyPosition_; 
     
     void handleScrollRepeat(const sclRepeat& data);
     void handlePenUp(const EventType& event);
@@ -26,7 +26,7 @@ class MainForm: public iPediaForm
     
 protected:
 
-    void resize(const RectangleType& screenBounds);
+    void resize(const ArsLexis::Rectangle& screenBounds);
     
     void draw(UInt16 updateCode=frmRedrawUpdateCode);
     
@@ -72,11 +72,11 @@ public:
     
     void lookupTerm(const ArsLexis::String& term);
     
-    bool historyHasPrevious() const
-    {return termHistory_.begin()!=historyPosition_;}
+//    bool historyHasPrevious() const
+//    {return termHistory_.begin()!=historyPosition_;}
     
-    bool historyHasNext() const
-    {return termHistory_.end()!=historyPosition_ && termHistory_.end()!=historyPosition_+1;}
+//    bool historyHasNext() const
+//    {return termHistory_.end()!=historyPosition_ && termHistory_.end()!=historyPosition_+1;}
     
 private:
     

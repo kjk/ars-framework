@@ -2,6 +2,7 @@
 #define __ARSLEXIS_FORM_HPP__
 
 #include "Debug.hpp"
+#include "Geometry.hpp"
 
 namespace ArsLexis 
 {
@@ -13,7 +14,7 @@ namespace ArsLexis
         Application& application_;
         UInt16 id_;
         FormType* form_;
-        Boolean deleteOnClose;
+        bool deleteOnClose;
         
         static Boolean routeEventToForm(EventType* event);
         
@@ -102,39 +103,22 @@ namespace ArsLexis
         Boolean visible() const
         {return FrmVisible(form_);}
         
-        UInt16 getObjectIndex(UInt16 objectId) const
-        {return FrmGetObjectIndex(form_, objectId);}
-        
-        void getObjectBounds(UInt16 index, RectangleType& bounds) const
-        {FrmGetObjectBounds(form_, index, &bounds);}
-        
-        void setObjectBounds(UInt16 index, const RectangleType& bounds) const
-        {FrmSetObjectBounds(form_, index, &bounds);}
-        
-        void bounds(RectangleType& bounds) const
-        {FrmGetFormBounds(form_, &bounds);}
-        
-        RectangleType bounds() const
+        void bounds(Rectangle& out) const
         {
             RectangleType rect;
+            FrmGetFormBounds(form_, &rect);
+            out=rect;
+        }
+        
+        Rectangle bounds() const
+        {
+            Rectangle rect;
             bounds(rect);
             return rect;
         }
         
-        void setBounds(const RectangleType& bounds);
-        
-        void hideObject(UInt16 index)
-        {FrmHideObject(form_, index);}
-        
-        void showObject(UInt16 index)
-        {FrmShowObject(form_, index);}
-        
-        void* getObject(UInt16 index) const
-        {return FrmGetObjectPtr(form_, index);}
-        
-        void focus(UInt16 index)
-        {FrmSetFocus(form_, index);}
-        
+        void setBounds(const Rectangle& bounds);
+
         UInt16 focusedObject() const
         {return FrmGetFocus(form_);}
 

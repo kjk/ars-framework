@@ -1,17 +1,16 @@
 #include "MainForm.hpp"
+#include "FormObject.hpp"
 #include "DefinitionParser.hpp"
 #include "iPediaApplication.hpp"
 #include "iPediaConnection.hpp"
 #include "SocketAddress.hpp"
 
-#include "FormattedTextElement.hpp"
-
 using namespace ArsLexis;
 
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
-    displayMode_(showSplashScreen),
-    historyPosition_(termHistory_.begin())
+    displayMode_(showSplashScreen)//,
+//    historyPosition_(termHistory_.begin())
 {
 }
 
@@ -21,47 +20,48 @@ MainForm::~MainForm()
 
 Boolean MainForm::handleOpen()
 {
-    UInt16 index=getObjectIndex(termInputField);
-    focus(index);
+    FormObject object(*this, termInputField);
+    object.focus();
     return iPediaForm::handleOpen();
 }
 
 
-void MainForm::resize(const RectangleType& screenBounds)
+void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
 {
     setBounds(screenBounds);
 
-    RectangleType bounds;
-    UInt16 index=getObjectIndex(definitionScrollBar);
-    getObjectBounds(index, bounds);
-    bounds.topLeft.x=screenBounds.extent.x-8;
-    bounds.extent.y=screenBounds.extent.y-36;
-    setObjectBounds(index, bounds);
+    Rectangle bounds;
+    FormObject object(*this, definitionScrollBar);
+    object.bounds(bounds);
+    bounds.x()=screenBounds.extent.x-8;
+    bounds.height()=screenBounds.extent.y-36;
+    object.setBounds(bounds);
     
-    index=getObjectIndex(termLabel);
-    getObjectBounds(index, bounds);
-    bounds.topLeft.y=screenBounds.extent.y-14;
-    setObjectBounds(index, bounds);
+    object.attach(termLabel);
+    object.bounds(bounds);
+    bounds.y()=screenBounds.extent.y-14;
+    object.setBounds(bounds);
 
-    index=getObjectIndex(termInputField);
-    getObjectBounds(index, bounds);
-    bounds.topLeft.y=screenBounds.extent.y-14;
-    bounds.extent.x=screenBounds.extent.x-73;
-    setObjectBounds(index, bounds);
+    object.attach(termInputField);
+    object.bounds(bounds);
+    bounds.y()=screenBounds.extent.y-14;
+    bounds.width()=screenBounds.extent.x-73;
+    object.setBounds(bounds);
 
-    index=getObjectIndex(goButton);
-    getObjectBounds(index, bounds);
-    bounds.topLeft.x=screenBounds.extent.x-26;
-    bounds.topLeft.y=screenBounds.extent.y-14;
-    setObjectBounds(index, bounds);
+    object.attach(goButton);
+    object.bounds(bounds);
+    bounds.x()=screenBounds.extent.x-26;
+    bounds.y()=screenBounds.extent.y-14;
+    object.setBounds(bounds);
 
     update();    
 }
 
 void MainForm::drawSplashScreen(Graphics& graphics, ArsLexis::Rectangle& bounds)
 {
-    UInt16 index=getObjectIndex(definitionScrollBar);
-    hideObject(index);
+    FormObject object(*this, definitionScrollBar);
+    object.hide();
+    
     const iPediaApplication& app=static_cast<iPediaApplication&>(application());
     Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, app.renderingPreferences().backgroundColor());
     bounds.explode(0, 15, 0, -33);
@@ -112,10 +112,9 @@ void MainForm::drawDefinition(Graphics& graphics, ArsLexis::Rectangle& bounds)
     bounds.explode(2, 2, -12, -4);
     definition_.render(graphics, bounds, app.renderingPreferences());
     
-    UInt16 index=getObjectIndex(definitionScrollBar);
-    showObject(index);
-    ScrollBarType* scrollBar=static_cast<ScrollBarType*>(getObject(index));
-    SclSetScrollBar(scrollBar, definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
+    ScrollBar scrollBar(*this, definitionScrollBar);
+    scrollBar.show();
+    scrollBar.setPosition(definition_.firstShownLine(), 0, definition_.totalLinesCount()-definition_.shownLinesCount(), definition_.shownLinesCount());
 }
 
 
@@ -191,9 +190,8 @@ void MainForm::lookupTerm(const ArsLexis::String& newTerm)
 void MainForm::handleControlSelect(const ctlSelect& data)
 {
     assert(data.controlID==goButton);
-    UInt16 index=getObjectIndex(termInputField);
-    const FieldType* field=static_cast<const FieldType*>(getObject(index));
-    const char* textPtr=FldGetTextPtr(field);
+    Field field(*this, termInputField);
+    const char* textPtr=field.text();
     if (textPtr!=0)
         lookupTerm(textPtr);
 }
@@ -224,10 +222,9 @@ Boolean MainForm::handleEvent(EventType& event)
 
 void MainForm::updateCurrentTermField()
 {
-    UInt16 index=getObjectIndex(currentTermField);
-    FieldType* field=static_cast<FieldType*>(getObject(index));
-    FldSetTextPtr(field, const_cast<char*>(term_.c_str()));
-    FldDrawField(field);
+    Field field(*this, currentTermField);
+    field.setText(term_.c_str());
+    field.draw();
 }
 
 void MainForm::setTerm(const ArsLexis::String& term)

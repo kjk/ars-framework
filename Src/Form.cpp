@@ -102,12 +102,11 @@ namespace ArsLexis
         FrmReturnToForm(formId);
     }
     
-    void Form::setBounds(const RectangleType& bounds)
+    void Form::setBounds(const Rectangle& bounds)
     {
         assert(form_!=0);
-        WinHandle wh=FrmGetWindowHandle(form_);
-        assert(wh);
-        WinSetBounds(wh, &bounds);
+        RectangleType native=toNative(bounds);
+        WinSetBounds(windowHandle(), &native);
     }        
 
 }
