@@ -288,6 +288,7 @@ void SearchResultsForm::handleLookupFinished(const EventType& event)
         if (form)
             form->setUpdateDefinitionOnEntry();
         closePopup();
+        return;
     }
     else if (data.outcomeList==data.outcome)
         updateSearchResults();

@@ -113,8 +113,8 @@ public:
         appLookupEventFirst=appLookupStartedEvent,
         appLookupProgressEvent,
         appLookupFinishedEvent,
+        appLookupEventLast=appLookupFinishedEvent,
         appGetArticlesCountEvent,
-        appLookupEventLast=appGetArticlesCountEvent,
         appFirstAvailableEvent
     };
     

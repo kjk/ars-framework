@@ -1,4 +1,6 @@
 #include "FiveWay.hpp"
+#include <PalmNavigator.h>
+#include <68K/Hs.h>
 
 FiveWay::FiveWay()
 {

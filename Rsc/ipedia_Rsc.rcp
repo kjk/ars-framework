@@ -12,7 +12,7 @@ BEGIN
     PULLDOWN "Main"
     BEGIN
          MENUITEM "Search" ID searchMenuItem "S"
-         MENUITEM "Full-text search" ID fullTextSearchMenuItem "F"
+         MENUITEM "Full-text search" ID fullTextSearchMenuItem "T"
          MENUITEM "Last search results" ID searchResultsMenuItem  "L"
          MENUITEM SEPARATOR ID AUTOID
          MENUITEM "Random article" ID randomMenuItem  "R"
@@ -37,7 +37,14 @@ BEGIN
         MENUITEM "ArsLexis website"        ID arslexisWebsiteMenuItem   "W"
         MENUITEM "About" ID aboutMenuItem  "A"
     END
-END
+
+    PULLDOWN "Go"
+    BEGIN
+        MENUITEM "Forward" ID forwardMenuItem  "F"
+        MENUITEM "Back" ID backMenuItem  "B"
+    END
+
+END	
 
 ALERT ID romIncompatibleAlert
     DEFAULTBUTTON 0
@@ -166,11 +173,11 @@ END
 
 FORM ID mainForm AT (0 0 160 160)
 	NOSAVEBEHIND NOFRAME
-	MENUID mainMenuBar DEFAULTBTNID searchButton 
+	MENUID mainMenuBar DEFAULTBTNID searchButton  
 BEGIN
 	TITLE "iPedia"
        	SCROLLBAR ID definitionScrollBar  AT (152 16 7 124) USABLE VALUE 50 MIN 0 MAX 100 PAGESIZE 10
-	FIELD ID termInputField  AT (20 146 100 Auto) MAXCHARS 255 EDITABLE UNDERLINED     
+	FIELD ID termInputField  AT (20 146 100 Auto) MAXCHARS 255 EDITABLE UNDERLINED      
 	BUTTON "Search" ID searchButton   AT (126 PrevTop 32 AUTO)
 	BUTTON "" ID backButton  AT (0 146 10 11) FONT 4 NOFRAME DISABLED BITMAPID backDisabledBitmap GRAPHICAL    
 	BUTTON "" ID forwardButton   AT (8 146 10 11) FONT 4 NOFRAME DISABLED GRAPHICAL BITMAPID forwardDisabledBitmap    

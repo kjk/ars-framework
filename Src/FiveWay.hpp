@@ -2,8 +2,6 @@
 #define __FIVE_WAY_H__
 
 #include <PalmOS.h>
-#include <PalmNavigator.h>
-#include <68K/Hs.h>
 
 class FiveWay
 {

@@ -31,11 +31,6 @@ iPediaApplication::iPediaApplication():
     log_.addSink(new DebuggerLogSink(), log_.logWarning);
 #endif    
 #endif
-
-    UInt32 version=0;
-    Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
-    if (errNone==error && version>=4)
-        hasHighDensityFeatures_=true;
 }
 
 inline void iPediaApplication::detectViewer()
@@ -55,7 +50,7 @@ Err iPediaApplication::initialize()
     Err error=Application::initialize();
     if (!error)
     {
-        if (diaSupport_ && isNotifyManager()) 
+        if (diaSupport_ && notifyManagerPresent()) 
         {
             error=registerNotify(diaSupport_.notifyType());
             if (!error)
@@ -85,6 +80,8 @@ iPediaApplication::~iPediaApplication()
 
 Err iPediaApplication::normalLaunch()
 {
+    hasHighDensityFeatures_=highDensityFeaturesPresent();
+    
     history_=new LookupHistory();
     loadPreferences();
 #ifdef INTERNAL_BUILD

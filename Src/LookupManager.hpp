@@ -142,6 +142,9 @@ private:
     void setLastSearchResults(const ArsLexis::String& sr)
     {lastSearchResults_=sr;}
     
+    void setLastInputTerm(const ArsLexis::String& lit)
+    {lastInputTerm_=lit;}
+    
     void setLastFoundTerm(const ArsLexis::String& t)
     {lastFoundTerm_=t;}
     

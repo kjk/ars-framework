@@ -7,7 +7,6 @@
 namespace ArsLexis
 {
 
-    bool isNotifyManager();
     
     void getScreenBounds(RectangleType& bounds);
 
@@ -42,6 +41,10 @@ namespace ArsLexis
     Err getResource(UInt16 stringId, String& out);
 
     Err WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, char *parameterP, UInt32 *resultP);
+    
+    bool highDensityFeaturesPresent();
+    
+    bool notifyManagerPresent();
 
 }
 

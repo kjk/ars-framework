@@ -259,6 +259,8 @@ Err iPediaConnection::notifyFinished()
             {
                 std::swap(definitionParser_->elements(), lookupManager_.lastDefinitionElements());
                 lookupManager_.setLastFoundTerm(resultsFor_);
+                if (getRandom_)
+                    lookupManager_.setLastInputTerm(resultsFor_);
                 data.outcome=data.outcomeDefinition;
             }
             if (searchResultsHandler_!=0)

@@ -311,12 +311,13 @@ void MainForm::setControlsState(bool enabled)
         control.attach(searchButton);
         control.setEnabled(enabled);
     }
+
     {        
         Field field(*this, termInputField);
         if (enabled)
         {
-            field.show();
             field.focus();
+            field.show();
         }
         else
         {
@@ -562,6 +563,11 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             switchServer(serverLocalhost);
             handled=true;
             break;
+
+        case toggleStressModeMenuItem:
+            handleToggleStressMode();
+            handled=true;
+            break;
 #endif
             
         case registerMenuItem:
@@ -595,13 +601,6 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             handled=true;
             break;
 
-#ifdef INTERNAL_BUILD
-        case toggleStressModeMenuItem:
-            handleToggleStressMode();
-            handled=true;
-            break;
-#endif            
-            
         case searchMenuItem:
             search();
             handled=true;
@@ -611,7 +610,22 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             search(true);
             handled=true;
             break;
-        
+            
+        case forwardMenuItem:
+            {
+                Control control(*this, forwardButton);
+                if (control.enabled())
+                    control.hit();
+            }
+            break;
+            
+        case backMenuItem:
+            {
+                Control control(*this, backButton);
+                if (control.enabled())
+                    control.hit();
+            }
+            break;
         
         default:
             handled=iPediaForm::handleMenuCommand(itemId);
