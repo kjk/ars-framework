@@ -255,9 +255,6 @@ def convertTermSlow(cur_title,definition,ts):
     if g_fVerbose:
         log_txt = "term: %s " % term
 
-    # it should be possible to speed this thing up by not doing SELECT for each
-    # term we insert and instead do that by handling MySQL exception for violated
-    # primary key integrity. Not tested in practice.
     check_cur = getNamedCursor(g_connTwo, "check_cur")
     check_cur.execute("""SELECT id, last_modified FROM definitions WHERE term='%s'""" % dbEscape(term))
     outRow=check_cur.fetchone()
