@@ -72,6 +72,10 @@ public:
     
     Justification justification() const;
 
+    virtual void setHyperlink(const ArsLexis::String& resource, HyperlinkType type) = 0;
+
+    virtual void setStyle(ElementStyle style) = 0;
+
 private:
     
     Justification justification_;
