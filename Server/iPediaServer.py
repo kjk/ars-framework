@@ -5,27 +5,79 @@ from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 import MySQLdb, random, _mysql_exceptions, datetime, re
 
+# if true we'll log terms that redirect to themselves to a file
+g_fLogCircularReferences = True
+g_circularReferencesLogName = "circular.log"
+
+class CircularDetector(object):
+    def __init__(self,logFileName):
+        self.logFileName = logFileName
+        self.loadLog()
+    def loadLog(self):
+        self.circulars = {}
+        try:
+            fo = open(self.logFileName, "rb")
+            for lines in fo.readlines():
+                (defId,term) = line.split(":")
+                self.circulars[defId] = term
+            fo.close()
+        except:
+            pass #it's ok if file doesn't exist
+    def log(self,defId,term):
+        if not self.circulars.has_key(defId):
+            self.circulars[defId] = term
+    def saveLog(self):
+         fo = open(self.logFileName,"wb")
+         for defId in self.circulars.keys():
+            term = self.circulars[defId]
+            toWrite = defId + ":" + term + "\n"
+            fo.write(toWrite)
+         fo.close()
+
+g_circularDetector = None
+def logCircular(defId,term):
+    global g_fLogCircularReferences, g_circularDetector, g_circularReferencesLogName
+    if not g_fLogCircularReferences:
+        return
+    if not g_circularDetector:
+        g_circularDetector = CircularDetector(g_circularReferencesLogName)
+    g_circularDetector.log(defId,term)
+
+def saveCircular():
+    global g_fLogCircularReferences, g_circularDetector
+    if not g_fLogCircularReferences:
+        return
+    if g_circularDetector:
+        g_circularDetector.saveLog()
+
+def testCircular():
+    logCircular("me", "him")
+    logCircular("me", "him2")
+    logCircular("one", "two")
+    logCircular("three", "four")
+    saveCircular()
+
 lineSeparator =     "\n"
 fieldSeparator =    ": "
 
-transactionIdField =        "Transaction-ID"
-getCookieField =            "Get-Cookie"
-cookieField =                   "Cookie"
-getDefinitionField =        "Get-Definition"
-formatVersionField =        "Format-Version"
-definitionField =           "Definition"
-resultsForField =        "Results-For"
-notFoundField = "Not-Found"
-errorField =                    "Error"
-registerField =                 "Register"
+transactionIdField =    "Transaction-ID"
+getCookieField =        "Get-Cookie"
+cookieField =           "Cookie"
+getDefinitionField =    "Get-Definition"
+formatVersionField =    "Format-Version"
+definitionField =       "Definition"
+resultsForField =       "Results-For"
+notFoundField =         "Not-Found"
+errorField =            "Error"
+registerField =         "Register"
 protocolVersionField =  "Protocol-Version"
-clientVersionField =        "Client-Version"
-searchField =               "Search"
-searchResultsField =        "Search-Results"
+clientVersionField =    "Client-Version"
+searchField =           "Search"
+searchResultsField =    "Search-Results"
 
-redirectCommand = "#REDIRECT"
+redirectCommand =    "#REDIRECT"
 termStartDelimiter = "[["
-termEndDelimiter = "]]"
+termEndDelimiter =   "]]"
 
 definitionFormatVersion = 1
 protocolVersion = 1
@@ -257,25 +309,24 @@ class iPediaProtocol(basic.LineReceiver):
         while True:
             if not startsWithIgnoreCase(definition, redirectCommand):
                 return defId, term, definition
-            else:
-                history.append(term.lower())
-                termStart=definition.find(termStartDelimiter)+2
-                termEnd=definition.find(termEndDelimiter)
-                term=definition[termStart:termEnd].replace('_', ' ')
-                print "Resolving term: ", term
-                if term.lower() in history:
-                    print "--------------------------------------------------------------------------------"
-                    print "WARNING! Circular reference: ", term
-                    print "--------------------------------------------------------------------------------"
-                    return None
-                else:
-                    query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(term)
-                    cursor.execute(query)
-                    row=cursor.fetchone()
-                    if row:
-                        defId, term, definition=row[0], row[1], row[2]
-                    else:
-                        return None
+            history.append(defId)
+            termStart=definition.find(termStartDelimiter)+2
+            termEnd=definition.find(termEndDelimiter)
+            term=definition[termStart:termEnd].replace('_', ' ')
+            print "Resolving term: ", term
+            query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(term)
+            cursor.execute(query)
+            row=cursor.fetchone()
+            if not row:
+                return None
+
+            defId, term, definition=row[0], row[1], row[2]
+            if defId in history:
+                print "--------------------------------------------------------------------------------"
+                print "WARNING! Circular reference: ", term
+                print "--------------------------------------------------------------------------------"
+                logCircular(defId,term)
+                return None
         
     def findExactDefinition(self, db, cursor, term):
         query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(term)
@@ -489,7 +540,11 @@ class iPediaFactory(protocol.ServerFactory):
         db.close()
 
     protocol = iPediaProtocol
-    
-reactor.listenTCP(9000, iPediaFactory())
-reactor.run()
+
+def main():
+    reactor.listenTCP(9000, iPediaFactory())
+    reactor.run()
+
+if __name__ == "__main__":
+    main()
 
