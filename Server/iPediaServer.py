@@ -345,9 +345,10 @@ class iPediaProtocol(basic.LineReceiver):
 
     def findRandomDefinition(self,db,cursor):
         global g_articleCount
-        term_id = random.randint(1,g_articleCount)
+        term_id = random.randint(self.factory.minDefinitionId, self.factory.maxDefinitionId)
         #query="""SELECT id, term, definition FROM definitions  ORDER BY RAND() LIMIT 0,1;"""
-        query="""SELECT id, term, definition FROM definitions WHERE id='%d';""" % term_id
+        #query="""SELECT id, term, definition FROM definitions WHERE id=%d;""" % term_id
+        query="""SELECT id, term, definition FROM definitions WHERE id=%d;""" % term_id
         cursor.execute(query)
         row=cursor.fetchone()
         if row:
@@ -476,21 +477,13 @@ class iPediaProtocol(basic.LineReceiver):
         try:
             db=self.getDatabase()
             cursor=db.cursor()
-            idTermDef=self.findRandomDefinition(db, cursor)
-            if idTermDef:
-                self.definitionId, self.term, definition=idTermDef
-            if definition:
-                self.outputDefinition(self.preprocessDefinition(db, cursor, definition))
-            else:
-                self.termList=self.findFullTextMatches(db, cursor, self.requestedTerm)
-                if self.termList:
-                    self.outputField(resultsForField, self.requestedTerm)
-                    joinedList=""
-                    for term in self.termList:
-                        joinedList+=(term+'\n')
-                    self.outputPayloadField(searchResultsField, joinedList)
-                else:
-                    self.outputField(notFoundField)
+            idTermDef=None
+            while not idTermDef:
+                idTermDef=self.findRandomDefinition(db, cursor)
+            self.definitionId, self.term, definition=idTermDef
+            self.outputDefinition(self.preprocessDefinition(db, cursor, definition))
+            cursor.close()
+            
         except _mysql_exceptions.Error, ex:
             print ex
             if cursor:
@@ -584,9 +577,11 @@ class iPediaFactory(protocol.ServerFactory):
         global g_articleCount
         db=self.createConnection()
         cursor=db.cursor()
-        cursor.execute("""select count(*) from definitions""")
+        cursor.execute("""select count(*), min(id), max(id) from definitions""")
         row=cursor.fetchone()
         self.articleCount=row[0]
+        self.minDefinitionId=row[1]
+        self.maxDefinitionId=row[2]
         g_articleCount=row[0]
         print "Number of Wikipedia articles: ", self.articleCount
         cursor.close()
