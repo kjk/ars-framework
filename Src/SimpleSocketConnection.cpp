@@ -58,7 +58,10 @@ namespace ArsLexis
     
     status_t SimpleSocketConnection::notifyReadable()
     {
-        // It's not C++ style  to declare variables without initializing. In C++ you declare variable the moment you need it.
+        uint_t dataSize = 0;
+        char* newDataBuf;
+        uint_t  curResponseSize;
+
         if (sending_) 
             log().debug()<<_T("notifyReadable(): called while sending data, probably some connection error occured");
 
@@ -74,7 +77,7 @@ namespace ArsLexis
         if (errNone!=error)
             goto Exit;
 
-        uint_t  curResponseSize = response_.size();
+        curResponseSize = response_.size();
         if (curResponseSize >= maxResponseSize_-chunkSize_)
         {
             error = errResponseTooLong;
@@ -85,9 +88,8 @@ namespace ArsLexis
         if (errNone!=error)
             goto Exit;
 
-        // Why would anyone want to cast char* to char*?
-        char* newDataBuf = &response_[curResponseSize];
-        uint_t dataSize = 0;
+        newDataBuf = (char*)&response_[curResponseSize];
+        dataSize = 0;
         error = socket().receive(dataSize, newDataBuf, chunkSize_, transferTimeout());
         if (errNone!=error)
             goto Exit;
@@ -95,18 +97,6 @@ namespace ArsLexis
         totalReceived_ += dataSize;
         assert(dataSize<=chunkSize_);
         
-        // The comment below is wrong. It's as safe as using char* buffer. It's impossible 
-        // to do realloc() in String as it's required to use allocator and allocator doesn't 
-        // have interface to do realloc(). You can't use memory you reserve() and we're 
-        // writing to it, so we have to use resize() and it's perfectly correct there.
-
-        // TODO: I don't like this resize hack. It's not very safe to do things
-        // this way. Also, I don't know how resize is implemented - it might
-        // call realloc() for every resize which would be inefficient and probably
-        // lead to memory fragmentation. It would be better to do reserve()/resize()
-        // than resize()/resize()
-        // maybe we should just use temporary buffer for receive() or manually
-        // control the whole response buffer as char* instead of abusing NarrowString
         resizeResponse(curResponseSize+dataSize);
         //if (chunkSize_ != dataSize)
         if (0 == dataSize)
