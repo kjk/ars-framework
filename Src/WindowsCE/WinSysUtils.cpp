@@ -5,6 +5,18 @@
 using ArsLexis::String;
 using ArsLexis::char_t;
 
+int RectDx(RECT *rect)
+{
+    int dx = rect->right - rect->left;
+    return dx;
+}
+
+int RectDy(RECT *rect)
+{
+    int dy = rect->bottom - rect->top;
+    return dy;
+}
+
 // TODO: implement. Used by iPediaConnection
 ulong_t ArsLexis::random(ulong_t range)
 {
@@ -183,21 +195,6 @@ int GetScrollBarDx()
     return scrollBarDx;
 }
 
-#ifdef WIN32_PLATFORM_PSPC
-int g_menuDy = -1;
-int GetMenuDy()
-{
-    if (-1==g_menuDy)
-        g_menuDy = GetSystemMetrics(SM_CYMENU)+3;
-    return g_menuDy;
-}
-#else
-int GetMenuDy()
-{
-    return 0;
-}
-#endif
-
 ///The following Defines are only on Smartphone and Pocket PC Phone Edition
 #if (WIN32_PLATFORM_PSPC>300 || WIN32_PLATFORM_WFSP )
 
@@ -315,3 +312,115 @@ void DeinitDataConnection()
 #else
 #error "wrong SDK"
 #endif
+
+// doesn't make much sense to me but this piece of magic comes
+// Programmin Windows CE 3rd ed page 841
+// the logic seems to be the opposite of the description
+// Comment from the book:
+// "If the sip is not shown, or showing but not docked, the desktop
+// rect deosn't include the height (dy) of the menu bar"
+bool FDesktopIncludesMenuBar(SIPINFO *si)
+{
+    if (!(si->fdwFlags & SIPF_ON) ||
+        ((si->fdwFlags & SIPF_ON) && !(si->fdwFlags & SIPF_DOCKED)))
+    {
+        return true;
+    }
+    return false;
+}
+
+#if 0
+bool FDesktopIncludesMenuBarAlternate(SIPINFO *si)
+{
+    // sip is not on
+    if (!(si->fdwFlags & SIPF_ON))
+        return true;
+
+    // SIP is on but not docked
+    if ( !(si->fdwFlags & SIPF_DOCKED))
+        return true;
+
+    return false;
+}
+#endif
+
+void OverrideBackButton(HWND hwndMenuBar)
+{
+#ifdef WIN32_PLATFORM_WFSP
+    // In order to make Back work properly, it's necessary to 
+    // override it and then call the appropriate SH API
+    // Only needed on smartphone
+    (void)SendMessage(
+        hwndMenuBar, SHCMBM_OVERRIDEKEY, VK_TBACK,
+        MAKELPARAM(SHMBOF_NODEFAULT | SHMBOF_NOTIFY,
+        SHMBOF_NODEFAULT | SHMBOF_NOTIFY)
+        );
+#else
+    // do nothing on Pocket PC
+#endif
+}
+
+void DrawFancyRectangle(HDC hdc, RECT *rect)
+{
+    int startX = rect->left;
+    int endX   = rect->right;
+    int startY = rect->top;
+    int endY   = rect->bottom;
+
+    POINT p[2];
+    p[0].y = startY;
+    p[1].y = endY;
+
+    LOGPEN pen;
+    HGDIOBJ origPen = GetCurrentObject(hdc,OBJ_PEN);
+    GetObject(origPen, sizeof(pen), &pen);
+
+    int dx = endX - startX;
+
+    float startBlueCol = 255;
+    float endBlueCol = 80;
+
+    float blueColSpread = startBlueCol - endBlueCol;
+
+    float spread = blueColSpread/(float)dx;
+
+    float blueColorFlt = startBlueCol;
+
+    int prevBlueColor = -1;
+    int curBlueColor = (int)blueColorFlt;
+
+    HPEN newPen;
+
+    for (int x=startX; x<endX; x++)
+    {
+        p[0].x = x;
+
+        if (curBlueColor!=prevBlueColor)
+        {
+            pen.lopnColor = RGB(0,0,curBlueColor);
+            newPen = CreatePenIndirect(&pen);
+            SelectObject(hdc,newPen);
+        }
+
+        p[1].x = p[0].x;
+        Polyline(hdc, p, 2);
+
+        if (curBlueColor!=prevBlueColor)
+        {
+            DeleteObject(newPen);
+            prevBlueColor = curBlueColor;
+        }
+
+        blueColorFlt -= spread;
+        curBlueColor = (int)blueColorFlt;
+    }
+
+    SelectObject(hdc,origPen);
+}
+
+static void DrawRectangle(HDC hdc, RECT *rect)
+{
+    ::Rectangle(hdc, rect->left, rect->top, rect->right, rect->bottom);
+}
+
+

@@ -1,6 +1,10 @@
 #ifndef __ARSLEXIS_WINSYSUTILS_HPP__
 #define __ARSLEXIS_WINSYSUTILS_HPP__
 
+#include <windows.h>
+
+#include <sipapi.h>
+
 #include <Text.hpp>
 
 namespace ArsLexis
@@ -13,6 +17,9 @@ namespace ArsLexis
 
 using ArsLexis::String;
 
+int RectDx(RECT *rect);
+int RectDy(RECT *rect);
+
 void GetEditWinText(HWND hwnd, String &txtOut);
 void SetEditWinText(HWND hwnd, const String& txt);
 
@@ -23,9 +30,14 @@ bool GotoURL(const ArsLexis::char_t *url);
 bool GetSpecialFolderPath(String& pathOut, BOOL fCreate=TRUE);
 
 int GetScrollBarDx();
-int GetMenuDy();
 
 void  DeinitDataConnection();
 bool  InitDataConnection();
+
+bool FDesktopIncludesMenuBar(SIPINFO *si);
+
+void OverrideBackButton(HWND hwndMenuBar);
+
+void DrawFancyRectangle(HDC hdc, RECT *rect);
 
 #endif
