@@ -290,6 +290,7 @@ void Definition::elementAtWidth(Graphics& graphics, const RenderingPreferences& 
             break;
         ++elem;
         layoutContext.renderingProgress = 0;
+        progress = 0;
     }
     if (end == elem) {
         --elem;
@@ -654,6 +655,19 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
     return lines_.end();
 }
 
+void Definition::removeSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs)
+{
+    ElementPosition_t start = selectionStartElement_;
+    ElementPosition_t end = selectionEndElement_;
+    if (elements_.end() != end)
+        ++end;
+    selectionStartElement_ = selectionEndElement_ = elements_.end();
+    selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
+    while (start != end)
+        renderSingleElement(graphics, prefs, *(*start++));
+}
+
+
 bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, bool endTracking) 
 {
     Point p(point.x - bounds_.x(), point.y - bounds_.y());
@@ -670,8 +684,8 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
     else 
     {
         ElementPosition_t prevStart = selectionStartElement_;
-        uint_t prevStartProg = selectionStartProgress_;
         ElementPosition_t prevEnd = selectionEndElement_;
+        uint_t prevStartProg = selectionStartProgress_;
         uint_t prevEndProg = selectionEndProgress_;
         if (elem > mouseDownElement_ || (elem == mouseDownElement_ && progress > mouseDownProgress_)) 
         {
@@ -721,9 +735,13 @@ bool Definition::extendSelection(Graphics& graphics, const RenderingPreferences&
         return false;
     if (!trackingSelection_ && !(bounds_ && point))
         return false;
+    if (!trackingSelection_ && elements_.end() != selectionStartElement_)
+        removeSelection(graphics, prefs);
     if (trackHyperlinkHighlight(graphics, prefs, point, endTracking))
         return true;
-    return trackTextSelection(graphics, prefs, point, endTracking);
+    if (usesMouseSelection())
+        return trackTextSelection(graphics, prefs, point, endTracking);
+    return false;
 }
 
 Definition::LineHeader::LineHeader():
@@ -737,6 +755,11 @@ void Definition::replaceElements(Elements_t& elements)
 {
     clear();
     elements_.swap(elements);
+    selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
+        inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+    selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
+    trackingSelection_ = false;
+    selectedHotSpot_ = NULL;
 }
 
 

@@ -114,6 +114,8 @@ private:
     
     void elementAtWidth(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, const LinePosition_t& line, ArsLexis::Coord_t width, ElementPosition_t& elem, uint_t& progress);
     
+    void removeSelection(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs);
+    
 public:
 
     class HyperlinkHandler
