@@ -87,7 +87,7 @@ void ByteFormatParser::reset()
     headerParsed_ = false;
 }
 
-void ByteFormatParser::getElements(Definition::Elements_t& el)
+void ByteFormatParser::replaceElements(Definition::Elements_t& el)
 {
     el.swap(elems_);
 }

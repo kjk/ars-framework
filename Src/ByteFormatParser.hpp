@@ -58,7 +58,7 @@ class ByteFormatParser
 
         ArsLexis::status_t parseAll(const ArsLexis::char_t* text);
 
-        void getElements(Definition::Elements_t& el);
+        void replaceElements(Definition::Elements_t& el);
 };
 
 #endif

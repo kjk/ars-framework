@@ -21,6 +21,12 @@ void PopupMenu::close()
         return;
         
     Form& form = *renderer.form();
+    if (noFocus != prevFocusIndex_) 
+    {
+        FormObject object(form);
+        object.attachByIndex(prevFocusIndex_);
+        object.focus();
+    }
     form.removeObject(renderer.index());
     form.update();
     
@@ -35,6 +41,7 @@ void PopupMenu::draw()
     WinEraseRectangle(&rr, 0);
     WinDrawGrayRectangleFrame(simpleFrame, &rr);
     
+/*    
     PatternType p = WinGetPatternType();
     RGBColorType old;
     RGBColorType black;
@@ -53,6 +60,7 @@ void PopupMenu::draw()
     WinPaintRectangle(&rr, 0);
     WinSetPatternType(p);
     WinSetBackColorRGB(&old, NULL);
+*/
     
     renderer.draw();
 }
@@ -63,7 +71,7 @@ Err PopupMenu::run(UInt16 id, const Rectangle& rect)
     Form& form = *renderer.form();
     bounds_ = rect;
     Err error;
- 
+    prevFocusIndex_ = form.focusedControlIndex_;
  
     Rectangle r = rect;
     r.explode(1, 1, -2, -2);
@@ -73,7 +81,6 @@ Err PopupMenu::run(UInt16 id, const Rectangle& rect)
         error = memErrNotEnoughSpace;
         return error;
     }
-//    prevFocusIndex_ = form.focusedObject();
     renderer.attachByIndex(index);
     running_ = true;
     renderer.show();
