@@ -1,14 +1,13 @@
 #ifndef __KXML2_KXML2_HPP__
 #define __KXML2_KXML2_HPP__
 
-#include "..\Debug.hpp"
-#include "..\BaseTypes.hpp"
-#include "..\ErrBase.h"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
 
 namespace KXml2 {
 
-    typedef ArsLexis::String String;
-    typedef ArsLexis::char_t char_t; 
+    using ArsLexis::String;
+    using ArsLexis::char_t; 
     typedef ArsLexis::status_t error_t;
 
     //Error values

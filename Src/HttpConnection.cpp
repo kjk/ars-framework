@@ -37,7 +37,8 @@ namespace ArsLexis {
         insideResposeHeaders_(false),
         insideResponseBody_(false),
         chunkedEncoding_(false),
-        skippingInfoResponse_(false)
+        skippingInfoResponse_(false),
+        responseBodyAvailable_(false)
     {}        
 
     HttpConnection::~HttpConnection() 
@@ -133,6 +134,7 @@ namespace ArsLexis {
 //            return processResponseBody();
     }
 
+    //! @todo Handle case when field value spans through multiple lines
     bool HttpConnection::nextResponseLine(String& out, bool finish)
     {
         String& resp=response();

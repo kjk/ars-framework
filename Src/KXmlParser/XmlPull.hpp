@@ -2,12 +2,15 @@
 #define __KXML2_XML_PULL_HPP__
 
 #include "KXml2.hpp"
-#include "XmlReader.hpp"
+#include <Reader.hpp>
 #include <vector>
 
 // Defines a public, abstract interface for pull XML parsing
 // This api is based on Java's XmlPull API (http://www.xmlpull.org/)
 namespace KXml2{
+
+    using ArsLexis::Reader;
+
     class XmlPullParser
     {
         public:
@@ -32,7 +35,7 @@ namespace KXml2{
 
             static const char_t* FEATURE_PROCESS_NAMESPACES;
 
-            virtual error_t setInput(XmlReader *reader) = 0;
+            virtual error_t setInput(Reader& reader) = 0;
             virtual error_t setFeature(const String& feature, bool flag) = 0;
             virtual error_t nextToken(int& ret) =0;
             virtual error_t next(int& ret) = 0;

@@ -59,6 +59,7 @@ namespace ArsLexis {
         bool insideResponseBody_:1;
         bool chunkedEncoding_:1;
         bool skippingInfoResponse_:1;
+        bool responseBodyAvailable_:1;
         
         String uri_;
         String messageBody_;

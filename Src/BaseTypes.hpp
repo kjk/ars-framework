@@ -39,6 +39,7 @@ namespace ArsLexis
 
     typedef UInt32 tick_t;
     
+    // One would ask: why some stupid status_t and not error_t? Because PalmOS Cobalt is coming...
     typedef Err status_t;
 
 #  define ticks TimGetTicks

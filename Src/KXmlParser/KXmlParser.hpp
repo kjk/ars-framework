@@ -3,7 +3,8 @@
 
 #include "XmlPull.hpp"
 #include <vector>
-#include "..\Hashtable.hpp"
+#include <Hashtable.hpp>
+#include <memory>
 
 namespace KXml2{
 
@@ -14,7 +15,7 @@ namespace KXml2{
     {
     private:
         bool        fRelaxed_;
-        XmlReader * reader_;
+        Reader * reader_;
 
         static const int LEGACY = 999;
         static const int XML_DECL = 998;
@@ -26,7 +27,8 @@ namespace KXml2{
 
         bool            processNsp_;
         bool            relaxed_;
-        ArsLexis::Hashtable *entityMap_;
+        typedef std::auto_ptr<ArsLexis::Hashtable> HashtablePtr;
+        HashtablePtr entityMap_;
         int             depth_;
         std::vector<String>  elementStack_;
         std::vector<String>  nspStack_;
@@ -95,7 +97,7 @@ namespace KXml2{
         KXmlParser();
         ~KXmlParser();
         String  getText();
-        error_t setInput(XmlReader *reader);
+        error_t setInput(Reader& reader);
         error_t setFeature(const String& feature, bool flag);
         error_t nextToken(int& ret);
         error_t next(int& ret);

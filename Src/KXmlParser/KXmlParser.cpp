@@ -52,11 +52,10 @@ inline int KXmlParser::getEventType()
     return type_;
 }
 
-KXmlParser::KXmlParser()
+KXmlParser::KXmlParser():
+    reader_(0)
 {
     fRelaxed_ = false;    
-    entityMap_ = NULL;   
-    reader_ = NULL;
 
     srcBuf_.assign(128, ' ');
     txtBuf_.assign(128, ' ');
@@ -1013,9 +1012,9 @@ error_t KXmlParser::nextImpl()
 }
 
 /* PUBLIC */
-error_t KXmlParser::setInput(XmlReader *reader)
+error_t KXmlParser::setInput(Reader& reader)
 {
-    reader_ = reader;
+    reader_ = &reader;
     line_ = 1;
     column_ = 0;
     type_ = START_DOCUMENT;
@@ -1027,20 +1026,13 @@ error_t KXmlParser::setInput(XmlReader *reader)
     version_ = "";
     standalone_ = false;
     wasCR_ = false;
-    if (reader_ == NULL)
-        return eNoReader;
- 
+
     srcPos_ = 0;
     srcCount_ = 0;
     peekCount_ = 0;
     depth_ = 0;
 
-    if (entityMap_ != NULL)
-    {
-        entityMap_->Dispose();
-        delete entityMap_;
-        entityMap_ = NULL;
-    }
+    entityMap_.reset();
     return eNoError;
 }
 
@@ -1365,7 +1357,7 @@ String KXmlParser::resolveEntity(const String& entity)
     if (entity=="lt") return "<";
     if (entity=="quot") return "\"";
 
-    if (NULL==entityMap_)
+    if (!entityMap_.get())
     {
         return ""; // TODO: an exception? //RE TODO: Why? We dont need to throw exception
     }
@@ -1378,8 +1370,7 @@ void KXmlParser::defineEntityReplacementText(const String& entity, const String&
 {
     // TODO: should we check if a given replacement already exists?
     MUSTDO
-    if (NULL==entityMap_)
-        entityMap_ = new ArsLexis::Hashtable();
-
+    if (!entityMap_.get())
+        entityMap_.reset(new ArsLexis::Hashtable());
     entityMap_->put(entity, value);
 }
