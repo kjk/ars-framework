@@ -142,7 +142,7 @@ namespace {
 
 }
 
-void ArsLexis::urlEncode(ArsLexis::String& in, const ArsLexis::String& out)
+void ArsLexis::urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
 {
     const char_t* begin=in.data();
     const char_t* end=begin+in.length();

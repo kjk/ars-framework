@@ -156,7 +156,7 @@ namespace ArsLexis
     inline void hexBinEncodeInPlace(String& inOut)
     {inOut=hexBinEncode(inOut);}
     
-    void urlEncode(String& int, const String& out);
+    void urlEncode(const String& in, String& out);
     
     void eraseStart(String& str, String::size_type length);
 
