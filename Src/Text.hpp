@@ -4,7 +4,7 @@
 #include <BaseTypes.hpp>
 #include <cctype>
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 // disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
 // TODO: move it to a more centrilsed place (like BaseTypes.hpp) ?
 #pragma warning( disable : 4800 )

@@ -1,5 +1,9 @@
 #include <Text.hpp>
 
+#ifdef __MWERKS__
+#pragma pcrelconstdata on
+#endif
+
 namespace ArsLexis 
 {
 

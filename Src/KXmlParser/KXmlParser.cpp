@@ -15,6 +15,10 @@ using namespace KXml2;
 #include <sstream>
 #include <string>
 
+#ifdef __MWERKS__
+#pragma pcrelconstdata on
+#endif
+
 //from XmlPullParser
 #define NO_NAMESPACE ""
 
