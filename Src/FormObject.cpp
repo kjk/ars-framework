@@ -162,4 +162,70 @@ namespace ArsLexis
     List::CustomDrawHandler::~CustomDrawHandler()
     {}
 
+
+    bool List::handleKeyDownEvent(const Form& form, const EventType& event, bool scrollPagesWithLeftRight)
+    {
+        assert(keyDownEvent==event.eType);
+        bool handled=true;
+        int delta=0;
+        int page=visibleItemsCount();
+        if (form.fiveWayUpPressed(&event))
+            delta=-1;
+        else if (form.fiveWayDownPressed(&event))
+            delta=1;
+        else if (scrollPagesWithLeftRight && form.fiveWayLeftPressed(&event))
+            delta=-page;
+        else if (scrollPagesWithLeftRight && form.fiveWayRightPressed(&event))
+            delta=page;
+        else {
+            switch (event.data.keyDown.chr)
+            {
+                case chrPageDown:
+                    delta=page;
+                    break;
+                    
+                case chrPageUp:
+                    delta=-page;
+                    break;
+                
+                case chrDownArrow:
+                    delta=1;
+                    break;
+
+                case chrUpArrow:
+                    delta=-1;
+                    break;
+                    
+                case chrLeftArrow:
+                    if (scrollPagesWithLeftRight)
+                        delta=-page;
+                    break;
+                    
+                case chrRightArrow:
+                    if (scrollPagesWithLeftRight)
+                        delta=page;
+                    break;
+
+                case vchrRockerCenter:
+                    {
+                        EventType e;
+                        MemSet(&e, sizeof(e), 0);
+                        e.eType=lstSelectEvent;
+                        e.data.lstSelect.listID=id();
+                        e.data.lstSelect.pList=object();
+                        e.data.lstSelect.selection=selection();
+                        EvtAddEventToQueue(&e);
+                    }
+                    handled = true;
+                    break;
+            }
+        }
+        if (0!=delta)
+        {
+            setSelectionDelta(delta);
+            handled=true;
+        }
+        return handled;
+    }
+
 }

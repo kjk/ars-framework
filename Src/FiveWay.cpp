@@ -49,42 +49,42 @@ FiveWay::FiveWay()
     ((eventP)->data.keyDown.chr == vchrRocker ## nav) \
 )
 
-bool FiveWay::HsLeftPressed(const EventType *event)
+inline bool FiveWay::HsLeftPressed(const EventType *event) const
 {
     return HsNavDirectionPressed(event, Left);
 }
 
-bool FiveWay::HsRightPressed(const EventType *event)
+inline bool FiveWay::HsRightPressed(const EventType *event) const
 {
     return HsNavDirectionPressed(event, Right);
 }
 
-bool FiveWay::HsUpPressed(const EventType *event)
+inline bool FiveWay::HsUpPressed(const EventType *event) const 
 {
     return HsNavDirectionPressed(event, Up);
 }
 
-bool FiveWay::HsDownPressed(const EventType *event)
+inline bool FiveWay::HsDownPressed(const EventType *event) const 
 {
     return HsNavDirectionPressed(event, Down);
 }
 
-bool FiveWay::LeftPressed(const EventType *event)
+bool FiveWay::LeftPressed(const EventType *event) const 
 {
-    return NavDirectionPressed(event,Left) || HsLeftPressed(event);
+    return NavDirectionPressed(event,Left) || HsLeftPressed(event); 
 }
 
-bool FiveWay::RightPressed(const EventType *event)
+bool FiveWay::RightPressed(const EventType *event) const 
 {
     return NavDirectionPressed(event,Right) || HsRightPressed(event);
 }
 
-bool FiveWay::UpPressed(const EventType *event)
+bool FiveWay::UpPressed(const EventType *event) const 
 {
     return NavDirectionPressed(event,Up) || HsUpPressed(event);
 }
 
-bool FiveWay::DownPressed(const EventType *event)
+bool FiveWay::DownPressed(const EventType *event) const
 {
     return NavDirectionPressed(event,Down) || HsDownPressed(event);
 }

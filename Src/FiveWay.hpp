@@ -10,17 +10,19 @@ private:
     bool hasHsNav_;
 
 public:
-    FiveWay();
-    //bool CenterPressed(EventType *event);
-    bool HsLeftPressed(const EventType *event);
-    bool HsRightPressed(const EventType *event);
-    bool HsUpPressed(const EventType *event);
-    bool HsDownPressed(const EventType *event);
 
-    bool LeftPressed(const EventType *event);
-    bool RightPressed(const EventType *event);
-    bool UpPressed(const EventType *event);
-    bool DownPressed(const EventType *event);
+    FiveWay();
+
+    //bool CenterPressed(EventType *event);
+    bool HsLeftPressed(const EventType *event) const;
+    bool HsRightPressed(const EventType *event) const;
+    bool HsUpPressed(const EventType *event) const;
+    bool HsDownPressed(const EventType *event) const;
+
+    bool LeftPressed(const EventType *event) const;
+    bool RightPressed(const EventType *event) const;
+    bool UpPressed(const EventType *event) const;
+    bool DownPressed(const EventType *event) const;
 };
 
 #endif

@@ -140,16 +140,16 @@ namespace ArsLexis
         
         const String& title() const;
 
-        bool fiveWayLeftPressed(const EventType *event)
+        bool fiveWayLeftPressed(const EventType *event) const
         {return fiveWay_.LeftPressed(event);}
 
-        bool fiveWayRightPressed(const EventType *event)
+        bool fiveWayRightPressed(const EventType *event) const
         {return fiveWay_.RightPressed(event);}
 
-        bool fiveWayUpPressed(const EventType *event)
+        bool fiveWayUpPressed(const EventType *event) const 
         {return fiveWay_.UpPressed(event);}
 
-        bool fiveWayDownPressed(const EventType *event)
+        bool fiveWayDownPressed(const EventType *event) const
         {return fiveWay_.DownPressed(event);}
 
         friend class Application;
