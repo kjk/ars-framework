@@ -237,6 +237,18 @@ public:
     bool empty() const
     {return elements_.empty();}
     
+    class RenderingProgressReporter
+    {
+    public:
+    
+        virtual ~RenderingProgressReporter() {}
+        
+        virtual void reportProgress(uint_t percent)=0;
+    };
+    
+    void setRenderingProgressReporter(RenderingProgressReporter* reporter)
+    {renderingProgressReporter_=reporter;}
+    
 private:
 
     HyperlinkHandler* hyperlinkHandler_;
@@ -275,6 +287,7 @@ private:
     uint_t selectionEndProgress_;
     bool trackingSelection_;
     HotSpot* selectedHotSpot_;
+    RenderingProgressReporter* renderingProgressReporter_; 
 };
 
 #ifdef __MWERKS__

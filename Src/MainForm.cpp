@@ -5,17 +5,21 @@
 
 using namespace ArsLexis;
 
+namespace 
+{
+    
+}
+
 MainForm::MainForm(iPediaApplication& app):
     iPediaForm(app, mainForm),
+    renderingProgressReporter_(*this),
     displayMode_(showSplashScreen),
     lastPenDownTimestamp_(0),
     updateDefinitionOnEntry_(false)
-{
-}
+{}
 
 MainForm::~MainForm()
-{
-}
+{}
 
 bool MainForm::handleOpen()
 {
@@ -138,6 +142,7 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
     if (definition)
     {
         Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, renderingPreferences().backgroundColor());
+        definition->setRenderingProgressReporter(&renderingProgressReporter_);
         Rectangle rect(bounds);
         rect.explode(0, 15, 0, -33);
         graphics.erase(rect);
@@ -172,6 +177,7 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
         ErrCatch (ex) { // Before anybody starts reorganizing this code, please read reference about ErrCatch() and the use of 'volatile'
             error=ex;
         } ErrEndCatch
+        definition->setRenderingProgressReporter(0);
         if (error) 
         {
             definition->clear();
@@ -687,4 +693,40 @@ void MainForm::search(bool fullText)
     }
     else
         lookupManager->search(term);
+}
+
+void MainForm::RenderingProgressReporter::reportProgress(uint_t percent) 
+{
+    if (percent==0)
+    {
+        ticksAtStart_=TimGetTicks();
+    }
+    else 
+    {
+        // Delay before we start displaying progress meter in milliseconds. Timespans < 300ms are typically perceived "instant"
+        // So we shouldn't distract user if the time is short enough.
+        static const uint_t delay=350; 
+        UInt32 ticksDiff=TimGetTicks()-ticksAtStart_;
+        iPediaApplication& app=static_cast<iPediaApplication&>(form_.application());
+        ticksDiff*=1000;
+        ticksDiff/=app.ticksPerSecond();
+        if (ticksDiff<delay)
+            return;
+
+        Graphics graphics(form_.windowHandle());
+        Rectangle bounds=form_.bounds();
+        bounds.explode(2, 17, -12, -37);
+        
+        Font f;
+        Graphics::FontSetter fset(graphics, f);
+        uint_t height=graphics.fontHeight();
+        Rectangle rect(bounds.x(), bounds.y()+(bounds.height()-height)/2, bounds.width(), height);
+        graphics.erase(rect);
+
+        char buffer[100];
+        StrPrintF(buffer, "Wait... %d%%", percent);
+        WinHandle wh=WinSetDrawWindow(form_.windowHandle());
+        graphics.drawCenteredText(buffer, rect.topLeft, rect.width());
+        WinSetDrawWindow(wh);
+    }
 }

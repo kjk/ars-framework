@@ -2,6 +2,7 @@
 #define __MAINFORM_HPP__
 
 #include "iPediaForm.hpp"
+#include "Definition.hpp"
 
 class Definition;
 class LookupHistory;
@@ -53,6 +54,26 @@ class MainForm: public iPediaForm
     void updateNavigationButtons();
     
     void handleExtendSelection(const EventType& event, bool endTracking=false);
+
+    class RenderingProgressReporter: public Definition::RenderingProgressReporter
+    {
+        MainForm& form_;
+        UInt32 ticksAtStart_;
+        
+    public:
+        
+        RenderingProgressReporter(MainForm& form):
+            form_(form),
+            ticksAtStart_(0)
+        {}
+        
+        virtual void reportProgress(uint_t percent);
+                
+    };
+    
+    friend class RenderingProgressReporter;
+    
+    RenderingProgressReporter renderingProgressReporter_;
     
 protected:
 

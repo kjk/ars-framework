@@ -80,7 +80,8 @@ Definition::Definition():
     selectionStartProgress_(LayoutContext::progressCompleted),
     selectionEndProgress_(LayoutContext::progressCompleted),
     trackingSelection_(false),
-    selectedHotSpot_(0)
+    selectedHotSpot_(0),
+    renderingProgressReporter_(0)
 {}
 
 namespace {
@@ -346,6 +347,11 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
     lastLine.firstElement=element;
     while (element!=end)
     {
+        if (renderingProgressReporter_)
+        {
+            uint_t percent=(100L*(element-elements_.begin()))/elements_.size();
+            renderingProgressReporter_->reportProgress(percent);
+        }
         uint_t progressBefore=layoutContext.renderingProgress;
         (*element)->calculateLayout(layoutContext);
         
