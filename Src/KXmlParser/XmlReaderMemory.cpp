@@ -15,7 +15,7 @@ int XmlReaderMemory::read()
     return std::char_traits<char_t>::eof();
 }
 
-int XmlReaderMemory::read(char_t* dst, int offset, int range)
+int XmlReaderMemory::read(String *dst, int offset, int range)
 {
      return 0;
 }

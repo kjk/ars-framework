@@ -14,8 +14,9 @@ namespace KXml2{
         bool        fRelaxed_;
         XmlReader * reader_;
 
-        // static const char_t * UNEXPECTED_EOF = "Unexpected EOF";
-        // static const char_t * ILLEGAL_TYPE = "Wrong event type";
+        //as #define in cpp.
+        //static const char_t * UNEXPECTED_EOF = "Unexpected EOF";
+        //static const char_t * ILLEGAL_TYPE = "Wrong event type";
         static const int LEGACY = 999;
         static const int XML_DECL = 998;
 
@@ -34,49 +35,61 @@ namespace KXml2{
 
         // source
     
-        String encoding;
-        char_t *srcBuf;
+        String encoding_;
+        //char_t *srcBuf_;
+        //int srcBufLenght_;
+        String srcBuf_;
     
-        int srcPos;
-        int srcCount;
+        int srcPos_;
+        int srcCount_;
 
-        int line;
-        int column;
+        int line_;
+        int column_;
 
         // txtbuffer
-        char_t txtBuf[128];
-        int txtPos;
+        String txtBuf_;
+        int txtPos_;
 
         // Event-related
-        int type;
-        String text;
-        bool isWhitespace;
-        String nameSpace;
-        String prefix;
-        String name;
+        int type_;
+        String text_;
+        bool isWhitespace_;
+        String nameSpace_;
+        String prefix_;
+        String name_;
 
-        bool degenerated;
-        int attributeCount;
-        String attributes[16];
+        bool degenerated_;
+        int attributeCount_;
+        String attributes_[16];
 
         /** 
         * A separate peek buffer seems simpler than managing
         * wrap around in the first level read buffer */
-        int peek[2];
-        int peekCount;
-        bool wasCR;
-        bool unresolved;
-        bool token;
+        int peek_[2];
+        int peekCount_;
+        bool wasCR_;
+        bool unresolved_;
+        bool token_;
 
     private:
         String  resolveEntity(String entity);
+        int     peek(int pos);
+        int     peekType();
+        void    nextImpl();
+        void    pushEntity();
+        String  get(int pos);
+        void    push(int c);
+        int     read();
+        String  readName();
+        void    skip();
+        void    parseStartTag(bool xmldecl);
 
     public:
         KXmlParser();
         void    setInput(XmlReader *reader);
         void    setFeature(String feature, bool flag);
         void    nextToken();
-        void    next();
+        int     next();
         String  getPositionDescription();
         int     getEventType();
         void    defineEntityReplacementText(String entity, String value);

@@ -23,7 +23,7 @@ namespace KXml2{
 
         int read();
 
-        int read(char_t* dst, int offset, int range);
+        int read(String *dst, int offset, int range);
         
     };
     

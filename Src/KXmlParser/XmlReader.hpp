@@ -15,7 +15,7 @@ namespace KXml2{
     
         virtual int read() = 0;
         
-        virtual int read(char_t* dst, int offset, int range)=0;
+        virtual int read(String *dst, int offset, int range)=0;
         
         virtual ~XmlReader() {}
         

@@ -29,7 +29,7 @@ int XmlReaderFile::read()
     return xmlReaderMemory_->read(); 
 }
 
-int XmlReaderFile::read(char_t* dst, int offset, int range)
+int XmlReaderFile::read(String *dst, int offset, int range)
 {
     return xmlReaderMemory_->read(dst, offset, range);
 }
