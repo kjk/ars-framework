@@ -19,11 +19,6 @@
 namespace ArsLexis
 {
 
-    status_t getDeviceSerialNumber(String& out)
-    {
-        return sysErrParamErr;
-    }
-
     status_t getSystemParameter(String& out, int param)
     {
         status_t error=ERROR_INSUFFICIENT_BUFFER;
@@ -116,13 +111,10 @@ namespace ArsLexis
     String deviceInfoToken()
     {
         String out;
-        renderDeviceIdentifierToken(out, _T("SN"), getDeviceSerialNumber);
         renderDeviceIdentifierToken(out, _T("PN"), getPhoneNumber);
         renderDeviceIdentifierToken(out, _T("PL"), getPlatform);
         renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
         renderDeviceIdentifierToken(out, _T("OD"), getOEMDeviceId);
-        //out.append(_T("OC:1234"));
-        //out.append(_T("OD:3456"));
         return out;
     }
 

@@ -6,9 +6,6 @@
 
 namespace ArsLexis
 {
-
-    status_t getDeviceSerialNumber(String& out);
-    
     status_t getOEMCompanyId(String& out);
     
     status_t getOEMDeviceId(String& out);

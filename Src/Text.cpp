@@ -117,17 +117,31 @@ OnError:
 
 #define HEX_DIGITS _T("0123456789ABCDEF")
 
+static ArsLexis::char_t numToHex(int num)
+{
+    assert( (num>=0) && (num<16) );
+    ArsLexis::char_t c = HEX_DIGITS[num];
+    assert( '\0' != c );
+    return c;
+}
+
 ArsLexis::String ArsLexis::hexBinEncode(const String& in)
 {
     String out;
     out.reserve(2*in.length());
     String::const_iterator it=in.begin();
     String::const_iterator end=in.end();
+    char_t hexChar;
     while (it!=end)
     {
-        char_t b=*(it++);
-        out.append(1, HEX_DIGITS[(int)b/16]);
-        out.append(1, HEX_DIGITS[(int)b%16]);
+        // at some point this was char_t (i.e. unsigned char on Palm)
+        // and it caused bugs due to b being promoted to unsigned int, which
+        // was negative for b values > 127
+        unsigned char b=*(it++);
+        hexChar = numToHex(b / 16);
+        out.append(1,hexChar);
+        hexChar = numToHex(b % 16);
+        out.append(1,hexChar);
     }
     return out;
 }

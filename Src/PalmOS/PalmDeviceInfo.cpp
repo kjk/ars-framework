@@ -27,6 +27,10 @@ static status_t getHsSerialNum(String& out)
 {
     char  versionStr[hsVersionStringSize];
 
+    // TODO: needs a better way to figure out if I can call this function
+    if (!isTreo600())
+        return sysErrNotAllowed;
+
     MemSet (versionStr, hsVersionStringSize, 0);
     if (HsGetVersionString (hsVerStrSerialNo, versionStr, NULL) != errNone)
         return sysErrNotAllowed;
@@ -40,18 +44,20 @@ static status_t getHsSerialNum(String& out)
 
 // "SN" tag, doesn't seem to be available (at least not on Treo600). On simulator
 // it's "SERIAL NUMBER"
-status_t getDeviceSerialNumber(String& out)
+static status_t getDeviceSerialNumber(String& out)
 {
-    char* data;
-    UInt16 length;
+    unsigned char *  data=NULL;
+    UInt16           length=0;
+
     status_t error=SysGetROMToken(0, sysROMTokenSnum, reinterpret_cast<UInt8**>(&data), &length);
-    if (!error)
-    {
-        if (NULL==data || 0xff==*data)
-            error=sysErrParamErr;
-        else
-            out.append(data, length);
-    }
+    if (error)
+        return error;
+
+    if (NULL==data || 0xff==*data || 0x00==*data || 0==length)
+        return sysErrParamErr;
+
+    out.append((char*)data, length);
+    assert(errNone==error);
     return error;
 }
 
@@ -99,6 +105,56 @@ status_t getHotSyncName(String& out)
     return error;
 }
 
+// "IM" tag for IMEI number, should be unique but apparently the phone
+// needs to be connected to network in order to return this
+// see http://www.mail-archive.com/palm-dev-forum@news.palmos.com/msg76403.html
+static status_t getIMEI(String& out)
+{
+    bool     libLoaded=false;
+    UInt16   refNum=sysInvalidRefNum ;
+
+    status_t error=SysLibFind(phnLibCDMAName, &refNum);
+    if (error)
+        error=SysLibFind(phnLibGSMName, &refNum);
+    if (error)
+    {
+        error=SysLibLoad(phnLibDbType, phnLibCDMADbCreator, &refNum);
+        if (error)
+            error=SysLibLoad(phnLibDbType, phnLibGSMDbCreator, &refNum);
+        if (!error)
+            libLoaded=true;
+    }
+
+    if (error)
+        return error;
+
+    assert(sysInvalidRefNum!=refNum);
+
+    char *emei=NULL;
+
+    if (PhnLibCardInfo(refNum,0,0,NULL,&emei))
+    {
+        // "00000000" is an invalid IMEI which can happen, according to
+        // http://www.mail-archive.com/palm-dev-forum@news.palmos.com/msg76416.html
+        // (it's also what simulator returns)
+        if (emei && *emei && (0!=StrCompare(emei,"00000000")))
+        {
+            out.append(emei);
+            MemPtrFree (emei);
+        }
+        else
+            error = sysErrParamErr;
+    }
+    else
+        error = sysErrParamErr;
+
+    if (libLoaded)
+        SysLibRemove(refNum);
+
+    return error;
+}
+
+
 // "PN" tag, should be unique
 status_t getPhoneNumber(String& out)
 {
@@ -128,7 +184,8 @@ status_t getPhoneNumber(String& out)
             {
                 char* number=PhnLibAPGetField(refNum, address, phnAddrFldPhone);
                 MemHandleFree(address);
-                if (number)
+                // "00000000000" (eleven '0') is phone number returned by sim
+                if (number && *number && 0!=StrCompare("00000000000",number))
                 {
                     out.append(number);
                     MemPtrFree(number);
@@ -146,33 +203,35 @@ status_t getPhoneNumber(String& out)
 
 namespace {
 
-    typedef status_t (TokenGetter)(String&);
+typedef status_t (TokenGetter)(String&);
 
-    static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGetter* getter)
-    {
-        String token;
-        status_t  error=(*getter)(token);
-        if (!error)
-        {
-            if (!out.empty())
-                out+=':';
-            out.append(prefix);
-            out.append(hexBinEncode(token));
-        }
-    }
+static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGetter* getter)
+{
+    String    token;
+    status_t  error=(*getter)(token);
+    if (error)
+        return;
+
+    if (!out.empty())
+        out+=':';
+    out.append(prefix);
+    String tokenEncoded = hexBinEncode(token);
+    out.append(hexBinEncode(token));
+}
 
 } // namespace
 
 String deviceInfoToken()
 {
     String out;
-    renderDeviceIdentifierToken(out, "HS", getHotSyncName);
     renderDeviceIdentifierToken(out, "SN", getDeviceSerialNumber);
+    renderDeviceIdentifierToken(out, "HS", getHotSyncName);
     renderDeviceIdentifierToken(out, "HN", getHsSerialNum);
     renderDeviceIdentifierToken(out, "PN", getPhoneNumber);
     renderDeviceIdentifierToken(out, "PL", getPlatform);
     renderDeviceIdentifierToken(out, "OC", getOEMCompanyId);
     renderDeviceIdentifierToken(out, "OD", getOEMDeviceId);
+    renderDeviceIdentifierToken(out, "IM", getIMEI);    
     return out;
 }
 
