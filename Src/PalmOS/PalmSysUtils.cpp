@@ -150,7 +150,7 @@ Err ArsLexis::getResource(UInt16 tableId, UInt16 index, String& out)
     return error;
 }
 
-Err ArsLexis::WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, char *parameterP, UInt32 *resultP)
+Err ArsLexis::WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, const char *parameterP, UInt32 *resultP)
 {
     UInt16  cardNo;
     LocalID dbID;
@@ -165,7 +165,7 @@ Err ArsLexis::WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 co
 
     if (subLaunch)
     {
-        SysAppLaunch(cardNo, dbID, launchFlags, command, parameterP, &result);
+        SysAppLaunch(cardNo, dbID, launchFlags, command, const_cast<char*>(parameterP), &result);
         if (resultP) 
             *resultP = result;
     }

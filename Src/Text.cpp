@@ -472,6 +472,7 @@ void strip(String& str)
         str.assign(str, left, right-left);
 }
 
+/*
 std::vector<ArsLexis::String> split(const String& str, const String& spliter)
 {
     std::vector<ArsLexis::String> vec;
@@ -492,6 +493,30 @@ std::vector<ArsLexis::String> split(const String& str, const String& spliter)
     }
     return vec;
 }
+*/
+
+std::vector<ArsLexis::String> split(const String& str, const char_t* splitter)
+{
+    std::vector<ArsLexis::String> vec;
+    String::size_type curPos = 0;
+    String::size_type spliterPos = 0;
+    uint_t slen = tstrlen(splitter);
+    while (String::npos != spliterPos)
+    {
+        spliterPos = str.find(splitter, curPos);
+        if (String::npos != spliterPos)
+        {
+            vec.push_back(String(str, curPos, spliterPos-curPos));
+            curPos = spliterPos + slen;
+        }    
+        else
+        {
+            vec.push_back(String(str,curPos));
+        }
+    }
+    return vec;
+}
+
 
 // ok, the name sucks
 char_t **StringListFromStringList(const StringList_t& strList, int& stringCount)
@@ -576,7 +601,7 @@ void FreeStringList(char_t* strList[], int strListLen)
 }
 
    
-String join(const std::vector<ArsLexis::String>& vec, const String& joiner)
+String join(const std::vector<ArsLexis::String>& vec, const char_t* joiner)
 {
     String str;
     for (uint_t i=0; i < vec.size(); i++)

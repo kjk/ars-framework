@@ -56,7 +56,7 @@ namespace ArsLexis
         font_ = font;
         FontID id = font_.withEffects();
         bool wantsScaling = 0 != (id & fontScalingDisabled);
-        disableFontScaling_ = useFontScaling() && wantsScaling;
+        disableFontScaling_ = wantsScaling && useFontScaling();
         if (wantsScaling && !disableFontScaling_)
             id =stdFont;
         ScalingSetter setScaling(*this);
