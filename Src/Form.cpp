@@ -285,11 +285,24 @@ namespace ArsLexis
         if (frmInvalidObjectId == focusedControlIndex_)
             return false;
         bool left = false;
-        if (fiveWayLeftPressed(&event) || fiveWayUpPressed(&event))
-            left = true;
-        else if (!fiveWayRightPressed(&event) && !fiveWayDownPressed(&event))
-            return false;
         FormObject object(*this);
+        object.attachByIndex(focusedControlIndex_);
+        if (fiveWayLeftPressed(&event))
+        {
+            if (frmFieldObj == object.type() && 0 != FldGetInsPtPosition(static_cast<FieldType*>(object.wrappedObject())))
+                return false;
+            left = true;
+        }
+        else if (fiveWayUpPressed(&event))
+            left = true;
+        else if (fiveWayRightPressed(&event))
+        {
+            const FieldType* field = static_cast<const FieldType*>(object.wrappedObject());
+            if (frmFieldObj == object.type() && FldGetTextLength(field) != FldGetInsPtPosition(field))
+                return false;
+        }
+        else if (!fiveWayDownPressed(&event))
+            return false;
         UInt16 index;
         if (left)
         {

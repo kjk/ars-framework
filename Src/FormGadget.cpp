@@ -43,6 +43,7 @@ void FormGadget::drawProxy()
 {
     if (!visible())
         return;
+        
     Graphics graphics(form()->windowHandle());
     Rectangle rect;
     bounds(rect);

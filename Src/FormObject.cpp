@@ -166,6 +166,8 @@ namespace ArsLexis
     void FormObject::draw()
     {
         assert(valid());
+        if (!form_->visible())
+            return;
         FormObjectKind kind = type();
         switch (kind)
         {
