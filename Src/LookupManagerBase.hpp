@@ -29,8 +29,8 @@ namespace ArsLexis {
         
     };
 
-    class LookupProgressReportingSupport {
-        String statusText_;
+    class LookupProgressReportingSupport 
+    {
         uint_t percentProgress_;
         ulong_t bytesProgress_;
         
@@ -42,11 +42,10 @@ namespace ArsLexis {
         enum {percentProgressDisabled=(uint_t)-1};
     
         LookupProgressReportingSupport();
+
+        const char_t * statusText_;
         
-        const String& statusText() const
-        {return statusText_;}
-        
-        void setStatusText(const String& text)
+        void setStatusText(const char_t *text)
         {statusText_=text;}
         
         uint_t percentProgress() const
@@ -117,7 +116,7 @@ namespace ArsLexis {
                 case lookupFinishedEvent:
                     lookupInProgress_=false;
                     handleLookupFinished(reinterpret_cast<const LookupFinishedData&>(event.data));
-                    setStatusText(String());
+                    setStatusText(_T(""));
                     setPercentProgress(percentProgressDisabled);
                     setBytesProgress(0);
                     break;                    

@@ -15,17 +15,18 @@ namespace ArsLexis {
     {
         if (clearBkg) 
             graphics.erase(bounds);
+
         Rectangle rect(bounds);
         rect.explode(2, 2, -4, -4);
         Graphics::FontSetter setFont(graphics, Font());
-        uint_t length=support.statusText().length();
-        uint_t width=rect.width();
-        const char_t* text=support.statusText().c_str();
+        const char_t* text = support.statusText_;
+        uint_t length = tstrlen(text);
+        uint_t width = rect.width();
         graphics.charsInWidth(text, length, width);
-        uint_t height=graphics.fontHeight();
+        uint_t height = graphics.fontHeight();
         Point p(rect.x(), rect.y()+(rect.height()-height)/2);
         graphics.drawText(text, length, p);
-        char_t buffer[16];
+        char_t buffer[32];
         bool drawMore=false;
         if (support.percentProgressDisabled!=support.percentProgress())
         {
@@ -53,15 +54,15 @@ namespace ArsLexis {
                 localizeNumber(buffer, buffer+length);
             }
         }
+
         if (drawMore)
         {
-            p.x+=width+2;
-            width=rect.width()-width;
+            p.x = p.x + width + 2;
+            width = rect.width()-width;
             graphics.charsInWidth(buffer, length, width);
             graphics.drawText(buffer, length, p);
         }
     }
-        
 
     LookupProgressReportingSupport::LookupProgressReportingSupport():
         percentProgress_(percentProgressDisabled),
