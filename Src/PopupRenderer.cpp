@@ -1,15 +1,15 @@
-#include <PopupMenu.hpp>
+#include <PopupRenderer.hpp>
 
 using namespace ArsLexis;
 
-PopupMenu::PopupMenu(Form& form, RenderingPreferences& prefs):
+PopupRenderer::PopupRenderer(Form& form, RenderingPreferences& prefs):
     TextRenderer(form, prefs),
     running_(false),
     prevFocusIndex_(frmInvalidObjectId)
 {
 }
 
-PopupMenu::~PopupMenu()
+PopupRenderer::~PopupRenderer()
 {
     if (running_)
         close();
@@ -21,7 +21,7 @@ PopupMenu::~PopupMenu()
     }
 }
 
-void PopupMenu::close()
+void PopupRenderer::close()
 {
     if (!running_)
         return;
@@ -40,7 +40,7 @@ void PopupMenu::close()
     running_ = false;
 }
 
-Err PopupMenu::run(UInt16 id, const Rectangle& rect)
+Err PopupRenderer::run(UInt16 id, const Rectangle& rect)
 {
     assert(!running_);
     Err error;
@@ -63,7 +63,7 @@ Err PopupMenu::run(UInt16 id, const Rectangle& rect)
     return errNone;
 }
 
-bool PopupMenu::handleEventInForm(EventType& event)
+bool PopupRenderer::handleEventInForm(EventType& event)
 {
     if (!running_)
         return false;
@@ -98,7 +98,7 @@ bool PopupMenu::handleEventInForm(EventType& event)
     return false;
 }
 
-void PopupMenu::handleDraw(Graphics& graphics)
+void PopupRenderer::handleDraw(Graphics& graphics)
 {
     Rectangle bounds;
     this->bounds(bounds);

@@ -188,7 +188,7 @@ namespace ArsLexis
         friend class Application;
         friend class FormGadget;
         friend class FormObject;
-        friend class PopupMenu;
+        friend class PopupRenderer;
         
         // @return index of new gadget or frmInvalidObjectId on failure.
         UInt16 createGadget(UInt16 id, const Rectangle& rect);

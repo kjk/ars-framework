@@ -107,6 +107,26 @@ inline void operator delete[](void *ptr, const char*, int line)
     ::operator delete(ptr);
 }
 
+inline void* malloc__(size_t size, const char* file, int line)
+{
+    return ::operator new(size, file, line);
+}
+
+inline void free__(void* p)
+{
+    ::operator delete(p);
+}
+
+#ifdef malloc
+# undef malloc
+#endif
+#ifdef free
+# undef free
+#endif
+
+#define malloc(a) malloc__((a), __FILE__, __LINE__)
+#define free(a) free__(a)
+
 #if !defined(NDEBUG) && !defined(_MSC_VER)
 // MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
 # define new new (__FILE__, __LINE__)

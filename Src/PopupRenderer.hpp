@@ -1,5 +1,5 @@
-#ifndef ARSLEXIS_POPUP_MENU_HPP__
-#define ARSLEXIS_POPUP_MENU_HPP__
+#ifndef ARSLEXIS_POPUP_RENDERER_HPP__
+#define ARSLEXIS_POPUP_RENDERER_HPP__
 
 #include <TextRenderer.hpp>
 #include <RenderingPreferences.hpp>
@@ -9,7 +9,7 @@ namespace ArsLexis
 
 class Form;
 
-class PopupMenu: public TextRenderer
+class PopupRenderer: public TextRenderer
 {
 
     bool running_;
@@ -17,9 +17,9 @@ class PopupMenu: public TextRenderer
     
 public:
 
-    PopupMenu(Form& form, RenderingPreferences& prefs);
+    PopupRenderer(Form& form, RenderingPreferences& prefs);
     
-    ~PopupMenu();
+    ~PopupRenderer();
 
     
     void close();
