@@ -5,6 +5,13 @@
 #include <Application.hpp>
 #endif // _PALM_OS
 
+#ifdef __MWERKS__
+# pragma far_code
+# pragma inline_bottom_up on
+# pragma inline_depth(100)
+#endif
+
+
 namespace ArsLexis
 {
 
@@ -35,21 +42,29 @@ namespace ArsLexis
 
 #endif // )WIN32_WCE
 
-#ifdef _WIN32_WCE
-
-    Logger::LineAppender& Logger::LineAppender::operator<<(long l)
+    Logger::LineAppender& Logger::LineAppender::operator<<(unsigned long l)
     {
         if (log_)
         {
             char_t buffer[26];
-            int len=tprintf(buffer, _T("%ld (0x%04lx)"), l, l);
+            int len=tprintf(buffer, _T("%lu (0x%08lx)"), l, l);
             if (len>0)
                 line_.append(buffer, len);
         }                
         return *this;
     }
 
-#endif
+    Logger::LineAppender& Logger::LineAppender::operator<<(long l)
+    {
+        if (log_)
+        {
+            char_t buffer[26];
+            int len=tprintf(buffer, _T("%ld (0x%08lx)"), l, l);
+            if (len>0)
+                line_.append(buffer, len);
+        }                
+        return *this;
+    }
 
     Logger::LineAppender& Logger::LineAppender::operator<<(short i)
     {
@@ -269,3 +284,42 @@ namespace ArsLexis
 #endif // _PALM_OS
 
 }
+
+#if defined(_PALM_OS)
+
+void ArsLexis::cleanAllocationLogging()
+{
+    HostFILEType* file=0;
+    UInt32 creatorId=Application::creator();
+    Err error=FtrGet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32*>(&file));
+    if (errNone==error && 0!=file)
+        HostFClose(file);
+    FtrUnregister(creatorId, Application::featureAllocationLoggerPointer);
+}
+
+#if !defined(ALLOCATION_LOG_PATH)
+# error "Define ALLOCATION_LOG_PATH in yer Target.h"
+#endif
+
+void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* fileName, int line)
+{
+    HostFILEType* file=0;
+    UInt32 creatorId=Application::creator();
+    Err error=FtrGet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32*>(&file));
+    if (errNone!=error)
+    {
+        file=HostFOpen(ALLOCATION_LOG_PATH, "w");
+        if (file)
+            FtrSet(creatorId, Application::featureAllocationLoggerPointer, reinterpret_cast<UInt32>(file));
+    }
+    if (0!=file)
+    {
+        if (free)
+            HostFPrintF(file, "-\t0x%08lx\n", ptr);
+        else
+            HostFPrintF(file, "+\t0x%08lx\t%ld\t%s: %hd\n", ptr, size, 0==fileName?"(Unknown)":fileName, line);
+        HostFFlush(file);
+    }
+}
+
+#endif // _PALMOS

@@ -116,10 +116,8 @@ namespace ArsLexis
         
         UInt32 romVersion_;
         
-        int logAllocation_;
-    
     protected:
-    
+        
 #ifdef appFileCreator    
         explicit Application(UInt32 creatorId=appFileCreator);
 #else
@@ -217,6 +215,8 @@ namespace ArsLexis
              */
             featureRootLoggerPointer,
             
+            featureAllocationLoggerPointer,
+            
             /**
              * First available feature index for use in subclasses.
              */
@@ -310,7 +310,7 @@ namespace ArsLexis
             appFirstAvailableEvent=firstUserEvent
         };
 
-        friend void logAllocation(void*, bool, const char*, int);
+        friend void logAllocation(void*, size_t, bool, const char*, int);
         friend void processReadyUiEvents();
     };
     
@@ -343,6 +343,7 @@ namespace ArsLexis
                         error=ex;
                     } ErrEndCatch
                     delete app;
+                    cleanAllocationLogging();
                     if (memErrNotEnoughSpace==error)
                         Application::alert(AppClass::notEnoughMemoryAlertId);
                 }

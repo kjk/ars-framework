@@ -34,8 +34,12 @@ namespace ArsLexis
      */
     void handleBadAlloc();
     
-    void logAllocation(void* ptr, bool free, const char* file, int line);
+    void logAllocation(void* ptr, size_t size, bool free, const char* file, int line);
     
+    void cleanAllocationLogging();
+    
+    void* allocate(size_t size);
+
 }
 
 /**
@@ -45,32 +49,29 @@ namespace ArsLexis
  */
 inline void* operator new(size_t size)
 {
-    void* ptr=0;
-    if (size) 
-        ptr=malloc(size);
-    else
-        ptr=malloc(1);
-    if (!ptr)
-        ArsLexis::handleBadAlloc();
+    void* ptr=ArsLexis::allocate(size);
+#ifndef NDEBUG
+    ArsLexis::logAllocation(ptr, size, false, 0, 0);
+#endif            
     return ptr;
 }
 
 inline void* operator new(size_t size, const char* file, int line)
 {
-    void* ptr=::operator new(size);
-    ArsLexis::logAllocation(ptr, false, file, line);
+    void* ptr=ArsLexis::allocate(size);
+#ifndef NDEBUG
+    ArsLexis::logAllocation(ptr, size, false, file, line);
+#endif            
     return ptr;
 }
 
 inline void operator delete(void *ptr)
 {
     if (ptr) 
-    {
         free(ptr);
 #ifndef NDEBUG
-        ArsLexis::logAllocation(ptr, true, 0, 0);
+        ArsLexis::logAllocation(ptr, 0, true, 0, 0);
 #endif            
-    }        
 }
 
 inline void operator delete(void* ptr, const char*, int)
@@ -80,13 +81,19 @@ inline void operator delete(void* ptr, const char*, int)
 
 inline void* operator new[](size_t size)
 {
-    return ::operator new(size);
+    void* ptr=ArsLexis::allocate(size);
+#ifndef NDEBUG
+    ArsLexis::logAllocation(ptr, size, false, 0, 0);
+#endif            
+    return ptr;
 }
 
 inline void* operator new[](size_t size, const char* file, int line)
 {
-    void* ptr=::operator new[](size);
-    ArsLexis::logAllocation(ptr, false, file, line);
+    void* ptr=ArsLexis::allocate(size);
+#ifndef NDEBUG
+    ArsLexis::logAllocation(ptr, size, false, file, line);
+#endif            
     return ptr;
 }
 

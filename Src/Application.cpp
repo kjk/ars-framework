@@ -56,7 +56,6 @@ namespace ArsLexis
     }
     
     Application::Application(UInt32 creatorId):
-        logAllocation_(0),
         eventTimeout_(evtWaitForever),
 #ifdef __MWERKS__        
         formEventHandlerThunk_(Form::routeEventToForm),
@@ -255,4 +254,16 @@ namespace ArsLexis
         return  *app;\
     }
     
+}
+
+void* ArsLexis::allocate(size_t size)
+{
+    void* ptr=0;
+    if (size) 
+        ptr=malloc(size);
+    else
+        ptr=malloc(1);
+    if (!ptr)
+        handleBadAlloc();
+    return ptr;
 }
