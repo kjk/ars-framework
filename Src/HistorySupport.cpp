@@ -67,7 +67,7 @@ HistorySupport::HistorySupport(Form& form):
     form_(form),
     popupMenu_(form),
     cacheName_(NULL),
-    currentHistoryIndex_(0),
+    currentHistoryIndex(0),
     popupMenuId_(frmInvalidObjectId),
     historyButtonId_(frmInvalidObjectId),
     popupMenuFillHandler(FillPopupMenuModelFromHistory),
@@ -116,7 +116,7 @@ bool HistorySupport::handleEventInForm(EventType& event)
     if (errNone != (err = popupMenuFillHandler(cache, *popupMenu_.model(), popupMenuFillHandlerData)))
         return true;
 
-    popupMenu_.initialSelection = currentHistoryIndex_;
+    popupMenu_.initialSelection = currentHistoryIndex;
     if (NULL != popupMenuFillHandlerData)
         ++popupMenu_.initialSelection;
         
@@ -136,7 +136,7 @@ bool HistorySupport::handleEventInForm(EventType& event)
     
     const char_t* url = static_cast<const char_t*>(popupMenuFillHandlerData);
     if (NULL == url || sel > 0)
-        currentHistoryIndex_ = sel;
+        currentHistoryIndex = sel;
     if (NULL != url)
     {
         if (0 == sel)
@@ -148,9 +148,9 @@ bool HistorySupport::handleEventInForm(EventType& event)
             return true;
         }
         else
-            --currentHistoryIndex_;
+            --currentHistoryIndex;
     }
-    url = cache.entryUrl(currentHistoryIndex_);
+    url = cache.entryUrl(currentHistoryIndex);
     followUrl(cache, url);
     return true;
 }
@@ -190,7 +190,7 @@ bool HistorySupport::selectEntry(HistoryCache& cache, ulong_t index)
         return false;
     
     const char_t* url = cache.entryUrl(index);
-    currentHistoryIndex_ = index;
+    currentHistoryIndex = index;
     lastAction_ = actionSelect;
     
     return followUrl(cache, url);
@@ -227,11 +227,11 @@ long HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
         if (0 == cache.entriesCount())
             return -1;
             
-        currentHistoryIndex_ = cache.entriesCount() - 1;
-        cache.setEntryTitle(currentHistoryIndex_, entryTitle);
+        currentHistoryIndex = cache.entriesCount() - 1;
+        cache.setEntryTitle(currentHistoryIndex, entryTitle);
     }
     lastAction_ = actionNewSearch;
-    return currentHistoryIndex_;
+    return currentHistoryIndex;
 }
 
 bool HistorySupport::move(int delta)
@@ -239,7 +239,7 @@ bool HistorySupport::move(int delta)
     if (0 == delta)
         return true;
         
-    long index = long(currentHistoryIndex_) + delta;
+    long index = long(currentHistoryIndex) + delta;
     if (index < 0)
         return false;
         

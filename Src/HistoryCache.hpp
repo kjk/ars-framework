@@ -68,11 +68,13 @@ public:
     
     const char_t* entryTitle(ulong_t index) const;
     
-    bool isEntryOnlyLink(ulong_t index) const;
+    bool entryIsOnlyLink(ulong_t index) const;
     
     void setEntryTitle(ulong_t index, const char_t* title);
     
     status_t removeEntry(ulong_t index);
+    
+    status_t removeEntry(const char_t* url);
     
     status_t removeEntriesAfter(ulong_t startIndex);
     

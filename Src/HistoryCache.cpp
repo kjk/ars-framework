@@ -187,7 +187,7 @@ const char_t* HistoryCache::entryTitle(ulong_t index) const
     return indexEntries_[index].title;
 }
 
-bool HistoryCache::isEntryOnlyLink(ulong_t index) const
+bool HistoryCache::entryIsOnlyLink(ulong_t index) const
 {
     assert(index < indexEntriesCount_);
     return indexEntries_[index].onlyLink;
@@ -236,7 +236,7 @@ status_t HistoryCache::appendEntry(const char_t* url, ulong_t& index)
 {
     status_t err;
     if (indexEntriesCount_ == indexCapacity_)
-        if (errNone != (err = removeEntry(0)))
+        if (errNone != (err = removeEntry(0UL)))
             return err;
     
     ulong_t len = tstrlen(url);
@@ -351,6 +351,15 @@ status_t HistoryCache::moveEntryToEnd(ulong_t& index)
     return errNone;
 }
 
+status_t HistoryCache::removeEntry(const char_t* url)
+{
+    ulong_t index = entryIndex(url);
+    if (entryNotFound == index)
+        return errNone;
+    return removeEntry(index);
+}
+
+
 #ifdef DEBUG
 
 static void test_HistoryCacheWrite()
@@ -382,7 +391,7 @@ static void test_HistoryCacheRead()
     
     assert(1 == cache.entriesCount());
     assert(0 == cache.entryIndex("test 11"));
-    cache.removeEntry(0);
+    cache.removeEntry(0UL);
     
     assert(0 == cache.entriesCount());
 }

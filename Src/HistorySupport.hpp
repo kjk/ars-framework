@@ -14,7 +14,6 @@ class HistorySupport
     Form& form_;
     PopupMenu popupMenu_;
     char_t* cacheName_;
-    uint_t currentHistoryIndex_;
     uint_t popupMenuId_;
     uint_t historyButtonId_;
     
@@ -30,6 +29,8 @@ class HistorySupport
     bool followUrl(HistoryCache& cache, const char_t* url);
     
 public:
+
+    uint_t currentHistoryIndex;
 
     typedef status_t (* PopupMenuFillHandler_t)(const HistoryCache& cache, PopupMenuModel& model, void* userData);
     
@@ -72,6 +73,8 @@ public:
     bool movePrevious() {return move(-1);}
     
     bool loadLastEntry();
+    
+    const char_t* cacheName() const {return cacheName_;}
     
 };
 

@@ -288,7 +288,7 @@ bool Form::handleOpen()
     assert(controlsAttached_);
     formOpenReceived_ = true;
     deleteOnClose_ = false;
-    update();
+    draw();
     return true;
 }
 
