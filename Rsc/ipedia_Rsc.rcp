@@ -156,7 +156,7 @@ BEGIN
 	TITLE "iPedia"
        	SCROLLBAR ID definitionScrollBar  AT (152 16 7 124) USABLE VALUE 50 MIN 0 MAX 100 PAGESIZE 10
 	FIELD ID termInputField  AT (20 146 100 Auto) MAXCHARS 255 EDITABLE UNDERLINED     
-	BUTTON "Search" ID searchButton   AT (PrevRight+5 PrevTop 32 AUTO)
+	BUTTON "Search" ID searchButton   AT (126 PrevTop 32 AUTO)
 	BUTTON "" ID backButton  AT (0 146 10 11) FONT 4 NOFRAME DISABLED BITMAPID backDisabledBitmap GRAPHICAL    
 	BUTTON "" ID forwardButton   AT (8 146 10 11) FONT 4 NOFRAME DISABLED GRAPHICAL BITMAPID forwardDisabledBitmap    
 	END

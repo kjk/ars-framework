@@ -7,6 +7,7 @@
 #include "Definition.hpp"
 #include "DefinitionElement.hpp"
 #include "Utility.hpp"
+#include "GenericTextElement.hpp"
 
 using ArsLexis::Point;
 using ArsLexis::Rectangle;
@@ -240,25 +241,33 @@ void Definition::renderLineRange(Graphics& graphics, const RenderingPreferences&
 void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences& prefs, const ElementPosition_t& firstElement, uint_t renderingProgress)
 {
     uint_t topOffset=0;
-    ElementPosition_t last=elements_.end();
-    ElementPosition_t current=elements_.begin();
+    ElementPosition_t end(elements_.end());
+    ElementPosition_t element(elements_.begin());
     LayoutContext layoutContext(graphics, prefs, bounds_.width());
     LineHeader lastLine;
-    lastLine.firstElement=current;
-    while (current!=last)
+    lastLine.firstElement=element;
+    while (element!=end)
     {
         uint_t progressBefore=layoutContext.renderingProgress;
-        (*current)->calculateLayout(layoutContext);
+        (*element)->calculateLayout(layoutContext);
         
-        if (current==firstElement && progressBefore<=renderingProgress && layoutContext.renderingProgress>renderingProgress)
+        if (element==firstElement && progressBefore<=renderingProgress && layoutContext.renderingProgress>renderingProgress)
             firstLine_=lines_.size();
         
         bool startNewLine=false;    
         if (layoutContext.isElementCompleted())
         {
-            ++current;
+            ++element;
             layoutContext.renderingProgress=0;
-            if (layoutContext.availableWidth()==0 || current==last || (*current)->requiresNewLine(prefs))
+            layoutContext.nextTextElement=0;
+            if (element!=end)
+            {   
+                ElementPosition_t next(element);
+                ++next;
+                if (next!=end && (*next)->isTextElement())
+                    layoutContext.nextTextElement=static_cast<GenericTextElement*>(*next);
+            }
+            if (layoutContext.availableWidth()==0 || element==end || (*element)->requiresNewLine(prefs))
                 startNewLine=true;
         }
         else
@@ -271,7 +280,7 @@ void Definition::calculateLayout(Graphics& graphics, const RenderingPreferences&
             topOffset+=lastLine.height;
             lines_.push_back(lastLine);
             layoutContext.startNewLine();
-            lastLine.firstElement=current;
+            lastLine.firstElement=element;
             lastLine.renderingProgress=layoutContext.renderingProgress;
         }
     }

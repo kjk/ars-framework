@@ -31,7 +31,8 @@ DefinitionParser::DefinitionParser():
     lastElementEnd_(0),
     unnamedLinksCount_(0),
     lineType_(emptyLine),
-    previousLineType_(emptyLine)
+    previousLineType_(emptyLine),
+    textPosition_(0)
 {
 }    
     
@@ -165,27 +166,27 @@ static const char linkCloseChar=']';
 bool DefinitionParser::detectStrongTag(uint_t end)
 {
     bool isStrongTag=false;
-    if (startsWith(*text_, emphasizeText, parsePosition_))
+    if (startsWith(textLine_, emphasizeText, textPosition_))
     {
         createTextElement();
-        if (startsWith(*text_, strongText, parsePosition_))
+        if (startsWith(textLine_, strongText, textPosition_))
         {
             isStrongTag=true;
-            if (startsWith(*text_, veryStrongText, parsePosition_))
+            if (startsWith(textLine_, veryStrongText, textPosition_))
             {
-                parsePosition_+=StrLen(veryStrongText);
+                textPosition_+=StrLen(veryStrongText);
                 openVeryStrong_=!openVeryStrong_;
             }
             else
             {
-                parsePosition_+=StrLen(strongText);
+                textPosition_+=StrLen(strongText);
                 openStrong_=!openStrong_;
             }
         }
         else
         {
             isStrongTag=true;
-            parsePosition_+=StrLen(emphasizeText);
+            textPosition_+=StrLen(emphasizeText);
             openEmphasize_=!openEmphasize_;
         }
     }
@@ -205,62 +206,62 @@ bool DefinitionParser::detectStrongTag(uint_t end)
 bool DefinitionParser::detectHTMLTag(uint_t end)
 {
     bool result=false;
-    uint_t tagStart=parsePosition_+1;
+    uint_t tagStart=textPosition_+1;
     bool isClosing=false;
-    if (tagStart<end && htmlClosingTagChar==(*text_)[tagStart])
+    if (tagStart<end && htmlClosingTagChar==textLine_[tagStart])
     {
         ++tagStart;
         isClosing=true;
     }
     if (tagStart<end)
     {
-        String::size_type tagEndPos=text_->find(htmlTagEnd, tagStart);
-        uint_t tagEnd=(tagEndPos==text_->npos)?end:tagEndPos;
+        String::size_type tagEndPos=textLine_.find(htmlTagEnd, tagStart);
+        uint_t tagEnd=(tagEndPos==textLine_.npos)?end:tagEndPos;
         if (tagEnd<end)
         {
-            if (startsWithIgnoreCase(*text_, nowikiText, tagStart))
+            if (startsWithIgnoreCase(textLine_, nowikiText, tagStart))
             {
                 createTextElement();
                 openNowiki_+=(isClosing?-1:1);
                 result=true;
             }
-            else if (startsWithIgnoreCase(*text_, teleTypeText, tagStart))
+            else if (startsWithIgnoreCase(textLine_, teleTypeText, tagStart))
             {
                 createTextElement();
                 openTypewriter_+=(isClosing?-1:1);
                 result=true;
             }
-            else if (startsWithIgnoreCase(*text_, lineBreakText, tagStart))
+            else if (startsWithIgnoreCase(textLine_, lineBreakText, tagStart))
             {
                 createTextElement();
                 appendElement(new LineBreakElement());
                 result=true;
             }
-            else if (startsWithIgnoreCase(*text_, smallText, tagStart))
+            else if (startsWithIgnoreCase(textLine_, smallText, tagStart))
             {
                 createTextElement();
                 openSmall_+=(isClosing?-1:1);
                 result=true;
             }
-            else if (startsWithIgnoreCase(*text_, strikeOutText, tagStart))
+            else if (startsWithIgnoreCase(textLine_, strikeOutText, tagStart))
             {
                 createTextElement();
                 openStrikeout_+=(isClosing?-1:1);
                 result=true;
             }
-            else if (startsWithIgnoreCase(*text_, underlineText, tagStart))
+            else if (startsWithIgnoreCase(textLine_, underlineText, tagStart))
             {
                 createTextElement();
                 openUnderline_+=(isClosing?-1:1);
                 result=true;
             }
-            else if (startsWithIgnoreCase(*text_, superscriptText, tagStart))
+            else if (startsWithIgnoreCase(textLine_, superscriptText, tagStart))
             {
                 createTextElement();
                 openSuperscript_+=(isClosing?-1:1);
                 result=true;
             }
-            else if (startsWithIgnoreCase(*text_, subscriptText, tagStart))
+            else if (startsWithIgnoreCase(textLine_, subscriptText, tagStart))
             {
                 createTextElement();
                 openSubscript_+=(isClosing?-1:1);
@@ -268,7 +269,7 @@ bool DefinitionParser::detectHTMLTag(uint_t end)
             }
         
             if (result)
-                parsePosition_=tagEnd+1;
+                textPosition_=tagEnd+1;
         }
     }
     return result;
@@ -283,25 +284,25 @@ bool DefinitionParser::detectHyperlink(uint_t end)
 {
 
     bool isHyperlink=false;
-    String::size_type linkEndPos=text_->find(linkCloseText, parsePosition_+1);
-    uint_t linkEnd=(text_->npos==linkEndPos?end:linkEndPos);
+    String::size_type linkEndPos=textLine_.find(linkCloseText, textPosition_+1);
+    uint_t linkEnd=(textLine_.npos==linkEndPos?end:linkEndPos);
     if (linkEnd<end)
     {
         isHyperlink=true;
         createTextElement();
-        if (linkOpenChar==(*text_)[parsePosition_+1] && linkEnd+1<end && linkCloseChar==(*text_)[linkEnd+1]) // Is it link to other wikipedia article?
+        if (linkOpenChar==textLine_[textPosition_+1] && linkEnd+1<end && linkCloseChar==textLine_[linkEnd+1]) // Is it link to other wikipedia article?
         {
-            parsePosition_+=2;
-            bool isOtherLanguage=(parsePosition_<linkEnd-2 && ':'==(*text_)[parsePosition_+2]);
+            textPosition_+=2;
+            bool isOtherLanguage=(textPosition_<linkEnd-2 && ':'==textLine_[textPosition_+2]);
             uint_t pastLinkEnd=linkEnd+2;
             // We don't want other language links as we provide only English contents, and we can't render names in some languages.
             if (!isOtherLanguage) 
             {
-                String::size_type separatorPos=text_->find(linkPartSeparator, parsePosition_);
+                String::size_type separatorPos=textLine_.find(linkPartSeparator, textPosition_);
                 GenericTextElement* textElement;
-                if (text_->npos==separatorPos || separatorPos>=linkEnd)
+                if (textLine_.npos==separatorPos || separatorPos>=linkEnd)
                 {
-                    lastElementStart_=parsePosition_;
+                    lastElementStart_=textPosition_;
                     lastElementEnd_=linkEnd;
                     textElement=createTextElement();
                     if (textElement)
@@ -313,31 +314,31 @@ bool DefinitionParser::detectHyperlink(uint_t end)
                     lastElementEnd_=linkEnd;
                     textElement=createTextElement();
                     if (textElement)
-                        textElement->setHyperlink(String(*text_, parsePosition_, separatorPos-parsePosition_), hyperlinkTerm);
+                        textElement->setHyperlink(String(textLine_, textPosition_, separatorPos-textPosition_), hyperlinkTerm);
                 }
                 uint_t afterLinkTextEnd=pastLinkEnd;
-                while (afterLinkTextEnd<end && (std::isalpha((*text_)[afterLinkTextEnd]) || '-'==(*text_)[afterLinkTextEnd]))
+                while (afterLinkTextEnd<end && (std::isalpha(textLine_[afterLinkTextEnd]) || '-'==textLine_[afterLinkTextEnd]))
                     ++afterLinkTextEnd;
                 if (afterLinkTextEnd>pastLinkEnd && textElement)
                 {
                     String textCopy=textElement->text();
-                    textCopy.append(*text_, pastLinkEnd, afterLinkTextEnd-pastLinkEnd);
+                    textCopy.append(textLine_, pastLinkEnd, afterLinkTextEnd-pastLinkEnd);
                     textElement->swapText(textCopy);
                     pastLinkEnd=afterLinkTextEnd;
                 }
             }                
-            parsePosition_=pastLinkEnd;
+            textPosition_=pastLinkEnd;
         }
         else // In case of external link...
         {
-            ++parsePosition_;
-            String::size_type separatorPos=text_->find(" ", parsePosition_);
-            if (text_->npos==separatorPos || separatorPos>=linkEnd)
+            ++textPosition_;
+            String::size_type separatorPos=textLine_.find(" ", textPosition_);
+            if (textLine_.npos==separatorPos || separatorPos>=linkEnd)
             {
                 ++unnamedLinksCount_;
                 char buffer[8];
                 StrPrintF(buffer, "[%hu]", unnamedLinksCount_);
-                lastElementStart_=parsePosition_;
+                lastElementStart_=textPosition_;
                 lastElementEnd_=linkEnd;
                 GenericTextElement* textElement=createTextElement();
                 if (textElement)
@@ -353,57 +354,96 @@ bool DefinitionParser::detectHyperlink(uint_t end)
                 lastElementEnd_=linkEnd;
                 GenericTextElement* textElement=createTextElement();
                 if (textElement)
-                    textElement->setHyperlink(String(*text_, parsePosition_, separatorPos-parsePosition_), hyperlinkExternal);
+                    textElement->setHyperlink(String(textLine_, textPosition_, separatorPos-textPosition_), hyperlinkExternal);
             }
-            parsePosition_=linkEnd+1;
+            textPosition_=linkEnd+1;
         }
     }
     return isHyperlink;
 }
 
+inline static bool isNewline(char chr)
+{
+    return chr=='\n';
+}
+
 void DefinitionParser::parseText(uint_t end, ElementStyle style)
 {
+    openEmphasize_=false;
+    openStrong_=false;
+    openVeryStrong_=false;
+    openTypewriter_=0;
+    openSmall_=0;
+    openStrikeout_=0;
+    openUnderline_=0;
+    openSuperscript_=0;
+    openSubscript_=0;
     currentStyle_=style;
-    lastElementStart_=parsePosition_;
-    while (parsePosition_<end)
-    {
-        char chr=(*text_)[parsePosition_];
-        bool specialChar=false;
-        lastElementEnd_=parsePosition_;
-        if ((htmlTagStart==chr && detectHTMLTag(end)) ||
-            (0==openNowiki_ && 
-                ((strongChar==chr && detectStrongTag(end)) ||
-                (linkOpenChar==chr && detectHyperlink(end)))))
+    uint_t length=end-parsePosition_;
+    assert(length!=(uint_t)-1);
+    while (length && std::isspace((*text_)[parsePosition_+length-1]))
+        --length;
+    textLine_.assign(*text_, parsePosition_, length);
+    parsePosition_=end;
+    {   
+        String::iterator it=textLine_.begin();
+        String::iterator end=textLine_.end();
+        while (true)
         {
-            lastElementStart_=parsePosition_;
+            it=std::find_if(it, end, isNewline);
+            if (it==end)
+                break;
+            else
+                *it=' ';
+        }
+    }        
+    
+    
+    lastElementStart_=textPosition_=0;
+    while (textPosition_<length)
+    {
+        char chr=textLine_[textPosition_];
+        bool specialChar=false;
+        lastElementEnd_=textPosition_;
+        if ((htmlTagStart==chr && detectHTMLTag(length)) ||
+            (0==openNowiki_ && 
+                ((strongChar==chr && detectStrongTag(length)) ||
+                (linkOpenChar==chr && detectHyperlink(length)))))
+        {
+            lastElementStart_=textPosition_;
             specialChar=true;
         }
                 
         if (!specialChar)
-            ++parsePosition_;
+            ++textPosition_;
     }
-    lastElementEnd_=parsePosition_;
+    lastElementEnd_=textPosition_;
     createTextElement();
+}
+
+GenericTextElement* DefinitionParser::createTextElement(const String& text, String::size_type start, String::size_type length)
+{
+    String copy(text, start, length);
+    decodeHTMLCharacterEntityRefs(copy);
+    GenericTextElement* textElement=0;
+    if (isPlainText())
+        textElement=new GenericTextElement(copy);
+    else
+    {
+        FormattedTextElement* element(new FormattedTextElement(copy));
+        applyCurrentFormatting(element);
+        textElement=element;
+    } 
+    appendElement(textElement);
+    textElement->setStyle(currentStyle_);
+    return textElement;    
 }
 
 GenericTextElement* DefinitionParser::createTextElement()
 {
     GenericTextElement* textElement=0;
     if (lastElementStart_<lastElementEnd_)
-    {
-        String text(*text_, lastElementStart_, lastElementEnd_-lastElementStart_);
-        decodeHTMLCharacterEntityRefs(text);
-        if (isPlainText())
-            textElement=new GenericTextElement(text);
-        else
-        {
-            FormattedTextElement* element(new FormattedTextElement(text));
-            applyCurrentFormatting(element);
-            textElement=element;
-        } 
-        appendElement(textElement);
-        textElement->setStyle(currentStyle_);
-    }
+        textElement=createTextElement(textLine_, lastElementStart_, lastElementEnd_-lastElementStart_);
     return textElement;
 }
 
@@ -507,47 +547,81 @@ void DefinitionParser::appendElement(DefinitionElement* element)
     definition_.appendElement(element);
 }
 
+DefinitionParser::LineType DefinitionParser::detectLineType(uint_t start, uint_t end) const
+{
+    LineType lineType=textLine;
+    if (0==openNowiki_)
+    {
+        if (end==start)
+            lineType=emptyLine;
+        else {
+            switch ((*text_)[start])
+            {
+                case indentLineChar:
+                case bulletChar:
+                case numberedListChar:
+                    lineType=listElementLine;
+                    break;
+                
+                case definitionListChar:
+                    lineType=definitionListLine;
+                    break;
+                
+                case headerChar:
+                    if (startsWith(*text_, sectionString, start))
+                        lineType=headerLine;
+                    break;
+                    
+                case horizontalLineChar:
+                    if (startsWith(*text_, horizontalLineString, start))
+                        lineType=horizontalBreakLine;
+                    break;
+            }       
+        }
+    }
+    return lineType;
+}
+
 bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
 {
     String::size_type end=text_->find('\n', parsePosition_);
     bool goOn=(text_->npos!=end && end<textEnd);
     if (finish || goOn)
     {
-        previousLineType_=lineType_;
-        lineEnd_=((text_->npos==end || end>=textEnd)?textEnd:end);
-        lineType_=textLine;
-        if (0==openNowiki_)
+        LineType previousLineType=lineType_;
+        uint_t lineEnd=((text_->npos==end || end>=textEnd)?textEnd:end);
+        LineType lineType=detectLineType(parsePosition_, lineEnd);
+        if (textLine==lineType)
         {
-            if (lineEnd_==parsePosition_)
-                lineType_=emptyLine;
-            else {
-                switch ((*text_)[parsePosition_])
+            goOn=false;
+            while (lineEnd+1<textEnd || finish)
+            {
+                end=text_->find('\n', lineEnd+1);
+                if (!finish && (text_->npos==end || end>=textEnd))
+                    break;
+                uint_t nextLineEnd=((text_->npos==end || end>=textEnd)?textEnd:end);
+                if (textLine==detectLineType(lineEnd+1, nextLineEnd))
+                    lineEnd=nextLineEnd;
+                else
                 {
-                    case indentLineChar:
-                    case bulletChar:
-                    case numberedListChar:
-                        lineType_=listElementLine;
-                        break;
-                    
-                    case definitionListChar:
-                        lineType_=definitionListLine;
-                        break;
-                    
-                    case headerChar:
-                        if (startsWith(*text_, sectionString, parsePosition_))
-                            lineType_=headerLine;
-                        break;
-                        
-                    case horizontalLineChar:
-                        if (startsWith(*text_, horizontalLineString, parsePosition_))
-                            lineType_=horizontalBreakLine;
-                        break;
-                }       
+                    goOn=true;
+                    previousLineType_=previousLineType;
+                    lineEnd_=lineEnd;
+                    lineType_=lineType;
+                    break;
+                }
             }
+        }
+        else
+        {
+            previousLineType_=previousLineType;
+            lineEnd_=lineEnd;
+            lineType_=lineType;
         }
     }
     return goOn;
 }
+
 
 void DefinitionParser::parseTextLine()
 {
@@ -568,7 +642,9 @@ Err DefinitionParser::handleIncrement(uint_t end, bool finish)
     bool goOn=false;
     do 
     {
+#ifndef NDEBUG    
         const char* text=text_->data()+parsePosition_;
+#endif        
         goOn=detectNextLine(end, finish);
         if (goOn || finish)
         {

@@ -5,6 +5,7 @@
 #define elementCompletedProgress ((uint_t)-1)
 
 class RenderingPreferences;
+class GenericTextElement;
 
 /**
  * Used to exchange data during layout calculation stage.
@@ -18,6 +19,8 @@ struct LayoutContext
     uint_t usedWidth;
     uint_t usedHeight;
     uint_t baseLine;
+    const GenericTextElement* nextTextElement;
+    bool breakTextOnLastWhitespace;
     
     LayoutContext(ArsLexis::Graphics& graph, const RenderingPreferences& prefs, uint_t theScreenWidth):
         graphics(graph),
@@ -26,7 +29,9 @@ struct LayoutContext
         screenWidth(theScreenWidth),
         usedWidth(0),
         usedHeight(0),
-        baseLine(0)
+        baseLine(0),
+        nextTextElement(0),
+        breakTextOnLastWhitespace(false)
     {}
     
     void markElementCompleted(uint_t width)

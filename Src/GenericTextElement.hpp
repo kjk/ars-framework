@@ -65,6 +65,9 @@ public:
     
     void performAction(Definition& definition);
     
+    bool isTextElement() const
+    {return true;}
+
     void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const;
     
 };

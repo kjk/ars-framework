@@ -56,7 +56,8 @@ namespace ArsLexis
             validAddress.assign(origAddress, 0, pos);
         return error;
     }
-    
+   
+/*    
     void Resolver::doResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port, DNS_Choice choice)
     {
         UInt32 dnsAddr=dnsAddress(choice);
@@ -75,6 +76,7 @@ namespace ArsLexis
             resolverConnection->open();
         }            
     }
+*/
     
     void Resolver::blockingResolveAndConnect(SocketConnection* connection, const String& name, UInt16 port)
     {
@@ -118,7 +120,8 @@ namespace ArsLexis
                 connection->open();
             }
             else
-                doResolveAndConnect(connection, validAddress, port, dnsPrimary);
+                blockingResolveAndConnect(connection, validAddress, port);
+//                doResolveAndConnect(connection, validAddress, port, dnsPrimary);
         }
         return error;            
     }

@@ -115,6 +115,8 @@ class DefinitionParser: public ArsLexis::FieldPayloadProtocolConnection::Payload
     uint_t lastElementStart_;
     uint_t lastElementEnd_;
     uint_t unnamedLinksCount_;
+    ArsLexis::String textLine_;
+    uint_t textPosition_;
     
     void parseText(uint_t end, ElementStyle style);
     
@@ -154,6 +156,8 @@ class DefinitionParser: public ArsLexis::FieldPayloadProtocolConnection::Payload
     
     void parseListElementLine();
     
+    LineType detectLineType(uint_t start, uint_t end) const;
+    
     bool detectNextLine(uint_t end, bool finish);
     
     bool detectHTMLTag(uint_t textEnd);
@@ -163,6 +167,7 @@ class DefinitionParser: public ArsLexis::FieldPayloadProtocolConnection::Payload
     bool detectHyperlink(uint_t textEnd);
     
     GenericTextElement* createTextElement();
+    GenericTextElement* createTextElement(const ArsLexis::String& text, ArsLexis::String::size_type start=0, ArsLexis::String::size_type length=ArsLexis::String::npos);
     
 public:
 
@@ -171,7 +176,7 @@ public:
     void initialize(const ArsLexis::String& text, uint_t startOffset)
     {
         text_=&text;
-        parsePosition_=startOffset;
+        lastElementEnd_=lastElementStart_=parsePosition_=startOffset;
     }
 
     Err handleIncrement(uint_t end, bool finish=false);

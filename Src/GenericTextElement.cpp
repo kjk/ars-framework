@@ -25,17 +25,15 @@ GenericTextElement::~GenericTextElement()
     delete hyperlink_;
 }
 
-#define whitespaceChars " \t\n\r"
-
-#ifdef NDEBUG
-inline 
-#endif
 static uint_t findNextWhitespace(const String& text, uint_t fromPos)
 {
-    String::size_type nextWhitespace=text.find_first_of(whitespaceChars, fromPos);
-    if (String::npos==nextWhitespace)
-        nextWhitespace=text.length();
-    return nextWhitespace;
+    return std::find_if(text.begin()+fromPos, text.end(), std::isspace)-text.begin();
+}
+
+static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
+{
+    String::const_reverse_iterator it(text.rend()-start-length);
+    return text.rend()-std::find_if(it, it+length, std::isspace);
 }
 
 void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, uint_t top, Definition* definition, bool render)
@@ -52,6 +50,13 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     const char_t* text=text_.c_str()+layoutContext.renderingProgress;
     left+=layoutContext.usedWidth;
     top+=(layoutContext.baseLine-baseLine);
+    
+    if (layoutContext.isFirstInLine())
+        while (std::isspace(*text))
+        {
+            ++text;
+            ++layoutContext.renderingProgress;
+        }            
 
     uint_t nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
     uint_t length=graphics.wordWrap(text, layoutContext.availableWidth());
@@ -59,15 +64,21 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     {
         uint_t newLineLength=graphics.wordWrap(text, layoutContext.screenWidth-indent);
         if (nextWhitespace<=newLineLength)
-        {
-//            layoutContext.usedWidth+=layoutContext.availableWidth();
             return;
-        }
+    }
+    
+    bool tryPacking=true;
+    if (text_.length()==layoutContext.renderingProgress+length && layoutContext.breakTextOnLastWhitespace)
+    {
+        tryPacking=false;
+        uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
+        assert(rangeLength!=(uint_t)-1);
+        length=rangeLength;
     }
 
     if (!render)
         layoutContext.extendHeight(lineHeight, baseLine);
-
+    
     uint_t width=graphics.textWidth(text, length);
 
     if (render)
@@ -87,28 +98,30 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     {
         layoutContext.renderingProgress+=length;
         layoutContext.usedWidth+=width;
-        nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
-        length=graphics.wordWrap(text, layoutContext.screenWidth-indent);
-        if (length<nextWhitespace)
+        if (tryPacking)
         {
-            length=text_.length()-layoutContext.renderingProgress;
-            width=layoutContext.availableWidth();
-            graphics.charsInWidth(text, length, width);
-
-            if (render)
+            nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
+            length=graphics.wordWrap(text, layoutContext.screenWidth-indent);
+            if (length<nextWhitespace)
             {
-                uint_t charsToDraw=length;
-                while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
-                    --charsToDraw;
-                graphics.drawText(text, length, Point(left, top));
-                if (isHyperlink())
-                    defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
+                length=text_.length()-layoutContext.renderingProgress;
+                width=layoutContext.availableWidth();
+                graphics.charsInWidth(text, length, width);
+
+                if (render)
+                {
+                    uint_t charsToDraw=length;
+                    while (charsToDraw && std::isspace(*(text+charsToDraw-1)))
+                        --charsToDraw;
+                    graphics.drawText(text, length, Point(left, top));
+                    if (isHyperlink())
+                        defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
+                }
+                
+                layoutContext.renderingProgress+=length;
+                layoutContext.usedWidth+=width;
             }
-            
-            layoutContext.renderingProgress+=length;
-//            layoutContext.usedWidth+=layoutContext.availableWidth();
-            layoutContext.usedWidth+=width;
-        }
+        }            
     }
     else
         layoutContext.markElementCompleted(width);    
