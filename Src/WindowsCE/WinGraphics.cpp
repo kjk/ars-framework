@@ -1,12 +1,16 @@
+#include <Debug.hpp>
 #include <Text.hpp>
 #include "WinGraphics.hpp"
 
 namespace ArsLexis
 {
-
     Graphics::Graphics(const NativeGraphicsHandle_t& handle, HWND hwnd):
         handle_(handle), hwnd_(hwnd)
     {
+#ifdef DEBUG
+        statePushCounter_ = 0;
+#endif
+
         HGDIOBJ hgdiobj = GetStockObject(BLACK_PEN);
         GetObject(hgdiobj, sizeof(pen_), &pen_);
         penColor_=pen_.lopnColor;
@@ -15,57 +19,54 @@ namespace ArsLexis
 
     Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
     {
-        Font_t oldOne=font_;
-        font_=font;
+        Font_t oldFont = font_;
+        font_ = font;
         //FntSetFont(support_.font.withEffects());
         SelectObject(handle_, font.getHandle());
-        FontEffects fx=font_.effects();
+        FontEffects fx = font_.effects();
 
         TEXTMETRIC ptm;
         GetTextMetrics(handle_, &ptm);
-        if (fx.subscript()||fx.superscript())
+        if (fx.subscript() || fx.superscript())
             fntHeight = ptm.tmHeight*4/3;
-        else        
+        else
             fntHeight = ptm.tmHeight;        
         fntDescent = ptm.tmDescent;
 
-        return oldOne;
+        return oldFont;
     }
 
     Graphics::State_t Graphics::pushState()
     {
-        /*StackElement el;
-        el.font=font_;
-        el.state = SaveDC(handle_);
-        fontStack_.push_back(el);
-        return el.state;*/
         State_t st;
         st.state = SaveDC(handle_);
         st.fnt = font_;
         st.fntHeight = fntHeight;
         st.fntDescent = fntDescent;
 
+#ifdef DEBUG
+        statePushCounter_ += 1;
+#endif
         return st;
     }
 
     void Graphics::popState(const Graphics::State_t& state)
     {
-        /*StackElement el;
-        do 
-        {
-            el = fontStack_.back();
-            fontStack_.pop_back();
-        }
-        while(el.state!=state);
-        font_=el.font;*/
         RestoreDC(handle_,state.state);
         font_ = state.fnt;
         fntHeight = state.fntHeight;
         fntDescent = state.fntDescent;
+
+#ifdef DEBUG
+        statePushCounter_ -= 1;
+        assert(statePushCounter_>=0);
+#endif
     }
     
     Graphics::~Graphics()
     {
+        assert(0==statePushCounter_);
+
         if(hwnd_)
             ReleaseDC(this->hwnd_,this->handle_);
         else
@@ -160,7 +161,7 @@ namespace ArsLexis
     {
         NativeRectangle_t nr=toNative(rect);
         //TODO: Not effective at all
-        HBRUSH hbr=CreateSolidBrush(GetBkColor(handle_));
+        HBRUSH hbr = CreateSolidBrush(GetBkColor(handle_));
         FillRect(handle_, &nr, hbr);
         DeleteObject(hbr);
     }
@@ -189,7 +190,7 @@ namespace ArsLexis
         HGDIOBJ hgdiobj = GetCurrentObject(handle_,OBJ_PEN);
         NativeColor_t old = pen_.lopnColor;
         pen_.lopnColor = color;
-        HPEN newPen=CreatePenIndirect(&pen_);
+        HPEN newPen = CreatePenIndirect(&pen_);
         SelectObject(handle_,newPen);
         DeleteObject(hgdiobj);
         return old;
@@ -204,8 +205,7 @@ namespace ArsLexis
     {
         return SetTextColor(handle_,color ); 
     }
-    
-    
+
     uint_t Graphics::fontHeight() const
     {
         /*LOGFONT fnt;

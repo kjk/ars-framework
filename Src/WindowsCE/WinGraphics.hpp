@@ -25,29 +25,19 @@ namespace ArsLexis
     
     class Graphics: private NonCopyable
     {
-        /*struct StackElement
-        {
-            NativeGraphicsState_t state;
-            NativeFont_t font;
-        };*/
-        uint_t fntHeight;
-        uint_t fntDescent;
         NativeGraphicsHandle_t handle_;
-        NativeFont_t font_;
-        HWND hwnd_;
-        LOGPEN pen_;
-        NativeColor_t penColor_;
-        //std::list<StackElement> fontStack_;
+        uint_t          fntHeight;
+        uint_t          fntDescent;
+        NativeFont_t    font_;
+        HWND            hwnd_;
+        LOGPEN          pen_;
+        NativeColor_t   penColor_;
 
-        //LOGFONT fontDescr_;
-        //HFONT newFont_;
-        //HGDIOBJ oldFont_;
-
-        //void setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall);
-        //void resetEffects();
+#ifdef DEBUG
+        int             statePushCounter_;
+#endif
 
     public:
-    
         typedef NativeGraphicsHandle_t Handle_t;
         typedef NativeColor_t Color_t;
         typedef NativeFont_t Font_t;
@@ -57,10 +47,7 @@ namespace ArsLexis
         
         ~Graphics();
 
-        /**
-         * Fills specified rectangle with current background color.
-         * @param rect @c Rectangle to erase.
-         */        
+        // Fills specified rectangle with current background color.
         void erase(const Rectangle& rect);
         
         /**
