@@ -1,0 +1,70 @@
+# this file contains ideas for things that we might convert in the future
+@tables from List_of_mayors_of_Vancouver
+
+We might try to support simple tables like that by converting it to a nicely
+formatted plain-text e.g. for this table:
+
+1886-87   [[Malcolm Alexander MacLean|M.A. MacLean]]
+1888-91   [[David Oppenheimer]]
+1892-93   [[Frederick Cope]]
+1894      [[Robert Alexander Anderson|R. A. Anderson]]
+1895-96   [[Henry Collins]]
+1897      [[William Templeton]]
+1898-1900 [[James Garden|James F. Garden]]
+
+<TABLE border="1" cellpadding="5" cellspacing="0">
+
+<TR><TD>1886-87 <TD>[[Malcolm Alexander MacLean|M.A. MacLean]]<TD>
+<TR><TD>1888-91 <TD>[[David Oppenheimer]] <TD>
+<TR><TD>1892-93 <TD>[[Frederick Cope]] <TD>
+<TR><TD>1894 <TD>[[Robert Alexander Anderson|R. A. Anderson]] <TD>
+<TR><TD>1895-96 <TD>[[Henry Collins]] <TD>
+<TR><TD>1897 <TD>[[William Templeton]] <TD>
+<TR><TD>1898-1900 <TD>[[James Garden|James F. Garden]] <TD>
+<TR><TD>1901 <TD>[[Thomas Townley|Thomas Owen Townley]] <TD>
+<TR><TD>1902-3 <TD>[[Thomas Neelands|Thomas Fletcher Neelands]] <TD>
+<TR><TD>1904 <TD>Dr. [[William McGuigan|William J. McGuigan]] <TD>
+<TR><TD>1905-6 <TD>[[Frederick Buscombe]] <TD>
+<TR><TD>1907-8 <TD>[[Alexander Bethune]] <TD>
+<TR><TD>1909 <TD>[[Charles Douglas|Charles S. Douglas]] <TD>
+<TR><TD>1910-11 <TD>[[Louis Taylor|L.D. Taylor]] <TD>
+<TR><TD>1912 <TD>[[James Findlay]] <TD>
+<TR><TD>1913-14 <TD>[[Truman Smith Baxter]] <TD>
+<TR><TD>1915 <TD>Louis Denison Taylor ''(2nd time)''<TD>
+<TR><TD>1915-17 <TD>[[Malcolm Peter McBeath]] <TD>
+<TR><TD>1918-21 <TD>[[Robert Henry Otley Gale]] <TD>
+<TR><TD>1922-23 <TD>[[Charles Edward Tisdall]] <TD>
+<TR><TD>1924 <TD>[[William Reid Owen]] <TD>
+<TR><TD>1925-28 <TD>Louis Denison Taylor ''(3rd time)''<TD>
+<TR><TD>1929-30 <TD>[[William Harold Malkin]] <TD>
+<TR><TD>1931-34 <TD>Louis Denison Taylor ''(4th time)''<TD>
+<TR><TD>1935-36 <TD>[[Gerald Gratton McGeer]] <TD>
+<TR><TD>1937-38 <TD>[[George Clark Miller ]] <TD>Independent
+<TR><TD>1939-40 <TD>[[James Lyle Telford]] <TD>
+<TR><TD>1941-6 <TD>[[Jonathan WebsterCornett|Jack (Jonathan Webster) Cornett]
+] <TD>
+
+<TR><TD>1947<TD>Gerald Gratton McGeer ''(2nd time)'' <TD>         
+<TR><TD>1947-1948<TD>George Clark Miller   ''(2nd time) (acting)''<TD>
+<TR><TD>1948<TD>[[Charles Jones (1881-1948)|Charles Jones]]         <TD>      
+<TR><TD>1948<TD>George Clark Miller   ''(3rd time) (acting)'' <TD> 
+<TR><TD>1949-1950<TD>[[Charles Edwin Thompson]] <TD>                     
+<TR><TD>1951-1958<TD>[[Frederick Hume]]<TD>                    
+<TR><TD>1959-1962<TD>[[A. Thomas Alsbury]] <TD>                       
+<TR><TD>1963-1966<TD>[[William George Rathie]]<TD>[[Non-partisan Association]
+]          
+
+<TR><TD>1967-1972<TD>[[Thomas Campbell]]<TD>[[Non-partisan Association]
+]               
+
+<TR><TD>1972-1976<TD>[[Art Phillips]]<TD>[[TEAM]]               
+<TR><TD>1976-1980<TD>[[Jack Volrich]] <TD>[[TEAM]]              
+<TR><TD>1980-1986<TD>[[Michael Harcourt]]<TD>[[Independent]]         
+<TR><TD>1986-1993<TD>[[Gordon Campbell]]<TD>[[Non-partisan Association]
+]              
+
+<TR><TD>1993-2002<TD>[[Philip Owen]]<TD>[[Non-partisan Association]
+]               
+
+<TR><TD>2002 -<TD>[[Larry Campbell]]<TD>[[Coalition of Progressive Electors]]
+
