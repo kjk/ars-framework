@@ -10,7 +10,7 @@
 
 class LookupManager;
 
-#define serverLocalhost             "localhost:9000"
+#define serverLocalhost             "192.168.0.1:9000"
 #define serverDictPcArslexis    "dict-pc.arslexis.com:9000"
 
 class iPediaApplication: public ArsLexis::Application 

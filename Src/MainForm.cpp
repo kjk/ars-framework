@@ -147,8 +147,11 @@ void MainForm::draw(UInt16 updateCode)
 {
     Graphics graphics(windowHandle());
     Rectangle rect(bounds());
+    Rectangle progressArea(rect.x(), rect.height()-17, rect.width(), 17);
     if (redrawAll==updateCode)
     {
+        if (visible())
+            graphics.erase(progressArea);
         iPediaForm::draw(updateCode);
         graphics.drawLine(rect.x(), rect.height()-18, rect.width(), rect.height()-18);
         if (showSplashScreen==displayMode())
@@ -160,7 +163,7 @@ void MainForm::draw(UInt16 updateCode)
     const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
     const LookupManager* lookupManager=app.getLookupManager();
     if (lookupManager && lookupManager->lookupInProgress())
-        lookupManager->showProgress(graphics, Rectangle(rect.x(), rect.height()-16, rect.width(), 16));
+        lookupManager->showProgress(graphics, progressArea);
 }
 
 
@@ -318,8 +321,10 @@ void MainForm::updateAfterLookup()
         setDisplayMode(showDefinition);
         const LookupHistory& history=lookupManager->history();
         if (!history.empty())
+        {
             setTitle(history.currentTerm());
-
+        }
+        
         {
             Control control(*this, backButton);
             bool enabled=history.hasPrevious();
@@ -476,7 +481,6 @@ void MainForm::randomArticle()
 {
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
     LookupManager* lookupManager=app.getLookupManager(true);
-    assert(lookupManager); // shouldn't it be always here?
     if (lookupManager && !lookupManager->lookupInProgress())
         lookupManager->lookupRandomTerm();
 }

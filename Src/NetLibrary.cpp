@@ -1,4 +1,5 @@
 #include "NetLibrary.hpp"
+#include "SocketAddress.hpp"
 #include "Application.hpp"
 
 #define netLibName "Net.lib"
@@ -64,4 +65,16 @@ namespace ArsLexis
         return error;
     }
 
+    Err NetLibrary::addrAToIN(const char* addr, INetSocketAddress& out)
+    {
+        assert(refNum());
+        Err error=errNone;
+        NetIPAddr ip=NetLibAddrAToIN(refNum(), addr);
+        if (-1==ip)
+            error=netErrParamErr;
+        else
+            out.setIpAddress(ip);
+        return error;
+    }
+    
 }

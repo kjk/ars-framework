@@ -51,13 +51,17 @@ void SearchResultsForm::draw(UInt16 updateCode)
 {
     ArsLexis::Graphics graphics(windowHandle());
     ArsLexis::Rectangle rect(bounds());
+    Rectangle progressArea(rect.x(), rect.height()-17, rect.width(), 17);
     if (redrawAll==updateCode)
+    {   
+        if (visible())
+            graphics.erase(progressArea);
         iPediaForm::draw(updateCode);
-
+    }
     iPediaApplication& app=static_cast<iPediaApplication&>(application());
     LookupManager* lookupManager=app.getLookupManager();
     if (lookupManager && lookupManager->lookupInProgress())
-        lookupManager->showProgress(graphics, Rectangle(rect.x(), rect.height()-16, rect.width(), 16));
+        lookupManager->showProgress(graphics, progressArea);
 }
 
 bool SearchResultsForm::handleOpen()

@@ -6,6 +6,8 @@
 namespace ArsLexis 
 {
 
+    class INetSocketAddress;
+
     class NetLibrary: public Library
     {
         Boolean closed_;
@@ -31,6 +33,8 @@ namespace ArsLexis
         Err setSetting(UInt16 setting, const void* value, UInt16 valueLength);
         
         Err getHostByName(const char* name, NetHostInfoBufType* buffer, Int32 timeout=evtWaitForever);
+        
+        Err addrAToIN(const char* addr, INetSocketAddress& out);
         
     };
     

@@ -34,8 +34,7 @@ namespace ArsLexis
         
     public:
         
-        INetSocketAddress()
-        {}
+        INetSocketAddress();
         
         INetSocketAddress(const NetIPAddr& ipAddr, UInt16 port, Int16 addressFamily=netSocketAddrINET);
 

@@ -56,6 +56,10 @@ void LookupManager::handleConnectionError(Err error)
             alertId=connectionTimedOutAlert;
             break;
 
+        case memErrNotEnoughSpace:
+            alertId=notEnoughMemoryAlert;
+            break;            
+
     }
     iPediaApplication::sendDisplayAlertEvent(alertId);
 }

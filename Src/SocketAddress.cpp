@@ -18,4 +18,12 @@ namespace ArsLexis
         address().addr=ipAddr;
     }
     
+    INetSocketAddress::INetSocketAddress()
+    {
+        address().family=netSocketAddrINET;
+        address().port=0;
+        address().addr=0;
+    
+    }
+    
 }

@@ -8,6 +8,7 @@
 #define __ARSLEXIS_SOCKET_HPP__
 
 #include "Debug.hpp"
+#include "Logging.hpp"
 
 namespace ArsLexis
 {
@@ -35,7 +36,12 @@ namespace ArsLexis
          */
         SocketBase& operator=(const SocketBase&);
 
+        mutable ChildLogger log_;
+
     protected:
+    
+        Logger& log() const
+        {return log_;}
     
         /**
          * Stores reference to currently loaded NetLib.

@@ -1,5 +1,6 @@
 #include "Form.hpp"
 #include "Application.hpp"
+#include "Graphics.hpp"
 
 namespace ArsLexis 
 {
@@ -141,6 +142,15 @@ namespace ArsLexis
     {
         assert(form_!=0);
         title_=title;
+        //! @bug On Sony Clie (OS 4.1) I experience bug described in Reference as corrected in post-OS 3.0... (Previous title is not erased)
+        if (visible())
+        {
+            Graphics graph(windowHandle());
+            Rectangle rect(bounds());
+            rect.height()=18;
+            graph.erase(rect);
+        }        
+
         FrmSetTitle(form_, const_cast<char*>(title_.c_str()));            
     }
     
@@ -163,7 +173,8 @@ namespace ArsLexis
     void Form::update(UInt16 updateCode)
     {
         EventType event;
-        MemSet(&event, sizeof(event), 0);        event.eType=frmUpdateEvent;
+        MemSet(&event, sizeof(event), 0);
+        event.eType=frmUpdateEvent;
         event.data.frmUpdate.formID=id();
         event.data.frmUpdate.updateCode=updateCode;
         EvtAddUniqueEventToQueue(&event, 0, false);

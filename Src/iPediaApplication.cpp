@@ -143,7 +143,10 @@ bool iPediaApplication::handleApplicationEvent(EventType& event)
     if (appDisplayAlertEvent==event.eType)
     {
         DisplayAlertEventData& data=reinterpret_cast<DisplayAlertEventData&>(event.data);
-        FrmAlert(data.alertId);
+        if (!inStressMode())
+            FrmAlert(data.alertId);
+        else
+            log()<<"Alert: "<<data.alertId;
     }
     if (lookupManager_ && appLookupEventFirst<=event.eType && appLookupEventLast>=event.eType)
         lookupManager_->handleLookupEvent(event);

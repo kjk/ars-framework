@@ -6,6 +6,7 @@ namespace ArsLexis
 {
 
     SocketBase::SocketBase(NetLibrary& netLib):
+        log_("SocketBase"),
         netLib_(netLib),
         socket_(0)
     {
@@ -16,8 +17,9 @@ namespace ArsLexis
     {
         if (socket_!=0)
         {
-            Err error=errNone;
-            NetLibSocketClose(netLib_, socket_, evtWaitForever, &error);
+            Err error=NetLibSocketClose(netLib_, socket_, evtWaitForever, &error);
+            if (error)
+                log()<<"~SocketBase(): NetLibSocketClose() returned error, "<<error;
         }
     }
     
@@ -38,7 +40,9 @@ namespace ArsLexis
         if (-1==result)
             assert(error);
         else
-            assert(!error);            
+            assert(!error);
+        if (error)
+            log()<<"shutdown(): NetLibSocketShutdown() returned error, "<<error;
         return error;
     }
     
@@ -99,6 +103,8 @@ namespace ArsLexis
             assert(error);
         else
             assert(!error);
+        if (error)            
+            log()<<"setOption(): NetLibSocketOptionSet() returned error, "<<error;
         return error;
     }
     
@@ -111,6 +117,8 @@ namespace ArsLexis
             assert(error);
         else
             assert(!error);
+        if (error)            
+            log()<<"getOption(): NetLibSocketOptionGet() returned error, "<<error;
         return error;
     }
         

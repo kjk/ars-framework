@@ -379,8 +379,11 @@ void DefinitionParser::parseText(uint_t end, ElementStyle style)
     openSuperscript_=0;
     openSubscript_=0;
     currentStyle_=style;
+
+    if (end<parsePosition_)
+        return;
+
     uint_t length=end-parsePosition_;
-    assert(length!=(uint_t)-1);
     while (length && std::isspace((*text_)[parsePosition_+length-1]))
         --length;
     textLine_.assign(*text_, parsePosition_, length);
@@ -397,7 +400,6 @@ void DefinitionParser::parseText(uint_t end, ElementStyle style)
                 *it=' ';
         }
     }        
-    
     
     lastElementStart_=textPosition_=0;
     while (textPosition_<length)

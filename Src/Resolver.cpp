@@ -2,8 +2,8 @@
 #include "ResolverConnection.hpp"
 #include "SysUtils.hpp"
 #include "NetLibrary.hpp"
-
 #include "iPediaApplication.hpp"
+#include <cctype>
 
 namespace ArsLexis
 {
@@ -110,12 +110,25 @@ namespace ArsLexis
         assert(connection!=0);
         String validAddress;                
         Err error=validateAddress(address, validAddress, port);
+        INetSocketAddress addr;
+        if (!validAddress.empty() && std::isdigit(validAddress[0]))
+        {
+            error=netLib_.addrAToIN(validAddress.c_str(), addr);
+            if (!error)
+            {
+                addr.setPort(port);
+                connection->setAddress(addr);
+                connection->open();
+            }
+            return error;
+        }
         if (!error)
         {
             AddressCache_t::const_iterator it=cache_.find(validAddress);
             if (it!=cache_.end())
             {
-                INetSocketAddress addr(it->second, port);
+                addr.setIpAddress(it->second);
+                addr.setPort(port);
                 connection->setAddress(addr);
                 connection->open();
             }
