@@ -14,6 +14,7 @@
 #include <winuser.h>
 #include <winbase.h>
 #include <sms.h>
+#include <uniqueid.h>
 
 namespace ArsLexis
 {
@@ -73,6 +74,61 @@ status_t getPhoneNumber(String& out)
 #endif
     return sysErrParamErr;
 }
+
+/*status_t binStringEncode(const char *src, String &out, int len)
+{
+    char_t* tmp = new char_t[len+1];
+    return errNone;
+}*/
+
+status_t getUUID(String& out)
+{
+	GUID guid;
+    BOOL fRes;
+    DWORD dwBytesReturned =0;
+	DEVICE_ID* pDevID;
+	int wSize;
+	memset(&guid, 0, sizeof(GUID));
+
+    pDevID = (DEVICE_ID*)malloc(sizeof(DEVICE_ID));
+	memset(pDevID, 0, sizeof(DEVICE_ID));
+	pDevID->dwSize = sizeof(DEVICE_ID);
+
+    fRes = KernelIoControl( IOCTL_HAL_GET_DEVICEID, NULL, 0,
+            pDevID, sizeof( DEVICE_ID ), &dwBytesReturned );
+
+	wSize = pDevID->dwSize;
+	free(pDevID);
+	if( (FALSE != fRes) || (ERROR_INSUFFICIENT_BUFFER != GetLastError()))
+    	return sysErrParamErr;
+
+	pDevID = (DEVICE_ID*)malloc(sizeof(wSize));
+	memset(pDevID, 0, sizeof(wSize));
+	pDevID->dwSize = wSize;
+    fRes = KernelIoControl( IOCTL_HAL_GET_DEVICEID, NULL, 0,
+            pDevID, wSize, &dwBytesReturned );
+
+	if((FALSE == fRes) || (ERROR_INSUFFICIENT_BUFFER == GetLastError()) )
+    	return sysErrParamErr;  
+    
+    int totalLen = pDevID->dwPresetIDBytes + pDevID->dwPlatformIDBytes;
+    char* sDevID = new char[totalLen+1];
+    memcpy(sDevID, (char*)pDevID+pDevID->dwPresetIDOffset, pDevID->dwPresetIDBytes);
+    memcpy(sDevID + pDevID->dwPresetIDBytes, 
+           (char*)pDevID+pDevID->dwPlatformIDOffset, pDevID->dwPlatformIDBytes);
+    sDevID[totalLen]=0;
+
+    char_t* lDevID = new char_t[totalLen+1];
+    char* src = sDevID;
+    char_t* tmp = lDevID;
+    for(int len = totalLen; len>0; len --)
+        *tmp++=*src++;
+    out.append(lDevID,totalLen);
+    delete [] sDevID;
+    delete [] lDevID;
+    return errNone;
+}
+
 
 // this returns platform e.g. "PocketPC", "Smartphone" etc. plus OS
 // version on the format "major.minor" e.g. "4.2". This fully identifies
@@ -139,6 +195,7 @@ namespace {
 String deviceInfoToken()
 {
     String out;
+    renderDeviceIdentifierToken(out, _T("SN"), getUUID);
     renderDeviceIdentifierToken(out, _T("PN"), getPhoneNumber);
     renderDeviceIdentifierToken(out, _T("PL"), getPlatform);
     renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
