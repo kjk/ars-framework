@@ -1,4 +1,7 @@
 #include <aygshell.h>
+#ifdef WIN32_PLATFORM_WFSP
+#include <tpcshell.h>
+#endif
 #include <WinSysUtils.hpp>
 #include <EnterRegCodeDialog.hpp>
 #include "resource.h"
@@ -17,6 +20,10 @@ using ArsLexis::String;
 
 static String oldRegCode;
 static String newRegCode;
+
+#ifdef WIN32_PLATFORM_PSPC
+extern SHACTIVATEINFO g_sai;
+#endif
 
 static BOOL OnInitDialog(HWND hDlg, const String& oldRegCode)
 {
@@ -44,9 +51,7 @@ static BOOL OnInitDialog(HWND hDlg, const String& oldRegCode)
     if (!SHCreateMenuBar(&shmbi))
         return FALSE;
 
-    (void)SendMessage(shmbi.hwndMB, SHCMBM_OVERRIDEKEY, VK_TBACK,
-        MAKELPARAM(SHMBOF_NODEFAULT | SHMBOF_NOTIFY,
-        SHMBOF_NODEFAULT | SHMBOF_NOTIFY));
+    OverrideBackButton(shmbi.hwndMB);
 #endif
 
     HWND hwndEdit = GetDlgItem(hDlg,IDC_EDIT_REGCODE);
@@ -91,27 +96,26 @@ static BOOL CALLBACK RegCodeDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
         }
     }
 
+#ifdef WIN32_PLATFORM_WFSP
+    if (WM_HOTKEY==msg)
+    {
+        SHSendBackToFocusWindow(msg, wp, lp);
+        return TRUE;
+    }
+#endif
+
 #ifdef WIN32_PLATFORM_PSPC
     // TODO: is this really necessary? seems to be working without
+    // TODO: is this even correct?
     if (WM_SETTINGCHANGE==msg)
     {
-        if (SPI_SETSIPINFO == wp)
-        {
-            SHACTIVATEINFO sai;
-            ZeroMemory(&sai, sizeof(sai));
-            SHHandleWMSettingChange(hDlg, -1 , 0, &sai);
-        }
+        SHHandleWMSettingChange(hDlg, wp, lp, &g_sai);
         return TRUE;
     }
 
     if (WM_ACTIVATE==msg)
     {
-        if (SPI_SETSIPINFO == wp)
-        {
-            SHACTIVATEINFO sai;
-            ZeroMemory(&sai, sizeof(sai));
-            SHHandleWMActivate(hDlg, wp, lp, &sai, 0);
-        }
+        SHHandleWMActivate(hDlg, wp, lp, &g_sai, 0);
         return TRUE;
     }
 #endif

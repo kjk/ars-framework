@@ -7,7 +7,6 @@
 
 #include <aygshell.h>
 
-
 #include <Shellapi.h>
 #include "SysUtils.hpp"
 
@@ -366,13 +365,14 @@ bool FDesktopIncludesMenuBarAlternate(SIPINFO *si)
 void OverrideBackButton(HWND hwndMenuBar)
 {
 #ifdef WIN32_PLATFORM_WFSP
-    // In order to make Back work properly, it's necessary to 
-    // override it and then call the appropriate SH API
+    // In order to make Back work properly if there is an edit control,
+    // it's necessary to  override it and then call 
+    // SHSendBackToFocusWindow(msg, wp, lp) in response to WM_HOTKEY
     // Only needed on smartphone
     (void)SendMessage(
         hwndMenuBar, SHCMBM_OVERRIDEKEY, VK_TBACK,
-        MAKELPARAM(SHMBOF_NODEFAULT | SHMBOF_NOTIFY,
-        SHMBOF_NODEFAULT | SHMBOF_NOTIFY)
+        MAKELPARAM( SHMBOF_NODEFAULT | SHMBOF_NOTIFY,
+                    SHMBOF_NODEFAULT | SHMBOF_NOTIFY)
         );
 #else
     // do nothing on Pocket PC

@@ -66,10 +66,9 @@ static BOOL InitStringList(HWND hDlg)
     
     if (!SHCreateMenuBar(&shmbi))
         return FALSE;
-    
-    (void)SendMessage(shmbi.hwndMB, SHCMBM_OVERRIDEKEY, VK_TBACK, 
-        MAKELPARAM(SHMBOF_NODEFAULT | SHMBOF_NOTIFY, 
-        SHMBOF_NODEFAULT | SHMBOF_NOTIFY));
+
+    // TODO: figure out if I need to do it or not. I don't have any edit window
+    // OverrideBackButton(shmbi.hwndMB);
     
     g_hRecentLookupDlg = hDlg;
 
