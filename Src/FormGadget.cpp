@@ -1,5 +1,6 @@
 #include <FormGadget.hpp>
 #include <Graphics.hpp>
+#include <Application.hpp>
 
 using namespace ArsLexis;
 
@@ -7,9 +8,6 @@ FormGadget::FormGadget(Form& form, UInt16 id):
     FormObjectWrapper(form, id),
     visible_(false),
     usable_(false)
-#ifdef __MWERKS__
-    , gadgetHandlerThunk_(gadgetHandler)
-#endif
 {}        
 
 FormGadget::~FormGadget()
@@ -20,7 +18,7 @@ void FormGadget::setupGadget(FormType* form, UInt16 index)
     assert(valid());
     FrmSetGadgetData(form, index, this);
 #ifdef __MWERKS__
-    FormGadgetHandlerType* handler=reinterpret_cast<FormGadgetHandlerType*>(gadgetHandlerThunk_.thunkData);
+    FormGadgetHandlerType* handler=reinterpret_cast<FormGadgetHandlerType*>(Application::instance().gadgetHandlerThunk_.thunkData);
 #else
     FormGadgetHandlerType* handler=gadgetHandler;
 #endif
@@ -38,28 +36,6 @@ void FormGadget::attachByIndex(UInt16 index)
     FormObjectWrapper::attachByIndex(index);
     setupGadget(*form(), index);
 }
-
-Boolean FormGadget::gadgetHandler(FormGadgetTypeInCallback* g, UInt16 cmd, void* param)
-{
-    FormGadget* gadget=const_cast<FormGadget*>(static_cast<const FormGadget*>(g->data));
-    assert(0!=gadget);
-    assert(gadget->id()==g->id);
-    gadget->usable_=g->attr.usable;
-    if (formGadgetDrawCmd==cmd && gadget->usable_ && !g->attr.visible)
-        g->attr.visible=true;
-    gadget->visible_=g->attr.visible;
-    if (formGadgetHandleEventCmd==cmd)
-    {
-        assert(0!=param);
-        EventType* event=static_cast<EventType*>(param);
-        if (frmGadgetEnterEvent==event->eType)
-            gadget->form()->trackingGadget_=gadget;
-    }
-    return gadget->handleGadgetCommand(cmd, param);
-}
-   
-void FormGadget::cleanup()
-{}
 
 void FormGadget::drawProxy()
 {
@@ -102,10 +78,6 @@ bool FormGadget::handleGadgetCommand(UInt16 command, void* param)
     bool handled=false;
     switch (command) 
     {
-        case formGadgetDeleteCmd:
-            cleanup();
-            break;
-            
         case formGadgetDrawCmd:
             drawProxy();
             handled=true;

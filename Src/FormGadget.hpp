@@ -9,10 +9,6 @@ namespace ArsLexis {
     
     class FormGadget: public FormObjectWrapper<FormGadgetType> {
         
-#ifdef __MWERKS__        
-        _CW_CallbackThunk gadgetHandlerThunk_;
-#endif
-
         static Boolean gadgetHandler(FormGadgetTypeInCallback* gadget, UInt16 cmd, void* param);
         
         void setupGadget(FormType* form, UInt16 index);
@@ -23,8 +19,6 @@ namespace ArsLexis {
     protected:        
 
         void drawProxy();
-        
-        virtual void cleanup();
         
         virtual void draw(Graphics& graphics);
         
@@ -56,7 +50,8 @@ namespace ArsLexis {
         //! Take care not to call it through FormObject pointer or reference.
         void attachByIndex(UInt16 index);
           
-        friend class Form;  
+        friend class Form;
+        friend class Application;
     };   
 
 }

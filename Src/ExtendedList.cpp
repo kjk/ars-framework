@@ -46,7 +46,8 @@ void ExtendedList::drawItem(Graphics& graphics, const Rectangle& bounds, uint_t 
 
 void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item)
 {
-    assert(noListSelection!=topItem_);
+    if (noListSelection==topItem_)
+        topItem_=0;
     assert(topItem_<=item);
     uint_t offset=item-topItem_;
     Rectangle itemBounds(listBounds.x(), listBounds.y()+offset*itemHeight_, listBounds.width()-visibleScrollBarWidth(), itemHeight_);
@@ -69,7 +70,8 @@ void ExtendedList::draw(Graphics& graphics)
     const uint_t itemsCount=this->itemsCount();
     if (0==itemsCount)
         return;
-    assert(noListSelection!=topItem_);
+    if (noListSelection==topItem_)
+        topItem_=0;
     assert(itemsCount>topItem_);
     uint_t itemsToDisplay=listBounds.height()/itemHeight_;
     if (0 != listBounds.height()%itemHeight_)
@@ -194,7 +196,7 @@ void ExtendedList::adjustVisibleItems(RedrawOption ro)
     int total=itemsCount();
     if (0==total) 
         return;
-    int visible=visibleItemsCount();
+    int visible=height()/itemHeight_;
     if (total-topItem_<visible)
     {
         topItem_=std::max(0, total-visible);
@@ -497,10 +499,17 @@ void ExtendedList::notifyItemsChanged()
 {
     uint_t itemsCount=0;
     if (0!=(itemsCount=this->itemsCount()))
-        topItem_=0;
+    {
+        if (noListSelection==topItem_ || topItem_>=itemsCount)
+            topItem_=0;
+        if (noListSelection!=selection_ && selection_>=itemsCount)
+            selection_=noListSelection;
+    }            
     else 
+    {
         topItem_=noListSelection;
-    selection_=noListSelection;    
+        selection_=noListSelection;    
+    }
 }
 
 

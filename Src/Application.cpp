@@ -1,12 +1,34 @@
 #include <Application.hpp>
 #include <Form.hpp>
 #include <memory>
+#include <FormGadget.hpp>
 
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
 template class std::basic_string<ArsLexis::char_t>;
 
 namespace ArsLexis
 {
+
+    Boolean FormGadget::gadgetHandler(FormGadgetTypeInCallback* g, UInt16 cmd, void* param)
+    {
+        if (formGadgetDeleteCmd==cmd)
+            return false;
+        FormGadget* gadget=const_cast<FormGadget*>(static_cast<const FormGadget*>(g->data));
+        assert(0!=gadget);
+        assert(gadget->id()==g->id);
+        gadget->usable_=g->attr.usable;
+        if (formGadgetDrawCmd==cmd && gadget->usable_ && !g->attr.visible)
+            g->attr.visible=true;
+        gadget->visible_=g->attr.visible;
+        if (formGadgetHandleEventCmd==cmd)
+        {
+            assert(0!=param);
+            EventType* event=static_cast<EventType*>(param);
+            if (frmGadgetEnterEvent==event->eType)
+                gadget->form()->trackingGadget_=gadget;
+        }
+        return gadget->handleGadgetCommand(cmd, param);
+    }
     
     void Application::registerForm(Form& form)
     {
@@ -51,6 +73,7 @@ namespace ArsLexis
         eventTimeout_(evtWaitForever),
 #ifdef __MWERKS__        
         formEventHandlerThunk_(Form::routeEventToForm),
+        gadgetHandlerThunk_(FormGadget::gadgetHandler),
 #endif // __MWERKS__        
         cardNo_(0),
         databaseId_(0),

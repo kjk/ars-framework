@@ -29,6 +29,7 @@ namespace ArsLexis
 {
 
     class Form;
+    class FormGadget;
 
     /**
      * The core of application.
@@ -94,6 +95,9 @@ namespace ArsLexis
          * Wraps @c Form::routeEventToForm() for use in expanded mode.
          */
         _CW_EventHandlerThunk formEventHandlerThunk_;
+
+        _CW_CallbackThunk gadgetHandlerThunk_;
+
 #endif
         
         /**
@@ -308,6 +312,7 @@ namespace ArsLexis
 
         friend void logAllocation(void*, size_t, bool, const char*, int);
         friend void processReadyUiEvents();
+        friend class FormGadget;
     };
     
     template<class AppClass> 
