@@ -50,6 +50,8 @@ public:
     
     static void dispose();
     
+    const char_t* name() const {return fileName_;}
+    
 private:
 
     status_t readIndex();

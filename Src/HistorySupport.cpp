@@ -271,8 +271,14 @@ bool HistorySupport::followUrl(HistoryCache& cache, const char_t* url)
         return true;
     if (NULL == hyperlinkHandler)
         return false;
+    
+    char_t* copy = StringCopy2(url);
+    if (NULL == copy)
+        return false;
+        
     cache.close();
-    hyperlinkHandler->handleHyperlink(url, tstrlen(url), NULL);
+    hyperlinkHandler->handleHyperlink(copy, tstrlen(copy), NULL);
+    free(copy);
     return true;
 }
 
