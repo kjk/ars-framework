@@ -10,9 +10,6 @@
 #include <FormattedTextElement.hpp>
 #include <BulletElement.hpp>
 
-//TODO: fontEffects
-//TODO: styles - now only 'b' for boldBlack is supported
-
 //elements
 #define typeLineBreakElement                'lbrk'
 #define typeHorizontalLineElement           'hrzl'
@@ -38,7 +35,6 @@
 #define paramStyleEntry                     'sten'
 #define paramStylesCount                    'stcn'
 
-
 //other (numbers)
 #define typeLength  sizeof(elementTypeType)
 #define sizeLength  sizeof(elementSizeType)
@@ -57,8 +53,9 @@ ByteFormatParser::ByteFormatParser():
     version_(0),
     totalSize_(0),
     model_(NULL),
-    stylesCount_(0),
-    totalStylesCount_(0),
+    styleCount_(0),
+    totalStyleCount_(0),
+    styleNames_(NULL),
     headerParsed_(false)
 {
     inText_.clear();
@@ -68,12 +65,15 @@ ByteFormatParser::ByteFormatParser():
 ByteFormatParser::~ByteFormatParser()
 {
     delete model_;
+    delete [] styleNames_;
 }
 
 DefinitionModel* ByteFormatParser::releaseModel()
 {
     DefinitionModel* model = model_;
     model_ = NULL;
+    delete [] styleNames_;
+    styleNames_ = NULL;
     return model;
 }
 
@@ -94,11 +94,13 @@ void ByteFormatParser::reset()
     version_ = 0;
     totalSize_ = 0;
     headerParsed_ = false;
-    stylesCount_ = 0;
-    totalStylesCount_ = 0;
+    styleCount_ = 0;
+    totalStyleCount_ = 0;
 
     delete model_;
     model_ = NULL;
+    delete [] styleNames_;
+    styleNames_ = NULL;
 }
 
 bool ByteFormatParser::parseParam()
@@ -209,17 +211,16 @@ bool ByteFormatParser::parseParam()
         case paramStyleEntry:
             if (typeStylesTableElement == currentElementType_)
             {
-                assert(stylesCount_ < totalStylesCount_);
-                if (stylesCount_ < totalStylesCount_)
+                assert(styleCount_ < totalStyleCount_);
+                if (styleCount_ < totalStyleCount_)
                 {
-                    //TODO: parse style entry
-                    //<name> ';' <value>
-                    
-                
-                
-                
-                
-                    stylesCount_++;
+                    // <nameLength><name><value>
+                    ulong_t nameLength = readUnaligned32(&inText_[start_]);
+                    styleNames_[styleCount_] = CharCopyN(&inText_[start_+sizeLength], nameLength);
+                    DefinitionStyle* style =  parseStyle(&inText_[start_+sizeLength+nameLength],currentParamLength_-(sizeLength+nameLength));
+                    model_->styles_[styleCount_] = *style;
+                    //todo: delete style?
+                    styleCount_++;
                 }            
             }
             else
@@ -228,30 +229,39 @@ bool ByteFormatParser::parseParam()
             }    
             break;
 
-
         case paramStyleName:
-            const DefinitionStyle* style = getStaticStyle(&inText_[start_],currentParamLength_);
-            if (NULL == style)
             {
-                //TODO: set style for element from private table
-                
-                
-                
-                assert(NULL != style);
-            }        
-            currentElement_->setStyle(style);
+                const DefinitionStyle* style = getStaticStyle(&inText_[start_],currentParamLength_);
+                const DefinitionStyle* serverStyle = NULL;
+                for (int i=0; i<totalStyleCount_;i++)
+                {
+                    if (0 == StrNCompare(styleNames_[i],&inText_[start_],currentParamLength_))
+                    {
+                        serverStyle = &model_->styles_[i];
+                        i = totalStyleCount_;
+                    }
+                }
+                assert(serverStyle != NULL || style != NULL);
+                if (serverStyle != NULL)
+                    currentElement_->setStyle(serverStyle);
+                else
+                    currentElement_->setStyle(style);
+            }
             break;
         
         case paramStylesCount:
-            //TODO: free old styles
-
-
-            stylesCount_ = 0;
-            totalStylesCount_ = readUnaligned32(&inText_[start_]);
-            assert(totalStylesCount_ > 0);
-            //TODO: alloc memory for new styles
-            
-            
+            {
+                //  free old styles
+                delete [] styleNames_;
+                delete [] model_->styles_;
+                styleCount_ = 0;
+                totalStyleCount_ = readUnaligned32(&inText_[start_]);
+                assert(totalStyleCount_ > 0);
+                // alloc memory for new styles
+                model_->styleCount_ = totalStyleCount_;
+                styleNames_ = new_nt char*[totalStyleCount_];
+                model_->styles_ = new_nt DefinitionStyle[totalStyleCount_];
+            }
             break;
         
         default:

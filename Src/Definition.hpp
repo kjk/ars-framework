@@ -52,6 +52,7 @@ public:
     
     ~DefinitionModel();
 
+    friend class ByteFormatParser;
 };     
 
 

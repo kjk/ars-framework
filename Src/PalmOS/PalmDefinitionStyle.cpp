@@ -130,16 +130,21 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
     return &res->style; 
 }
 
+//always return style!
 DefinitionStyle* parseStyle(const char* style, ulong_t length)
 {
     DefinitionStyle* s = new DefinitionStyle();
     s->reset();
 
-    //TODO: 
 
+    RGBColorType rgb;
+    rgb.r = 128;
+    rgb.b = 255;
+    rgb.g = 0;
+    rgb.index = 0;
+    //TODO: this is only test...
+    s->foregroundColor = rgb;
 
-
-    //return new DefinitionStyle();
     return s;
 }
 

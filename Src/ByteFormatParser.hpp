@@ -31,8 +31,9 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
         elementSizeType totalSize_;
         bool    headerParsed_;
 
-        ulong_t stylesCount_;
-        ulong_t totalStylesCount_;
+        char**  styleNames_;
+        ulong_t styleCount_;
+        ulong_t totalStyleCount_;
         
         DefinitionElement* currentElement_;
         
