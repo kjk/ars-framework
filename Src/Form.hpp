@@ -41,33 +41,34 @@ namespace ArsLexis
     protected:
     
         virtual void attachControls();
-    
+
         /**
          * Handles @c frmCloseEvent.
          * This function calls <code>delete this</code>, so when overriding it should be called last, 
          * unless you know what you're doing.
          */
         virtual bool handleClose();
-        
+
         /**
          * Handles @c frmOpenEvent.
          * Updates form and prevents calling FrmDeleteForm() in destructor.
          */
         virtual bool handleOpen();
-        
+
         /**
          * Handles @c frmUpdateEvent.
          * Calls redraw().
          */
         virtual bool handleUpdate(UInt16 updateCode);
-        
+
         /**
-         * Redraws form.
-         * Calls FrmDrawForm().
+         * Redraws form. 
          */
         virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
-        {FrmDrawForm(form_);}
-        
+        {
+            FrmDrawForm(form_);
+        }
+
         virtual bool handleWindowEnter(const struct _WinEnterEventType&);
         
         virtual bool handleWindowExit(const struct _WinExitEventType& data);
