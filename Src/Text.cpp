@@ -571,7 +571,7 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
    
 String join(const std::vector<ArsLexis::String>& vec, const String& joiner)
 {
-    String str = "";
+    String str = _T("");
     for (uint_t i=0; i < vec.size(); i++)
     {
         if (i != 0)
