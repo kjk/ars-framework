@@ -62,20 +62,20 @@ void FormObject::attachByIndex(UInt16 index)
 
 void FormObject::anchor(const Rectangle& boundingBox, FormObjectAnchorStyle horizAnchor, Coord rightMargin, FormObjectAnchorStyle vertAnchor, Coord bottomMargin)
 {
-    Rectangle rect;
-    bounds(rect);
+    RectangleType rect;
+    FrmGetObjectBounds(*form_, index(), &rect);
     
     if (anchorLeftEdge == horizAnchor) 
-        rect.x() = boundingBox.width() - rightMargin;
+        rect.topLeft.x = boundingBox.width() - rightMargin;
     else if (anchorRightEdge == horizAnchor)
-        rect.width() = boundingBox.width() - rightMargin;
+        rect.extent.x = boundingBox.width() - rightMargin;
     
     if (anchorTopEdge == vertAnchor)
-        rect.y() = boundingBox.height() - bottomMargin;
+        rect.topLeft.y = boundingBox.height() - bottomMargin;
     else if (anchorBottomEdge == vertAnchor)
-        rect.height() = boundingBox.height() - bottomMargin;
+        rect.extent.y = boundingBox.height() - bottomMargin;
         
-    setBounds(rect);
+    FrmSetObjectBounds(*form_, index(), &rect);
 }
 
 void FormObject::hide()

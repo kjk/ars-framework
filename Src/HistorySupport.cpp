@@ -2,6 +2,7 @@
 #include <HistoryCache.hpp>
 #include <Text.hpp>
 
+/*
 status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& model)
 {
     HistoryCache cache;
@@ -10,6 +11,7 @@ status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& 
         return err;
     return FillPopupMenuModelFromHistory(cache, model, NULL);
 }
+*/
 
 status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel& model, void*)
 {

@@ -7,7 +7,7 @@ class HistoryCache;
 
 status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel& model, void* data);
 
-status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& model);
+//status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& model);
 
 class HistorySupport
 {
