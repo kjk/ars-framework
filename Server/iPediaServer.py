@@ -174,8 +174,9 @@ class iPediaProtocol(basic.LineReceiver):
     def getManagementDatabase(self):
         if not self.dbManagement:
             self.dbManagement=self.factory.createManagementConnection()
+        return self.dbManagement
 
-    def getArticlesDatabase():
+    def getArticlesDatabase(self):
         if not self.dbArticles:
             self.dbArticles=self.factory.createArticlesConnection()
         return self.dbArticles
@@ -237,10 +238,15 @@ class iPediaProtocol(basic.LineReceiver):
         if self.error:
             self.outputField(errorField, str(self.error))
         self.transport.loseConnection()
-        if self.db:
+        
+        if self.dbManagement:
             self.logRequest()
-            self.db.close()
-            self.db=None
+            self.dbManagement.close()
+            self.dbManagement=None
+
+        if self.dbArticles:
+            self.dbArticles.close()
+            self.dbArticles=None
 
         if g_fVerbose:
             print ""
@@ -486,45 +492,49 @@ class iPediaProtocol(basic.LineReceiver):
         
     def answer(self):
         global g_fVerbose
-
-        if g_fVerbose:
-            print ""
-            print "--------------------------------------------------------------------------------"
-            print ""
+        try:
+            if g_fVerbose:
+                print ""
+                print "--------------------------------------------------------------------------------"
+                print ""
         
-        if self.transactionId:
-            self.outputField(transactionIdField, self.transactionId)
-        else:
-            return self.finish()
-        
-        if self.deviceInfoToken and not self.handleGetCookieRequest():
-            return self.finish()
-    
-        if self.cookie:
-            if not self.handleCookieRequest():
+            if self.transactionId:
+                self.outputField(transactionIdField, self.transactionId)
+            else:
                 return self.finish()
-        else:
-            self.error=iPediaServerError.malformedRequest
-            return self.finish()
             
-        if self.serialNumber and not self.handleRegisterRequest():
-            return self.finish()
-            
-        if self.term and not self.userId and not self.checkLookupsLimit():
-            return self.finish()
+            if self.deviceInfoToken and not self.handleGetCookieRequest():
+                return self.finish()
         
-        if self.term and not self.handleDefinitionRequest():
-            return self.finish()
+            if self.cookie:
+                if not self.handleCookieRequest():
+                    return self.finish()
+            else:
+                self.error=iPediaServerError.malformedRequest
+                return self.finish()
+                
+            if self.serialNumber and not self.handleRegisterRequest():
+                return self.finish()
+                
+            if self.term and not self.userId and not self.checkLookupsLimit():
+                return self.finish()
             
-        if self.searchExpression and not self.handleSearchRequest():
-            return self.finish();
+            if self.term and not self.handleDefinitionRequest():
+                return self.finish()
+                
+            if self.searchExpression and not self.handleSearchRequest():
+                return self.finish();
+    
+            if self.getRandom and not self.handleGetRandomRequest():
+                return self.finish()
+                
+            if self.getArticleCount:
+                self.outputField(articleCountField, str(self.factory.articleCount))
 
-        if self.getRandom and not self.handleGetRandomRequest():
-            return self.finish()
+        except Exception, ex:
+            print ex
+            self.error=iPediaServerError.serverFailure
             
-        if self.getArticleCount:
-            self.outputField(articleCountField, str(self.factory.articleCount))
-
         self.finish()
 
     def extractFieldValue(self, line):
@@ -535,48 +545,53 @@ class iPediaProtocol(basic.LineReceiver):
             return None
             
     def lineReceived(self, request):
-        ++self.linesCount
-        
-        if requestLinesCountLimit==self.linesCount:
-            self.error=iPediaServerError.malformedRequest
+        try:
+            ++self.linesCount
             
-        if request == ""  or self.error:
-            self.answer()
-        else:
-            if g_fVerbose:
-                print request
-            
-            if request.startswith(transactionIdField):
-                self.transactionId=self.extractFieldValue(request)
-                
-            elif request.startswith(protocolVersionField):
-                self.protocolVersion=self.extractFieldValue(request)
-                
-            elif request.startswith(clientVersionField):
-                self.clientVersion=self.extractFieldValue(request)
-
-            elif request.startswith(getCookieField):
-                self.deviceInfoToken=self.extractFieldValue(request)
-                
-            elif request.startswith(cookieField):
-                self.cookie=self.extractFieldValue(request)
-        
-            elif request.startswith(getDefinitionField):
-                self.requestedTerm=self.term=self.extractFieldValue(request)
-            
-            elif request.startswith(registerField):
-                self.serialNumber=self.extractFieldValue(request)
-
-            elif request.startswith(getRandomField):
-                self.getRandom = True
-                
-            elif request.startswith(searchField):
-                self.searchExpression=self.extractFieldValue(request)        
-                
-            elif request.startswith(getArticleCountField):
-                self.getArticleCount=True
-            else:
+            if requestLinesCountLimit==self.linesCount:
                 self.error=iPediaServerError.malformedRequest
+
+            if request == ""  or self.error:
+                self.answer()
+            else:
+                if g_fVerbose:
+                    print request
+                
+                if request.startswith(transactionIdField):
+                    self.transactionId=self.extractFieldValue(request)
+                    
+                elif request.startswith(protocolVersionField):
+                    self.protocolVersion=self.extractFieldValue(request)
+                    
+                elif request.startswith(clientVersionField):
+                    self.clientVersion=self.extractFieldValue(request)
+    
+                elif request.startswith(getCookieField):
+                    self.deviceInfoToken=self.extractFieldValue(request)
+                    
+                elif request.startswith(cookieField):
+                    self.cookie=self.extractFieldValue(request)
+            
+                elif request.startswith(getDefinitionField):
+                    self.requestedTerm=self.term=self.extractFieldValue(request)
+                
+                elif request.startswith(registerField):
+                    self.serialNumber=self.extractFieldValue(request)
+    
+                elif request.startswith(getRandomField):
+                    self.getRandom = True
+                    
+                elif request.startswith(searchField):
+                    self.searchExpression=self.extractFieldValue(request)        
+                    
+                elif request.startswith(getArticleCountField):
+                    self.getArticleCount=True
+                else:
+                    self.error=iPediaServerError.malformedRequest
+        except Exception, ex:
+            print ex
+            self.error=iPediaServerError.serverFailure
+            self.answer()
 
 class iPediaFactory(protocol.ServerFactory):
 

@@ -79,7 +79,7 @@ def findTarget(db, cursor, idTermDef):
         termEnd=definition.find(termEndDelimiter)
         term=definition[termStart:termEnd].replace('_', ' ')
         #print "Resolving term: ", term
-        query="""SELECT id, term, definition FROM definitions WHERE term='%s' """ % db.escape_string(term)
+        query="""SELECT id, title, body FROM articles WHERE title='%s' """ % db.escape_string(term)
         cursor.execute(query)
         row=cursor.fetchone()
         if not row:
@@ -95,7 +95,7 @@ def findTarget(db, cursor, idTermDef):
             return None
         
 def findExactDefinition(db, cursor, term):
-    query="""SELECT id, term, definition FROM definitions WHERE term='%s';""" % db.escape_string(term)
+    query="""SELECT id, title, body FROM articles WHERE title='%s';""" % db.escape_string(term)
     cursor.execute(query)
     row=cursor.fetchone()
     if row:
@@ -106,13 +106,13 @@ def findExactDefinition(db, cursor, term):
         return None
 
 def findRandomDefinition(db, cursor):
-    cursor.execute("""select min(id), max(id) from definitions""")
+    cursor.execute("""select min(id), max(id) from articles""")
     row=cursor.fetchone()
     minId, maxId=row[0], row[1]
     term_id = random.randint(minId, maxId)
     #query="""SELECT id, term, definition FROM definitions  ORDER BY RAND() LIMIT 0,1;"""
     #query="""SELECT id, term, definition FROM definitions WHERE id=%d;""" % term_id
-    query="""SELECT id, term, definition FROM definitions WHERE id=%d;""" % term_id
+    query="""SELECT id, title, body FROM articles WHERE id=%d;""" % term_id
     cursor.execute(query)
     row=cursor.fetchone()
     if row:
@@ -157,12 +157,12 @@ def findFullTextMatches(db, cursor, reqTerm):
     queryStr=''
     for word in words:
         queryStr+=(' +'+word)
-    query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s' in boolean mode) order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
+    query="""select id, title, body, match(title, body) against('%s') as relevance from articles where match(title, body) against('%s' in boolean mode) order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(queryStr), listLengthLimit)
     cursor.execute(query)
     row=cursor.fetchone()
     if not row:
         print "Performing non-boolean mode search..."
-        query="""select id, term, definition, match(term, definition) against('%s') as relevance from definitions where match(term, definition) against('%s') order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(reqTerm), listLengthLimit)
+        query="""select id, title, body, match(title, body) against('%s') as relevance from articles where match(title, body) against('%s') order by relevance desc limit %d""" % (db.escape_string(reqTerm), db.escape_string(reqTerm), listLengthLimit)
         cursor.execute(query)
 
     tupleList=[]
