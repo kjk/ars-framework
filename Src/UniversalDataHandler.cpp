@@ -112,7 +112,11 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
             if (lineNo == out.headerSize_ + 1)
                 out.data_.assign(line);
             else
+            {
+                //because enters can be part of udf data do this
+                out.data_.append(1,_T('\n'));
                 out.data_.append(line);
+            }
         }
         lineNo++;
     }
