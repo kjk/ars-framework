@@ -147,10 +147,15 @@ static void parseAttribute(const char* attr, ulong_t attrLen, const char* val, u
 
 }
 
-//always return style!
+// Andrzej: that comment is wrong: // always return style!
+// you can't return style if new_nt failed.
+// you can't return style if you can't parse it (structural error, not that some attribute name is unknown)
 DefinitionStyle* parseStyle(const char* style, ulong_t length)
 {
     DefinitionStyle* s = new_nt DefinitionStyle();
+    if (NULL == s)
+        return s;
+        
     s->reset();
 
     long curLen = length;
