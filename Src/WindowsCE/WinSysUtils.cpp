@@ -175,7 +175,7 @@ bool GetSpecialFolderPath(String& pathOut, BOOL fCreate)
 
 int GetScrollBarDx()
 {
-    int scrollBarDx = -1;
+    static int scrollBarDx = -1;
     if (-1==scrollBarDx)
     {
         scrollBarDx = GetSystemMetrics(SM_CXVSCROLL);
@@ -183,3 +183,17 @@ int GetScrollBarDx()
     return scrollBarDx;
 }
 
+#ifdef WIN32_PLATFORM_PSPC
+int GetMenuDy()
+{
+    static int menuDy = -1;
+    if (-1==menuDy)
+        menuDy = GetSystemMetrics(SM_CYMENU);
+    return menuDy;
+}
+#else
+int GetMenuDy()
+{
+    return 0;
+}
+#endif

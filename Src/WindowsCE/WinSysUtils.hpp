@@ -23,5 +23,6 @@ bool GotoURL(const ArsLexis::char_t *url);
 bool GetSpecialFolderPath(String& pathOut, BOOL fCreate=TRUE);
 
 int GetScrollBarDx();
+int GetMenuDy();
 
 #endif
