@@ -311,6 +311,7 @@ namespace ArsLexis
         };
 
         friend void logAllocation(void*, bool, const char*, int);
+        friend void processReadyUiEvents();
     };
     
     template<class AppClass> 

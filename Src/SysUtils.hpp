@@ -18,6 +18,8 @@ namespace ArsLexis
 	template<class EventData>
 	void sendEvent(uint_t event, const EventData& data, bool unique=false)
 	{sendEvent(event, &data, sizeof(data), unique);}
+
+	void processReadyUiEvents();
 	
 }
 

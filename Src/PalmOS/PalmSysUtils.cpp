@@ -1,4 +1,5 @@
 #include <SysUtils.hpp>
+#include <Application.hpp>
 
 bool ArsLexis::notifyManagerPresent()
 {
@@ -191,6 +192,26 @@ void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool uniqu
     if (unique)
         EvtAddUniqueEventToQueue(&event, 0, false);
     else
+        EvtAddEventToQueue(&event);
+}
+
+void ArsLexis::processReadyUiEvents()
+{
+    EventType event;
+    Application& app=Application::instance();
+    do
+    {
+        Err error;
+        EvtGetEvent(&event, 0);
+        if (appStopEvent!=event.eType)
+        {
+            if (!SysHandleEvent(&event))
+                if (!MenuHandleEvent(0, &event, &error))
+                    if (!app.handleApplicationEvent(event))
+                        FrmDispatchEvent(&event);
+        }
+    } while (appStopEvent!=event.eType && nilEvent!=event.eType);
+    if (appStopEvent==event.eType)
         EvtAddEventToQueue(&event);
 }
 

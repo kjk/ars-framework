@@ -1,4 +1,5 @@
 #include <SimpleSocketConnection.hpp>
+#include <SysUtils.hpp>
 
 namespace ArsLexis
 {
@@ -19,6 +20,7 @@ namespace ArsLexis
         if (requestLeft>chunkSize_)
             requestLeft=chunkSize_;
         uint_t dataSize=0;
+        processReadyUiEvents();
         status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
 //        status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, 0);
         if (errNone==error || netErrWouldBlock==error)
@@ -52,6 +54,7 @@ namespace ArsLexis
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             response_.resize(responseSize+chunkSize_);
+            processReadyUiEvents();
             error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
 //            error=socket().receive(dataSize, &response_[responseSize], chunkSize_, 0);
             if (!error)
