@@ -28,11 +28,12 @@ public:
     typedef Elements_t::iterator ElementPosition_t;
     
     typedef Elements_t::const_iterator const_iterator;
-    const_iterator begin() const
-    {return elements_.begin();}
+    typedef Elements_t::iterator iterator;
     
-    const_iterator end() const
-    {return elements_.end();}
+    const_iterator begin() const {return elements_.begin();}
+    iterator begin() {return elements_.begin();}
+    const_iterator end() const {return elements_.end();}
+    iterator end() {return elements_.end();}
     
 private:
     

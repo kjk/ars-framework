@@ -70,36 +70,6 @@ namespace ArsLexis
         setBounds(rect);
     }
     
-    /*
-    bool FormObject::focusable() const
-    {
-        FormObjectKind kind = type();
-        if (frmFieldObj == kind)
-        {
-            FieldAttrType attr;
-            FldGetAttributes(static_cast<FieldType*>(object_), &attr);
-            return (attr.usable && attr.editable);
-        }
-        if (frmTableObj == kind)
-            return true;
-        bool isTreo = isTreo600();
-        if (isTreo)
-        {
-            if (frmControlObj == kind)
-                return CtlEnabled(static_cast<ControlType*>(object_));
-            if (frmPopupObj == kind)
-                return true;
-        }
-        if (frmGadgetObj == kind)
-        {
-            FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(*form_, index_));
-            assert(NULL != gadget);
-            return gadget->usable();
-        }
-        return false;
-    }
-    */
-    
     void FormObject::hide()
     {
         FrmHideObject(*form_, index_);
@@ -129,24 +99,6 @@ namespace ArsLexis
         return index_ == form()->focusedControlIndex_;
     }
         
-/*        
-    void FormObject::enableNavigation()
-    {   
-        assert(valid());
-        if (!form_->application().runningOnTreo600())
-            return;
-        UInt16 after;
-        UInt16 above;
-        UInt16 below;
-        UInt16 flags;
-        Err error = FrmGetNavEntry(*form_, id_, &after, &above, &below, &flags);
-        assert(errNone == error);
-        flags &= (~kFrmNavObjectFlagsSkip);
-        error = FrmSetNavEntry(*form_, id_, after, above, below, flags);
-        assert(errNone == error);        
-    }
-*/
-    
     void FormObject::focus()
     {
         assert(valid());
@@ -161,47 +113,11 @@ namespace ArsLexis
         else if (isPastCobalt61 && frmInvalidObjectId != id_)
             FrmSetFocus(*form_, index_);            
         form_->focusedControlIndex_ = index_;
-//        form_->entryFocusControlId_ = id_;
-/*        
-
- || frmGadgetObj == kind ||
-            (isTreo && (frmControlObj == kind || frmPopupObj == kind)))
-        {
-            FormGadget* gadget;
-            UInt16 prevIndex = form_->focusedControlIndex_;
-            if (frmInvalidObjectId != form_->focusedControlIndex_ && frmGadgetObj == FrmGetObjectType(form_->form_, form_->focusedControlIndex_))
-            {
-                gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_->form_, form_->focusedControlIndex_));
-                assert(NULL != gadget);
-                gadget->setFocus(false);
-            }
-            if (isTreo)
-            {
-                Err error = HsNavRemoveFocusRing(*form_);
-            }
-            form_->focusedControlIndex_ = index_;
-            if (frmGadgetObj != kind)
-                FrmSetFocus(*form_, index_);
-            else
-            {
-                FrmSetFocus(*form_, noFocus);
-                gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_->form_, index_));
-                assert(NULL != gadget);
-                gadget->setFocus(true);
-            }
-            if (isTreo && frmInvalidObjectId != id_)
-                HsNavObjectTakeFocus(*form_, id_);
-            if (form_->visible())
-                draw();
-        }
-*/                
     }
     
     void FormObject::draw()
     {
         assert(valid());
-//        if (!form_->visible())
-//            return;
         FormObjectKind kind = type();
         switch (kind)
         {

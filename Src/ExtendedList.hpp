@@ -2,6 +2,7 @@
 #define ARSLEXIS_EXTENDED_LIST_HPP__
 
 #include <FormGadget.hpp>
+#include <Logging.hpp>
 
 namespace ArsLexis {
 
@@ -149,6 +150,8 @@ namespace ArsLexis {
         
         bool screenIsDoubleDensity() const {return screenIsDoubleDensity_;}
         
+        void handleNilEvent();
+        
         uint_t scrollButtonHeight() {return scrollButtonHeight_;}
         
     private:
@@ -187,6 +190,15 @@ namespace ArsLexis {
         int topItemBeforeTracking_;
         uint_t upBitmapId_;
         uint_t downBitmapId_;
+        
+        UInt32 scheduledNilEventTicks_;
+        enum ScheduledScrollDirection {
+            scheduledScrollAbandoned,
+            scheduledScrollUp,
+            scheduledScrollDown
+        };
+        
+        ScheduledScrollDirection scheduledScrollDirection_;
     };
     
     class BasicStringItemRenderer: public ExtendedList::ItemRenderer {

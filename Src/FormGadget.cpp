@@ -95,6 +95,7 @@ bool FormGadget::handleEvent(EventType& event)
         case frmGadgetMiscEvent:
             handled=handleMiscEvent(event);
             break;
+        
     }
     return handled;
 }

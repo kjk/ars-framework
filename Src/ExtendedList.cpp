@@ -114,7 +114,8 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     trackingScrollbar_(false),
     topItemBeforeTracking_(noListSelection),
     upBitmapId_(frmInvalidObjectId),
-    downBitmapId_(frmInvalidObjectId)
+    downBitmapId_(frmInvalidObjectId),
+    scheduledScrollDirection_(scheduledScrollAbandoned)
 {
     UInt32 version;
     Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
@@ -206,8 +207,8 @@ void ExtendedList::handleDraw(Graphics& graphics)
     assert(itemsCount>topItem_);
     uint_t viewCapacity=listBounds.height()/itemHeight_;
     uint_t itemsToDisplay=viewCapacity;
-    if (0 != listBounds.height() % itemHeight_)
-        ++itemsToDisplay;
+//    if (0 != listBounds.height() % itemHeight_)
+//        ++itemsToDisplay;
     uint_t itemsBelow=itemsCount-topItem_;
     bool showScrollbar=(itemsCount>viewCapacity);
     itemsToDisplay=std::min(itemsToDisplay, itemsBelow);
@@ -244,8 +245,8 @@ uint_t ExtendedList::visibleItemsCount() const
     uint_t itemsBelow=itemsCount - topItem_;
     uint_t listHeight=height();
     uint_t visibleCount=listHeight/itemHeight_;
-    if (0 != listHeight  %itemHeight_)
-        ++visibleCount;
+//    if (0 != listHeight  %itemHeight_)
+//        ++visibleCount;
     visibleCount=std::min(visibleCount, itemsBelow);
     return visibleCount;
 }
@@ -295,29 +296,8 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
                 showScrollbar=true;
         }     
     }
-    if (redraw==ro)
-    {
-//        if (scrolled)
+    if (redraw == ro)
         drawProxy();
-/*        
-        else 
-        {
-            Graphics graphics(form()->windowHandle());
-            Rectangle listBounds;
-            bounds(listBounds);
-
-            RGBColorType oldFore, oldText;
-            WinSetForeColorRGB(&foreground_, &oldFore);
-            WinSetTextColorRGB(&foreground_, &oldText);
-            if (noListSelection!=oldSelection)
-                drawItemProxy(graphics, listBounds, oldSelection, showScrollbar);
-            if (noListSelection!=selection_)
-                drawItemProxy(graphics, listBounds, selection_, showScrollbar);
-            WinSetTextColorRGB(&oldText, 0);
-            WinSetForeColorRGB(&oldFore, 0);
-        }
-        */
-    }
 }
 
 void ExtendedList::drawFocusRing()
@@ -511,6 +491,10 @@ bool ExtendedList::handleEvent(EventType& event)
             handlePenUp(event);
             handled=true;
             break;
+        
+        case nilEvent:
+            handleNilEvent();
+            break;
             
         default:
             handled=FormGadget::handleEvent(event);            
@@ -544,9 +528,9 @@ void ExtendedList::handlePenInItemsList(const Rectangle& bounds, const Point& pe
     assert(noListSelection!=topItem_);
     assert(topItem_<itemsCount);
     uint_t item=topItem_+(penPos.y-bounds.y())/itemHeight_;
-    if (selection_!=item && item<itemsCount)
+    if (selection_ != item && item < itemsCount)
         setSelection(item, redraw);
-    if (penUp && item<itemsCount)
+    if (penUp && item < itemsCount)
         fireItemSelectEvent();
 }
 
@@ -607,40 +591,97 @@ void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& pe
 void ExtendedList::handlePenUp(const EventType& event)
 {
     Point penPos(event.screenX, event.screenY);
-//    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
     int visW=visibleScrollBarWidth();
     Rectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
-    if (trackingScrollbar_ || (scrollBounds && penPos))
+    if (trackingScrollbar_)
         handlePenInScrollBar(bounds, penPos, true, false);
     else
     {
+        scheduledScrollDirection_ = scheduledScrollAbandoned;
         Rectangle itemsBounds=bounds;
-        itemsBounds.width()-=visW;
+        itemsBounds.width() -= visW;
+        itemsBounds.height() -= (itemsBounds.height() % itemHeight_);
         if (itemsBounds && penPos)
             handlePenInItemsList(bounds, penPos, true);
+        else if (noListSelection != selection())
+            setSelection(noListSelection, redraw);
     }
 }
 
 void ExtendedList::handlePenMove(const EventType& event)
 {
     Point penPos(event.screenX, event.screenY);
-//    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
     Rectangle bounds;
     this->bounds(bounds);
     int visW=visibleScrollBarWidth();
     Rectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
-    if (trackingScrollbar_ || (scrollBounds && penPos))
+    if (trackingScrollbar_)
         handlePenInScrollBar(bounds, penPos, false, false);
     else 
     {
         Rectangle itemsBounds=bounds;
-        itemsBounds.width()-=visW;
+        itemsBounds.width() -= visW;
+        itemsBounds.height() -= (itemsBounds.height() % itemHeight_);
         if (itemsBounds && penPos)
+        {
+//            log().debug()<<"handlePenMove() disabling scrolling";
+            scheduledScrollDirection_ = scheduledScrollAbandoned;
             handlePenInItemsList(bounds, penPos, false);
+        }
+        else
+        {
+            if (noListSelection != selection())
+                setSelection(noListSelection, redraw);
+            if (penPos.x >= itemsBounds.x() && penPos.x < itemsBounds.x() + itemsBounds.width())
+            {
+                UInt32 time = TimGetTicks();
+                if (scheduledScrollAbandoned == scheduledScrollDirection_)
+                {
+                    if (penPos.y < bounds.y())
+                        scheduledScrollDirection_ = scheduledScrollUp;
+                    else
+                        scheduledScrollDirection_ = scheduledScrollDown;
+                    scheduledNilEventTicks_ = time + form()->application().ticksPerSecond()/7;
+//                    log().debug()<<"handlePenMove() scheduling scrolling at time: "<<scheduledNilEventTicks_;
+                    EvtSetNullEventTick(scheduledNilEventTicks_);
+                }
+            }
+            else
+            {
+//                log().debug()<<"handlePenMove() disabling scrolling";
+                scheduledScrollDirection_ = scheduledScrollAbandoned;
+            }
+        }
     }    
 }
+
+void ExtendedList::handleNilEvent()
+{
+//    log().debug()<<"handleNilEvent() enter";
+    if (scheduledScrollAbandoned == scheduledScrollDirection_)
+    {
+//        log().debug()<<"handleNilEvent() scheduledScrollAbandoned";
+        return;
+    }
+    UInt32 time = TimGetTicks();
+//    log().debug()<<"handleNilEvent() time: "<<time;
+    if (time < scheduledNilEventTicks_)
+    {
+//        log().debug()<<"handleNilEvent() time < scheduledNilEventTicks_";
+        EvtSetNullEventTick(scheduledNilEventTicks_);
+        return;
+    }
+    WinDirectionType dir = winUp;
+    if (scheduledScrollDown == scheduledScrollDirection_)
+        dir = winDown;
+    scheduledNilEventTicks_ = time + form()->application().ticksPerSecond()/7;
+//    log().debug()<<"handleNilEvent() scheduling scrolling at time: "<<scheduledNilEventTicks_;
+    EvtSetNullEventTick(scheduledNilEventTicks_);
+    scroll(dir, 1);  
+}
+
 
 void ExtendedList::fireItemSelectEvent()
 {
@@ -710,5 +751,37 @@ void ExtendedList::notifyItemsChanged()
         topItem_=noListSelection;
         selection_=noListSelection;    
     }
+}
+
+bool ExtendedList::scroll(WinDirectionType direction, uint_t items)
+{
+    if (0 == items)
+        return false;
+    uint_t itemsCount = this->itemsCount();
+    if (0 == itemsCount)
+        return false;
+    uint_t topItem = this->topItem();
+    assert(topItem < itemsCount);
+    if (direction == winUp)
+    {
+        if (0 == topItem)
+            return false;
+        if (items > topItem)
+            topItem = 0;
+        else
+            topItem -= items;
+    }
+    else 
+    {
+        uint_t visible =height() / itemHeight_;
+        uint_t newTopItem = topItem + items;
+        if (newTopItem + visible >= itemsCount)
+            newTopItem = itemsCount - visible;
+        if (newTopItem == topItem)
+            return false;
+        topItem = newTopItem;
+    }
+    setTopItem(topItem, redraw);
+    return true;
 }
 

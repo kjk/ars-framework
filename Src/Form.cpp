@@ -37,21 +37,15 @@ namespace ArsLexis
         {   
             if (NULL != form->trackingGadget_)
             {
-                if (penMoveEvent == event->eType)
-                    result = form->trackingGadget_->handleEvent(*event);
-                else if (penUpEvent == event->eType)
-                {
-                    result = form->trackingGadget_->handleEvent(*event);
-                    form->trackingGadget_=0;
-                }
+                result = form->trackingGadget_->handleEvent(*event);
+                if (penUpEvent == event->eType)
+                    form->trackingGadget_ = NULL;
             }
             if (!result)
             {
                 if (!form->controlsAttached_)
                     form->attachControls();
                 result = form->handleEvent(*event);
-//                if (!result && keyDownEvent == event->eType && app.runningOnTreo600())
-//                    result = form->handleFocusTransfer(*event);
             }
             if (form->deleteAfterEvent_)
             {
