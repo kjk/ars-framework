@@ -4,13 +4,19 @@
 #include <BaseTypes.hpp>
 #include <cctype>
 
+#if defined(_WIN32)
+// disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+// TODO: move it to a more centrilsed place (like BaseTypes.hpp) ?
+#pragma warning( disable : 4800 )
+#endif
+
 namespace ArsLexis
 {
 
     inline char_t toLower(char_t chr)
     {
 #if defined(_WIN32_WCE) || defined(_WIN32)
-        return _totlower(chr);
+        return static_cast<char_t>(_totlower(chr));
 #else
         return std::tolower(chr);
 #endif        
