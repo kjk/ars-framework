@@ -4,9 +4,11 @@
 #include <Debug.hpp>
 #include <BaseTypes.hpp>
 
-#define CURRENCY_COUNT 137
-
 namespace ArsLexis {
+
+    enum {
+        currenciesCount = 137
+    };
 
     class Currency
     {
@@ -15,19 +17,25 @@ namespace ArsLexis {
         ArsLexis::String countries_; //Maybe list in the feature, for a while comma separated list of countries
 
     public:
-        Currency(ArsLexis::String name, ArsLexis::String abbrev, ArsLexis::String countries):
+    
+        Currency(const String& name, const String& abbrev, const String& countries):
             abbrev_(abbrev),
             name_(name),
             countries_(countries)
         {}
-        void getName(ArsLexis::String& nameOut) {nameOut = name_;}
-        void getAbbrev(ArsLexis::String& abbrevOut) {abbrevOut = abbrev_;}
-        void getCountries(ArsLexis::String& countriesOut) {countriesOut = countries_;}
+        
+        void getName(String& nameOut) {nameOut = name_;}
+        void getAbbrev(String& abbrevOut) {abbrevOut = abbrev_;}
+        void getCountries(String& countriesOut) {countriesOut = countries_;}
+        
     };
     
     uint_t getCurrenciesCount();
-    ArsLexis::Currency getCurrency(int pos);
-    int getCurrencyIndexByFirstChar(ArsLexis::char_t inChar);
+    
+    Currency getCurrency(int pos);
+    
+    int getCurrencyIndexByFirstChar(char_t inChar);
+    
 }
 
 #endif //__ARSLEXIS_CURRENCIES

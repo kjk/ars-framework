@@ -217,15 +217,30 @@ void ArsLexis::processReadyUiEvents()
 
 void ArsLexis::localizeNumber(char_t* begin, char_t* end)
 {
-    NumberFormatType numFormat=static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
+    NumberFormatType numFormat = static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
     char th, dec;
     LocGetNumberSeparators(numFormat, &th, &dec);
-    while (begin!=end)
+    while (begin != end)
     {
-        if (','==*begin)
-            *begin=th;
-        else if ('.'==*begin)
-            *begin=dec;
+        if (_T(',') == *begin)
+            *begin = th;
+        else if (_T('.') == *begin)
+            *begin = dec;
+        ++begin;            
+    }
+}
+
+void ArsLexis::delocalizeNumber(char_t* begin, char_t* end)
+{
+    NumberFormatType numFormat = static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
+    char th, dec;
+    LocGetNumberSeparators(numFormat, &th, &dec);
+    while (begin != end)
+    {
+        if (th == *begin)
+            *begin = _T(',');
+        else if (dec == *begin)
+            *begin = _T('.');
         ++begin;            
     }
 }

@@ -21,6 +21,19 @@ namespace ArsLexis
     void processReadyUiEvents();
 
     void localizeNumber(char_t* begin, char_t* end);
+    
+    inline void localizeNumber(String& s) {
+        char_t* begin = &s[0];
+        localizeNumber(begin, begin + s.length());
+    }
+
+    void delocalizeNumber(char_t* begin, char_t* end);
+
+    inline void delocalizeNumber(String& s) {
+        char_t* begin = &s[0];
+        delocalizeNumber(begin, begin + s.length());
+    }
+    
 }
 
 #endif

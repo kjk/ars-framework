@@ -16,7 +16,7 @@
  work with CodeWarrior for Palm OS 7 and 8.
 ***********************************************************************/
 
-#include <PalmOS.h>
+#include <Text.hpp>
 
 // Routine to convert a string to a double -- 
 // Allowed input is in fixed notation ddd.fff
@@ -24,11 +24,9 @@
 //
 // Return true if conversion was successful, false otherwise
 
-Boolean strToDouble(const char* str, double *dbl);
-
 #define PalmIsDigit(c) ((c) >= '0' && (c) <= '9')
 
-Boolean
+bool
 strToDouble(const char* str, double *dbl)
 {
     Int16 i, start, length, punctPos;

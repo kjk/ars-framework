@@ -107,7 +107,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     uint_t nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
     uint_t txtDx;
 
-    uint_t length=graphics.wordWrap2(text, layoutContext.availableWidth(), txtDx);
+    uint_t length=graphics.wordWrap(text, layoutContext.availableWidth(), txtDx);
     if (0==layoutContext.renderingProgress && !layoutContext.isFirstInLine() && length<nextWhitespace)
     {
         uint_t newLineLength=graphics.wordWrap(text, layoutContext.screenWidth-indent);

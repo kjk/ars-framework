@@ -21,8 +21,8 @@ typedef std::list<const ArsLexis::char_t *> CharPtrList_t;
 typedef std::list<ArsLexis::String> StringList_t;
 
 # if defined(_PALM_OS)    
-    extern void printDouble(double x, char *s);
-    extern Boolean strToDouble(const char* str, double *dbl);
+    extern void printDouble(double x, char* s);
+    extern bool strToDouble(const char* str, double* dbl);
 #endif
 
 namespace ArsLexis
@@ -34,6 +34,15 @@ namespace ArsLexis
         return static_cast<char_t>(_totlower(chr));
 #else
         return std::tolower(chr);
+#endif        
+    }
+
+    inline char_t toUpper(char_t chr)
+    {
+#if defined(_WIN32)
+        return static_cast<char_t>(_totupper(chr));
+#else
+        return std::toupper(chr);
 #endif        
     }
     

@@ -13,7 +13,9 @@
  work with CodeWarrior for Palm OS 7 and 8.
 ***********************************************************************/
 
-#include <PalmOS.h>
+#include <Text.hpp>
+
+#pragma pcrelconstdata on
 
 /**********************************************************************/
 /* Formatting parameters                                              */
@@ -26,13 +28,13 @@
 /**********************************************************************/
 /* FP conversion constants                                            */
 /**********************************************************************/
-static double pow1[] = {
+static const double pow1[] = {
     1e256, 1e128, 1e064,
     1e032, 1e016, 1e008,
     1e004, 1e002, 1e001
 };
 
-static double pow2[] = {
+static const double pow2[] = {
     1e-256, 1e-128, 1e-064,
     1e-032, 1e-016, 1e-008,
     1e-004, 1e-002, 1e-001
@@ -45,7 +47,7 @@ printDouble(double x, char *s)
 {
     FlpCompDouble fcd;
     short e, e1, i;
-    double *pd, *pd1;
+    const double *pd, *pd1;
     char sign = '\0';
     short dec = 0;
 

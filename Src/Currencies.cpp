@@ -1,5 +1,6 @@
 #include <Currencies.hpp>
 #include <Text.hpp>
+#include <Utility.hpp>
 
 #ifdef __MWERKS__
 # pragma pcrelconstdata on
@@ -23,7 +24,7 @@ namespace ArsLexis{
         const CurrencyCountriesField_t countries;
     };
 
-    static const CurrencyArrayEntry currencies[CURRENCY_COUNT]=
+    static const CurrencyArrayEntry currencies[]=
     {
         {_T("USD"), _T("United States Dollars"), _T("Ecuador, Micronesia (Federated States of), Palau") },
         {_T("EUR"), _T("Euro"), _T("Austria, Belgium, Finland, France, Greece, Eire (Ireland), Italy, Luxembourg, Martinique, Portugal, Spain") },
@@ -166,27 +167,31 @@ namespace ArsLexis{
 
     uint_t getCurrenciesCount()
     {
-        return CURRENCY_COUNT;
+        return ARRAY_SIZE(currencies);
     }
 
     Currency getCurrency(int pos)
     {
-        assert (pos<CURRENCY_COUNT);
+       assert (pos<ARRAY_SIZE(currencies));
         return Currency(currencies[pos].name, currencies[pos].abbrev, currencies[pos].countries);
         
     }
         // always return index value in (0, statesCount-1)   
     int getCurrencyIndexByFirstChar(ArsLexis::char_t inChar)
     {
-        inChar = ArsLexis::toLower(inChar);
+        inChar = ArsLexis::toUpper(inChar);
         // skip four first currencies USD, EUR, GBP and JPY
         // the rest is set alphabetically
         for (int i = 4; i < getCurrenciesCount(); i++)
         {
-            char_t foundChar = ArsLexis::toLower(currencies[i].abbrev[0]);
+            char_t foundChar = currencies[i].abbrev[0];
             if (inChar <= foundChar)
                 return i;
         }
         return getCurrenciesCount()-1;
     }    
+}
+
+namespace {
+    static ArsLexis::StaticAssert<ArsLexis::currenciesCount == ARRAY_SIZE(ArsLexis::currencies)> global_and_local_currencies_count_equal;
 }

@@ -96,7 +96,7 @@ namespace ArsLexis
         width=w;
     }
 
-    uint_t Graphics::wordWrap2(const char_t* text, uint_t availableDx, uint_t& textDx)
+    uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
     {
         int charsThatFit = FntWordWrap(text, availableDx);
         textDx = textWidth(text, charsThatFit);
