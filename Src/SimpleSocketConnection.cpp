@@ -69,10 +69,10 @@ namespace ArsLexis
             log().info()<<_T("notifyReadable(): getSocketErrorStatus() returned error (ignored): ")<<error;
             error=errNone;
         }
-        if (errNone!=error)
-            goto Exit;
         uint_t dataSize=0;
         uint_t responseSize=response_.size();
+        if (errNone!=error)
+            goto Exit;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             error=resizeResponse(responseSize+chunkSize_);

@@ -281,7 +281,7 @@ error_t KXmlParser::pushEntity() {
     if (_T('#')==code[0])
      {
         const char_t* begin=code.data()+1;
-        const char_t* end=begin+code.length();
+        const char_t* end=begin+code.length()-1;
         long c;
         error_t err;
         if (_T('x')==*begin)
