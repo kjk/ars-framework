@@ -15,14 +15,13 @@
 #     title_to_which_redirects (must be in ${name}_idx.txt file
 #
 # Usage:
-#   -limit N : only process first N rows
-#   -usepsyco : if used, will use psyco for speeding up, false by default
+#   -limit n : only process first N rows
+#   -nopsyco : if used, will NOT use psyco
 #   -juststats : if used, doesn't write processed data, just calculates
 #                and prints the statistics
-#   -force : recreate the files even if they exist
 #   fileName : which file to process
 
-import sys,os,os.path,string,time,md5,bz2,arsutils,wikipediasql
+import sys,os,string,arsutils,wikipediasql
 try:
     import psyco
     g_fPsycoAvailable = True
@@ -81,42 +80,8 @@ def dumpMostViewed():
         print "%9d %s" % (val,key)
 
 def usageAndExit():
-    print "Usage: dumpSqlToTxt.py [-limit N] [-usepsyco] [-juststats] [-force] fileName"
+    print "Usage: dumpSqlToTxt.py [-nopsyco] [-limit n] [-juststats] sqlDump"
     sys.exit(0)
-
-def fIsBzipFile(inFileName):
-    if len(inFileName)>4 and ".bz2" == inFileName[-4:]:
-        return True
-    return False
-
-def getBaseFileName(fileName):
-    suf = ".bz2"
-    sufLen = len(suf)
-    if len(fileName)>sufLen and suf == fileName[-sufLen:]:
-        fileName = fileName[:-sufLen]
-        #print "new file name is %s" % fileName
-
-    suf = ".sql"
-    sufLen = len(suf)
-    if len(fileName)>sufLen and suf == fileName[-sufLen:]:
-        fileName = fileName[:-sufLen]
-        #print "new file name is %s" % fileName
-    else:
-        print "%s is not a valid input file. Must be a *.sql or *.sql.bz2 file"
-        sys.exit(0)
-    return fileName
-
-def genBaseAndSuffix(inFileName,suffix):
-    return getBaseFileName(inFileName) + suffix
-
-def getIdxFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_idx.txt")
-
-def getRedirectsFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_redirects.txt")
-
-def getBodyFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_body.txt")
 
 # those come from namespace.php in wikipedia code
 wiki_namespaces = ["NS_MAIN", "NS_TALK", "NS_USER", "NS_USER_TALK", "NS_WP", "NS_WIKIPEDIA", "NS_WP_TALK", "NS_WIKIPEDIA_TALK", "NS_IMAGE", "NS_IMAGE_TALK", "NS_MEDIAWIKI", "NS_MEDIAWIKI_TALK", "NS_TEMPLATE", "NS_TEMPLATE_TALK", "NS_HELP", "NS_HELP_TALK" ]
@@ -146,7 +111,7 @@ class WikipediaStats:
 
     def addStats(self,article):
 
-        ns = article.getNs()
+        ns = article.getNamespace()
         txt = article.getText()
 
         self.nsStats[ns][NS_ARTICLES_COUNT] += 1
@@ -171,78 +136,42 @@ class WikipediaStats:
                 avgArticleSize = float(totalArticlesSize)/float(articlesCount)
             print "  Average article size: %.2f" % avgArticleSize
 
-def convertFile(inName,limit,fJustStats=False,fSkipIfExists=False):
-    if not fJustStats:
-        txtName = getBodyFileName(inName)
-        idxFileName = getIdxFileName(inName)
-        redirectsFileName = getRedirectsFileName(inName)
+def convertFile(inName,limit,fJustStats=False):
+    # if a limit is given we don't use cache (to avoid creating partial cache)
+    fUseCache = True
+    if limit or fJustStats:
+        fUseCache = False
 
-        if arsutils.fFileExists(txtName) and arsutils.fFileExists(idxFileName) and arsutils.fFileExists(redirectsFileName):
-            if fSkipIfExists:
-                print "files exist and fSkipIfExists==True so skipping creation"
-                return
-            else:
-                print "files exist bug fSkipIfExists==False so create anyway"
-
-        foIdx = open(idxFileName,"wb")
-        foTxt = open(txtName, "wb")
-        foRedirects = open(redirectsFileName, "wb")
+    print "fUseCache: %d" % fUseCache
     stats = WikipediaStats()
     count = 0
     timer = arsutils.Timer(fStart=True)
-    curPos = 0
-    for article in wikipediasql.iterWikipediaArticles(inName):
+    for article in wikipediasql.iterWikipediaArticles(inName,limit=limit,fUseCache=fUseCache):
         #print sqlArgs
         stats.addStats(article)
         title = article.getTitle().strip()
         viewCount = article.getViewCount()
+        #if article.fRedirect():
+        #    txt = article.getText()
+        #    print title
+        #    print txt.strip()
         registerMostViewed(title,viewCount)
-        if not fJustStats:
-            ns = article.getNs()
-            txt = article.getText()
-
-            if article.fRedirect():
-                foRedirects.write("%s\n" % title)
-                foRedirects.write("%s\n" % txt)
-            else:
-                if 0==txt.find("#REDIRECT [["):
-                    print "%s is a REDIRECT without being marked as such" % txt
-                txtLen = len(txt)
-                md5Hash = md5.new(txt)
-
-                foIdx.write("%s\n" % title)
-                foIdx.write("%d,%d,%d,%s\n" % (ns, curPos, txtLen, md5Hash.hexdigest()))
-                curPos += txtLen
-                foTxt.write(txt)
-
         count += 1
         if 0 == count % 2000:
             print "processed %d items" % count
-        if count>=limit:
-            break
-    if not fJustStats:
-        foTxt.close()
-        foIdx.close()
-        foRedirects.close()
+
     timer.stop()
     stats.dumpStats()
     dumpMostViewed()
     timer.dumpInfo()
 
 if __name__=="__main__":
-    limit = arsutils.getRemoveCmdArg("-limit")
-    if None == limit:
-        limit = 9999999 # very big number
-    else:
-        limit = int(limit)
-    #print "limit=%d" % limit
+    limit = arsutils.getRemoveCmdArgInt("-limit")
+    if limit:
+        print "limit=%d" % limit
     fJustStats = arsutils.fDetectRemoveCmdFlag("-juststats")
-
-    fForce = arsutils.fDetectRemoveCmdFlag("-force")
-    fSkipIfExists = not fForce
-
-    fUsePsyco = arsutils.fDetectRemoveCmdFlag("-usepsyco")
-    if g_fPsycoAvailable and fUsePsyco:
+    fNoPsyco = arsutils.fDetectRemoveCmdFlag("-nopsyco")
+    if g_fPsycoAvailable and not fNoPsyco:
         print "using psyco"
         psyco.full()
 
@@ -250,5 +179,5 @@ if __name__=="__main__":
     if len(sys.argv) != 2:
         usageAndExit()
 
-    fileName = sys.argv[1]
-    convertFile(fileName,limit,fJustStats,fSkipIfExists)
+    sqlDump = sys.argv[1]
+    convertFile(sqlDump,limit,fJustStats)

@@ -3,7 +3,12 @@
 #
 # Collect routines frequently used in other places
 
-import time
+import sys,time
+
+def fIsBzipFile(inFileName):
+    if len(inFileName)>4 and ".bz2" == inFileName[-4:]:
+        return True
+    return False
 
 def fDetectRemoveCmdFlag(flag):
     fFlagPresent = False

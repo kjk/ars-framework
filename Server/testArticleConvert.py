@@ -13,26 +13,6 @@ try:
 except:
     print "psyco not available. You should consider using it (http://psyco.sourceforge.net/)"
 
-def getRemoveCmdArg(argName):
-    argVal = None
-    try:
-        pos = sys.argv.index(argName)
-        argVal = sys.argv[pos+1]
-        sys.argv[pos:pos+2] = []
-    except:
-        pass
-    return argVal
-
-def fDetectRemoveCmdFlag(flag):
-    fFlagPresent = False
-    try:
-        pos = sys.argv.index(flag)
-        fFlagPresent = True
-        sys.argv[pos:pos+1] = []
-    except:
-        pass
-    return fFlagPresent
-
 def usageAndExit():
     print "Usage: testArticleConvert.py testFileName"
     sys.exit(0)

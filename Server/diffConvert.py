@@ -61,11 +61,6 @@ def usageAndExit():
     print "Usage: diffConvert.py [-limit N] [-random] [-title foo] fileName"
     sys.exit(0)
 
-def fIsBzipFile(inFileName):
-    if len(inFileName)>4 and ".bz2" == inFileName[-4:]:
-        return True
-    return False
-
 def getBaseFileName(fileName):
     suf = ".bz2"
     sufLen = len(suf)
@@ -112,7 +107,7 @@ class ArticleInfo:
         self.txtLen = txtLen
         self.md5Hash = md5Hash
     def getTitle(self): return self.title
-    def getNs(self): return self.ns
+    def getNamespace(self): return self.ns
     def getHash(self): return self.md5Hash
     def getTxt(self): return getTxt(self.sqlFileName, self.txtOffset, self.txtLen)
 

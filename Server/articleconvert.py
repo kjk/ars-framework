@@ -80,18 +80,6 @@ wikiMacrosReplacements = {
 #    "{{msg:controversial}}" : "",
 }
 
-# TODO: old code, remove
-#wikiStubText=""                                                                                    
-#wikiSpoilerText="'''Warning:''' Plot details follow."
-#wikiDisambigText="This is a disambiguation page; that is, one that points to other pages that might otherwise have the same name."
-#wikiCopyVio1Text=""
-#wikiCopyVio2Text=""
-#wikiNPOVText=""
-#wikiDisputedText=""
-#wikiInclusionText=""
-#wikiProtectedText=""
-#wikiInUseText=""
-#wikiControversialText=""
 wikiMacroRe=re.compile("\{\{((msg)|(subst))\:.*?\}\}", re.I)
 
 def replaceWikiMacros(term, text):
@@ -131,4 +119,82 @@ def convertArticle(term, text):
     except:
         print "Exception while converting term: ", term
         return ''
-  
+
+class WikipediaLink:
+    def __init__(self,link,name):
+        self.link = link
+        self.name = name
+    def getLink(self): return self.link
+    def getName(self): return self.name
+    def __eq__(self,other):
+        if self.link==other.getLink() and self.name==other.getName():
+            return True
+        else:
+            return False
+    def __ne__(self,other):
+        return not self.__eq__(other)
+    def dump(self):
+        print "'%s':'%s'" % (self.link,self.name)
+
+linkRe=re.compile(r'\[\[(.*?)(\|.*?)?\]\]', re.S)
+
+# extract all links from wikipedia article and return
+# them as a list
+# return None if there are no links
+def articleExtractLinks(articleTxt):
+    links = []
+    for match in linkRe.finditer(articleTxt):
+        link=match.group(1)
+        name=match.group(2)
+        if None != name:
+            name = name[1:]  # remove "|" from the beginning which is part of regexp
+        wikiLink = WikipediaLink(link,name)
+        links.append(wikiLink)
+    if len(links)==0:
+        return None
+    return links
+
+def fValidLink(link,redirects,articlesLinks):
+    if redirects.has_key(link) or articlesLinks.has_key(link):
+        return True
+    return False
+
+def validateInternalLinks(db, cursor, definition):
+    for match in matches:
+        term=match.group(1)
+        if len(term) and (term not in testedLinks):
+            testedLinks.append(term)
+            idTermDef=findExactDefinition(db, cursor, term)
+            if idTermDef:
+                validLinks.append(term)
+        if term not in validLinks:
+            name=match.group(match.lastindex).lstrip('| ').rstrip().replace('_', ' ')
+            definition=definition[:match.start()]+name+definition[match.end():]
+    return definition
+
+def removeInvalidLinks(txt,redirects,articlesLinks):
+    fModified = False
+    while True:
+        fLocallyModified = False
+        for match in linkRe.finditer(txt):
+            link=match.group(1)
+            if fValidLink(link,redirects,articlesLinks):
+                #print "VALID_LINK: '%s'" % link
+                continue
+            name=match.group(2)
+            if None != name:
+                replacement = name[1:]
+            else:
+                replacement =link.replace('_',' ')
+            #print "INVALID_LINK '%s', REPL '%s'" % (link,replacement)
+            txt = txt[:match.start()]+replacement+txt[match.end():]
+            fModified = True
+            fLocallyModified = True
+            break
+        if not fLocallyModified:
+            break
+
+    if fModified:
+        return txt
+    else:
+        return None

@@ -15,7 +15,7 @@
 #  - generate the diff sql file
 #  - put the code common with diffConvert.py into a separate file
 #
-import sys,os,os.path,string,re,random,time,md5,bz2,dumpSqlToTxt
+import sys,os,os.path,string,re,random,time,md5,bz2,dumpSqlToTxt,wikipediasql
 try:
     import psyco
     psyco.full()
@@ -25,66 +25,6 @@ except:
 def usageAndExit():
     print "Usage: diffDumps.py dumpFileOne dumpFileTwo"
     sys.exit(0)
-
-def fIsBzipFile(inFileName):
-    if len(inFileName)>4 and ".bz2" == inFileName[-4:]:
-        return True
-    return False
-
-def getBaseFileName(fileName):
-    suf = ".bz2"
-    sufLen = len(suf)
-    if len(fileName)>sufLen and suf == fileName[-sufLen:]:
-        fileName = fileName[:-sufLen]
-        #print "new file name is %s" % fileName
-
-    suf = ".sql"
-    sufLen = len(suf)
-    if len(fileName)>sufLen and suf == fileName[-sufLen:]:
-        fileName = fileName[:-sufLen]
-        #print "new file name is %s" % fileName
-    else:
-        print "%s is not a valid input file. Must be a *.sql or *.sql.bz2 file"
-        sys.exit(0)
-    return fileName
-
-def genBaseAndSuffix(inFileName,suffix):
-    return getBaseFileName(inFileName) + suffix
-
-def getIdxFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_idx.txt")
-
-def getRedirectsFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_redirects.txt")
-
-def getBodyFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_body.txt")
-
-def getTxt(sqlFileName,txtOff,txtLen):
-    fn = getBodyFileName(sqlFileName)
-    fo = open(fn,"rb")
-    fo.seek(txtOff)
-    txt = fo.read(txtLen)
-    fo.close()
-    return txt
-
-class ArticleInfo:
-    def __init__(self,sqlFileName,title,ns,txtOffset,txtLen,md5Hash):
-        self.sqlFileName = sqlFileName
-        self.title = title
-        self.ns = ns
-        self.txtOffset = txtOffset
-        self.txtLen = txtLen
-        self.md5Hash = md5Hash
-        self.md5Hash2 = None
-    def getTitle(self): return self.title
-    def getNs(self): return self.ns
-    def getHash(self): return self.md5Hash
-    def getTxt(self): return getTxt(self.sqlFileName, self.txtOffset, self.txtLen)
-    def setHash2(self,md5Hash2): self.md5Hash2 = md5Hash2
-    def getHash2(self): return self.md5Hash2
-
-NS_MAIN = 0
 
 def iterArticles(sqlFileName,fSkipNonMain=True):
     fileName = getIdxFileName(sqlFileName)
@@ -108,19 +48,18 @@ def iterArticles(sqlFileName,fSkipNonMain=True):
     fo.close()
 
 def calcDiff(dumpOne,dumpTwo):
-    dumpSqlToTxt.convertFile(dumpOne,9999999,fJustStats=False,fSkipIfExists=True)
-    dumpSqlToTxt.convertFile(dumpTwo,9999999,fJustStats=False,fSkipIfExists=True)
     articlesFromDumpOne = {}
     newArticles = {}
     count = 0
-    for article in iterArticles(dumpOne):
+    for article in wikipediasql.iterWikipediaArticles(dumpOne,limit=None,fUseCache=True):
         articlesFromDumpOne[article.getTitle()] = article
         count += 1
         if count % 5000 == 0:
             print "processed %d articles from dump one" % count
 
     # now calculate differences
-    for article in iterArticles(dumpTwo):
+    count = 0
+    for article in wikipediasql.iterWikipediaArticles(dumpTwo,limit=None,fUseCache=True):
         count += 1
         if count % 5000 == 0:
             print "processed %d articles from dump two" % count
@@ -160,3 +99,6 @@ if __name__=="__main__":
 
     calcDiff(dumpOne,dumpTwo)
 
+# TODO:
+#  save viewCount to cache file
+#  convert everything to the new way of doing things

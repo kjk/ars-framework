@@ -263,7 +263,7 @@ def convertAllFromSQL(fileName,articleLimit):
     count = 0
     for article in wikipediasql.iterWikipediaArticles(fileName):
         # we only convert article from the main namespace
-        if article.getNs() != NS_MAIN:
+        if article.getNamespace() != NS_MAIN:
             continue
         title = article.getTitle()
         txt = article.getText()
