@@ -233,6 +233,7 @@ ArsLexis::String deviceInfoToken()
 }
 
 // return true if running on Treo 600 device
+// TODO: should be renamed to isTreo()
 bool isTreo600()
 {
     UInt32 id;
@@ -242,7 +243,11 @@ bool isTreo600()
         return false;
 
     FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
-    if (('H101' == id) || ('H102' == id) || ('H201' == id)) // H201 is what simulator reports - I need this to test 
+    // H201 is Treo 600 simulator - I need this to test 
+    // H101 is Treo 600
+    // H102 is ???
+    // H202 is Treo 650 simulator
+    if (('H101' == id) || ('H102' == id) || ('H201' == id) || ('H202' == id))
         return true;
 
     return false;
