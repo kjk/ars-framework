@@ -59,7 +59,6 @@ namespace ArsLexis
     
     Application::~Application() 
     {
-        FrmCloseAllForms();
         Err error=FtrUnregister(creatorId_, featureInstancePointer);
         assert(!error);
         assert(forms_.empty());
@@ -182,7 +181,10 @@ namespace ArsLexis
     {
         Err error=errNone;
         if (sysAppLaunchCmdNormalLaunch==cmd)
+        {
             error=normalLaunch();
+            FrmCloseAllForms();
+        }
         else if (sysAppLaunchCmdNotify==cmd)
         {
             SysNotifyParamType* notify=static_cast<SysNotifyParamType*>(cmdPBP);

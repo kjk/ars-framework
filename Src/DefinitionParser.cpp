@@ -1,5 +1,7 @@
 #include "DefinitionParser.hpp"
 #include "FormattedTextElement.hpp"
+#include "ListNumberElement.hpp"
+#include "BulletElement.hpp"
 #include <cctype>
 
 using ArsLexis::String;
@@ -27,6 +29,18 @@ DefinitionElement* DefinitionParser::currentParent()
         result=parentsStack_.back();
     return result;
 }
+
+void DefinitionParser::pushParent(DefinitionElement* parent)
+{
+    parentsStack_.push_back(parent);
+}
+
+void DefinitionParser::popParent()
+{
+    assert(!parentsStack_.empty());
+    parentsStack_.pop_back();
+}
+
 
 Boolean DefinitionParser::isPlainText() const
 {
@@ -83,7 +97,7 @@ Err DefinitionParser::parse(const ArsLexis::String& text, Definition& definition
 static const char entityReferenceStart='&';
 static const char entityReferenceEnd=';';
 
-void DefinitionParser::decode(ArsLexis::String& text) const
+void DefinitionParser::decodeHTMLCharacterEntityRefs(ArsLexis::String& text) const
 {
     UInt16 length=text.length();
     UInt16 index=0;
@@ -137,5 +151,92 @@ Err DefinitionParser::subParseText(UInt16 n, ElementStyle style)
     
 
     return errNone;
+}
+
+
+void DefinitionParser::startNewNumberedList(ListNumberElement* firstElement)
+{
+    if (currentNumberedList_.empty())
+    {
+        assert(numListsStack_.empty());
+        currentNumberedList_.push_back(firstElement);
+    }
+    else 
+    {
+        numListsStack_.push_back(NumberedList_t(1, firstElement));
+        currentNumberedList_.swap(numListsStack_.back());
+    }
+}
+
+void DefinitionParser::finishCurrentNumberedList()
+{
+    assert(!currentNumberedList_.empty());
+    UInt16 totalCount=currentNumberedList_.size();
+    for (UInt16 i=0; i<totalCount; ++i)
+        currentNumberedList_[i]->setTotalCount(totalCount);
+    if (!numListsStack_.empty())
+    {
+        currentNumberedList_.swap(numListsStack_.back());
+        numListsStack_.pop_back();
+    }
+    else
+        currentNumberedList_.empty();
+}
+
+void DefinitionParser::manageListNesting(const ArsLexis::String& newNesting)
+{
+    UInt16 lastNestingDepth=lastListNesting_.length();
+    UInt16 newNestingDepth=newNesting.length();
+    if (lastNestingDepth || newNestingDepth)
+    {
+        UInt16 firstDiff=0;  // This will be index of first character that makes previous and current nesting descr. differ.
+        while (firstDiff<std::min(lastNestingDepth, newNestingDepth) && 
+            lastListNesting_[firstDiff]==newNesting[firstDiff])
+            firstDiff++;
+            
+        
+        for (UInt16 i=lastNestingDepth-1; i>=firstDiff; --i)
+        {
+            popParent();
+            char listType=lastListNesting_[firstDiff];
+            if (numberedListChar==listType)
+                finishCurrentNumberedList();
+        }
+
+        Boolean continueList=false;
+        if (firstDiff==newNestingDepth) // Means we have just finished a sublist and next element will be another point in current list, not a sublist
+        {
+            assert(firstDiff>0);   
+            popParent();            // We need to pop previous sibling from parents stack
+            --firstDiff;                
+            continueList=true;    // Mark that next created element should be continuation of existing list, not start of new one
+        }
+        for (UInt16 i=firstDiff; i<newNestingDepth; ++i)
+        {
+            char elementType=newNesting[firstDiff-1];
+            DefinitionElement* element=0;
+            if (numberedListChar==elementType)
+            {
+                if (continueList)
+                {
+                    assert(!currentNumberedList_.empty());
+                    ListNumberElement* listElement=new ListNumberElement(currentNumberedList_.back()->number()+1);
+                    currentNumberedList_.push_back(listElement);
+                    element=listElement;
+                }
+                else
+                {
+                    ListNumberElement* listElement=new ListNumberElement(1);
+                    startNewNumberedList(listElement);
+                    element=listElement;
+                }                    
+            }
+            else
+                element=new BulletElement();
+            appendElement(element);
+            pushParent(element);
+            continueList=false;
+        }
+    }
 }
 

@@ -7,6 +7,8 @@
 #ifndef __ARSLEXIS_DEBUG_HPP__
 #define __ARSLEXIS_DEBUG_HPP__
 
+#pragma no_static_dtors on 
+#pragma warn_ptr_int_conv on 
 //#pragma warn_a5_access on
 
 #if __ide_target("Release")

@@ -142,6 +142,11 @@ public:
         DefinitionElement& element()
         {return element_;}
         
+        /**
+         * Moves all rectangles belonging to this @c HotSpot. If rectangle falls outside
+         * @c validArea rectangle, it's removed from the @c HotSpot.
+         * @param delta coordinates to move rectangles by.
+         */
         void move(const PointType& delta, const ArsLexis::Rectangle& validArea);
         
         Boolean valid() const
@@ -176,15 +181,30 @@ public:
     
     void swap(Definition& other);
     
+    /**
+     * Appends element to the end of this definition's element list. Definition takes ownership 
+     * of the appended element.
+     */
     void appendElement(DefinitionElement* element);
     
+    /**
+     * Adds hot spot to the collection of this definition's hot spots. Definition takes ownership 
+     * of the hot spot.
+     */
     void addHotSpot(HotSpot* hotSpot);
     
     const ArsLexis::Rectangle& bounds() const
     {return bounds_;}
     
+    /**
+     * Checks if @c point falls within bounds of any currently displayed @c HotSpot. If so,
+     * calls @c DefinitionElement::elementClicked() of element associated with @c HotSpot.
+     */
     void hitTest(const PointType& point);
     
+    /**
+     * Resets this definition to its default state (without any elements, hot spots etc.).
+     */
     void clear();
     
 private:

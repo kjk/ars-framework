@@ -22,6 +22,7 @@
 #include <CWCallbackThunks.h>
 #include <list>
 
+ 
 namespace ArsLexis 
 {
 
@@ -202,7 +203,7 @@ namespace ArsLexis
         {return errNone;}
         
         /**
-         * Called from @c run() in case when application is run with @c sysAppLaunchCmdNormalLaunch code.
+         * Called from @c handleLaunchCode() in case when application is run with @c sysAppLaunchCmdNormalLaunch code.
          * You should override it and provide some reasonable contents like this (error checking omitted for clarity):
          * @code
          *     checkRomVersion(myRequiredRomVersion, myRomIncompatibleAlert);
@@ -217,6 +218,12 @@ namespace ArsLexis
     
         virtual Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
 
+        /**
+         * @c Application object's "virtual constructor". Here not-trivial initializations of members
+         * should take place.
+         * @return error code, if initialization required for normal work failed. Returning error code
+         * different from @c errNone here prevents application from being run.
+         */
         virtual Err initialize();
     
         /**
@@ -260,14 +267,14 @@ namespace ArsLexis
     Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     {
         Err error=errNone;
-        if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
-            error=_CW_SetupExpandedMode();
-        if (!error)
+        AppClass* app=static_cast<AppClass*>(getInstance(creatorId));
+        if (app)
+            error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
+        else
         {
-            AppClass* app=static_cast<AppClass*>(getInstance(creatorId));
-            if (app)
-                error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
-            else
+            if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
+                error=_CW_SetupExpandedMode();
+            if (!error)
             {
                 app=new AppClass;
                 if (app)
@@ -283,7 +290,6 @@ namespace ArsLexis
         }
         return error;
     }  
-    
 }
 
 /**
