@@ -20,8 +20,8 @@ namespace ArsLexis
     {
         
         UInt16 hasPenInputMgr_:1;
-        UInt16 hasSonySilkLib_:2;
-        UInt16 sonyLibIsVsk_:3;
+        UInt16 hasSonySilkLib_:1;
+        UInt16 sonyLibIsVsk_:1;
         UInt16 notUsed_:13;
 
         Library sonySilkLib_;

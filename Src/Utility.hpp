@@ -16,23 +16,47 @@ namespace ArsLexis
     };
 
 
-    class FontSaver 
+    class FontSetter 
     {
         FontID originalFontId_;
-        FontSaver(const FontSaver&);
-        FontSaver& operator=(const FontSaver&);
+        FontSetter(const FontSetter&);
+        FontSetter& operator=(const FontSetter&);
     public:
     
-        FontSaver():
-            originalFontId_(FntGetFont())
+        explicit FontSetter(FontID fontId):
+            originalFontId_(FntSetFont(fontId))
         {}
         
-        ~FontSaver()
+        ~FontSetter()
         {
             FntSetFont(originalFontId_);
         }
     };
 
+    class UnderlineModeSetter
+    {
+        UnderlineModeType originalUnderlineMode_;
+        UnderlineModeSetter(const UnderlineModeSetter&);
+        UnderlineModeSetter& operator=(const UnderlineModeSetter&);
+    public:
+    
+        explicit UnderlineModeSetter(UnderlineModeType underlineMode):
+            originalUnderlineMode_(WinSetUnderlineMode(underlineMode))
+        {}
+        
+        ~UnderlineModeSetter()
+        {
+            WinSetUnderlineMode(originalUnderlineMode_);
+        }
+    };
+    
+    fontID getBoldFont(fontID normal);
+    
+    struct C_StringLess
+    {
+        bool operator ()(const char* str1, const char* str2) const
+        {return StrCompare(str1, str2)<0;}
+    };
 }
 
 #endif

@@ -7,6 +7,7 @@ class GenericTextElement: public DefinitionElement
 {
 
     ArsLexis::String text_;
+    ElementStyle style_;
     
     struct HyperlinkProperties
     {
@@ -55,6 +56,10 @@ public:
     {text_.swap(text);}
 
     void invalidateHotSpot();
+    
+    void setStyle(ElementStyle style)
+    {style_=style;}
+    
 };
 
 #endif

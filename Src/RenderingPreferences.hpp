@@ -7,7 +7,12 @@ enum HyperlinkType
     hyperlinkTerm,
     hyperlinkExternal
 };
-    
+
+enum ElementStyle
+{
+    styleDefault,
+    styleHeader
+};
 
 class RenderingPreferences
 {
@@ -54,11 +59,29 @@ public:
         assert(hyperlinkType<3);
         return hyperlinkDecorations_[hyperlinkType];
     }
+    
+    struct StyleFormatting
+    {
+        FontID fontId;
+        IndexedColorType textColor;
+        
+        StyleFormatting():
+            fontId(stdFont),
+            textColor(0)
+        {}
+        
+    };
+    
+    const StyleFormatting& styleFormatting(ElementStyle style) const
+    {
+        assert(style<2);
+        return styles_[style];
+    }
 
 private:
     
-    HyperlinkDecoration hyperlinkDecorations_[3];    
-        
+    HyperlinkDecoration hyperlinkDecorations_[3];
+    StyleFormatting styles_[2];
 };
 
 

@@ -2,6 +2,7 @@
 #include "GenericTextElement.hpp"
 #include "BulletElement.hpp"
 #include "ParagraphElement.hpp"
+#include "HorizontalLineElement.hpp"
 
 void MainForm::resize(const RectangleType& screenBounds)
 {
@@ -85,7 +86,7 @@ Err MainForm::initialize()
             "it is only necessary to avoid the separation; to use a single make session to build the "
             "whole project, which is not quite the same as a single Makefile. "
         ));
-        definition_.appendElement(new ParagraphElement());
+        definition_.appendElement(new HorizontalLineElement());
         definition_.appendElement(new GenericTextElement(
             "This conclusion runs counter to much accumulated folk wisdom in building large projects "
             "on UNIX. Some of the main objections raised by this folk wisdom are examined and "

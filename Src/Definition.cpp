@@ -145,6 +145,10 @@ void Definition::moveHotSpots(const PointType& delta)
     }
 }
 
+
+/**
+ * @todo Erase garbage that occurs during scrolling of lines of non-uniform height in Definition::scroll().
+ */
 void Definition::scroll(Int16 delta)
 {
     UInt16 newFirstLine=0;

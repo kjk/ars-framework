@@ -125,7 +125,7 @@ namespace ArsLexis
 
         void destroy(pointer p)
         {
-            p->T::~T();
+            p->~T();
         }
         
     };

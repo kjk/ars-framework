@@ -13,7 +13,8 @@ GenericTextElement::HyperlinkProperties::HyperlinkProperties(const ArsLexis::Str
 
 GenericTextElement::GenericTextElement(const ArsLexis::String& text):
     text_(text),
-    hyperlink_(0)
+    hyperlink_(0),
+    style_(styleDefault)
 {}
 
 GenericTextElement::~GenericTextElement()
@@ -132,6 +133,8 @@ void GenericTextElement::applyHyperlinkDecorations(const RenderingPreferences& p
 
 void GenericTextElement::applyFormatting(const RenderingPreferences& preferences)
 {
+    const RenderingPreferences::StyleFormatting& format=preferences.styleFormatting(style_);    FntSetFont(format.fontId);
+    WinSetTextColor(format.textColor);
     applyHyperlinkDecorations(preferences);
 }
 
