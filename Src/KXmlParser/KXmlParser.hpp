@@ -13,12 +13,18 @@ namespace KXml2{
     // Defines a concrete implementation of pull XML parsing
     class KXmlParser : public XmlPullParser
     {
-    private:
+
         bool        fRelaxed_;
         Reader * reader_;
+        
+    public:        
 
-        static const int LEGACY = 999;
-        static const int XML_DECL = 998;
+        enum LegacyEventType {
+            LEGACY = 999,
+            XML_DECL = 998
+	};
+	
+    private:	
 
         // general
 
@@ -52,7 +58,7 @@ namespace KXml2{
         int txtPos_;
 
         // Event-related
-        int type_;
+        EventType type_;
         String text_;
         bool isWhitespace_;
         String nameSpace_;
@@ -72,12 +78,10 @@ namespace KXml2{
         bool unresolved_;
         bool token_;
 
-    private:
-        void    ensureCapacity(std::vector<String>& vect, int size);
-        void    ensureCapacityInt(std::vector<int>& vect, int size);
+
         String  resolveEntity(const String& entity);
         error_t peek(int& ret, int pos);
-        error_t peekType(int& ret);
+        error_t peekType(EventType& ret);
         error_t nextImpl();
         error_t pushEntity();
         error_t pushText(int delimiter, bool resolveEntities);
@@ -90,21 +94,25 @@ namespace KXml2{
         error_t parseStartTag(bool xmldecl);
         error_t adjustNsp(bool& ret);
         error_t parseEndTag();
-        error_t parseLegacy(int& ret, bool pushV);
+        error_t parseLegacy(EventType& ret, bool pushV);
         error_t parseDoctype(bool pushV);
+
         bool    isProp (const String& n1, bool prop, const String& n2);
+
     public:
+    
         KXmlParser();
+        
         ~KXmlParser();
+        
         String  getText();
         error_t setInput(Reader& reader);
         error_t setFeature(const String& feature, bool flag);
-        error_t nextToken(int& ret);
-        error_t next(int& ret);
+        error_t nextToken(EventType& ret);
+        error_t next(EventType& ret);
         error_t getPositionDescription(String& ret);
-        int     getEventType();
+        EventType getEventType();
         void    defineEntityReplacementText(const String& entity, const String& value);
-
         bool    getFeature(const String& feature);
         String  getInputEncoding();
         String  getNamespacePrefix(int pos);
@@ -126,7 +134,7 @@ namespace KXml2{
         String  getNamespace(const String& prefix);
         error_t getNamespaceCount(int& ret, int depth);
         error_t nextText(String& ret);
-        error_t nextTag(int& ret);
+        error_t nextTag(EventType& ret);
 
     };
 }

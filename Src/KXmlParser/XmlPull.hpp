@@ -13,58 +13,60 @@ namespace KXml2{
 
     class XmlPullParser
     {
-        public:
-            static const int START_DOCUMENT = 0;
-            static const int START_TAG = 2;
-            static const int TEXT = 4;
-            static const int END_TAG = 3;
-            static const int END_DOCUMENT = 1;
+    public:
 
-            static const int ENTITY_REF = 6;
-            static const int IGNORABLE_WHITESPACE = 7;
+        enum EventType {
+            START_DOCUMENT,
+            END_DOCUMENT,
+            START_TAG,
+            END_TAG,
+            TEXT,
+            CDSECT,
+            ENTITY_REF,
+            IGNORABLE_WHITESPACE,
+            PROCESSING_INSTRUCTION,
+            COMMENT,
+            DOCDECL,
+        };
+        
+        typedef char_t TypeDescription_t[24];
+        enum {typesArrayLength=11};
+        static const TypeDescription_t TYPES[typesArrayLength];
 
-            static const int COMMENT = 9;
-            static const int CDSECT = 5;
-            static const int DOCDECL = 10;
-            static const int PROCESSING_INSTRUCTION = 8;
-            
-            
-            typedef char_t TypeDescription_t[24];
-            static const unsigned int typesArrayLength=11;
-            static const TypeDescription_t TYPES[typesArrayLength];
+        static const char_t* FEATURE_PROCESS_NAMESPACES;
 
-            static const char_t* FEATURE_PROCESS_NAMESPACES;
-
-            virtual error_t setInput(Reader& reader) = 0;
-            virtual error_t setFeature(const String& feature, bool flag) = 0;
-            virtual error_t nextToken(int& ret) =0;
-            virtual error_t next(int& ret) = 0;
-            virtual error_t getPositionDescription(String& ret) = 0;
-            virtual int     getEventType() = 0;
-            virtual void    defineEntityReplacementText(const String& entity, const String& value) = 0;
-            virtual String  getText() = 0;
-            virtual bool    getFeature(const String& feature) = 0;
-            virtual String  getInputEncoding() = 0;
-            virtual String  getNamespacePrefix(int pos) = 0;
-            virtual String  getNamespaceUri(int pos) = 0;
-            virtual int     getDepth() = 0;
-            virtual int     getLineNumber() = 0;
-            virtual int     getColumnNumber() = 0;
-            virtual error_t isWhitespace(bool& ret) = 0;
-            virtual String  getNamespace() = 0;
-            virtual String  getName() = 0;
-            virtual String  getPrefix() = 0;
-            virtual error_t isEmptyElementTag(bool& ret) = 0;
-            virtual int     getAttributeCount() = 0;
-            virtual error_t getAttributeNamespace(String& ret, int index) = 0;
-            virtual error_t getAttributeName(String& ret, int index) = 0;
-            virtual error_t getAttributePrefix(String& ret, int index) = 0;
-            virtual error_t getAttributeValue(String& ret, int index) = 0;
-            virtual String  getAttributeValue(const String& nameSpace, const String& name) = 0;
-            virtual String  getNamespace(const String& prefix) = 0;
-            virtual error_t getNamespaceCount(int& ret, int depth) = 0;
-            virtual error_t nextText(String& ret) = 0;
-            virtual error_t nextTag(int& ret) = 0;
+        virtual error_t setInput(Reader& reader) = 0;
+        virtual error_t setFeature(const String& feature, bool flag) = 0;
+        virtual error_t nextToken(EventType& ret) =0;
+        virtual error_t next(EventType& ret) = 0;
+        virtual error_t getPositionDescription(String& ret) = 0;
+        virtual EventType getEventType() = 0;
+        virtual void    defineEntityReplacementText(const String& entity, const String& value) = 0;
+        virtual String  getText() = 0;
+        virtual bool    getFeature(const String& feature) = 0;
+        virtual String  getInputEncoding() = 0;
+        virtual String  getNamespacePrefix(int pos) = 0;
+        virtual String  getNamespaceUri(int pos) = 0;
+        virtual int     getDepth() = 0;
+        virtual int     getLineNumber() = 0;
+        virtual int     getColumnNumber() = 0;
+        virtual error_t isWhitespace(bool& ret) = 0;
+        virtual String  getNamespace() = 0;
+        virtual String  getName() = 0;
+        virtual String  getPrefix() = 0;
+        virtual error_t isEmptyElementTag(bool& ret) = 0;
+        virtual int     getAttributeCount() = 0;
+        virtual error_t getAttributeNamespace(String& ret, int index) = 0;
+        virtual error_t getAttributeName(String& ret, int index) = 0;
+        virtual error_t getAttributePrefix(String& ret, int index) = 0;
+        virtual error_t getAttributeValue(String& ret, int index) = 0;
+        virtual String  getAttributeValue(const String& nameSpace, const String& name) = 0;
+        virtual String  getNamespace(const String& prefix) = 0;
+        virtual error_t getNamespaceCount(int& ret, int depth) = 0;
+        virtual error_t nextText(String& ret) = 0;
+        virtual error_t nextTag(EventType& ret) = 0;
+        
+        virtual ~XmlPullParser() {}
     };
 }
 

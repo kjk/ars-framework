@@ -89,3 +89,4 @@ namespace ArsLexis
 #endif
 
 #endif // __ARSLEXIS_BASE_TYPES_HPP__
+

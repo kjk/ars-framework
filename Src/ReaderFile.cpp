@@ -18,7 +18,7 @@ ReaderFile::ReaderFile(const String& fileName)
     fread(&fileContents_[0], fileSize, 1, in);
     fclose(in);
 
-    readerMemory_.reset(new ReaderMemory(fileContents_.data(), fileSize));
+    readerMemory_=MemoryReaderPtr(new ReaderMemory(fileContents_.data(), fileSize));
 }
 
 ReaderFile::~ReaderFile()

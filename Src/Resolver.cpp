@@ -53,7 +53,7 @@ namespace ArsLexis
     status_t Resolver::validateAddress(const String& origAddress, String& validAddress, ushort_t& port)
     {
         status_t error=errNone;
-        String::size_type pos=origAddress.find(':', 1);
+        String::size_type pos=origAddress.find(_T(':'), 1);
         if (origAddress.npos!=pos)
         {
             ushort_t portLength=origAddress.length()-pos-1;

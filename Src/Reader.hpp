@@ -14,7 +14,7 @@ namespace ArsLexis {
     {
     public:
     
-        static const int npos=-1;
+        enum {npos=-1};
 
 //  Is there any reasonable semantics for getActPosition() when Reader is based on some abstract stream, say socket?    
 //        virtual long getActPosition() = 0;

@@ -61,7 +61,7 @@ namespace ArsLexis {
         uint_t major=protocolVersionMajor_;
         uint_t minor=protocolVersionMinor_;
         int verLen=StrPrintF(versionBuffer, "%hu.%hu", major, minor);
-        out.append(method).append(1, ' ').append(uri_).append(" HTTP/", 6).append(versionBuffer, verLen).append(crLf);
+        out.append(method).append(1, _T(' ')).append(uri_).append(" HTTP/", 6).append(versionBuffer, verLen).append(crLf);
     }
 
     void HttpConnection::renderHeaderField(String& out, const RequestField_t& field)
@@ -140,7 +140,7 @@ namespace ArsLexis {
         {
             String::size_type end=uri.find("/", prefixLength);
             String address(uri, prefixLength, end-prefixLength);
-            if (address.npos==address.find(':'))
+            if (address.npos==address.find(_T(':')))
                 address.append(":80", 3);
             setAddress(address);            
         }
@@ -205,7 +205,7 @@ namespace ArsLexis {
     {
         if (line.find("HTTP/")!=0)
             return errResponseMalformed;
-        String::size_type pos0=line.find('.', 6);
+        String::size_type pos0=line.find(_T('.'), 6);
         if (line.npos==pos0)
             return errResponseMalformed;
         long value;
@@ -239,7 +239,7 @@ namespace ArsLexis {
 
     status_t HttpConnection::processHeaderLine(const String& line)
     {
-        String::size_type pos=line.find(':');
+        String::size_type pos=line.find(_T(':'));
         if (line.npos==pos)
             return errResponseMalformed;
         String field(line, 0, pos);
