@@ -353,4 +353,13 @@ private:
     bool navigateHyperlink(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, bool next);
 };
 
+/**
+ * parse text with "<b>", "</b>" and "<br>" tags inside.
+ * if useHyperlink is true:
+ *   handle "<a>" and "</a>" tags calling:
+ *   gText->setHyperlink(text, hyperlinkType);
+ *   where text is text between <a> and </a>
+ */
+void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink = false, HyperlinkType hyperlinkType = hyperlinkCallback);
+
 #endif

@@ -9,6 +9,8 @@
 #include <Utility.hpp>
 #include "GenericTextElement.hpp"
 #include <algorithm>
+#include <Text.hpp>
+#include "LineBreakElement.hpp"
 
 using namespace ArsLexis;
 
@@ -1062,4 +1064,64 @@ void Definition::clearSelection(ArsLexis::Graphics& graphics, const RenderingPre
     inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
     selectionIsHyperlink_ = false;
     renderElementRange(graphics, prefs, start, end);
+}
+
+#define brTag "<br>"
+#define bTagStart "<b>"
+#define bTagEnd "</b>"
+#define aTagStart "<a>"
+#define aTagEnd "</a>"
+
+void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink, HyperlinkType hyperlinkType)
+{
+    using namespace std;
+    uint_t bold=0;
+    String::size_type start=0;
+    String::size_type pos=start;
+    while (true) 
+    {
+        String::size_type next=text.find('<', pos);
+        if (text.npos==next) 
+        {
+            out.push_back(new GenericTextElement(String(text, start, next)));
+            break;
+        }
+        if (startsWithIgnoreCase(text, brTag, next))
+        {
+            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            out.push_back(new LineBreakElement());
+            start=pos=next+strlen(brTag);
+        }
+        else if (startsWithIgnoreCase(text, bTagStart, next))
+        {
+            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            bold++;
+            start=pos=next+strlen(bTagStart);
+        }
+        else if (startsWithIgnoreCase(text, bTagEnd, next))
+        {
+            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            bold--;
+            start=pos=next+strlen(bTagEnd);
+        }
+        else if (startsWithIgnoreCase(text, aTagStart, next) && useHyperlink)
+        {
+            out.push_back(new GenericTextElement(String(text, start, next-pos)));
+            start=pos=next+strlen(aTagStart);
+        }
+        else if (startsWithIgnoreCase(text, aTagEnd, next) && useHyperlink)
+        {
+            GenericTextElement* gText;
+            out.push_back(gText = new GenericTextElement(String(text, start, next-pos)));
+            gText->setHyperlink(String(text, start, next-pos), hyperlinkType);
+            start=pos=next+strlen(aTagEnd);
+        }
+        else
+            pos=next+1;
+        if (text.length()==pos)
+        {
+            out.push_back(new GenericTextElement(String(text, start, pos)));
+            break;
+        }
+    }
 }
