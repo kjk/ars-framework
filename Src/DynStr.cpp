@@ -473,6 +473,12 @@ void ReplaceCharP(char_t** target, char_t* newValue)
     *target = newValue;
 }
 
+// free the string pointed out by str
+void FreeCharP(char_t ** str)
+{
+    ReplaceCharP(str, NULL);
+}
+
 
 #ifdef DEBUG
 static void test_DynStrReplace()

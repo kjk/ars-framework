@@ -186,6 +186,8 @@ public:
     
     void drawBitmap(uint_t bitmapId, const Point& topLeft);
 
+    void stripToWidthWithEllipsis(char_t *textInOut, uint_t lengthOut, uint_t& widthInOut, bool fFullWords = true);
+
     void stripToWidthWithEllipsis(ArsLexis::String& textInOut, uint_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
 
     void drawTextInBounds(const ArsLexis::String& text, const Rectangle& itemBounds, int totalLines, bool allowCenter = true);

@@ -308,6 +308,38 @@ void urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
     }
 }
 
+// remove non-digit characters in-place.
+void removeNonDigitsInPlace(char_t *txt)
+{
+    char_t * curReadPos = txt;
+    char_t * curWritePos = txt;
+    while (*curReadPos)
+    {
+        if (isDigit(*curReadPos))
+        {
+            if (curReadPos != curWritePos)
+            {
+                assert( curWritePos < curReadPos);
+                *curWritePos++ = *curReadPos++;
+            }
+            else
+            {
+                ++curWritePos;
+                ++curReadPos;
+            }
+        }
+        else
+            ++curReadPos;
+    }
+
+    // terminating 0
+    if (curReadPos != curWritePos)
+    {
+        assert( curWritePos < curReadPos);
+        *curWritePos = *curReadPos;
+    }
+}
+
 void removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& out)
 {
     out.resize(0);
@@ -955,6 +987,31 @@ long StrFind(const char_t* str, long len, char_t chr)
 
 
 #ifdef DEBUG
+static void test_removeNonDigitsInPlace()
+{
+    char_t buf[32];
+    char_t *bufStart = &(buf[0]);
+
+    tstrcpy(bufStart, _T(""));
+    removeNonDigitsInPlace(bufStart);
+    assert(0 == tstrlen(bufStart) );
+
+    tstrcpy(bufStart, _T(" 0 a 33"));
+    removeNonDigitsInPlace(bufStart);
+    assert(3 == tstrlen(bufStart));
+    assert(0 == tstrcmp(bufStart, _T("033")));
+
+    tstrcpy(bufStart, _T("5"));
+    removeNonDigitsInPlace(bufStart);
+    assert(1 == tstrlen(bufStart));
+    assert(0 == tstrcmp(bufStart, _T("5")));
+
+    tstrcpy(bufStart, _T("9 8a7e6g5e4w3w2q1q0gla "));
+    removeNonDigitsInPlace(bufStart);
+    assert(10 == tstrlen(bufStart));
+    assert(0 == tstrcmp(bufStart, _T("9876543210")));
+}
+
 static void test_StrEmpty()
 {
     assert(true == StrEmpty(NULL));
@@ -976,6 +1033,7 @@ static void test_StrFind()
 
 void test_TextUnitTestAll()
 {
+    test_removeNonDigitsInPlace();
     test_StrFind();
     test_StrEmpty();
     test_StrFind();

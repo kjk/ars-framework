@@ -131,6 +131,8 @@ inline void hexBinEncodeInPlace(String& inOut)
 
 void urlEncode(const String& in, String& out);
 
+void removeNonDigitsInPlace(char_t *txt);
+
 void removeNonDigits(const char_t* in, uint_t inLength, String& out);
 
 inline void removeNonDigits(const String& in, String& out)

@@ -63,6 +63,7 @@ namespace ArsLexis
 
 # define tstrlen   _tcslen
 # define tstrcmp   _tcscmp
+# define tstrcpy   _tcscpy
 # define tstrncmp  _tcsncmp
 # define tprintf   _stprintf
 # define ticks     GetTickCount
@@ -100,6 +101,7 @@ namespace ArsLexis
 #  define tstrlen StrLen
 #  define strlen  StrLen
 #  define tstrcmp StrCompare
+#  define tstrcpy StrCpy
 #  define tstrncmp StrNCompare
 #  define memmove  MemMove
 // yes, MemSet has different order than memset

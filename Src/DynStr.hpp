@@ -88,6 +88,7 @@ public:
 
 void ReplaceCDynStrP(CDynStr** target, CDynStr* newValue);
 void ReplaceCharP(char_t** target, char_t* newValue);
+void FreeCharP(char_t ** str);
 
 #ifdef DEBUG
 void test_DynStrAll();
