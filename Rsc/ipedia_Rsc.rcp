@@ -75,6 +75,53 @@ BEGIN
     BUTTONS "OK"
 END
 
+ALERT ID serverFailureAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Server Error"
+    MESSAGE "Unable to complete request due to server error."
+    BUTTONS "OK"
+END
+
+ALERT ID invalidAuthorizationAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Invalid Authorization"
+    MESSAGE "Unable to complete request due to invalid authorization data. Please check if you entered serial number correctly."
+    BUTTONS "OK"
+END
+
+ALERT ID unsupportedDeviceAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Unsupported Device"
+    MESSAGE "Your hardware configuration is unsupported."
+    BUTTONS "OK"
+END
+
+ALERT ID malformedRequestAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Malformed Request"
+    MESSAGE "Server rejected your query."
+    BUTTONS "OK"
+END
+
+ALERT ID malformedResponseAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Malformed Response"
+    MESSAGE "Server returned malformed response."
+    BUTTONS "OK"
+END
+
+
+
 FORM ID mainForm AT (0 0 160 160)
 	NOSAVEBEHIND NOFRAME
 	MENUID mainMenuBar DEFAULTBTNID goButton
