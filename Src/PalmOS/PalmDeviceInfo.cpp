@@ -232,6 +232,8 @@ ArsLexis::String deviceInfoToken()
     return out;
 }
 
+#pragma segment Segment1
+
 // return true if running on Treo 600 device
 // TODO: should be renamed to isTreo()
 bool isTreo600()
