@@ -1,6 +1,10 @@
 #include <HttpConnection.hpp>
 #include <Text.hpp>
 
+#ifdef __MWERKS__
+#pragma pcrelconstdata on
+#endif
+
 namespace ArsLexis {
 
     namespace {
@@ -415,7 +419,8 @@ namespace ArsLexis {
                 state_=stateInBody;
             else
             {
-                state_=stateAfterLastChunkCr;                goto start;
+                state_=stateAfterLastChunkCr;
+                goto start;
             }
         }
         assert(stateInBody==state_);
