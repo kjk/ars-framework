@@ -97,9 +97,7 @@ namespace ArsLexis
         {return form_;}
         
         Boolean visible() const
-        {
-            return FrmVisible(form_);
-        }
+        {return FrmVisible(form_);}
         
         UInt16 getObjectIndex(UInt16 objectId) const
         {return FrmGetObjectIndex(form_, objectId);}

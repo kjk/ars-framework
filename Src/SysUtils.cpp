@@ -23,11 +23,11 @@ namespace ArsLexis
     
     UInt32 random(UInt32 range)
     {
-        Int16 rand1=SysRandom(0);
+        Int32 rand1=SysRandom(0);
         if ( 2 == (rand1 % 3) )
             rand1 = SysRandom(TimGetTicks());
 
-        Int16 rand2 = SysRandom(0);
+        Int32 rand2 = SysRandom(0);
         if ( 2 == (rand2 % 3) )
             rand2 = SysRandom(TimGetTicks());
 
@@ -41,6 +41,51 @@ namespace ArsLexis
     {
         //! @todo Implement deviceIdToken() (well... copy from iNoah should be enough)
         return "TEST";
+    }
+    
+    
+    Err numericValue(const char* begin, const char* end, Int32& result, UInt16 base)
+    {
+        Err error=errNone;
+        bool negative=false;
+        Int32 res=0;
+        String numbers("0123456789abcdefghijklmnopqrstuvwxyz");
+        char buffer[2];
+        if (begin>=end || base>numbers.length())
+        {    
+            error=sysErrParamErr;
+            goto OnError;           
+        }
+        if (*begin=='-')
+        {
+            negative=true;
+            if (++begin==end)
+            {
+                error=sysErrParamErr;
+                goto OnError;           
+            }
+        }           
+        buffer[1]=chrNull;
+        while (begin!=end) 
+        {
+            buffer[0]=*(begin++);
+            StrToLower(buffer, buffer); 
+            String::size_type num=numbers.find(buffer);
+            if (num>=base)
+            {   
+                error=sysErrParamErr;
+                break;
+            }
+            else
+            {
+                res*=base;
+                res+=num;
+            }
+        }
+        if (!error)
+           result=res;
+    OnError:
+        return error;    
     }
 
 }

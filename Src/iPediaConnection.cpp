@@ -2,6 +2,7 @@
 #include "iPediaApplication.hpp"
 #include "DefinitionParser.hpp"
 #include "SysUtils.hpp"
+#include "MainForm.hpp"
 
 using namespace ArsLexis;
 
@@ -11,8 +12,9 @@ iPediaConnection::iPediaConnection(SocketConnectionManager& manager):
     parser_(0),
     transactionId_(random((UInt32)-1)),
     getCookie_(false),
-    gotFormatVersion_(false),
     inPayload_(false),
+    payloadIsError_(false),
+    formatVersion_(0),
     payloadStart_(0),
     payloadLength_(0),
     processedSoFar_(0)
@@ -25,9 +27,9 @@ iPediaConnection::~iPediaConnection()
 }
 
 #define fieldSeparator ": "
-#define lineSeparator "\r\n"
-
-static const unsigned int lineSeparatorLength=2;
+#define lineSeparator "\n"
+static const unsigned int fieldSeparatorLength=2;
+static const unsigned int lineSeparatorLength=1;
 
 static void appendField(String& out, const char* fieldName, const String& value)
 {
@@ -76,6 +78,25 @@ void iPediaConnection::prepareRequest()
     setRequest(request); 
 }
 
+static String extractFieldValue(const String& text, UInt16 fieldStart, UInt16 fieldEnd)
+{
+    String value;
+    String::size_type pos=text.find(fieldSeparator, fieldStart);
+    if (text.npos!=pos && pos+fieldSeparatorLength<fieldEnd)
+        value.assign(text, pos+fieldSeparatorLength, fieldEnd-pos-fieldSeparatorLength);
+    return value;
+}
+
+static Err extractFieldIntValue(const String& text, UInt16 fieldStart, UInt16 fieldEnd, Int32& value, UInt16 base=10)
+{
+    Err error=errNone;
+    String textValue=extractFieldValue(text, fieldStart, fieldEnd);
+    if (!textValue.empty())        error=numericValue(textValue.data(), textValue.data()+textValue.length(), value, base);
+    else
+        error=sysErrParamErr;
+    return error;
+}
+
 Err iPediaConnection::open(const SocketAddress& address, Int32 timeout)
 {
     prepareRequest();
@@ -84,7 +105,36 @@ Err iPediaConnection::open(const SocketAddress& address, Int32 timeout)
 
 void iPediaConnection::processLine(UInt16 start, UInt16 end)
 {
-    //! @todo Implement iPediaConnection:processLine()
+    Int32 value=0;
+    Err error=errNone;
+    if (start==response().find(formatVersionField, start))
+    {
+        error=extractFieldIntValue(response(), start, end, value);
+        if (!error)
+            formatVersion_=value;
+    }
+    else if (start==response().find(definitionForField, start))
+        definitionForTerm_=extractFieldValue(response(), start, end);
+    else if ((start==response().find(definitionField, start)) ||
+        (payloadIsError_=(start==response().find(errorField, start)))) // Assignment here is intentional.
+    {
+        error=extractFieldIntValue(response(), start, end, value);
+        if (!error)
+        {
+            inPayload_=true;
+            payloadStart_=end+lineSeparatorLength;
+            payloadLength_=value;
+            delete parser_;
+            parser_=new DefinitionParser(response(), payloadStart_);
+        }
+    }
+    else if (start==response().find(cookieField, start))
+    {
+        //! @todo Set cookie in preferences according to field value
+        String cookie=extractFieldValue(response(), start, end);
+    }
+    if (error)
+        handleError(error);
 }
 
 //! @todo Test processResponseIncrement()
@@ -111,7 +161,7 @@ void iPediaConnection::processResponseIncrement(bool finish)
             if (response().length()-payloadStart_>=payloadLength_+lineSeparatorLength)
             {
                 if (processedSoFar_<payloadStart_+payloadLength_)
-                    parser_->parseIncrement(payloadLength_, true);
+                    parser_->parseIncrement(payloadStart_+payloadLength_, true);
                 inPayload_=false;
                 processedSoFar_=payloadStart_+payloadLength_+lineSeparatorLength;
                 goOn=true;
@@ -119,8 +169,9 @@ void iPediaConnection::processResponseIncrement(bool finish)
             else
             {
                 bool finishPayload=(response().length()-payloadStart_>=payloadLength_);
-                parser_->parseIncrement(response().length()-payloadStart_, finishPayload);
+                parser_->parseIncrement(response().length(), finishPayload);
                 processedSoFar_=response().length();
+                goOn=false;
             }
         }
     } while (goOn);
@@ -135,5 +186,19 @@ void iPediaConnection::reportProgress()
 void iPediaConnection::finalize()
 {
     processResponseIncrement(true);
+    if (parser_!=0)
+    {
+        MainForm* form=static_cast<MainForm*>(Application::instance().getOpenForm(mainForm));
+        if (form)
+        {
+            parser_->updateDefinition(form->definition());
+            form->update();
+        }
+    }
     SimpleSocketConnection::finalize();
+}
+
+void iPediaConnection::handleError(Err error)
+{
+    SimpleSocketConnection::handleError(error);
 }

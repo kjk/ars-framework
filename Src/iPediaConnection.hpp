@@ -13,13 +13,15 @@ class iPediaConnection: public ArsLexis::SimpleSocketConnection
     ArsLexis::String serialNumber_;
 
     UInt16 getCookie_:1;
-    UInt16 gotFormatVersion_:1;
     UInt16 inPayload_:1;
-    UInt16 pad_:13;
+    UInt16 payloadIsError_:1;
+    UInt16 formatVersion_:13;
     
     UInt16 payloadStart_;    
     UInt16 payloadLength_;
     UInt16 processedSoFar_;
+    
+    ArsLexis::String definitionForTerm_;
     
     Err processField(UInt16 fieldStart, UInt16 fieldEnd);
     
@@ -34,6 +36,8 @@ protected:
     void reportProgress();
     
     void finalize();
+    
+    void handleError(Err error);
 
 public:
 

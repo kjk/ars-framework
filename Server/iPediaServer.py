@@ -4,7 +4,7 @@
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 
-testDefinition = ""
+testDefinition = (
 "[[af:Wetenskapsfiksie]] [[da:Science-fiction]] [[de:Science-Fiction]] [[eo:Sciencfikcio]] [[es:Ciencia ficción]] [[fi:Tieteiskirjallisuus]] [[fr:Science-fiction]] [[he:&#1502;&#1491;&#1506; &#1489;&#1491;&#1497;&#1493;&#1504;&#1497;]][[ja:&#12469;&#12452;&#12456;&#12531;&#12473;&#12539;&#12501;&#12451;&#12463;&#12471;&#12519;&#12531;]] [[nl:Science fiction]] [[no:Science fiction]] [[pl:Science fiction]] [[sv:Science fiction]][[ru:&#1053;&#1072;&#1091;&#1095;&#1085;&#1072;&#1103; &#1092;&#1072;&#1085;&#1090;&#1072;&#1089;&#1090;&#1080;&#1082;&#1072;]]\n"
 "\n"
 "'''Science fiction''' is a form of [[fiction]] which deals principally with the impact of actual or imagined science (and/or technology) upon society or individuals. \n"
@@ -137,8 +137,9 @@ testDefinition = ""
 "* [http://www.litrix.com/sec8.htm Online Sci-Fi at Litrix reading room, Authors: Richard Jefferies, Edgar Rice Burroughs, H. G. Wells, George Allan England, Mary Wollstonecraft (Godwin) Shelley, Philip José Farmer, A. Merritt, Jules Verne, Robert Louis Stevenson, Mallory Clontz, David Lindsay]\n"
 "* [http://www.infinityplus.co.uk/index.htm Infinity Plus: Online new works in sci-fi, fantasy and horror]\n"
 "* [http://greatsfandf.com/ Great Science-Fiction & Fantasy Works]: an attempt to extract the more literate authors and works from the morass.\n"
+)
 
-lineSeparator =		"\r\n"
+lineSeparator =		"\n"
 fieldSeparator =	": "
 
 transactionIdField =	"Transaction-ID"
@@ -153,6 +154,7 @@ class iPediaProtocol(basic.LineReceiver):
 	
 	
 	def __init__(self):
+		self.delimiter='\n'
 		self.lines = []
 		self.transactionId=False
 		self.cookieRequested=False
