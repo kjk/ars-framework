@@ -1006,6 +1006,18 @@ long StrFind(const char_t* str, long len, char_t chr)
     return -1;
 }
 
+long bufferToHexCode(const char* in, long inLength, char* out, long outLength)
+{
+    assert(inLength*2 <= outLength);
+    char numbers[] = {"0123456789abcdef"};
+    long pos = 0;
+    for (pos = 0; pos < inLength; pos++)
+    {
+        out[2*pos+1] = numbers[in[pos] & 0x0f];
+        out[2*pos]   = numbers[(in[pos] & 0xf0) >> 4];
+    }
+    return inLength*2;
+}
 
 #ifdef DEBUG
 static void test_removeNonDigitsInPlace()
@@ -1052,12 +1064,21 @@ static void test_StrFind()
     assert( 4 == StrFind(_T("hello"), -1, _T('o')) );
 }
 
+static void test_HexCode()
+{
+    char buffer[20];
+    assert(12 == bufferToHexCode("?text?",6,buffer,20));
+    buffer[12] = '\0';
+    assert(0 == tstrcmp(buffer,"3f746578743f"));
+}
+
 void test_TextUnitTestAll()
 {
     test_removeNonDigitsInPlace();
     test_StrFind();
     test_StrEmpty();
     test_StrFind();
+    test_HexCode();
 }
 
 #endif

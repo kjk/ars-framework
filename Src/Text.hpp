@@ -203,6 +203,12 @@ void StrStrip(char_t *str);
 // If not found return -1.
 long StrFind(const char_t* str, long len, char_t chr);
 
+/**
+ * outLength must be inLength*2 ("?text?"->"3f746578743f")
+ * return used length of out buffer (2*inLength)
+ */
+long bufferToHexCode(const char* in, long inLength, char* out, long outLength);
+
 #ifdef DEBUG
 void test_TextUnitTestAll();
 #endif
