@@ -55,14 +55,12 @@ OnError:
 
 UniversalDataHandler::UniversalDataHandler():
     lineNo_(0), 
-    delimiter_(_T('\n')),
     controlDataLength_(0),
     writerStreamName_(NULL)
 {}
 
 UniversalDataHandler::UniversalDataHandler(const ArsLexis::char_t* streamName):
     lineNo_(0),
-    delimiter_(_T('\n')),
     controlDataLength_(0),
     writerStreamName_(streamName)
 {
@@ -132,24 +130,10 @@ inline status_t UniversalDataHandler::handlePayloadFinish()
 
 status_t UniversalDataHandler::handleIncrement(const ArsLexis::String& payload, ulong_t& length, bool finish)
 {
-    lineBuffer_.append(payload, 0, length);
-    String::size_type pos=lineBuffer_.find(delimiter_);
-    while (true) 
-    {
-        if (lineBuffer_.npos==pos && !finish)
-            break;
-        String line(lineBuffer_, 0, pos);
-        status_t error=handleLine(line);
-        if (errNone!=error)
-            return error;
-        if (lineBuffer_.npos==pos)
-            break;
-        lineBuffer_.erase(0, pos+1);
-        pos=lineBuffer_.find(delimiter_);
-    }
-    if (finish)
+    status_t error = LineBufferedPayloadHandler::handleIncrement(payload, length, finish);
+    if (errNone==error && finish)
         return handlePayloadFinish();
-    return errNone;
+    return error;
 }
 
 UniversalDataHandler::~UniversalDataHandler() {}

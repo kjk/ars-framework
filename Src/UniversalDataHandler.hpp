@@ -2,7 +2,7 @@
 #define __ARSLEXIS_UNIVERSAL_DATA_HANDLER_HPP__
 
 #include <UniversalDataFormat.hpp>
-#include <FieldPayloadProtocolConnection.hpp>
+#include <LineBufferedPayloadHandler.hpp>
 
 namespace ArsLexis {
     class Reader;
@@ -15,11 +15,7 @@ typedef std::auto_ptr<ArsLexis::DataStoreWriter> DataStoreWriterPtr;
 
 extern void readUniversalDataFromStream(const ArsLexis::char_t* streamName, UniversalDataFormat& out);
 
-//we moved back to FieldPaloadProtocolConnection to add handlePayloadFinish()
-class UniversalDataHandler: public ArsLexis::FieldPayloadProtocolConnection::PayloadHandler {
-
-    ArsLexis::String        lineBuffer_;
-    ArsLexis::char_t        delimiter_;
+class UniversalDataHandler: public ArsLexis::LineBufferedPayloadHandler {
 
     DataStoreWriterPtr      writer_;
     const ArsLexis::char_t* writerStreamName_;
@@ -32,9 +28,6 @@ protected:
 
     ArsLexis::status_t handlePayloadFinish();
 
-    void setDelimiter(ArsLexis::char_t delimiter)
-    {delimiter_=delimiter;}
-    
 public:    
 
     UniversalDataFormat universalData;
