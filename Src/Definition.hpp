@@ -307,9 +307,23 @@ public:
     
     uint_t navOrderOptions() const { return navOrderOptions_; }
     
-    bool isFirstInNavOrder() const { return 0 != navOrderOptions_ & navOrderFirst; }
-    bool isLastInNavOrder() const {return 0 != navOrderOptions_ & navOrderLast; }
-private:
+    bool isFirstInNavOrder() const 
+    {
+        if ( navOrderFirst == (navOrderOptions_ & navOrderFirst))
+            return true;
+        else
+            return false;
+    }
+
+    bool isLastInNavOrder() const 
+    {
+        if ( navOrderLast == (navOrderOptions_ & navOrderLast) )
+            return true;
+        else
+            return false;
+    }
+
+    private:
 
     void renderSingleElement(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, ElementPosition_t element);
 

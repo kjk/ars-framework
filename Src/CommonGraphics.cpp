@@ -108,7 +108,7 @@ namespace ArsLexis
                 uint_t width = itemBounds.width();
                 uint_t len = tempLength;
                 charsInWidth(text.c_str(), len, width);
-                if (len < tempLength || width > itemBounds.width())
+                if (len < tempLength || width > (uint_t)itemBounds.width())
                     widthFull = true;
             }
             
@@ -117,7 +117,11 @@ namespace ArsLexis
             {
                 //all text in first line - center ?
                 if (allowCenter)
-                    newBounds.topLeft.y += itemBounds.height()/2 - FntLineHeight()/2 -1;
+                {
+                    // TODO: FntLineHeight() is Palm-only, hence breaks wince build
+                    // newBounds.topLeft.y += itemBounds.height()/2 - FntLineHeight()/2 -1;
+                    newBounds.topLeft.y += itemBounds.height()/2 - fontHeight()/2 -1;
+                }
                 drawText(text.c_str(), length, newBounds.topLeft);
                 return;
             }

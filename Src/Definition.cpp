@@ -1129,11 +1129,11 @@ bool Definition::isLastLinkSelected() const
     return true;
 }
 
-#define brTag "<br>"
-#define bTagStart "<b>"
-#define bTagEnd "</b>"
-#define aTagStart "<a>"
-#define aTagEnd "</a>"
+#define brTag       _T("<br>")
+#define bTagStart   _T("<b>")
+#define bTagEnd     _T("</b>")
+#define aTagStart   _T("<a>")
+#define aTagEnd     _T("</a>")
 
 void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink, HyperlinkType hyperlinkType)
 {
@@ -1153,31 +1153,31 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
         {
             out.push_back(new GenericTextElement(String(text, start, next-pos)));
             out.push_back(new LineBreakElement());
-            start=pos=next+strlen(brTag);
+            start=pos=next+tstrlen(brTag);
         }
         else if (startsWithIgnoreCase(text, bTagStart, next))
         {
             out.push_back(new GenericTextElement(String(text, start, next-pos)));
             bold++;
-            start=pos=next+strlen(bTagStart);
+            start=pos=next+tstrlen(bTagStart);
         }
         else if (startsWithIgnoreCase(text, bTagEnd, next))
         {
             out.push_back(new GenericTextElement(String(text, start, next-pos)));
             bold--;
-            start=pos=next+strlen(bTagEnd);
+            start=pos=next+tstrlen(bTagEnd);
         }
         else if (startsWithIgnoreCase(text, aTagStart, next) && useHyperlink)
         {
             out.push_back(new GenericTextElement(String(text, start, next-pos)));
-            start=pos=next+strlen(aTagStart);
+            start=pos=next+tstrlen(aTagStart);
         }
         else if (startsWithIgnoreCase(text, aTagEnd, next) && useHyperlink)
         {
             GenericTextElement* gText;
             out.push_back(gText = new GenericTextElement(String(text, start, next-pos)));
             gText->setHyperlink(String(text, start, next-pos), hyperlinkType);
-            start=pos=next+strlen(aTagEnd);
+            start=pos=next+tstrlen(aTagEnd);
         }
         else
             pos=next+1;
