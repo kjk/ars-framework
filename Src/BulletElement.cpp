@@ -7,13 +7,8 @@ BulletElement::BulletElement():
 
 void BulletElement::applyFormatting(const RenderingPreferences& prefs)
 {
-    applyHyperlinkDecorations(prefs);
+    GenericTextElement::applyFormatting(prefs);
     FntSetFont(symbolFont);
-}
-
-Boolean BulletElement::requiresNewLine(const RenderingPreferences& preferences) const
-{
-    return true;
 }
 
 void BulletElement::calculateLayout(LayoutContext& mc)

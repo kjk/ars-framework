@@ -1,23 +1,26 @@
 #ifndef __PARAGRAPH_ELEMENT_HPP__
 #define __PARAGRAPH_ELEMENT_HPP__
 
-#include "DefinitionElement.hpp"
+#include "LineBreakElement.hpp"
 
-class ParagraphElement: public DefinitionElement
+class ParagraphElement: public LineBreakElement
 {
 
-    void calculateOrRender(LayoutContext& layoutContext, Boolean render=false);
+    Coord childIndentation_;
+
+protected:
+
+    Coord childIndentation() const
+    {return childIndentation_;}
     
 public:
-
-    Boolean requiresNewLine(const RenderingPreferences& preferences) const
-    {return true;}
-
-    void calculateLayout(LayoutContext& mc)
-    {calculateOrRender(mc);}
     
-    void render(RenderingContext& rc)
-    {calculateOrRender(rc, true);}
+    ParagraphElement():
+        childIndentation_(0)
+    {}
+
+    void setChildIndentation(Coord indent)
+    {childIndentation_=indent;}
 
 };
 

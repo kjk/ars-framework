@@ -50,6 +50,23 @@ namespace ArsLexis
         }
     };
     
+    class ForegroundColorSetter
+    {
+        IndexedColorType originalColor_;
+        ForegroundColorSetter(const ForegroundColorSetter&);
+        ForegroundColorSetter& operator=(const ForegroundColorSetter&);
+    public:
+    
+        ForegroundColorSetter(IndexedColorType color):
+            originalColor_(WinSetForeColor(color))
+        {}
+        
+        ~ForegroundColorSetter()
+        {
+            WinSetForeColor(originalColor_);
+        }
+    };
+    
     fontID getBoldFont(fontID normal);
     
     struct C_StringLess

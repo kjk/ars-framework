@@ -19,10 +19,10 @@ public:
     
     BulletElement();
 
-    Boolean requiresNewLine(const RenderingPreferences& preferences) const;
+    Boolean requiresNewLine(const RenderingPreferences& preferences) const
+    {return true;}
     
     void calculateLayout(LayoutContext& mc);
-
 
 };
 

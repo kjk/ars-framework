@@ -45,7 +45,7 @@ public:
         
         HyperlinkDecoration():
             underlineMode(grayUnderline),
-            textColor(0)
+            textColor(UIColorGetTableEntryIndex(UIObjectForeground))
         {}
         
         HyperlinkDecoration(UnderlineModeType um, IndexedColorType tc):
@@ -67,7 +67,7 @@ public:
         
         StyleFormatting():
             fontId(stdFont),
-            textColor(0)
+            textColor(UIColorGetTableEntryIndex(UIObjectForeground))
         {}
         
     };

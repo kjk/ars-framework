@@ -3,6 +3,7 @@
 #include "BulletElement.hpp"
 #include "ParagraphElement.hpp"
 #include "HorizontalLineElement.hpp"
+#include "LineBreakElement.hpp"
 
 void MainForm::resize(const RectangleType& screenBounds)
 {
@@ -56,6 +57,9 @@ Err MainForm::initialize()
     Err error=iPediaForm::initialize();
     if (!error)
     {
+        ParagraphElement* parent=0;
+        definition_.appendElement(parent=new ParagraphElement());
+        parent->setChildIndentation(16);
         DefinitionElement* element=0;
         definition_.appendElement(element=new GenericTextElement(
             "For large UNIX projects, the traditional method of building the project is to use recursive "
@@ -64,9 +68,9 @@ Err MainForm::initialize()
             "times, it became evident that a number of apparently unrelated problems combine to produce "
             "the delay, but on analysis all have the same root cause. "
         ));
-        definition_.appendElement(new ParagraphElement());
-        DefinitionElement* bullet=0;
-        definition_.appendElement(bullet=new BulletElement());       
+        element->setParent(*parent);
+        definition_.appendElement(element=new LineBreakElement());
+        element->setParent(*parent);
         definition_.appendElement(element=new GenericTextElement(
             "This paper explores a number of problems regarding the use of recursive make, and "
             "shows that they are all symptoms of the same problem. Symptoms that the UNIX community "
@@ -76,9 +80,11 @@ Err MainForm::initialize()
             "are overly sensitive to changes in the source code and require constant Makefile intervention "
             "to keep them working. "
         ));
-        element->setParent(*bullet);
-        definition_.appendElement(new ParagraphElement());
-        definition_.appendElement(new GenericTextElement(
+        element->setParent(*parent);
+        definition_.appendElement(new LineBreakElement());
+        BulletElement* bullet=0;
+        definition_.appendElement(bullet=new BulletElement());
+        definition_.appendElement(element=new GenericTextElement(
             "The resolution of these problems can be found by looking at what make does, from first "
             "principles, and then analyzing the effects of introducing recursive make to this activity. "
             "The analysis shows that the problem stems from the artificial partitioning of the build into "
@@ -86,8 +92,10 @@ Err MainForm::initialize()
             "it is only necessary to avoid the separation; to use a single make session to build the "
             "whole project, which is not quite the same as a single Makefile. "
         ));
-        definition_.appendElement(new HorizontalLineElement());
-        definition_.appendElement(new GenericTextElement(
+        element->setParent(*bullet);
+        definition_.appendElement(element=new HorizontalLineElement());
+        element->setParent(*bullet);
+        definition_.appendElement(element=new GenericTextElement(
             "This conclusion runs counter to much accumulated folk wisdom in building large projects "
             "on UNIX. Some of the main objections raised by this folk wisdom are examined and "
             "shown to be unfounded. The results of actual use are far more encouraging, with routine "
@@ -95,6 +103,7 @@ Err MainForm::initialize()
             "and without the intuitvely expected compromise of modularity. The use of a whole "
             "project make is not as difficult to put into practice as it may at first appear. "
         ));
+        element->setParent(*bullet);
     }
     return error;
 }
