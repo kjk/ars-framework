@@ -135,59 +135,6 @@ def resolveRedirect(title,cur_redirect, allRedirects, allArticles):
     dumpUnresolvedRedirect(visited)
     return None
 
-def getConvIdxFileName(inFileName):
-    return wikipediasql.genBaseAndSuffix(inFileName,"_conv_idx.txt")
-
-def getConvBodyFileName(inFileName):
-    return wikipediasql.genBaseAndSuffix(inFileName,"_conv_body.txt")
-
-def fConvertedCacheExists(sqlDumpFileName):
-    txtName=  getConvBodyFileName(sqlDumpFileName)
-    idxFileName = getConvIdxFileName(sqlDumpFileName)
-    if arsutils.fFileExists(txtName) and arsutils.fFileExists(idxFileName):
-        return True
-    return False
-
-class ConvertedArticleCacheWriter:
-    def __init__(self,sqlDumpFileName):
-        self.fCacheExists = fConvertedCacheExists(sqlDumpFileName)
-        self.txtName= getConvBodyFileName(sqlDumpFileName)
-        self.idxFileName = getConvIdxFileName(sqlDumpFileName)
-        self.foIdx = None
-        self.foTxt = None
-        self.curTxtOffset = None
-
-    def fCacheExists(self): return self.fCacheExists
-
-    def open(self):
-        assert self.foIdx == None
-        assert self.foTxt == None
-        self.foIdx = open(self.idxFileName,"wb")
-        self.foTxt = open(self.txtName, "wb")
-        self.curTxtOffset = 0
-
-    def write(self,article):
-        title = article.getTitle()
-        ns = article.getNamespace()
-        assert ns == wikipediasql.NS_MAIN
-        if article.fRedirect():
-            self.foIdx.write("%s%s\n" % (wikipediasql.REDIRECT_MARK,title))
-            self.foIdx.write("%s\n" % article.getRedirect())
-        else:
-            txt = article.getText()
-            txtLen = len(txt)
-
-            self.foIdx.write("%s\n" % title)
-            self.foIdx.write("%d,%d,%d\n" % (ns, self.curTxtOffset, txtLen))
-            self.curTxtOffset += txtLen
-            self.foTxt.write(txt)
-
-    def close(self):        
-        if not self.foTxt:
-            return
-        self.foTxt.close()
-        self.foIdx.close()
-
 class UnresolvedRedirectsWriter:
     def __init__(self,sqlDumpName):
         self.fileName = wikipediasql.genBaseAndSuffix(sqlDumpName,"_unres_redirects.txt")
@@ -287,7 +234,6 @@ def convertArticles(sqlDump,articleLimit):
             #print "redirect '%s' (to '%s') not resolved" % (title,redirect)
     print "Number of unresolved redirects: %d" % unresolvedCount
 
-
     initDatabase()
     ipedia_write_cur = getNamedCursor(g_connTwo, "ipedia_write_cur")
         
@@ -295,7 +241,7 @@ def convertArticles(sqlDump,articleLimit):
     # convert them to a destination format (including removing invalid links)
     # and insert into a database
     count = 0
-    convWriter = ConvertedArticleCacheWriter(sqlDump)
+    convWriter = wikipediasql.ConvertedArticleCacheWriter(sqlDump)
     convWriter.open()
     for article in wikipediasql.iterWikipediaArticles(sqlDump,articleLimit,True,False):
         if article.fRedirect():
@@ -310,6 +256,8 @@ def convertArticles(sqlDump,articleLimit):
                 converted = noLinks
             convertedArticle = ConvertedArticle(article.getNamespace(), article.getTitle(), converted)
 
+        title = title.replace("_", " ")
+        title = title.lower()
         if article.fRedirect():
             # what now?
             pass
@@ -323,7 +271,7 @@ def convertArticles(sqlDump,articleLimit):
             #newDef = definition       # uncomment to insert unconverted definition
 
             try:
-                ipedia_write_cur.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (dbEscape(title), dbEscape(txt), dbEscape(str(timestamp))))
+                ipedia_write_cur.execute("""INSERT INTO definitions (term, definition, last_modified) VALUES ('%s', '%s', '%s')""" % (dbEscape(title), dbEscape(converted), dbEscape(str(timestamp))))
                 if g_fVerbose:
                     log_txt += "*New record"
             except:
@@ -333,7 +281,7 @@ def convertArticles(sqlDump,articleLimit):
                 if g_fVerbose:
                     log_txt += "Update existing record"
                 #print "exception happened for %s" % term
-                ipedia_write_cur.execute("""UPDATE definitions SET definition='%s', last_modified='%s' WHERE term='%s'""" % (dbEscape(txt), dbEscape(str(timestamp)), dbEscape(title)))
+                ipedia_write_cur.execute("""UPDATE definitions SET definition='%s', last_modified='%s' WHERE term='%s'""" % (dbEscape(converted), dbEscape(str(timestamp)), dbEscape(title)))
             if g_fVerbose:
                 print log_txt
         convWriter.write(convertedArticle)

@@ -137,6 +137,14 @@ def getTxt(sqlFileName,txtOff,txtLen):
     fo.close()
     return txt
 
+def getConvertedTxt(sqlFileName,txtOff,txtLen):
+    fn = getConvBodyFileName(sqlFileName)
+    fo = open(fn,"rb")
+    fo.seek(txtOff)
+    txt = fo.read(txtLen)
+    fo.close()
+    return txt
+
 class WikipediaArticleRedirect:
     def __init__(self,title,redirect):
         self.title = title.strip()
@@ -162,7 +170,72 @@ class WikipediaArticleFromCache:
     def fRedirect(self):  return False
     def getViewCount(self): return self.viewCount
 
+class ConvertedArticleFromCache:
+    def __init__(self,sqlFileName,title,ns,txtOffset,txtLen):
+        self.sqlFileName = sqlFileName
+        self.title = title
+        self.ns = ns
+        self.txtOffset = txtOffset
+        self.txtLen = txtLen
+    def getNamespace(self): return self.ns
+    def getTitle(self): return self.title
+    def getText(self): return getConvertedTxt(self.sqlFileName, self.txtOffset, self.txtLen)
+    def fRedirect(self):  return False
+
 REDIRECT_MARK = "^r "
+
+def getConvIdxFileName(inFileName):
+    return genBaseAndSuffix(inFileName,"_conv_idx.txt")
+
+def getConvBodyFileName(inFileName):
+    return genBaseAndSuffix(inFileName,"_conv_body.txt")
+
+def fConvertedCacheExists(sqlDumpFileName):
+    txtName=  getConvBodyFileName(sqlDumpFileName)
+    idxFileName = getConvIdxFileName(sqlDumpFileName)
+    if arsutils.fFileExists(txtName) and arsutils.fFileExists(idxFileName):
+        return True
+    return False
+
+class ConvertedArticleCacheWriter:
+    def __init__(self,sqlDumpFileName):
+        self.fCacheExists = fConvertedCacheExists(sqlDumpFileName)
+        self.txtName= getConvBodyFileName(sqlDumpFileName)
+        self.idxFileName = getConvIdxFileName(sqlDumpFileName)
+        self.foIdx = None
+        self.foTxt = None
+        self.curTxtOffset = None
+
+    def fCacheExists(self): return self.fCacheExists
+
+    def open(self):
+        assert self.foIdx == None
+        assert self.foTxt == None
+        self.foIdx = open(self.idxFileName,"wb")
+        self.foTxt = open(self.txtName, "wb")
+        self.curTxtOffset = 0
+
+    def write(self,article):
+        title = article.getTitle()
+        ns = article.getNamespace()
+        assert ns == NS_MAIN
+        if article.fRedirect():
+            self.foIdx.write("%s%s\n" % (REDIRECT_MARK,title))
+            self.foIdx.write("%s\n" % article.getRedirect())
+        else:
+            txt = article.getText()
+            txtLen = len(txt)
+
+            self.foIdx.write("%s\n" % title)
+            self.foIdx.write("%d,%d,%d\n" % (ns, self.curTxtOffset, txtLen))
+            self.curTxtOffset += txtLen
+            self.foTxt.write(txt)
+
+    def close(self):        
+        if not self.foTxt:
+            return
+        self.foTxt.close()
+        self.foIdx.close()
 
 def fCacheExists(sqlDumpFileName):
     txtName= getBodyFileName(sqlDumpFileName)
@@ -396,6 +469,49 @@ def fIsRedirectLine(line):
             return True
     return False
 
+def iterConvertedArticles(sqlFileName):
+    fileName = getConvIdxFileName(sqlFileName)
+    if not fConvertedCacheExists(sqlFileName):
+        print "converted article cache '%s' doesn't exists" % fileName
+        return
+    print "getting articles from cache %s" % fileName
+    fo = open(fileName,"rb")
+    count = 0
+    while True:
+        title = fo.readline()
+        if len(title)==0:
+            break
+        if fIsRedirectLine(title):
+            redirect = fo.readline()
+            if title == REDIRECT_MARK:
+                #need this to remove stupid redirecto of 0xa0=>Space_(punctuation)
+                print "title after stripping is equal to '%s' (REDIRECT_MARK), so skipping" % REDIRECT_MARK
+                continue
+            redirect = redirect[:-len(REDIRECT_MARK)]
+            title = title.strip()
+            if len(title)==0:
+                print "title after stripping is empty string, so skipping '%s'" % redirect
+                continue
+            article = WikipediaArticleRedirect(title,redirect.strip())
+        else:
+            title = title.strip()
+            line = fo.readline()
+            if len(title)==0:
+                print "title after stripping is empty string, so skipping '%s'" % line.strip()
+                continue
+            lineParts = line.split(",")
+            ns = int(lineParts[0])
+            assert ns==NS_MAIN
+            txtOffset = int(lineParts[1])
+            txtLen = int(lineParts[2])
+            article = ConvertedArticleFromCache(sqlFileName,title,ns,txtOffset,txtLen)
+
+        yield article
+        count += 1
+    fo.close()
+    return    
+
+
 # an iterator that given a *.sql or *.sql.bz2 wikipedia dump file
 # returns WikpediaArticle instances representing one wikipedia article
 # If fUseCache is True, then uses (if exists) or creates *.txt cache files
@@ -428,12 +544,12 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=
                 break
             if fIsRedirectLine(title):
                 redirect = fo.readline()
+                title = title.strip()
                 if title == REDIRECT_MARK:
                     #need this to remove stupid redirecto of 0xa0=>Space_(punctuation)
                     print "title after stripping is equal to '%s' (REDIRECT_MARK), so skipping" % REDIRECT_MARK
                     continue
-                redirect = redirect[:-len(REDIRECT_MARK)]
-                title = title.strip()
+                title = title[len(REDIRECT_MARK):]
                 if len(title)==0:
                     print "title after stripping is empty string, so skipping '%s'" % redirect
                     continue

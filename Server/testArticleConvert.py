@@ -6,7 +6,8 @@
 # Usage:
 #   testFileName : file with tests to use
 #
-import sys,os,os.path,string,time,md5,bz2,articleconvert
+import sys,os,os.path,string,time,md5,bz2
+import arsutils,articleconvert
 try:
     import psyco
     psyco.full()
@@ -121,6 +122,12 @@ def dumpFailed():
         print "expected: '%s'" % test.expected.strip()
         print "got     : '%s'" % test.converted.strip()
 
+def diffFirstFailed():
+    if len(failedList)==0:
+        return
+    test = failedList[0]
+    arsutils.showTxtDiff(test.expected.strip(),test.converted.strip())
+
 def testTests(fileName):
     for test in iterTests(fileName):
         print "name: '%s'" % test.name
@@ -134,7 +141,9 @@ def runTests(fileName):
         orig = test.orig
         expected = test.expected
         converted = articleconvert.convertArticle(test.name,orig)
-        if converted.strip() != expected.strip():
+        expected  = arsutils.normalizeNewlines(expected)
+        converted = arsutils.normalizeNewlines(converted)
+        if converted != expected:
             failedCount += 1
             test.setConverted(converted)
             failedList.append(test)
@@ -146,7 +155,7 @@ def runTests(fileName):
     print "Total  tests: %d" % testCount
     print "Failed tests: %d" % failedCount
     dumpFailed()
-
+    diffFirstFailed()
 
 if __name__=="__main__":
     # now we should only have file name
