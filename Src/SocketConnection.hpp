@@ -5,6 +5,7 @@
 #include "ErrBase.h"
 #include "Logging.hpp"
 #include <vector>
+#include "SocketAddress.hpp"
 
 namespace ArsLexis
 {
@@ -47,7 +48,7 @@ namespace ArsLexis
     {
         SocketConnectionManager& manager_;
         Int32 transferTimeout_;
-        const SocketAddress* address_;
+        SocketAddress address_;
         mutable ChildLogger log_;
         
     protected:
@@ -93,7 +94,7 @@ namespace ArsLexis
         {return transferTimeout_;}
         
         void setAddress(const SocketAddress& address)
-        {address_=&address;}
+        {address_=address;}
 
         virtual void open();
         

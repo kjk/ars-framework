@@ -3,12 +3,6 @@
 
 #include "DefinitionElement.hpp"
 
-#if defined(_WIN32_WCE)
-#define symbolShiftPunc TCHAR('*')
-#define symbolDiamondChr TCHAR('#')
-#define symbolShiftNone TCHAR(' ')
-#endif
-
 class GenericTextElement: public DefinitionElement
 {
 

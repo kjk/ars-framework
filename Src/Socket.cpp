@@ -5,6 +5,9 @@
 namespace ArsLexis
 {
 
+#pragma mark -
+#pragma mark SocketBase
+
     SocketBase::SocketBase(NetLibrary& netLib):
         log_("SocketBase"),
         netLib_(netLib),
@@ -136,7 +139,24 @@ namespace ArsLexis
         return error;
     }
 
-
+    Err SocketBase::setLinger(const NetSocketLingerType& linger)
+    {
+        assert(socket_!=0);
+        Err error=setOption(netSocketOptLevelSocket, netSocketOptSockLinger, const_cast<NetSocketLingerType*>(&linger), sizeof(linger));
+        return error;
+    }
+    
+/*    
+    Err SocketBase::getLinger(NetSocketLingerType& linger) const
+    {
+        assert(socket_!=0);
+        Err error=getOption(netSocketOptLevelSocket, netSocketOptSockLinger, &linger, sizeof(linger);
+        return error;
+    }
+*/    
+    
+#pragma mark -
+#pragma mark SocketSelector
 
     SocketSelector::SocketSelector(NetLibrary& netLib, bool catchStandardEvents):
         netLib_(netLib),

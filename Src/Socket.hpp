@@ -91,6 +91,10 @@ namespace ArsLexis
         Err setOption(UInt16 level, UInt16 option, void* optionValue, UInt16 valueLength, Int32 timeout=evtWaitForever);
         
         Err getOption(UInt16 level, UInt16 option, void* optionValue, UInt16& valueLength, Int32 timeout=evtWaitForever) const;
+        
+        Err setLinger(const NetSocketLingerType& linger);
+        
+        Err getLinger(NetSocketLingerType& linger) const;
                 
     };
 
@@ -174,6 +178,12 @@ namespace ArsLexis
         {
             NetSocketRef ref=socket;
             return netFDIsSet(ref, &outputFDs_[event]);
+        }
+        
+        bool isRegistered(const SocketBase& socket, EventType event) const
+        {
+            NetSocketRef ref=socket;
+            return netFDIsSet(ref, &inputFDs_[event]);
         }
         
         bool checkStandardEvent() const

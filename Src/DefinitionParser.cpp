@@ -522,7 +522,7 @@ void DefinitionParser::manageListNesting(const String& newNesting)
             }
             for (uint_t i=firstDiff; i<newNestingDepth; ++i)
             {
-                char elementType=newNesting[firstDiff];
+                char elementType=newNesting[i];
                 DefinitionElement* element=0;
                 if (numberedListChar==elementType)
                 {
@@ -549,8 +549,8 @@ void DefinitionParser::manageListNesting(const String& newNesting)
                 continueList=false;
             }
         }
-        lastListNesting_=newNesting;
     }
+    lastListNesting_=newNesting;
 }
 
 void DefinitionParser::appendElement(DefinitionElement* element)

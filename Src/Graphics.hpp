@@ -25,7 +25,9 @@ namespace ArsLexis
             =Handle_t(0)
 #endif
         );
-        Graphics();
+
+//        Graphics();
+        
         ~Graphics();
 
         /**

@@ -96,7 +96,7 @@ namespace ArsLexis
     SocketConnection::SocketConnection(SocketConnectionManager& manager):
         manager_(manager),
         transferTimeout_(evtWaitForever),
-        address_(0),
+//        address_(0),
         log_("SocketConnection"),
         socket_(manager.netLib_)
     {
@@ -130,7 +130,7 @@ namespace ArsLexis
             return;
         }
 
-        error=socket_.connect(*address_, transferTimeout());
+        error=socket_.connect(address_, transferTimeout());
         if (netErrWouldBlock==error)
         {
             // log()<<"open(), got netErrWouldBlock from connect(), changed to errNone";

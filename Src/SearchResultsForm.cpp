@@ -49,7 +49,7 @@ SearchResultsForm::~SearchResultsForm()
 
 void SearchResultsForm::draw(UInt16 updateCode)
 {
-    ArsLexis::Graphics graphics(windowHandle());
+    ArsLexis::Graphics graphics;
     ArsLexis::Rectangle rect(bounds());
     Rectangle progressArea(rect.x(), rect.height()-17, rect.width(), 17);
     if (redrawAll==updateCode)

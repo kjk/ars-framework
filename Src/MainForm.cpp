@@ -159,7 +159,7 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
 
 void MainForm::draw(UInt16 updateCode)
 {
-    Graphics graphics(windowHandle());
+    Graphics graphics;
     Rectangle rect(bounds());
     Rectangle progressArea(rect.x(), rect.height()-17, rect.width(), 17);
     if (redrawAll==updateCode)
@@ -186,7 +186,7 @@ inline void MainForm::handleScrollRepeat(const EventType& event)
     Definition* definition=getDefinition();
     if (definition)
     {
-        Graphics graphics(windowHandle());
+        Graphics graphics;
         definition->scroll(graphics, renderingPreferences(), event.data.sclRepeat.newValue-event.data.sclRepeat.value);
     }        
 }
@@ -207,7 +207,7 @@ void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
     Definition* definition=getDefinition();
     if (definition)
     {
-        Graphics graphics(windowHandle());
+        Graphics graphics;
         if (scrollPage==unit)
             units*=(definition->shownLinesCount());
         definition->scroll(graphics, renderingPreferences(), units);

@@ -11,7 +11,7 @@ namespace ArsLexis
 
     class HTMLCharacterEntityReferenceDecoder
     {
-        typedef std::map<const char*, unsigned char, ArsLexis::C_StringLess > Map_t;
+        typedef std::map<const char*, unsigned char, ArsLexis::C_StringLess<char> > Map_t;
         Map_t map_;
         
         void insert(const char* key, unsigned char value);

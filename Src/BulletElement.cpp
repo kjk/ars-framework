@@ -3,6 +3,12 @@
 using ArsLexis::Graphics;
 using ArsLexis::String;
 
+#if defined(_WIN32_WCE)
+#define symbolShiftPunc TCHAR('*')
+#define symbolDiamondChr TCHAR('#')
+#define symbolShiftNone TCHAR(' ')
+#endif
+
 BulletElement::BulletElement():
     childIndentation_(0)
 {}

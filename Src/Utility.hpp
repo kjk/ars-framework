@@ -15,10 +15,11 @@ namespace ArsLexis
             delete object;
         }
     };
-    template<char>
+    
+    template<class Ch>
     struct C_StringLess
     {
-        bool operator ()(const char* str1, const char* str2) const
+        bool operator ()(const Ch* str1, const Ch* str2) const
         {
             return StrCompare(str1, str2)<0;
         }

@@ -19,12 +19,14 @@ namespace ArsLexis
     void SimpleSocketConnection::notifyWritable()
     {
         assert(sending_);
+        Err error=getSocketErrorStatus();
+        assert(errNone==error);
         UInt16 requestSize=request_.size();
         UInt16 requestLeft=requestSize-requestBytesSent_;
         if (requestLeft>chunkSize_)
             requestLeft=chunkSize_;
         UInt16 dataSize=0;
-        Err error=socket_.send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
+        error=socket_.send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
         if (errNone==error || netErrWouldBlock==error)
         {
             registerEvent(SocketSelector::eventException);
@@ -51,9 +53,11 @@ namespace ArsLexis
     void SimpleSocketConnection::notifyReadable()
     {
         assert(!sending_);
+        Err error=getSocketErrorStatus();
+        assert(errNone==error);
         UInt16 dataSize=0;
         UInt16 responseSize=response_.size();
-        Err error=errNone;
+        error=errNone;
         bool finished=false;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
