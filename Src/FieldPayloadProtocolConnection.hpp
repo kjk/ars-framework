@@ -36,7 +36,6 @@ namespace ArsLexis
         PayloadHandlerPtr payloadHandler_;
         ulong_t payloadLengthLeft_;
         ulong_t payloadLength_;
-        bool inPayload_;
         
         status_t processResponseIncrement(bool finish=false);
         
@@ -58,7 +57,7 @@ namespace ArsLexis
         
         virtual status_t notifyPayloadFinished()
         {
-            inPayload_=false; 
+            inPayload_ = false; 
             return errNone;
         }
         
@@ -67,10 +66,7 @@ namespace ArsLexis
         status_t notifyProgress();
         
         status_t notifyFinished();
-        
-        bool inPayload() const
-        {return inPayload_;}
-        
+       
         ulong_t payloadLengthLeft() const
         {return payloadLengthLeft_;}
         
@@ -95,7 +91,9 @@ namespace ArsLexis
         
         static void appendField(String& out, const char_t* name, const char_t* value=0)
         {appendField(out, name, tstrlen(name), value, (value?tstrlen(value):0));}
-        
+
+        bool inPayload_;
+
     };
 
 }

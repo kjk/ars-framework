@@ -41,7 +41,7 @@ namespace ArsLexis
             requestBytesSent_+=dataSize;
             if (requestBytesSent_ == requestSize)
             {
-                sending_=false;
+                sending_ = false;
 /*                
                 error=socket().shutdown(netSocketDirOutput);
                 if (error)
@@ -60,25 +60,29 @@ namespace ArsLexis
     
     status_t SimpleSocketConnection::notifyReadable()
     {
+        char *  newDataBuf;
+        uint_t  dataSize = 0;
+        uint_t  curResponseSize;
+
         if (sending_) 
             log().debug()<<_T("notifyReadable(): called while sending data, probably some connection error occured");
         status_t status = errNone;
         status_t error = getSocketErrorStatus(status);
         if (errNone == error)
-            error=status;
+            error = status;
         else 
         {
             log().info()<<_T("notifyReadable(): getSocketErrorStatus() returned error (ignored): ")<<error;
-            error=errNone;
+            error = errNone;
         }
         if (errNone!=error)
             goto Exit;
 
-        uint_t curResponseSize=response_.size();
+        curResponseSize = response_.size();
 
-        if (curResponseSize>=maxResponseSize_-chunkSize_)
+        if (curResponseSize >= maxResponseSize_-chunkSize_)
         {
-            error=errResponseTooLong;
+            error = errResponseTooLong;
             goto Exit;
         }
 
@@ -86,8 +90,7 @@ namespace ArsLexis
         if (errNone!=error)
             goto Exit;
 
-        uint_t dataSize = 0;
-        char *newDataBuf = (char*)&response_[curResponseSize];
+        newDataBuf = (char*)&response_[curResponseSize];
         error = socket().receive(dataSize, newDataBuf, chunkSize_, transferTimeout());
         if (errNone!=error)
             goto Exit;
@@ -107,13 +110,18 @@ namespace ArsLexis
         if (0==dataSize)
         {   
             log().info()<<_T("notifyReadable(): dataSize != chunkSize_ (server shut socket down?)");
+            // TODO: if we use chunkSize_ != dataSize condition, we also need
+            // to notifyProgress();
+            //error=notifyProgress();
+            //if (error)
+            //    goto Exit;
             error = notifyFinished();
             abortConnection();
         }
         else
         {
             registerEvent(SocketSelector::eventRead);
-            error=notifyProgress();
+            error = notifyProgress();
         }
 Exit:
         if (errNone!=error)

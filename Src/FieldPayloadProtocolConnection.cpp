@@ -41,8 +41,9 @@ namespace ArsLexis
     void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler, ulong_t length)
     {
         payloadHandler_.reset(payloadHandler);
-        inPayload_=true;
-        payloadLengthLeft_=payloadLength_=length;
+        inPayload_ = true;
+        payloadLengthLeft_ = length;
+        payloadLength_ = length;
     }
 
     status_t FieldPayloadProtocolConnection::notifyProgress()
@@ -62,7 +63,7 @@ namespace ArsLexis
         // TODO: on Palm avoid TextToByteStream() - it's just a copy of data (I think)
         do 
         {
-            if (!inPayload())
+            if (!inPayload_)
             {
                 String::size_type end=resp.find(lineSeparator);
                 goOn=(resp.npos!=end);

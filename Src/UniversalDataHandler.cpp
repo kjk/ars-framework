@@ -79,7 +79,10 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
         if (lineNo == 0)
         {
             if (errNone != numericValue(data, data + len, resultLong))
+            {
+                assert(false);
                 return SocketConnection::errResponseMalformed;
+            }
             out.setHeaderSize(resultLong);
         }
         else if (lineNo <= out.headerSize_)
@@ -93,7 +96,10 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
                 while (dataOffsetEnd < data + len && dataOffsetEnd[0] != _T(' '))
                     dataOffsetEnd++;
                 if (errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
+                {
+                    assert(false);
                     return SocketConnection::errResponseMalformed;
+                }
                 vec.push_back(resultLong);
                 controlDataLength += resultLong + 1;
                 dataOffset = dataOffsetEnd + 1;
@@ -123,6 +129,7 @@ status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
 
 inline status_t UniversalDataHandler::handlePayloadFinish()
 {
+    assert(controlDataLength_ == universalData.dataLength())
     if (controlDataLength_ != universalData.dataLength())
         return SocketConnection::errResponseMalformed;
     return errNone;
@@ -153,6 +160,7 @@ static status_t readUniversalDataFromReader(ArsLexis::Reader& reader, UniversalD
         if (errNone!=error)
             return error;
     }
+    assert(controlDataLength == out.dataLength());
     if (controlDataLength != out.dataLength())
         return SocketConnection::errResponseMalformed;
     return errNone;

@@ -116,17 +116,20 @@ namespace ArsLexis
     {
         error = errNone;
         int res = sendto (socket, (const char*) bufP, bufLen, 0,(const struct sockaddr *) toAddrP, toLen);
-        if(res == SOCKET_ERROR)
-            error=WSAGetLastError();
+        if (SOCKET_ERROR == res)
+            error = WSAGetLastError();
         return res;
     }
-    
+
     int NetLibrary::socketReceive(NativeSocket_t socket, void* bufP, uint_t bufLen, uint_t flags, void* fromAddrP, uint_t* fromLen, long  timeout, status_t& error)
     {
         error = errNone;
         int res = recvfrom(socket, (char*) bufP, bufLen, 0, (struct sockaddr *) fromAddrP, (int*)fromLen);
-        if(res == SOCKET_ERROR)
-            error=WSAGetLastError();
+        if (SOCKET_ERROR == res)
+        {
+            error = WSAGetLastError();
+            return 0;
+        }
         return res;
     }
     
