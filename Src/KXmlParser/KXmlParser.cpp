@@ -695,6 +695,11 @@ error_t KXmlParser::parseEndTag()
         String str2 = elementStack_[sp + 3];
         //TODO: str1, str2 toLower()
         MUSTDO
+        for(int t=0;t<(int)str1.length();t++)
+            str1[t] = (char_t)tolower((char_t) str1[t]);
+        for(int t=0;t<(int)str2.length();t++)
+            str2[t] = (char_t)tolower((char_t) str2[t]);
+
         if (depth_ == 0 || str1 != str2)
             return eNoError; //was just return, so no error
     }
@@ -1015,8 +1020,6 @@ bool KXmlParser::isProp (String n1, bool prop, String n2) {
 
 error_t KXmlParser::setFeature(String feature, bool flag)
 {
-    MUSTDO
-
     if (FEATURE_PROCESS_NAMESPACES == feature)
         processNsp_ = flag;
     else
@@ -1068,6 +1071,170 @@ error_t KXmlParser::next(int& ret)
         type_ = TEXT;
 
     ret = type_;
+    return eNoError;
+}
+
+bool KXmlParser::getFeature(String feature) 
+{
+    if (XmlPullParser::FEATURE_PROCESS_NAMESPACES == feature)
+        return processNsp_;
+    else 
+        if (isProp(feature, false, "relaxed"))
+            return relaxed_;
+        else
+            return false;
+}
+
+String KXmlParser::getInputEncoding() 
+{
+    return encoding_;
+}
+
+String KXmlParser::getNamespacePrefix(int pos) 
+{
+    return nspStack_[pos << 1];
+}
+
+String KXmlParser::getNamespaceUri(int pos) 
+{
+    return nspStack_[(pos << 1) + 1];
+}
+
+int KXmlParser::getDepth() 
+{
+    return depth_;
+}
+
+int KXmlParser::getLineNumber() 
+{
+    return line_;
+}
+
+int KXmlParser::getColumnNumber() 
+{
+    return column_;
+}
+
+error_t KXmlParser::isWhitespace(bool& ret)
+{
+    if (type_ != TEXT && type_ != IGNORABLE_WHITESPACE && type_ != CDSECT)
+        return eIllegalType;
+    ret = isWhitespace_;
+    return eNoError;
+}
+
+String KXmlParser::getNamespace() 
+{
+    return nameSpace_;
+}
+
+String KXmlParser::getName() 
+{
+    return name_;
+}
+
+String KXmlParser::getPrefix() 
+{
+    return prefix_;
+}
+
+error_t KXmlParser::isEmptyElementTag(bool& ret)
+{
+    if (type_ != START_TAG)
+        return eIllegalType;
+    ret = degenerated_;
+    return eNoError;
+}
+
+int KXmlParser::getAttributeCount() 
+{
+    return attributeCount_;
+}
+
+error_t KXmlParser::getAttributeNamespace(String& ret, int index) 
+{
+    if (index >= attributeCount_)
+        return eIndexOutOfBoundsException;
+    ret = attributes_[(index << 2)];
+    return eNoError;
+}
+
+error_t KXmlParser::getAttributeName(String& ret, int index) 
+{
+    if (index >= attributeCount_)
+        return eIndexOutOfBoundsException;
+    ret = attributes_[(index << 2) + 2];
+    return eNoError;
+}
+
+error_t KXmlParser::getAttributePrefix(String& ret, int index) 
+{
+    if (index >= attributeCount_)
+        return eIndexOutOfBoundsException;
+    ret = attributes_[(index << 2) + 1];
+    return eNoError;
+}
+
+error_t KXmlParser::getAttributeValue(String& ret, int index) 
+{
+    if (index >= attributeCount_)
+        return eIndexOutOfBoundsException;
+    ret = attributes_[(index << 2) + 3];
+    return eNoError;
+}
+
+String KXmlParser::getAttributeValue(String nameSpace, String name) 
+{
+    for (int i = (attributeCount_ << 2) - 4; i >= 0; i -= 4) 
+    {
+        if (attributes_[i + 2] == name && (nameSpace == "" || attributes_[i] == nameSpace))
+                return attributes_[i + 3];
+    }                                    
+    return "";
+}
+
+error_t KXmlParser::nextTag(int& ret) 
+{
+    error_t error;
+    int i;
+    
+    if((error=next(i))!=eNoError)
+        return error;
+    if (type_ == TEXT && isWhitespace_)
+        if((error=next(i))!=eNoError)
+            return error;
+
+    if (type_ != END_TAG && type_ != START_TAG)
+        return eUnexpectedType;
+
+    ret = type_;
+    return eNoError;
+}
+
+error_t KXmlParser::nextText(String& ret)
+{
+    error_t error;
+    int i;
+    if (type_ != START_TAG)
+        return ePreconditionStartTag;
+
+    if((error=next(i))!=eNoError)
+        return error;
+
+    String result;
+
+    if (type_ == TEXT) {
+        result = getText();
+        if((error=next(i))!=eNoError)
+            return error;
+    }
+    else
+        result = "";
+
+    if (type_ != END_TAG)
+        return eEndTagExpected;
+
+    ret = result;
     return eNoError;
 }
 
@@ -1183,11 +1350,3 @@ void KXmlParser::defineEntityReplacementText(String entity, String value)
 
     entityMap_->put(entity, value);
 }
-error_t KXmlParser::getAttributeName(String& ret, int index)
-{
-        if (index >= attributeCount_)
-            return eIndexOutOfBoundsException;
-        ret = attributes_[(index << 2) + 2];
-        return eNoError;
-}
-

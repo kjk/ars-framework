@@ -23,8 +23,9 @@ namespace KXml2 {
     //Error values
     enum ErrorCodes
     {
-        //TODO: change 0x3000 to text from ErrBase.hpp
-         eNoError = 0x3000,
+         //TODO: make it work!!!
+         //eNoError = kxmlParserErrorClass,
+         eNoError = 0x0900,
          eExpectedCharNotEqual,     //read(c) if (a = read()) != c
          eUnterminatedEntityRef,    //unterminated entity ref
          eUnresolvedCode,           //pushEntity
@@ -50,11 +51,10 @@ namespace KXml2 {
          eIllegalStartTag,          //parseLegacy()
          eIllegalCommentDelimiter,  //parseLegacy()
          eUnsupportedFeature,       //setFeature()
-
-         errr   
-
-
-
+         eUnexpectedType,           //nextTag()
+         ePreconditionStartTag,     //nextText()
+         eEndTagExpected,           //nextText()
+         eIllegalType               //isWhitespace() (when wanted type is not what we have)
     };
 }
 
