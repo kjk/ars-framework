@@ -28,6 +28,8 @@
 namespace ArsLexis 
 {
 
+    struct EventProperties;
+
     class Form;
     class FormGadget;
 
@@ -202,6 +204,8 @@ namespace ArsLexis
         void setEventTimeout(Int32 timeout)
         {eventTimeout_=timeout;}
         
+        virtual bool handleExtendedEvent(uint_t eventType, EventProperties* properties);
+        
     public:
     
         UInt32 ticksPerSecond() const
@@ -322,6 +326,7 @@ namespace ArsLexis
         enum Event
         {
             extListSelectionChangedEvent = firstUserEvent,
+            appExtendedEvent,
             appFirstAvailableEvent 
         };
         

@@ -4,6 +4,7 @@
 #include <FormGadget.hpp>
 #include <SysUtils.hpp>
 #include <68k/Hs.h>
+#include <ExtendedEvent.hpp>
 
 namespace ArsLexis 
 {
@@ -193,6 +194,11 @@ namespace ArsLexis
                 focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.tblEnter.tableID);
                 break;
             
+            case extEvent: {
+                ExtendedEventData& data = reinterpret_cast<ExtendedEventData&>(event.data);
+                handled = handleExtendedEvent(data.eventType, data.properties);
+                break;
+            }
         }
         return handled;
     }
@@ -417,5 +423,10 @@ namespace ArsLexis
             handleFocusOnEntry();
     }
 
+    bool Form::handleExtendedEvent(uint_t, EventProperties*) 
+    {
+        return false;
+    }
+    
 }
 

@@ -9,7 +9,8 @@
 
 namespace ArsLexis 
 {
-
+    struct EventProperties;
+    
     class Application;
     
     class FormGadget;
@@ -82,6 +83,8 @@ namespace ArsLexis
         
         virtual void afterGadgetDraw() {}
             
+        virtual bool handleExtendedEvent(uint_t eventType, EventProperties* properties);
+
     public:
         
         Form(Application& app, UInt16 id);

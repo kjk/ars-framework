@@ -3,6 +3,7 @@
 #include <memory>
 #include <FormGadget.hpp>
 #include <DeviceInfo.hpp>
+#include <ExtendedEvent.hpp>
 
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
 template class std::basic_string<ArsLexis::char_t>;
@@ -206,10 +207,15 @@ namespace ArsLexis
     {
         UInt32 time = TimGetTicks();
         bool handled=false;
-        if (frmLoadEvent==event.eType)
+        if (frmLoadEvent == event.eType)
         {
             loadForm(event.data.frmLoad.formID);
             handled=true;
+        }
+        else if (extEvent == event.eType) 
+        {
+            ExtendedEventData& data = reinterpret_cast<ExtendedEventData&>(event.data);
+            handled = handleExtendedEvent(data.eventType, data.properties);
         }
         return handled;
     }
@@ -227,6 +233,12 @@ namespace ArsLexis
                     if (!MenuHandleEvent(0, &event, &error))
                         if (!handleApplicationEvent(event))
                             FrmDispatchEvent(&event);
+                if (extEvent == event.eType) 
+                {
+                    ExtendedEventData& data = reinterpret_cast<ExtendedEventData&>(event.data);
+                    data.dispose();
+                    assert(NULL == data.properties);
+                }
             }
         } while (appStopEvent!=event.eType);
     }
@@ -291,6 +303,11 @@ namespace ArsLexis
             popupForm(form->id());
         else
             gotoForm(form->id());                
+    }
+    
+    bool Application::handleExtendedEvent(uint_t, EventProperties*) 
+    {
+        return false;
     }
     
 }
