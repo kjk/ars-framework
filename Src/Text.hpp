@@ -187,7 +187,11 @@ namespace ArsLexis
 
 using ArsLexis::char_t;
 
-char_t *StringCopy2(const char_t *curStr, int len = -1);
+char_t *StringCopy2__(const char_t *curStr, int len, const char_t* file, int line);
+
+#define StringCopy2(str) StringCopy2__(str, -1, __FILE__, __LINE__)
+#define StringCopy2N(str, len) StringCopy2__(str, len, __FILE__, __LINE__)
+
 char_t *StringCopyN(const char_t *str, int strLen);
 
 #endif

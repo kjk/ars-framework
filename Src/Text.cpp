@@ -854,16 +854,16 @@ int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
 } // namespace ArsLexis
 
 // note: caller needs to free memory with free
-char_t* StringCopy2(const char_t *curStr, int len)
+char_t* StringCopy2__(const char_t *curStr, int len, const char_t* file, int line)
 {
     using namespace std;
     if (-1 == len)
         len = tstrlen(curStr);
-    char_t *newStr = (char_t*) malloc( sizeof(char_t)*(len+1) );
-    if (NULL==newStr)
+    char_t *newStr = (char_t*)malloc__(sizeof(char_t) * (len + 1), file, line);
+    if (NULL == newStr)
         return NULL;
 
-    memcpy(newStr, curStr, sizeof(char_t)*(len+1));
+    memcpy(newStr, curStr, sizeof(char_t) * (len + 1));
     return newStr;
 }
 

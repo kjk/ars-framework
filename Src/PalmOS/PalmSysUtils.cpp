@@ -112,7 +112,7 @@ char_t *getResource(UInt16 stringId)
     if (NULL == str)
         goto Exit;
 
-    toReturn = StringCopy2(str, MemHandleSize(handle));
+    toReturn = StringCopy2N(str, MemHandleSize(handle));
     MemHandleUnlock(handle);
 
 Exit:
@@ -138,7 +138,7 @@ char_t *getDataResource(UInt16 dataId, UInt32 *resSizeOut)
         goto Exit;
 
     *resSizeOut = MemHandleSize(handle);
-    toReturn = StringCopy2(str, *resSizeOut);
+    toReturn = StringCopy2N(str, *resSizeOut);
     MemHandleUnlock(handle);
 
 Exit:

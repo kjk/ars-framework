@@ -130,8 +130,8 @@ namespace ArsLexis
     
     Form::~Form() 
     {
-        if (NULL != title_)
-            free(title_);
+        free(title_);
+        
         if (deleteOnClose_) 
             FrmDeleteForm(form_);
         application_.unregisterForm(*this);
@@ -332,9 +332,10 @@ namespace ArsLexis
     {
         assert(form_!=0);
         FrmSetTitle(form_, "");
-        char_t *newTitle = StringCopy2(title,-1);
+        char_t *newTitle = StringCopy2(title);
         if (NULL == newTitle)
             return;
+        free(title_);
         title_ = newTitle;
         //! @bug On Sony Clie (OS 4.1) I experience bug described in Reference as corrected in post-OS 3.0... (Previous title is not erased)
         if (visible())
@@ -353,7 +354,7 @@ namespace ArsLexis
         assert(form_!=0);
         if (NULL == title_)
         {
-            title_ = StringCopy2(FrmGetTitle(form_), -1);
+            title_ = StringCopy2(FrmGetTitle(form_));
         }
         return title_;
     }

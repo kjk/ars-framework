@@ -106,7 +106,7 @@ ulong_t getTextEventDataLength(EventType* event)
 char_t* getTextEventDataCopy(EventType *event, ulong_t& length)
 {
     length = getTextEventDataLength(event);
-    char_t* p = StringCopy2(getTextEventData(event), length);
+    char_t* p = StringCopy2N(getTextEventData(event), length);
     return p;
 }
 

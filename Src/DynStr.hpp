@@ -42,9 +42,13 @@ typedef struct DynStrTag {
    that's how much we can add to the string without re-allocating it */
 #define DYNSTR_SIZE_LEFT(dstr) (dstr->bufSize - (dstr->strLen - 1)*sizeof(char_t))
 
-DynStr *   DynStrNew(UInt32 bufSize);
+DynStr *   DynStrNew__(UInt32 bufSize, const char_t* file, int line);
+DynStr *   DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* file, int line);
+
+#define DynStrNew(size) DynStrNew__((size), __FILE__, __LINE__)
+#define DynStrFromCharP(str, initBufSize) DynStrFromCharP__((str), (initBufSize), __FILE__, __LINE__)
+
 void       DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment);
-DynStr *   DynStrFromCharP(const char_t *str, UInt32 initBufSize);
 DynStr *   DynStrFromCharP2(const char_t *strOne, const char_t *strTwo);
 DynStr *   DynStrFromCharP3(const char_t *strOne, const char_t *strTwo, const char_t *strThree);
 DynStr *   DynStrAssignCharP(DynStr *dstr, const char_t *str);

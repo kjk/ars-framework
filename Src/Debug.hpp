@@ -109,7 +109,19 @@ inline void operator delete[](void *ptr, const char*, int line)
 
 inline void* malloc__(size_t size, const char* file, int line)
 {
-    return ::operator new(size, file, line);
+#ifdef _PALM_OS
+    if (0 == size)
+        size = 1;
+    void* ptr = MemGluePtrNew(size);
+#else
+    void* ptr = malloc(size);
+#endif
+    if (NULL == ptr)
+        return NULL;
+#ifndef NDEBUG
+    ArsLexis::logAllocation(ptr, size, false, file, line);
+#endif            
+    return ptr;
 }
 
 inline void free__(void* p)

@@ -45,14 +45,13 @@ void   DynStrTruncate(DynStr *dstr, UInt32 len)
 void DynStrDelete(DynStr *dstr)
 {
     assert(NULL != dstr);
-    if (NULL == dstr->str)
-        free(dstr->str);
+    free(dstr->str);
     free(dstr);
 }
 
-DynStr * DynStrNew(UInt32 bufSize)
+DynStr * DynStrNew__(UInt32 bufSize, const char_t* file, int line)
 {
-    return DynStrFromCharP("", bufSize);
+    return DynStrFromCharP__("", bufSize, file, line);
 }
 
 void   DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment)
@@ -60,7 +59,7 @@ void   DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment)
     dstr->reallocIncrement = increment;
 }
 
-DynStr *DynStrFromCharP(const char_t *str, UInt32 initBufSize)
+DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char_t* file, int line)
 {
     UInt32 strLen  = tstrlen(str);
     UInt32 bufSize = (strLen+1)*sizeof(char_t);
@@ -69,12 +68,12 @@ DynStr *DynStrFromCharP(const char_t *str, UInt32 initBufSize)
     if (bufSize < initBufSize)
         bufSize = initBufSize;
 
-    dstr = (DynStr*)malloc(sizeof(DynStr));
-    if (NULL==dstr)
+    dstr = (DynStr*)malloc__(sizeof(DynStr), file, line);
+    if (NULL == dstr)
         return NULL;
 
     dstr->reallocIncrement = 0;
-    dstr->str = (Char*)malloc(bufSize);
+    dstr->str = (Char*)malloc__(bufSize, file, line + 1);
     if (NULL == dstr->str)
     {
         free(dstr);
@@ -95,15 +94,15 @@ DynStr *DynStrFromCharP2(const char_t *strOne, const char_t *strTwo)
     DynStr * dstrNew;
     UInt32 strOneLen, strTwoLen;
 
-    assert(NULL!=strOne);
-    assert(NULL!=strTwo);
+    assert(NULL != strOne);
+    assert(NULL != strTwo);
 
     strOneLen = StrLen(strOne);
     strTwoLen = StrLen(strTwo);
     bufSize  = strOneLen + strTwoLen + 1;
 
     dstr = DynStrFromCharP(strOne, bufSize);
-    if (NULL==dstr)
+    if (NULL == dstr)
         return NULL;
 
     dstr->bufSize = bufSize;
