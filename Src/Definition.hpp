@@ -32,15 +32,45 @@ public:
     
 };
 
+class DefinitionModel: private NonCopyable
+{
+public:
+
+    typedef std::vector<DefinitionElement*> Elements_t;
+    Elements_t elements;
+
+private:
+    
+    DefinitionStyle* styles_;
+    ulong_t styleCount_;
+ 
+public:
+
+    void swap(DefinitionModel& other);
+    
+    DefinitionModel();
+    
+    ~DefinitionModel();
+
+};     
+
 
 /**
  * Handles rendering and user interactions (clicking parts of, selecting etc.) with definition text .
  */
 class Definition: private NonCopyable
 {
+    DefinitionModel* model_;
+    
 public:
 
-    typedef std::vector<DefinitionElement*> Elements_t;
+    enum ModelOwnerFlag
+    {
+        ownModelNot,
+        ownModel
+    };
+
+    typedef DefinitionModel::Elements_t Elements_t;
     typedef Elements_t::iterator ElementPosition_t;
     
     typedef Elements_t::const_iterator const_iterator;
@@ -54,6 +84,8 @@ public:
     typedef HyperlinkHandlerBase HyperlinkHandler;
     
 private:
+    
+    ModelOwnerFlag modelOwner_;
     
     /**
      * @internal
@@ -136,6 +168,8 @@ private:
     void removeSelectionOrShowPopup(const Point& point, Graphics& graphics, const RenderingPreferences& prefs);
     
 public:
+
+    void setModel(DefinitionModel* model, ModelOwnerFlag owner = ownModelNot);
 
     /**
      * Hot spot is a place in definition that allows to execute some action on clicking it.
