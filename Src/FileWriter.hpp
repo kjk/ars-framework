@@ -2,25 +2,14 @@
 #define __ARSLEXIS_FILE_WRITER_HPP__
 
 #include <Writer.hpp>
+#include <File.hpp>
 
 namespace ArsLexis {
 
     class FileWriter: public Writer 
     {
 
-#if defined(_PALM_OS)
-        typedef FileHand FileHandle_t;
-        enum {invalidFileHandle=0};
-#elif defined(_WIN32)
-        typedef HANDLE FileHandle_t;
-        enum {invalidFileHandle=INVALID_HANDLE_VALUE};
-#else
-# error "Define FileWriter::FileHandle_t for your system."
-#endif
-
-        FileHandle_t handle_;
-        
-        status_t close();
+        File file_;
         
     public:
     
@@ -54,7 +43,7 @@ namespace ArsLexis {
         status_t flush();
         
         bool isOpen() const
-        {return reinterpret_cast<FileHandle_t>(invalidFileHandle)!=handle_;}
+        {return file_.isOpen();}
 
         ~FileWriter();    
 

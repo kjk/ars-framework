@@ -136,7 +136,7 @@ namespace ArsLexis
         // if ":" is at the end, it means a field with not value
         // TODO: should we detect fields with arguments that shouldn't have arguments
         // and vice-versa?
-        if (separatorPos==lineEnd)
+        if (separatorPos+1==lineEnd)
             return handleField(name, value);
 
         // we must have space after ":"

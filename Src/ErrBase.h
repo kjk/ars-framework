@@ -72,6 +72,8 @@
 
 #define kxmlErrorClass  appErrorClass+0x0300 // KXml2
 
+#define dsErrorClass appErrorClass+0x0400
+
 #if !defined(errNone)
 # define errNone 0
 #endif

@@ -2,26 +2,15 @@
 #define __ARSLEXIS_FILE_READER_HPP__
 
 #include <Reader.hpp>
+#include <File.hpp>
 
 // Implementation of XmlReader that provides content from a file
 namespace ArsLexis {
 
     class FileReader: public Reader
     {
-
-#if defined(_PALM_OS)
-        typedef FileHand FileHandle_t;
-        enum {invalidFileHandle=0};
-#elif defined(_WIN32)
-        typedef HANDLE FileHandle_t;
-        enum {invalidFileHandle=reinterpret_cast<ulong_t>(INVALID_HANDLE_VALUE)};
-#else
-# error "Define FileReader::FileHandle_t for your system."
-#endif
-
-        FileHandle_t handle_;
         
-        status_t close();
+        File file_;
         
     public:
     
@@ -49,12 +38,12 @@ namespace ArsLexis {
 #endif
         
         bool isOpen() const
-        {return reinterpret_cast<FileHandle_t>(invalidFileHandle)!=handle_;}
+        {return file_.isOpen();}
 
         status_t read(int& ret);
 
         status_t read(int& ret, String& dst, int offset, int range);
-
+        
     };
     
 }
