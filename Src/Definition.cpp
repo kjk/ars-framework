@@ -77,6 +77,8 @@ Definition::Definition():
     selectionEndElement_(elements_.end()),
     inactiveSelectionStartElement_(elements_.end()),
     inactiveSelectionEndElement_(elements_.end()),
+    mouseDownElement_(elements_.end()),
+    mouseDownProgress_(LayoutContext::progressCompleted),
     selectionStartProgress_(LayoutContext::progressCompleted),
     selectionEndProgress_(LayoutContext::progressCompleted),
     trackingSelection_(false),
@@ -661,24 +663,52 @@ bool Definition::trackTextSelection(Graphics& graphics, const RenderingPreferenc
     elementAtWidth(graphics, prefs, line, p.x, elem, progress);
     if (!trackingSelection_) 
     {
-        selectionStartElement_ = selectionEndElement_ = elem;
-        selectionStartProgress_ = selectionEndProgress_ = progress;
+        mouseDownElement_ = selectionStartElement_ = selectionEndElement_ = elem;
+        mouseDownProgress_ = selectionStartProgress_ = selectionEndProgress_ = progress;
         trackingSelection_ = true;
     }
     else 
     {
-        /*
-        ElementPosition_t pos;
-        if (elem > selectionEndElement_ || (elem == selectionEndElement_ && progress > selectionEndProgress_))
+        ElementPosition_t prevStart = selectionStartElement_;
+        uint_t prevStartProg = selectionStartProgress_;
+        ElementPosition_t prevEnd = selectionEndElement_;
+        uint_t prevEndProg = selectionEndProgress_;
+        if (elem > mouseDownElement_ || (elem == mouseDownElement_ && progress > mouseDownProgress_)) 
         {
-            pos = selectionEndElement_;
+            selectionStartElement_ = mouseDownElement_;
+            selectionStartProgress_ = mouseDownProgress_;
             selectionEndElement_ = elem;
             selectionEndProgress_ = progress;
-            ++elem;
-            while (pos != elem)
-                renderSingleElement(graphics, prefs, *pos++);
-        } 
-        */   
+        }
+        else if (elem < mouseDownElement_ || (elem == mouseDownElement_ && progress < mouseDownProgress_))
+        {
+            selectionStartElement_ = elem;
+            selectionStartProgress_ = progress;
+            selectionEndElement_ = mouseDownElement_;
+            selectionEndProgress_ = mouseDownProgress_;
+        }
+        else 
+        {
+            selectionStartElement_ = selectionEndElement_ = mouseDownElement_;
+            selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_;
+        }
+        ElementPosition_t start, end;
+        if (prevStart != selectionStartElement_ || prevStartProg != selectionStartProgress_)
+        {
+            start = std::min(selectionStartElement_, prevStart);
+            end = std::max(selectionStartElement_, prevStart);
+            ++end;
+            while (start != end)
+                renderSingleElement(graphics, prefs, *(*start++));
+        }
+        if (prevEnd != selectionEndElement_ || prevEndProg != selectionEndProgress_)
+        {
+            start = std::min(selectionEndElement_, prevEnd);
+            end = std::max(selectionEndElement_, prevEnd);
+            ++end;
+            while (start != end)
+                renderSingleElement(graphics, prefs, *(*start++));
+        }
     }
     if (endTracking) 
         trackingSelection_ = false;

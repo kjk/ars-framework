@@ -329,6 +329,9 @@ private:
     
     ElementPosition_t selectionStartElement_;
     ElementPosition_t selectionEndElement_;
+    ElementPosition_t mouseDownElement_;
+    uint_t mouseDownProgress_;
+    
     ElementPosition_t inactiveSelectionStartElement_;
     ElementPosition_t inactiveSelectionEndElement_;
     uint_t selectionStartProgress_;
