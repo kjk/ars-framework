@@ -190,10 +190,11 @@ Exit:
 status_t FeedHandlerFromReader(ArsLexis::FieldPayloadProtocolConnection::PayloadHandler& handler, ArsLexis::Reader& reader)
 {
     // This function uses String because such is interface of PayloadHandler that it requires so.
+    // TODO: refactor PayloadHandler to use const char_t* instead.
     String str;
     
     status_t err;
-    const uint_t chunk = 256;
+    const uint_t chunk = 8192;
     uint_t length = chunk;
     while (chunk == length)
     {

@@ -154,8 +154,8 @@ status_t readUniversalDataFromReader(ArsLexis::Reader& origReader, UniversalData
         ArsLexis::status_t error=reader.readLine(eof, line);
         if (errNone!=error)
             return error;
-//      if (eof) //writer puts '\n' after last line... 
-//            break;
+        if (eof && line.empty()) //writer puts '\n' after last line... 
+            break;
         error = parseUniversalDataFormatTextLine(line, out, lineNo, controlDataLength);
         if (errNone!=error)
             return error;
