@@ -603,6 +603,53 @@ void ReverseStringList(char_t **strList, int strListLen)
     }
 }
 
+void convertFloatStringToUnsignedLong(const ArsLexis::String str, unsigned long& value, unsigned int& digitsAfterComma, ArsLexis::char_t commaSeparator)
+{
+    digitsAfterComma = 0;
+    value = 0;
+    bool wasComma = false;
+    for (uint_t i=0; i < str.size(); i++)
+    {
+        if (isDigit(str[i]))
+        {
+            // is this good method?
+            unsigned long digit = str[i] - _T('0');
+            assert(0 <= digit && 10 > digit);
+            value = 10*value + digit;
+            if (wasComma)
+                digitsAfterComma++;        
+        }
+        else if (commaSeparator == str[i])
+            //if we want to return errors we can do it when more than one comma apears
+            wasComma = true;
+    }
+}
+
+ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsigned int comma, ArsLexis::char_t commaSymbol, ArsLexis::char_t kSeparator)
+{
+    char buffer[64];
+    StrPrintF(buffer,"%lu",value);
+    String str = buffer;
+    //fill with zeros
+    while (comma >= str.size())
+        str.insert(str.begin(), _T('0'));
+    //place comma
+    int separator = str.size() - comma - 3;
+    while (comma > 0 && _T('0') == str[str.size()-1])
+    {
+        comma--;
+        str.erase(str.end()-1);    
+    }        
+    if (comma > 0)
+        str.insert(str.begin()+str.size()-comma, commaSymbol);
+    //use separators
+    while (separator > 0)
+    {
+        str.insert(str.begin()+separator, kSeparator);
+        separator -= 3;    
+    }
+    return str;
+}
 
 } // namespace ArsLexis
 

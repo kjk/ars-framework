@@ -160,6 +160,9 @@ namespace ArsLexis
 
     void ReverseStringList(char_t **strList, int strListLen);
 
+    void convertFloatStringToUnsignedLong(const ArsLexis::String str, unsigned long& value, unsigned int& digitsAfterComma, ArsLexis::char_t commaSeparator = _T('.'));
+    
+    ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsigned int comma = 0, ArsLexis::char_t commaSymbol = _T('.'), ArsLexis::char_t kSeparator = _T(','));
 }
 
 /*
