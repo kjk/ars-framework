@@ -198,7 +198,7 @@ public:
     
     /**
      * Checks if @c point falls within bounds of any currently displayed @c HotSpot. If so,
-     * calls @c DefinitionElement::elementClicked() of element associated with @c HotSpot.
+     * calls @c DefinitionElement::hotSpotClicked() of element associated with @c HotSpot.
      */
     void hitTest(const PointType& point);
     

@@ -18,7 +18,9 @@ GenericTextElement::GenericTextElement(const ArsLexis::String& text):
 {}
 
 GenericTextElement::~GenericTextElement()
-{}
+{
+    delete hyperlink_;
+}
 
 #define whitespaceChars " \t\n\r"
 
@@ -69,7 +71,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
     {
         WinDrawChars(text, length, left, top);
         if (isHyperlink())
-            defineHotSpot(*definition, Rectangle(left, top, lineHeight, width));
+            defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
     }
 
     left+=width;    
@@ -95,7 +97,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, Coord l
                 {
                     WinDrawChars(text, length, left, top);
                     if (isHyperlink())
-                        defineHotSpot(*definition, Rectangle(left, top, lineHeight, width));
+                        defineHotSpot(*definition, Rectangle(left, top, width, lineHeight));
                 }
                 
                 layoutContext.renderingProgress+=length;

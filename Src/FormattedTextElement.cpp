@@ -12,7 +12,8 @@ void FormattedTextElement::applyFormatting(const RenderingPreferences& preferenc
     if (formatting_.strength()!=FormattingProperties::strengthPlain)
     {
         FontID originalFontId=styleFormat.fontId;
-        FntSetFont(ArsLexis::getBoldFont(originalFontId));    }
+        FntSetFont(ArsLexis::getBoldFont(originalFontId));
+    }
     if (formatting_.underline())
         WinSetUnderlineMode(preferences.standardUnderline());
 }

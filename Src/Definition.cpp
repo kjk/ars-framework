@@ -8,7 +8,10 @@
 #include "DefinitionElement.hpp"
 #include "Utility.hpp"
 
-Definition::HotSpot::HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement& element):
+using ArsLexis::Rectangle;
+using ArsLexis::ObjectDeleter;
+
+Definition::HotSpot::HotSpot(const Rectangle& rect, DefinitionElement& element):
     element_(element)
 {
     rectangles_.push_back(rect);
@@ -17,7 +20,7 @@ Definition::HotSpot::HotSpot(const ArsLexis::Rectangle& rect, DefinitionElement&
 Boolean Definition::HotSpot::hitTest(const PointType& point) const
 {
     Boolean result=false;
-    Rectangles_t::const_iterator it=std::find_if(rectangles_.begin(), rectangles_.end(), ArsLexis::Rectangle::HitTest(point));
+    Rectangles_t::const_iterator it=std::find_if(rectangles_.begin(), rectangles_.end(), Rectangle::HitTest(point));
     if (it!=rectangles_.end())
         result=true;
     return result;
@@ -28,22 +31,20 @@ Definition::HotSpot::~HotSpot()
     element_.invalidateHotSpot();
 }
 
-void Definition::HotSpot::move(const PointType& delta, const ArsLexis::Rectangle& validArea)
+void Definition::HotSpot::move(const PointType& delta, const Rectangle& validArea)
 {
     Rectangles_t::iterator end=rectangles_.end();
     Rectangles_t::iterator it=rectangles_.begin();
     while (it!=end)
     {
-        ArsLexis::Rectangle& rect=*it;
+        Rectangle& rect=*it;
         rect.topLeft().x+=delta.x;
         rect.topLeft().y+=delta.y;
+        Rectangles_t::iterator next=it;
+        ++next;
         if (!rect.intersectsWith(validArea))
-        {
-            Rectangles_t::iterator next=it;
-            ++next;
             rectangles_.erase(it);
-            it=next;
-        }
+        it=next;
     }
 }
 
@@ -59,7 +60,7 @@ void Definition::addHotSpot(HotSpot* hotSpot)
 
 void Definition::clearHotSpots()
 {
-    std::for_each(hotSpots_.begin(), hotSpots_.end(), ArsLexis::ObjectDeleter<HotSpot>());
+    std::for_each(hotSpots_.begin(), hotSpots_.end(), ObjectDeleter<HotSpot>());
     hotSpots_.clear();
 }
 
@@ -75,8 +76,8 @@ void Definition::clear()
 {
     clearHotSpots();
     clearLines();
-    std::for_each(elements_.begin(), elements_.end(), ArsLexis::ObjectDeleter<DefinitionElement>());
-    bounds_=ArsLexis::Rectangle();
+    std::for_each(elements_.begin(), elements_.end(), ObjectDeleter<DefinitionElement>());
+    bounds_=Rectangle();
 }
 
 Definition::~Definition()
@@ -133,21 +134,18 @@ void Definition::moveHotSpots(const PointType& delta)
     while (it!=end)
     {
         (*it)->move(delta, bounds_);
+        HotSpots_t::iterator next=it;
+        ++next;
         if (!(*it)->valid())
         {
-            HotSpots_t::iterator next=it;
-            ++next;
             delete *it;
             hotSpots_.erase(it);
-            it=next;
         }
+        it=next;
     }
 }
 
 
-/**
- * @todo Erase garbage that occurs during scrolling of lines of non-uniform height in Definition::scroll().
- */
 void Definition::scroll(Int16 delta)
 {
     UInt16 newFirstLine=0;
@@ -164,7 +162,7 @@ void Definition::scroll(Int16 delta)
         Coord unionHeight=0;
         for (UInt16 index=unionFirst; index<unionLast; ++index)
             unionHeight+=lines_[index].height;
-        ArsLexis::Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
+        Rectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         
         PointType pointDelta;
         pointDelta.x=0;
@@ -172,6 +170,9 @@ void Definition::scroll(Int16 delta)
         {
             pointDelta.y=-unionTop;
             WinCopyRectangle(NULL, NULL, unionRect, bounds_.x(), bounds_.y(), winPaint);
+            Rectangle trashRect(bounds_.x(), bounds_.y()+unionHeight, bounds_.width(), bounds_.height()-unionHeight);
+            WinEraseRectangle(trashRect, 0);
+            moveHotSpots(pointDelta);
             renderLineRange(lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight);
         }
         else
@@ -180,10 +181,11 @@ void Definition::scroll(Int16 delta)
             for (UInt16 index=newFirstLine; index<firstLine_; ++index)
                 pointDelta.y+=lines_[index].height;
             WinCopyRectangle(NULL, NULL, unionRect, bounds_.x(), bounds_.y()+pointDelta.y, winPaint);
+            Rectangle trashRect(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y);
+            WinEraseRectangle(trashRect, 0);
+            moveHotSpots(pointDelta);
             renderLineRange(lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0);
         }
-        moveHotSpots(pointDelta);
-        
         firstLine_=newFirstLine;
         lastLine_=newLastLine;
     }
@@ -323,7 +325,7 @@ void Definition::hitTest(const PointType& point)
     {
         if ((*it)->hitTest(point))
         {
-            (*it)->element().elementClicked(*this);
+            (*it)->element().hotSpotClicked(*this);
             break;
         }
     }

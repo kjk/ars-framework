@@ -8,6 +8,7 @@
 #include "Utility.hpp"
 
 using ArsLexis::String;
+using ArsLexis::isWhitespace;
 
 DefinitionParser::DefinitionParser():
     openEmphasize_(false),
@@ -20,6 +21,9 @@ DefinitionParser::DefinitionParser():
     openNowiki_(0),
     parsePosition_(0),
     lineEnd_(0),
+    lastElementStart_(0),
+    lastElementEnd_(0),
+    unnamedLinksCount_(0),
     lineType_(emptyLine),
     previousLineType_(emptyLine)
 {
@@ -96,6 +100,7 @@ void DefinitionParser::reset()
     previousLineType_=emptyLine;
     lastElementStart_=0;
     lastElementEnd_=0;
+    unnamedLinksCount_=0;
     text_.clear();
 }
     
@@ -168,15 +173,6 @@ static const char linkCloseChar=']';
 #define strongText "'''"
 #define veryStrongText "''''"
 
-#define nowikiText "nowiki"
-#define teleTypeText "tt"
-#define lineBreakText "br"
-#define smallText "small"
-#define strikeOutText "strike"
-#define underlineText "u"
-#define subscriptText "sub"
-#define superscriptText "sup"
-
 Boolean DefinitionParser::detectStrongTag(UInt16 end)
 {
     Boolean isStrongTag=false;
@@ -207,13 +203,96 @@ Boolean DefinitionParser::detectStrongTag(UInt16 end)
     return isStrongTag;
 }
 
+#define nowikiText "nowiki"
+#define teleTypeText "tt"
+#define lineBreakText "br"
+#define smallText "small"
+#define strikeOutText "strike"
+#define underlineText "u"
+#define subscriptText "sub"
+#define superscriptText "sup"
+
 //! @todo Implement DefinitionParser::detectHTMLTag()
 Boolean DefinitionParser::detectHTMLTag(UInt16 end)
 {
     return false;
 }
 
-//! @todo Detect presence of hyperlinks in DefinitionParser::parseText()
+#define imagePrefix "image:"
+#define mediaPrefix "media:"
+#define linkCloseText "]"
+#define linkPartSeparator "|"
+
+Boolean DefinitionParser::detectHyperlink(UInt16 end)
+{
+
+    Boolean isHyperlink=false;
+    String::size_type linkEndPos=text_.find(linkCloseText, parsePosition_+1);
+    UInt16 linkEnd=(text_.npos==linkEndPos?end:linkEndPos);
+    if (linkEnd<end)
+    {
+        isHyperlink=true;
+        createTextElement();
+        if (linkOpenChar==text_[parsePosition_+1] && linkEnd+1<end && linkCloseChar==text_[linkEnd+1]) // Is it link to other wikipedia article?
+        {
+            parsePosition_+=2;
+            Boolean isOtherLanguage=(parsePosition_<linkEnd-2 && ':'==text_[parsePosition_+2]);
+            // We don't want other language links as we provide only English contents, and we can't render names in some languages.
+            if (!isOtherLanguage) 
+            {
+                String::size_type separatorPos=text_.find(linkPartSeparator, parsePosition_);
+                if (text_.npos==separatorPos || separatorPos>=linkEnd)
+                {
+                    lastElementStart_=parsePosition_;
+                    lastElementEnd_=linkEnd;
+                    GenericTextElement* textElement=createTextElement();
+                    if (textElement)
+                        textElement->setHyperlink(textElement->text(), hyperlinkTerm);
+                }
+                else
+                {
+                    lastElementStart_=separatorPos+1;
+                    lastElementEnd_=linkEnd;
+                    GenericTextElement* textElement=createTextElement();
+                    if (textElement)
+                        textElement->setHyperlink(String(text_, parsePosition_, separatorPos-parsePosition_), hyperlinkTerm);
+                }
+            }                
+            parsePosition_=linkEnd+2;
+        }
+        else // In case of external link...
+        {
+            ++parsePosition_;
+            String::size_type separatorPos=text_.find(" ", parsePosition_);
+            if (text_.npos==separatorPos || separatorPos>=linkEnd)
+            {
+                ++unnamedLinksCount_;
+                char buffer[8];
+                StrPrintF(buffer, "[%hu]", unnamedLinksCount_);
+                lastElementStart_=parsePosition_;
+                lastElementEnd_=linkEnd;
+                GenericTextElement* textElement=createTextElement();
+                if (textElement)
+                {
+                    textElement->setHyperlink(textElement->text(), hyperlinkExternal);
+                    String buffStr(buffer);
+                    textElement->swapText(buffStr);
+                }
+            }
+            else
+            {
+                lastElementStart_=separatorPos+1;
+                lastElementEnd_=linkEnd;
+                GenericTextElement* textElement=createTextElement();
+                if (textElement)
+                    textElement->setHyperlink(String(text_, parsePosition_, separatorPos-parsePosition_), hyperlinkExternal);
+            }
+            parsePosition_=linkEnd+1;
+        }
+    }
+    return isHyperlink;
+}
+
 void DefinitionParser::parseText(UInt16 end, ElementStyle style)
 {
     currentStyle_=style;
@@ -224,7 +303,9 @@ void DefinitionParser::parseText(UInt16 end, ElementStyle style)
         Boolean specialChar=false;
         lastElementEnd_=parsePosition_;
         if ((htmlTagStart==chr && detectHTMLTag(end)) ||
-            (strongChar==chr && detectStrongTag(end)))
+            (0==openNowiki_ && 
+                ((strongChar==chr && detectStrongTag(end)) ||
+                (linkOpenChar==chr && detectHyperlink(end)))))
         {
             lastElementStart_=parsePosition_;
             specialChar=true;
@@ -237,13 +318,13 @@ void DefinitionParser::parseText(UInt16 end, ElementStyle style)
     createTextElement();
 }
 
-void DefinitionParser::createTextElement()
+GenericTextElement* DefinitionParser::createTextElement()
 {
+    GenericTextElement* textElement=0;
     if (lastElementStart_<lastElementEnd_)
     {
         String text(text_, lastElementStart_, lastElementEnd_-lastElementStart_);
         decodeHTMLCharacterEntityRefs(text);
-        GenericTextElement* textElement=0;
         if (isPlainText())
             textElement=new GenericTextElement(text);
         else
@@ -255,6 +336,7 @@ void DefinitionParser::createTextElement()
         appendElement(textElement);
         textElement->setStyle(currentStyle_);
     }
+    return textElement;
 }
 
 void DefinitionParser::startNewNumberedList(ListNumberElement* firstElement)
@@ -460,7 +542,6 @@ void DefinitionParser::parse()
 //! @todo Add header indexing
 void DefinitionParser::parseHeaderLine()
 {
-    using ArsLexis::isWhitespace;
     while (parsePosition_<lineEnd_ && headerChar==text_[parsePosition_] || isWhitespace(text_[parsePosition_]))
         ++parsePosition_;
     UInt16 lineEnd=lineEnd_;
@@ -483,6 +564,8 @@ void DefinitionParser::parseListElementLine()
     String elementDesc(text_, parsePosition_, start-parsePosition_);
     manageListNesting(elementDesc);
     parsePosition_=start;
+    while (parsePosition_<lineEnd_ && isWhitespace(text_[parsePosition_]))
+        ++parsePosition_;
     parseText(lineEnd_, styleDefault);
     if (!lineAllowsContinuation(listElementLine))
         popParent();
@@ -490,7 +573,6 @@ void DefinitionParser::parseListElementLine()
 
 void DefinitionParser::parseIndentedLine()
 {
-    using ArsLexis::isWhitespace;
     assert(indentLineChar==text_[parsePosition_]);
     ++parsePosition_;
     while (parsePosition_<lineEnd_ && isWhitespace(text_[parsePosition_]))

@@ -31,8 +31,7 @@ public:
     virtual ~DefinitionElement()
     {}
     
-    virtual void elementClicked(Definition& definition)
-    {}
+    virtual void hotSpotClicked(Definition& definition);
     
     void setParent(DefinitionElement* parent)
     {parent_=parent;}

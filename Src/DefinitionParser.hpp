@@ -12,6 +12,8 @@ class Definition;
 
 class DefinitionElement;
 
+class GenericTextElement;
+
 class FormattedTextElement;
 
 class ListNumberElement;
@@ -103,6 +105,7 @@ class DefinitionParser
     UInt16 lineEnd_;
     UInt16 lastElementStart_;
     UInt16 lastElementEnd_;
+    UInt16 unnamedLinksCount_;
     
     void parseText(UInt16 end, ElementStyle style);
     
@@ -152,7 +155,9 @@ class DefinitionParser
     
     Boolean detectStrongTag(UInt16 textEnd);
     
-    void createTextElement();
+    Boolean detectHyperlink(UInt16 textEnd);
+    
+    GenericTextElement* createTextElement();
     
 public:
 

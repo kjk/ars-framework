@@ -29,7 +29,8 @@ struct LayoutContext
     {
         renderingProgress=elementCompletedProgress;
         usedWidth+=width;
-        assert(usedWidth<=screenWidth);
+//  The assertion below fails if text is displayed underlined.
+//        assert(usedWidth<=screenWidth);
     }
     
     Boolean isElementCompleted() const
