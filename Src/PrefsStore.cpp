@@ -742,6 +742,27 @@ Err PrefsStoreWriter::ErrSavePreferences()
             return DmGetLastErr();
     }
 
+    // set backup bit on the database. code adapted from DataStore.cpp
+    // DataStore::open()
+    if (errNone == err)
+    {
+        LocalID localId;
+        UInt16 cardNo;
+        UInt16 attribs;
+        err = DmOpenDatabaseInfo(db, &localId, NULL, NULL, &cardNo, NULL);
+        if (errNone != err)
+            goto Continue;
+        err = DmDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        if (errNone != err)
+            goto Continue;
+        if (0 != attribs & dmHdrAttrBackup)
+            goto Continue;
+        attribs |= dmHdrAttrBackup;
+        err = DmSetDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+Continue:
+        err = errNone;
+    }
+
     UInt16    recNo = 0;
     UInt16    recsCount = DmNumRecords(db);
     MemHandle recHandle;
