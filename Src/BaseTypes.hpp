@@ -46,7 +46,7 @@ namespace ArsLexis
 #  define tstrlen strlen
 #  define tstrcmp strcmp
 
-    typedef long tick_t
+    typedef long tick_t;
     
     typedef int status_t;
         

@@ -9,7 +9,7 @@
 
 #if !defined(appErrorClass)
 
-# if defined(_WIN32_WCE)
+# if defined(_WIN32) || defined(_WIN32_WCE)
 
 /////////////////////////////////
 // The following comes from winerror.h
