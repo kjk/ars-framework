@@ -10,6 +10,7 @@
 #include <SysUtils.hpp>
 #include <DLServer.h>
 #include <68K/Hs.h>
+#include <Text.hpp>
 
 namespace ArsLexis
 {

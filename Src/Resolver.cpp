@@ -1,7 +1,7 @@
 #include <Resolver.hpp>
-#include <SysUtils.hpp>
 #include <NetLibrary.hpp>
 #include <cctype>
+#include <Text.hpp>
 
 namespace ArsLexis
 {

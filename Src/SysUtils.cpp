@@ -35,67 +35,6 @@ ulong_t ArsLexis::random(ulong_t range)
     return result;
 }
 
-Err ArsLexis::numericValue(const char* begin, const char* end, long& result, uint_t base)
-{
-    Err error=errNone;
-    bool negative=false;
-    Int32 res=0;
-    String numbers("0123456789abcdefghijklmnopqrstuvwxyz");
-    char buffer[2];
-    if (begin>=end || base>numbers.length())
-    {    
-        error=sysErrParamErr;
-        goto OnError;           
-    }
-    if (*begin=='-')
-    {
-        negative=true;
-        if (++begin==end)
-        {
-            error=sysErrParamErr;
-            goto OnError;           
-        }
-    }           
-    buffer[1]=chrNull;
-    while (begin!=end) 
-    {
-        buffer[0]=*(begin++);
-        StrToLower(buffer, buffer); 
-        String::size_type num=numbers.find(buffer);
-        if (num>=base)
-        {   
-            error=sysErrParamErr;
-            break;
-        }
-        else
-        {
-            res*=base;
-            res+=num;
-        }
-    }
-    if (!error)
-       result=res;
-OnError:
-    return error;    
-}
-
-#define HEX_DIGITS "0123456789ABCDEF"
-
-ArsLexis::String ArsLexis::hexBinEncode(const String& in)
-{
-    String out;
-    out.reserve(2*in.length());
-    String::const_iterator it=in.begin();
-    String::const_iterator end=in.end();
-    while (it!=end)
-    {
-        UInt8 b=*(it++);
-        out.append(1, HEX_DIGITS[b/16]);
-        out.append(1, HEX_DIGITS[b%16]);
-    }
-    return out;
-}
-
 // detect a web browser app and return cardNo and dbID of its *.prc.
 // returns true if detected some viewer, false if none was found
 bool ArsLexis::fDetectViewer(UInt16 *cardNoOut, LocalID *dbIDOut)

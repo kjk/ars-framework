@@ -4,6 +4,7 @@
 #include <SimpleSocketConnection.hpp>
 #include <vector>
 #include <utility>
+#include <list>
 
 namespace ArsLexis {
 
@@ -71,6 +72,19 @@ namespace ArsLexis {
 
         void commitRequest();
         
+        typedef std::list<String> Chunks_t;
+        Chunks_t chunks_;
+        
+        bool nextResponseLine(String& line, bool finish);
+        
+        Err processResponseHeaders(bool finish);
+        
+        Err processStatusLine(const String& line);
+        
+        Err processHeaderLine(const String& line);
+
+//        Err processResponseBody();
+        
     protected:
     
         Err open();
@@ -79,9 +93,14 @@ namespace ArsLexis {
         
         virtual Err handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason);
         
-        virtual Err handleBodyIncrement(const String& body, ulong_t& length, bool finish)
-        {return errNone;}      
-
+        Err notifyReadable();
+        
+        Err notifyFinished()
+        {return processResponseHeaders(true);}
+        
+        Err notifyProgress()
+        {return processResponseHeaders(false);}
+        
     };
 
 }

@@ -95,11 +95,8 @@ namespace ArsLexis {
         Err error=errNone;
         if (statusCode>=100 && statusCode<200)
             skippingInfoResponse_=true;
-        else {
-            if (statusCode!=200)
-                error=errHttpUnsupportedStatusCode;
-            skippingInfoResponse_=false;                
-        }
+        else if (statusCode!=200)
+            error=errHttpUnsupportedStatusCode;
         return error;
     }
     
@@ -128,4 +125,104 @@ namespace ArsLexis {
         }
     }
     
+    Err HttpConnection::notifyReadable() 
+    {
+//        if (!insideResponseBody_)
+            return SimpleSocketConnection::notifyReadable();
+//        else
+//            return processResponseBody();
+    }
+
+    bool HttpConnection::nextResponseLine(String& out, bool finish)
+    {
+        String& resp=response();
+        String::size_type pos=resp.find(crLf);
+        if (resp.npos==pos && !finish)
+            return false;
+        out.assign(resp, 0, pos);
+        resp.erase(0, resp.npos==pos?pos:pos+2);
+        return true;
+    }
+    
+    Err HttpConnection::processResponseHeaders(bool finish)
+    {
+        Err error=errNone;
+        String line;
+        bool ready=nextResponseLine(line, finish);
+        while (ready && !insideResponseBody_) {
+            if (line.empty())
+            {
+                if (skippingInfoResponse_)
+                    skippingInfoResponse_=insideResponseBody_=insideResposeHeaders_=false;
+                else
+                {
+                    insideResponseBody_=true;
+                    insideResposeHeaders_=false;
+                    break;
+                }
+            }
+            else 
+            {
+                if (!insideResposeHeaders_)
+                {
+                    error=processStatusLine(line);
+                    insideResposeHeaders_=true;
+                }
+                else
+                    error=processHeaderLine(line);
+            }
+            ready=nextResponseLine(line, finish);
+        }
+        return error;    
+    }
+    
+    Err HttpConnection::processStatusLine(const String& line)
+    {
+        if (line.find("HTTP/")!=0)
+            return errResponseMalformed;
+        String::size_type pos0=line.find('.', 6);
+        if (line.npos==pos0)
+            return errResponseMalformed;
+        long value;
+        Err error=numericValue(&line[5], &line[pos0], value);
+        if (error)
+            return errResponseMalformed;
+        uint_t major=value;
+        String::size_type pos1=line.find_first_of(" \t", pos0+1);
+        if (line.npos==pos1)
+            return errResponseMalformed;
+        error=numericValue(&line[pos0+1],&line[pos1], value);
+        if (error)
+            return errResponseMalformed;
+        uint_t minor=value;
+        pos0=line.find_first_not_of(" \t", pos1);
+        if (line.npos==pos0)
+            return errResponseMalformed;
+        pos1=line.find_first_of(" \t", pos0);
+        if (line.npos==pos1)
+            return errResponseMalformed;
+        error=numericValue(&line[pos0], &line[pos1], value);
+        if (error)
+            return errResponseMalformed;
+        uint_t statusCode=value;
+        pos0=line.find_first_not_of(" \t", pos1);
+        if (line.npos==pos0)
+            return errResponseMalformed;
+        String reason(line, pos0);
+        return handleStatusLine(major, minor, statusCode, reason);
+    }
+
+    Err HttpConnection::processHeaderLine(const String& line)
+    {
+        String::size_type pos=line.find(':');
+        if (line.npos==pos)
+            return errResponseMalformed;
+        String field(line, 0, pos);
+        String value;
+        pos=line.find_first_not_of(" \t", pos+1);
+        if (line.npos!=pos)
+            value.assign(line, pos, line.npos);
+        return handleResponseField(field, value);
+    }
+
 }
