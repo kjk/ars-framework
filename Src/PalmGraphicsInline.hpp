@@ -35,21 +35,10 @@ namespace ArsLexis
     }
     
     inline uint_t Graphics::fontHeight() const
-    {
-        uint_t height=FntLineHeight();
-        FontEffects fx=support_.font.effects();
-        if (fx.superscript() || fx.subscript())
-            height*=1.333;
-        return height;
-    }
+    {return support_.effectiveLineHeight;}
     
     inline uint_t Graphics::fontBaseline() const
-    {
-        uint_t baseline=FntBaseLine();
-        if (support_.font.effects().superscript())
-            baseline+=(FntLineHeight()*0.333);
-        return baseline;
-    }
+    {return support_.effectiveBaseline;}
 
     inline uint_t Graphics::wordWrap(const char_t* text, uint_t width)
     {
@@ -71,11 +60,35 @@ namespace ArsLexis
         width=w;
     }
 
-    inline Graphics::Font_t& Graphics::font()
+    inline Font Graphics::font() const
     {return support_.font;}
     
-    inline const Graphics::Font_t& Graphics::font() const
-    {return support_.font;}
+    inline void Graphics::copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
+    {
+        NativeRectangle_t nr=toNative(sourceArea);
+        WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
+    }
+
+    inline Graphics::~Graphics()
+    {}
+    
+    inline Graphics::Graphics(const NativeGraphicsHandle_t& handle):
+        handle_(handle)
+    {
+        setFont(FntGetFont());
+    }
+
+    inline Graphics::State_t Graphics::pushState()
+    {
+        WinPushDrawState();
+        return support_.font;
+    }
+
+    inline void Graphics::popState(const Graphics::State_t& state)
+    {
+        setFont(state);
+        WinPopDrawState();
+    }
     
 }
 

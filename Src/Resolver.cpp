@@ -15,9 +15,33 @@ namespace ArsLexis
     Resolver::~Resolver()
     {}
     
+/*    
+    namespace {
+    
+        struct CacheEntryComparator {
+            
+            const String& text;
+            
+            CacheEntryComparator(const String& t): text(t) {}
+            
+            bool operator()(const Resolver::CacheEntry_t& entry) const 
+            {return entry.first==text;}
+            
+        };
+    
+    }
+*/
+    
     void Resolver::updateCacheEntry(const String& name, NetIPAddr address)
     {
-        cache_[name]=address;         
+/*    
+        AddressCache_t::iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(name));
+        if (it!=cache_.end())
+            (*it).second=address;
+        else
+            cache_.push_front(std::make_pair(name, address));
+*/
+        cache_[name]=address;            
     }
 
     Err Resolver::validateAddress(const String& origAddress, String& validAddress, UInt16& port)
@@ -57,6 +81,7 @@ namespace ArsLexis
 
         NetIPAddr resAddr=buffer->address[0];
         assert(resAddr!=0);
+//        cache_.push_front(std::make_pair(name, resAddr));
         cache_[name]=resAddr;
 
 #ifdef NEVER
@@ -87,6 +112,7 @@ namespace ArsLexis
             return errNone;
         }
         AddressCache_t::const_iterator it=cache_.find(validAddress);
+//        AddressCache_t::const_iterator it=std::find_if(cache_.begin(), cache_.end(), CacheEntryComparator(validAddress));
         if (it!=cache_.end())
         {
             addr.setIpAddress(it->second);

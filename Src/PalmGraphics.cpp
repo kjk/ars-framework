@@ -4,36 +4,27 @@
 namespace ArsLexis
 {
 
-    Graphics::~Graphics()
-    {
-    }
-    
-    Graphics::Graphics(const NativeGraphicsHandle_t& handle):
-        handle_(handle)
-    {
-        support_.font.setFontId(FntGetFont());
-    }
-
     Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
     {
         Font_t oldOne=support_.font;
         support_.font=font;
         FntSetFont(support_.font.withEffects());
+        if (oldOne.withEffects()!=font.withEffects() || 0==support_.effectiveLineHeight)
+        {
+            support_.effectiveLineHeight=support_.lineHeight=FntLineHeight();
+            FontEffects fx=support_.font.effects();
+            if (fx.superscript() || fx.subscript())
+            {
+                support_.effectiveLineHeight*=4;
+                support_.effectiveLineHeight/=3;
+            }
+            support_.effectiveBaseline=support_.baseline=FntBaseLine();
+            if (support_.font.effects().superscript())
+                support_.effectiveBaseline+=(support_.lineHeight/3);
+        }
         return oldOne;
     }
 
-    Graphics::State_t Graphics::pushState()
-    {
-        WinPushDrawState();
-        return support_.font;
-    }
-
-    void Graphics::popState(const Graphics::State_t& state)
-    {
-        setFont(state);
-        WinPopDrawState();
-    }
-    
     namespace {
     
         class PalmUnderlineSetter
@@ -75,7 +66,7 @@ namespace ArsLexis
         uint_t height=fontHeight();
         uint_t top=topLeft.y;
         if (fx.subscript())
-            top+=(height*0.333);
+            top+=(height/3);
         if (inverted)
             WinDrawInvertedChars(text, length, topLeft.x, top);
         else            
@@ -83,7 +74,7 @@ namespace ArsLexis
         if (fx.strikeOut())
         {
             uint_t baseline=fontBaseline();
-            top=topLeft.y+baseline*0.667;
+            top=topLeft.y+(baseline*2)/3;
             uint_t width=FntCharsWidth(text, length);
             Color_t color=setTextColor(0);
             setTextColor(color); // Quite strange method of querying current text color...
@@ -98,13 +89,4 @@ namespace ArsLexis
         }
     }
  
-    void Graphics::copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
-    {
-        NativeRectangle_t nr=toNative(sourceArea);
-        WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
-    }
-
-
-   
-
 }

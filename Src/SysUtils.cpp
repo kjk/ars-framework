@@ -32,7 +32,8 @@ namespace ArsLexis
 //            rand2 = SysRandom(TimGetTicks());
 
 //        std::uint32_t result = rand1*sysRandomMax + rand2;
-        std::uint32_t rand3=SysRandom(0);        std::uint32_t result = (rand1<<30)|(rand2<<15)|rand3;
+        std::uint32_t rand3=SysRandom(0);
+        std::uint32_t result = (rand1<<30)|(rand2<<15)|rand3;
         result = result % range;
         return result;
     }

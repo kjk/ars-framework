@@ -11,7 +11,7 @@ FormattedTextElement::FormattedTextElement(const String& text):
 void FormattedTextElement::applyFormatting(Graphics& graphics, const RenderingPreferences& preferences)
 {
     const RenderingPreferences::StyleFormatting& styleFormat=preferences.styleFormatting(style());
-    Graphics::Font_t font=styleFormat.font;
+    ArsLexis::Font font=styleFormat.font;
     font.addEffects(fontEffects_);
     graphics.setFont(font);
     graphics.setTextColor(styleFormat.textColor);

@@ -199,7 +199,9 @@ void GenericTextElement::applyHyperlinkDecorations(Graphics& graphics, const Ren
     if (isHyperlink())
     {
         const RenderingPreferences::StyleFormatting& decor=preferences.hyperlinkDecoration(hyperlink_->type);
-        graphics.font().addEffects(decor.font.effects());
+        ArsLexis::Font f=graphics.font();
+        f.addEffects(decor.font.effects());
+        graphics.setFont(f);
         graphics.setTextColor(decor.textColor);
         graphics.setForegroundColor(decor.textColor);
     }

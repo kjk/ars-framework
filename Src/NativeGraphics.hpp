@@ -30,6 +30,13 @@ namespace ArsLexis
     struct NativeGraphicsSupport
     {
         NativeFont_t font;
+        uint_t lineHeight;
+        uint_t effectiveLineHeight;
+        uint_t baseline;
+        uint_t effectiveBaseline;
+        
+        NativeGraphicsSupport():
+            lineHeight(0), effectiveLineHeight(0), baseline(0), effectiveBaseline(0) {}
     };
 
 #elif defined(_WIN32_WCE)

@@ -1,8 +1,13 @@
 #include <FontEffects.hpp>
 #include <algorithm>
+#include <Utility.hpp>
 
 namespace ArsLexis
 {
+
+    namespace {
+        static StaticAssert<sizeof(FontEffects)==sizeof(uint_t)> sizeof_FontEffects_equals_sizeof_uint;
+    }
 
     FontEffects& FontEffects::operator+=(const FontEffects& eff)
     {

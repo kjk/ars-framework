@@ -3,9 +3,12 @@
 #include "iPediaConnection.hpp"
 #include <Graphics.hpp>
 #include <Text.hpp>
+#include "DefinitionElement.hpp"
 
 LookupManager::~LookupManager()
-{}
+{
+    std::for_each(lastDefinitionElements_.begin(), lastDefinitionElements_.end(), ArsLexis::ObjectDeleter<DefinitionElement>());
+}
 
 namespace {
 

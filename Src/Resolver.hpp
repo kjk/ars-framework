@@ -19,6 +19,15 @@ namespace ArsLexis
         NetLibrary& netLib_;
         
         typedef std::map<String, NetIPAddr> AddressCache_t;
+        
+    public:        
+    
+//        typedef std::pair<String, NetIPAddr> CacheEntry_t;
+        
+    private:
+    
+//        typedef std::list<CacheEntry_t> AddressCache_t;
+        
         AddressCache_t cache_;
         static Err validateAddress(const String& origAddress, String& validAddress, UInt16& port);
         

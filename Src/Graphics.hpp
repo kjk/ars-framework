@@ -91,9 +91,7 @@ namespace ArsLexis
         
         Font_t setFont(const Font_t& font);
         
-        Font_t& font();
-        
-        const Font_t& font() const;
+        Font_t font() const;
 
         
         class FontSetter: private NonCopyable
