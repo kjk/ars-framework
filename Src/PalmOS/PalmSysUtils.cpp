@@ -136,7 +136,7 @@ Err ArsLexis::WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 co
     UInt16  cardNo;
     LocalID dbID;
     UInt32  result;
-    Err     error;
+    Err     error = errNone;
 
     if (resultP)
         *resultP = errNone;
