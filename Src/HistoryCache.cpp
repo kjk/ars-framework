@@ -2,6 +2,8 @@
 #include <Serializer.hpp>
 #include <SysUtils.hpp>
 #include <DataStore.hpp>
+#include <PopupMenu.hpp>
+#include <Text.hpp>
 
 #ifdef __MWERKS__
 using std::memcpy;
@@ -198,6 +200,17 @@ status_t HistoryCache::removeEntry(ulong_t index)
     return errNone;
 }
 
+status_t HistoryCache::removeEntriesAfter(ulong_t from)
+{
+    status_t err;
+    while (indexEntriesCount_ > from)
+    {
+        if (errNone != (err = removeEntry(indexEntriesCount_ - 1)))
+            return err;
+    }
+    return errNone;
+}
+
 status_t HistoryCache::appendEntry(const char_t* title, ulong_t& index)
 {
     status_t err;
@@ -226,12 +239,9 @@ status_t HistoryCache::appendEntry(const char_t* title, ulong_t& index)
 
 status_t HistoryCache::replaceEntries(ulong_t from, const char_t* newEntry)
 {
-    status_t err;
-    while (indexEntriesCount_ > from)
-    {
-        if (errNone != (err = removeEntry(indexEntriesCount_ - 1)))
-            return err;
-    }
+    status_t err = removeEntriesAfter(from);
+    if (errNone != err)
+        return err;
     return appendEntry(newEntry, from);
 }
 

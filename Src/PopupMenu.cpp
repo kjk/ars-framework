@@ -6,7 +6,9 @@ using namespace ArsLexis;
 
 PopupMenu::PopupMenu(ArsLexis::Form& form):
     list(form),
-    hyperlinkHandler(NULL)
+    model_(new_nt PopupMenuModel),
+    hyperlinkHandler(NULL),
+    initialSelection(noListSelection)
 {
 }
 
@@ -31,6 +33,9 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
         list.form()->removeObject(list.index());
         list.detach();
     }
+    if (NULL == model_)
+        return noListSelection;
+        
     Rectangle rect;
     rect.topLeft = point;
     uint_t fontHeight;
@@ -40,8 +45,8 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
         fontHeight = FntLineHeight() ;
         FntSetFont(lastFont);
     }
-    rect.height() = fontHeight * itemDrawHandler.count + 2;
-    rect.width() = itemDrawHandler.maxTextWidth() + 2;
+    rect.height() = fontHeight * model_->count + 2;
+    rect.width() = model_->maxTextWidth() + 2;
     
     Rectangle formBounds;
     list.form()->bounds(formBounds);
@@ -68,7 +73,9 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
         return noListSelection;
         
     list.attachByIndex(index);
-    list.setCustomDrawHandler(&itemDrawHandler);
+    list.setCustomDrawHandler(model_);
+    if (noListSelection != initialSelection)
+        list.setSelection(initialSelection);
     
     const char_t* hyperlink = NULL;
     Int16 sel;
@@ -77,7 +84,7 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
         sel = LstPopupList(list);
         if (noListSelection == sel)
             break;
-        const PopupMenuItemDrawHandler::Item& item = itemDrawHandler.items[sel];
+        const PopupMenuModel::Item& item = model_->items[sel];
         if (item.active && !item.separator)
         {
             hyperlink = item.hyperlink;
@@ -96,42 +103,49 @@ Int16 PopupMenu::popup(UInt16 id, const ArsLexis::Point& point)
     return sel;
 }
 
-uint_t PopupMenuItemDrawHandler::itemsCount() const
+void PopupMenu::setModel(PopupMenuModel* model)
+{
+    assert(NULL != model);
+    delete model_;
+    model_ = model;
+}
+
+uint_t PopupMenuModel::itemsCount() const
 {
     return count;
 }
 
-PopupMenuItemDrawHandler::PopupMenuItemDrawHandler():
+PopupMenuModel::PopupMenuModel():
     items(NULL),
     count(0)
 {
     setRgbColor(inactiveTextColor, 64, 64, 64);
 }
 
-PopupMenuItemDrawHandler::~PopupMenuItemDrawHandler()
+PopupMenuModel::~PopupMenuModel()
 {
     delete [] items;
 }
 
-PopupMenuItemDrawHandler::Item::Item()
+PopupMenuModel::Item::Item()
 {
     using namespace std;
     memset(this, 0, sizeof(*this));
 }
 
-PopupMenuItemDrawHandler::Item::~Item()
+PopupMenuModel::Item::~Item()
 {
     free(text);
     free(hyperlink);
 }
 
-UInt16 PopupMenuItemDrawHandler::maxTextWidth() const
+uint_t PopupMenuModel::maxTextWidth() const
 {
     if (0 == count)
         return 0;
-    UInt16 width = 0;
+    uint_t width = 0;
     FontID lastFont = FntGetFont();
-    for (UInt16 i = 0; i < count; ++i)
+    for (uint_t i = 0; i < count; ++i)
     {
         const Item& item = items[i];
         const char_t* text = item.text;
@@ -143,7 +157,7 @@ UInt16 PopupMenuItemDrawHandler::maxTextWidth() const
         else
             FntSetFont(stdFont);
 
-        UInt16 w = FntCharsWidth(text, StrLen(text)) + 2;
+        uint_t w = FntCharsWidth(text, StrLen(text)) + 2;
         if (w > width)
             width = w;
     } 
@@ -151,7 +165,7 @@ UInt16 PopupMenuItemDrawHandler::maxTextWidth() const
     return width;
 }
 
-void PopupMenuItemDrawHandler::drawItem(Graphics& graphics, List& list, uint_t index, const Rectangle& itemBounds)
+void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, const Rectangle& itemBounds)
 {
     assert(index < count);
     const Item& item = items[index];
@@ -230,7 +244,15 @@ enum PopupMenuItemFlag
     flagItemSeparator = 4
 };
 
-bool PopupMenuItemDrawHandler::itemsFromString(const char_t* data, long length)
+void PopupMenuModel::setItems(Item* items, uint_t itemsCount)
+{
+    assert(NULL != items);
+    delete this->items;
+    this->items = items;
+    this->count = itemsCount;
+}
+
+bool PopupMenuModel::itemsFromString(const char_t* data, long length)
 {
     long itemsCount;
     long val;
@@ -273,9 +295,7 @@ bool PopupMenuItemDrawHandler::itemsFromString(const char_t* data, long length)
         item.bold = (0 != (flagItemBold & val));
         item.separator = (0 != (flagItemSeparator & val));
     }
-    delete [] items;
-    items = newItems;
-    count = itemsCount;
+    setItems(newItems, itemsCount);
     return true;
     
 Fail:

@@ -548,7 +548,7 @@ namespace ArsLexis
         popupMenu_ = new_nt PopupMenu(*this);
         if (NULL == popupMenu_)
             return;    
-        if (!popupMenu_->itemDrawHandler.itemsFromString(txt, len))
+        if (!popupMenu_->model()->itemsFromString(txt, len))
             return;
         popupMenu_->hyperlinkHandler = popupMenuHyperlinkHandler_;
         popupMenu_->popup(popupMenuId_, point);

@@ -4,6 +4,8 @@
 #include <DataStore.hpp>
 #include <Utility.hpp>
 
+class PopupMenuModel;
+
 class HistoryCache: private NonCopyable 
 {
 public:
@@ -64,6 +66,8 @@ public:
     
     status_t removeEntry(ulong_t index);
     
+    status_t removeEntriesAfter(ulong_t startIndex);
+    
     status_t appendEntry(const char_t* url, ulong_t& index);
     
     status_t replaceEntries(ulong_t from, const char_t* newUrl);
@@ -73,7 +77,7 @@ public:
     DataStoreWriter* writerForEntry(ulong_t index);
     
     void close();
-    
+   
 };
 
 #ifdef DEBUG
