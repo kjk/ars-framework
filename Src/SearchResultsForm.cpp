@@ -69,34 +69,37 @@ bool SearchResultsForm::handleOpen()
 
 void SearchResultsForm::resize(const ArsLexis::Rectangle& screenBounds)
 {
-    setBounds(screenBounds);
-    
-    FormObject object(*this, searchResultsList);
-    Rectangle rect;
-    object.bounds(rect);
-    rect.height()=screenBounds.height()-34;
-    rect.width()=screenBounds.width()-4;
-    object.setBounds(rect);
+    Rectangle rect(bounds());
+    if (screenBounds!=rect)
+    {
+        setBounds(screenBounds);
+        
+        FormObject object(*this, searchResultsList);
+        object.bounds(rect);
+        rect.height()=screenBounds.height()-34;
+        rect.width()=screenBounds.width()-4;
+        object.setBounds(rect);
 
-    object.attach(refineSearchInputField);
-    object.bounds(rect);
-    rect.y()=screenBounds.height()-14;
-    rect.width()=screenBounds.width()-74;
-    object.setBounds(rect);
+        object.attach(refineSearchInputField);
+        object.bounds(rect);
+        rect.y()=screenBounds.height()-14;
+        rect.width()=screenBounds.width()-74;
+        object.setBounds(rect);
 
-    object.attach(cancelButton);
-    object.bounds(rect);
-    rect.y()=screenBounds.height()-14;
-    rect.x()=screenBounds.width()-34;
-    object.setBounds(rect);
+        object.attach(cancelButton);
+        object.bounds(rect);
+        rect.y()=screenBounds.height()-14;
+        rect.x()=screenBounds.width()-34;
+        object.setBounds(rect);
 
-    object.attach(refineSearchButton);
-    object.bounds(rect);
-    rect.y()=screenBounds.height()-14;
-    rect.x()=screenBounds.width()-69;
-    object.setBounds(rect);
-    
-    update();
+        object.attach(refineSearchButton);
+        object.bounds(rect);
+        rect.y()=screenBounds.height()-14;
+        rect.x()=screenBounds.width()-69;
+        object.setBounds(rect);
+        
+        update();
+    }
 }
 
 inline void SearchResultsForm::handleControlSelect(const EventType& event)

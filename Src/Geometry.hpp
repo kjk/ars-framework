@@ -39,6 +39,12 @@ namespace ArsLexis
             return result;
         }
         
+        bool operator==(const Point& p) const
+        {return (x==p.x) && (y==p.y);}
+        
+        bool operator!=(const Point& p) const
+        {return (x!=p.x) || (y!=p.y);}
+        
     };
 
     struct Rectangle
@@ -145,6 +151,12 @@ namespace ArsLexis
             topLeft+=offset;
             return *this;
         }
+        
+        bool operator==(const Rectangle& rect) const
+        {return (topLeft==rect.topLeft) && (extent==rect.extent);}
+        
+        bool operator!=(const Rectangle& rect) const
+        {return (topLeft!=rect.topLeft) || (extent!=rect.extent);}
               
     };
 

@@ -89,8 +89,7 @@ namespace ArsLexis
         /**
          * Queues @c frmUpdateEvent for this form.
          */
-        void update(UInt16 updateCode=frmRedrawUpdateCode)
-        {FrmUpdateForm(id(), updateCode);}
+        void update(UInt16 updateCode=frmRedrawUpdateCode);
         
         /**
          * Calls @c handleClose(), preventing a call to @c FrmDeleteForm() in destructor. 

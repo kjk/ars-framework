@@ -37,38 +37,41 @@ const LookupHistory* MainForm::getLookupHistory() const
 
 void MainForm::resize(const ArsLexis::Rectangle& screenBounds)
 {
-    setBounds(screenBounds);
+    Rectangle bounds(this->bounds());
+    if (screenBounds!=bounds)
+    {
+        setBounds(screenBounds);
 
-    Rectangle bounds;
-    FormObject object(*this, definitionScrollBar);
-    object.bounds(bounds);
-    bounds.x()=screenBounds.extent.x-8;
-    bounds.height()=screenBounds.extent.y-36;
-    object.setBounds(bounds);
-    
-    object.attach(termInputField);
-    object.bounds(bounds);
-    bounds.y()=screenBounds.extent.y-14;
-    bounds.width()=screenBounds.extent.x-63;
-    object.setBounds(bounds);
-
-    object.attach(searchButton);
-    object.bounds(bounds);
-    bounds.x()=screenBounds.extent.x-34;
-    bounds.y()=screenBounds.extent.y-14;
-    object.setBounds(bounds);
-    
-    object.attach(backButton);
-    object.bounds(bounds);
-    bounds.y()=screenBounds.extent.y-14;
-    object.setBounds(bounds);
-
-    object.attach(forwardButton);
-    object.bounds(bounds);
-    bounds.y()=screenBounds.extent.y-14;
-    object.setBounds(bounds);
+        FormObject object(*this, definitionScrollBar);
+        object.bounds(bounds);
+        bounds.x()=screenBounds.extent.x-8;
+        bounds.height()=screenBounds.extent.y-36;
+        object.setBounds(bounds);
         
-    update();    
+        object.attach(termInputField);
+        object.bounds(bounds);
+        bounds.y()=screenBounds.extent.y-14;
+        bounds.width()=screenBounds.extent.x-63;
+        object.setBounds(bounds);
+
+        object.attach(searchButton);
+        object.bounds(bounds);
+        bounds.x()=screenBounds.extent.x-34;
+        bounds.y()=screenBounds.extent.y-14;
+        object.setBounds(bounds);
+        
+        object.attach(backButton);
+        object.bounds(bounds);
+        bounds.y()=screenBounds.extent.y-14;
+        object.setBounds(bounds);
+
+        object.attach(forwardButton);
+        object.bounds(bounds);
+        bounds.y()=screenBounds.extent.y-14;
+        object.setBounds(bounds);
+            
+        update();    
+    }        
 }
 
 void MainForm::drawSplashScreen(Graphics& graphics, const ArsLexis::Rectangle& bounds)
@@ -290,10 +293,7 @@ bool MainForm::handleEvent(EventType& event)
                 setControlsState(true);
                 const LookupManager::LookupFinishedEventData& data=reinterpret_cast<const LookupManager::LookupFinishedEventData&>(event.data);
                 if (data.outcomeDefinition==data.outcome)
-                {
                     updateAfterLookup();
-                    update();
-                }
                 else if (data.outcomeList==data.outcome)
                     Application::popupForm(searchResultsForm);
             }
@@ -338,7 +338,8 @@ void MainForm::updateAfterLookup()
             Field field(*this, termInputField);        
             field.replaceText(lookupManager->lastInputTerm().c_str());
             field.selectWholeText();                    
-        }            
+        }    
+        update();        
     }
 }
 
@@ -468,18 +469,15 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
     {
         FormObject object(*this, termInputField);
         object.focus();
-    }
-    iPediaApplication& app=static_cast<iPediaApplication&>(application());
-    LookupManager* lookupManager=app.getLookupManager();
-    if (lookupManager)
-    {
-        if (!lookupManager->lastDefinition().empty())
+
+        iPediaApplication& app=static_cast<iPediaApplication&>(application());
+        LookupManager* lookupManager=app.getLookupManager();
+        if (lookupManager)
         {
-            updateAfterLookup();
-            if (!app.diaSupport().available()) // If there's DIA support update() will be called anyway...
-                update();
-        }            
-        setControlsState(!lookupManager->lookupInProgress());
-    }            
+            if (!lookupManager->lastDefinition().empty())
+                updateAfterLookup();
+            setControlsState(!lookupManager->lookupInProgress());
+        }
+    }        
     return iPediaForm::handleWindowEnter(data);
 }

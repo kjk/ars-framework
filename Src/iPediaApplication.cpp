@@ -19,8 +19,8 @@ iPediaApplication::iPediaApplication():
 {
 #ifndef NDEBUG
 //    log_.replaceSink(new HostFileLogSink("\\log\\iPedia.log"));
-    log_.replaceSink(new DebuggerLogSink());
-//    log_.replaceSink(new MemoLogSink());
+//    log_.replaceSink(new DebuggerLogSink());
+    log_.replaceSink(new MemoLogSink());
 #endif
 }
 

@@ -160,6 +160,14 @@ namespace ArsLexis
         return false;
     }
     
+    void Form::update(UInt16 updateCode)
+    {
+        EventType event;
+        MemSet(&event, sizeof(event), 0);        event.eType=frmUpdateEvent;
+        event.data.frmUpdate.formID=id();
+        event.data.frmUpdate.updateCode=updateCode;
+        EvtAddUniqueEventToQueue(&event, 0, false);
+    }
 
 }
 

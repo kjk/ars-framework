@@ -80,7 +80,6 @@ bool RegistrationForm::handleEvent(EventType& event)
             {
                 Control control(*this, okButton);
                 control.hit();
-                handled=true;
             }
             break;
     
