@@ -92,7 +92,7 @@ wikiMacrosReplacements = {
 #wikiProtectedText=""
 #wikiInUseText=""
 #wikiControversialText=""
-wikiMacroRe=re.compile("\{\{(msg)|(subst)\:.*?\}\}", re.I)
+wikiMacroRe=re.compile("\{\{((msg)|(subst))\:.*?\}\}", re.I)
 
 def replaceWikiMacros(term, text):
 
