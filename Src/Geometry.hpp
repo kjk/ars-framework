@@ -81,14 +81,26 @@ namespace ArsLexis
         
         Coord_t width() const
         {return extent.x;}
-        
+
         Coord_t& width()
+        {return extent.x;}
+
+        Coord_t dx() const
+        {return extent.x;}
+
+        Coord_t& dx()
         {return extent.x;}
 
         Coord_t height() const
         {return extent.y;}
 
         Coord_t& height()
+        {return extent.y;}
+
+        Coord_t dy() const
+        {return extent.y;}
+
+        Coord_t& dy()
         {return extent.y;}
 
 //        bool hitTest(const Point& point) const
