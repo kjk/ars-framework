@@ -199,37 +199,72 @@ bool SearchResultsForm::handleKeyPress(const EventType& event)
 {
     bool handled=false;
     List list(*this, searchResultsList);
-    switch (event.data.keyDown.chr)
-    {
-        case chrPageDown:
-            list.scroll(winDown, list.visibleItems());
-            handled=true;
-            break;
-            
-        case chrPageUp:
-            list.scroll(winUp, list.visibleItems());
-            handled=true;
-            break;
-        
-        case chrDownArrow:
-            list.scroll(winDown, 1);
-            handled=true;
-            break;
 
-        case chrUpArrow:
-            list.scroll(winUp, 1);
-            handled=true;
-            break;
+    if (fiveWayLeftPressed(&event))
+    {
+        list.setSelectionDelta(-1);
+        handled = true;
+    } else if (fiveWayRightPressed(&event))
+    {
+        list.setSelectionDelta(1);
+        handled = true;
+    }
+    else
+    {
+        switch (event.data.keyDown.chr)
+        {
+            case chrPageDown:
+                list.setSelectionDelta(list.visibleItems());
+                handled=true;
+                break;
+                
+            case chrPageUp:
+                list.setSelectionDelta(-list.visibleItems());
+                handled=true;
+                break;
             
-        case vchrRockerCenter:
-        case chrLineFeed:
-        case chrCarriageReturn:
+            case chrDownArrow:
+                list.scroll(winDown, 1);
+                handled=true;
+                break;
+
+            case chrUpArrow:
+                list.scroll(winUp, 1);
+                handled=true;
+                break;
+
+            // if there is no text in the text field, select
+            // the article
+            case vchrRockerCenter:
             {
-                Control control(*this, refineSearchButton);
-                control.hit();
-            }                
-            handled=true;
+                Field fld(*this, refineSearchInputField);
+                if (0==fld.textLength())
+                {
+                    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+                    LookupManager* lookupManager=app.getLookupManager();
+                    if (lookupManager)
+                    {
+                        const String& title=listPositions_[list.getSelection()];
+                        const LookupHistory& history=app.history();
+                        if (history.hasCurrentTerm() && history.currentTerm()==title)
+                            closePopup();
+                        else
+                            lookupManager->lookupTerm(title);
+                    }
+                }
+                handled = true;
+            }
             break;
+    
+            case chrLineFeed:
+            case chrCarriageReturn:
+                {
+                    Control control(*this, refineSearchButton);
+                    control.hit();
+                }                
+                handled=true;
+                break;
+        }
     }
     return handled;
 }

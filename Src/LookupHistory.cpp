@@ -22,7 +22,7 @@ void LookupHistory::replaceAllNext(const ArsLexis::String& term)
 Err LookupHistory::serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const
 {
     UInt16 itemCount=termHistory_.size(); 
-    Err error=errNone;
+    Err error;
     if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, itemCount)))
         goto OnError;
     UInt16 currentItem=0;
@@ -45,7 +45,7 @@ OnError:
 Err LookupHistory::serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId)
 {
     LookupHistory tmp;
-    Err error=errNone;
+    Err error;
     UInt16 itemCount;
     if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &itemCount)))
         goto OnError;

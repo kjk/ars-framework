@@ -5,6 +5,7 @@
 #include <BaseTypes.hpp>
 #include <Geometry.hpp>
 #include <Utility.hpp>
+#include <FiveWay.hpp>
 
 namespace ArsLexis 
 {
@@ -14,6 +15,7 @@ namespace ArsLexis
     class Form: private NonCopyable
     {
         Application& application_;
+        FiveWay fiveWay_;
         UInt16 id_;
         FormType* form_;
         bool deleteOnClose_;
@@ -136,6 +138,18 @@ namespace ArsLexis
         void setTitle(const String& title);
         
         const String& title() const;
+
+        bool fiveWayLeftPressed(const EventType *event)
+        {return fiveWay_.LeftPressed(event);}
+
+        bool fiveWayRightPressed(const EventType *event)
+        {return fiveWay_.RightPressed(event);}
+
+        bool fiveWayUpPressed(const EventType *event)
+        {return fiveWay_.UpPressed(event);}
+
+        bool fiveWayDownPressed(const EventType *event)
+        {return fiveWay_.DownPressed(event);}
 
         friend class Application;
     };

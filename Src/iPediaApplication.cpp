@@ -102,7 +102,6 @@ Err iPediaApplication::handleSystemNotify(SysNotifyParamType& notify)
 
 LookupManager* iPediaApplication::getLookupManager(bool create)
 {
-    Err error=errNone;
     if (!lookupManager_ && create)
     {
         assert(0!=history_);

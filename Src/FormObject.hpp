@@ -209,9 +209,21 @@ namespace ArsLexis
         
         void setSelection(uint_t item)
         {LstSetSelection(object(), item);}
-        
+
+        int getSelection() const
+        {return LstGetSelection(object());}
+
+        void makeItemVisible(uint_t item)
+        {LstMakeItemVisible(object(), item);}
+
         bool scroll(WinDirectionType direction, uint_t items)
         {return LstScrollList(object(), direction, items);}
+
+        uint_t numberOfItems() const
+        {return LstGetNumberOfItems(object()); }
+
+        void setSelectionDelta(int delta);
+
     };
     
 }

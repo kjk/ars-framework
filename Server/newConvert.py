@@ -4,6 +4,8 @@
 # Creates iPedia database from wikipedia sql dump
 #
 # Command line parameters:
+#  -recreatedb : if given, recreate ipedia database
+#  -recreatedatadb : if given, recreate ipedia data database
 #  -verbose : if used will print a lot of debugging input to stdout. May slow
 #             down conversion process
 #  -limit n : limit the number of converter articles to N. This is good for testing
@@ -39,6 +41,8 @@ g_connIpedia     = None
 g_connIpediaDbName = None
 
 g_dbName = None
+
+DATA_DB_NAME = "ipedia_data"
 
 def usageAndExit():
     print "newConvert.py [-verbose] [-limit n] [-showdups] [-nopsyco] sqlDumpName"
@@ -210,7 +214,7 @@ def getDbNameFromFileName(sqlFileName):
 #   - extract link from articles
 # Second pass: do the conversion, including veryfing links and put
 # converted articles in the database.
-def convertArticles(sqlDump,articleLimit):
+def convertArticles(sqlDump,dbName,articleLimit):
     count = 0
     redirects = {}
     articleTitles = {}
@@ -250,7 +254,7 @@ def convertArticles(sqlDump,articleLimit):
     print "Number of unresolved redirects: %d" % unresolvedCount
 
     #initDatabase()
-    ipedia_write_cur = getNamedCursor(getIpediaConnection(None), "ipedia_write_cur")
+    ipedia_write_cur = getNamedCursor(getIpediaConnection(dbName), "ipedia_write_cur")
         
     # go over articles again (hopefully now using the cache),
     # convert them to a destination format (including removing invalid links)
@@ -309,26 +313,6 @@ def getDbList(conn):
     cur.close()    
     return dbs    
 
-def delDb(conn,dbName):
-    cur = conn.cursor()
-    cur.execute("DROP DATABASE %s" % dbName)
-    cur.close()
-    print "db '%s' deleted" % dbName
-
-def createDb(conn,dbName):
-    cur = conn.cursor()
-    cur.execute("CREATE DATABASE %s" % dbName)
-    cur.close()
-    print "db '%s' created" % dbName
-
-def grantIpediaPrivs(conn,dbName):
-    query = "GRANT ALL ON %s.* TO 'ipedia'@'localhost' IDENTIFIED BY 'ipedia';" % dbName
-    print query
-    cur = conn.cursor()
-    cur.execute(query)
-    cur.close()
-    print "granter all perms on %s to ipedia user" % dbName
-
 genSchemaSql = """
 CREATE TABLE `articles` (
   `id` int(10) unsigned NOT NULL auto_increment,
@@ -350,33 +334,100 @@ CREATE TABLE `redirect` (
 
 """
 
-def createIpediaSchema(dbName):
-    conn = getIpediaConnection(dbName)
+def delDb(conn,dbName):
     cur = conn.cursor()
+    cur.execute("DROP DATABASE %s" % dbName)
+    cur.close()
+    print "Database '%s' deleted" % dbName
+
+def createDb(conn,dbName):
+    cur = conn.cursor()
+    cur.execute("CREATE DATABASE %s" % dbName)
+    cur.execute("USE %s" % dbName)
     cur.execute(genSchemaSql)
     cur.execute(genSchema2Sql)
+    cur.execute("GRANT ALL ON %s.* TO 'ipedia'@'localhost' IDENTIFIED BY 'ipedia';" % dbName)
     cur.close()
-    print "created ipedia schema"
+    print "Created '%s' database and granted perms to ipedia user" % dbName
 
-def createIpediaDb(sqlDumpName,fRecreate=False):
-    dbName = getDbNameFromFileName(sqlDumpName)
+cookiesSql = """CREATE TABLE `cookies` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `cookie` varchar(32) binary NOT NULL default '',
+  `device_info_token` varchar(255) NOT NULL default '',
+  `issue_date` timestamp(14) NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `cookie_unique` (`cookie`)
+) TYPE=MyISAM;"""
+
+
+regusersSql = """CREATE TABLE `registered_users` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `cookie_id` int(10) unsigned default '0',
+  `user_name` varchar(255) NOT NULL default '',
+  `serial_number` varchar(255) binary NOT NULL default '',
+  `registration_date` timestamp(14) NOT NULL,
+  PRIMARY KEY  (`id`)
+) TYPE=MyISAM;"""
+
+requestsSql = """CREATE TABLE `requests` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `client_ip` int(10) unsigned NOT NULL default '0',
+  `transaction_id` int(10) unsigned NOT NULL default '0',
+  `has_get_cookie_field` tinyint(1) NOT NULL default '0',
+  `cookie_id` int(10) unsigned default '0',
+  `has_register_field` tinyint(1) NOT NULL default '0',
+  `requested_term` varchar(255) default '',
+  `error` int(10) unsigned NOT NULL default '0',
+  `request_date` timestamp(14) NOT NULL,
+  `definition_id` int(10) unsigned default '0',
+  PRIMARY KEY  (`id`)
+) TYPE=MyISAM; """
+
+def delDataDb(conn):
+    cur = conn.cursor()
+    cur.execute("DROP DATABASE %s" % DATA_DB_NAME)
+    cur.close()
+    print "Database '%s' deleted" % DATA_DB_NAME
+
+def createDataDb(conn):
+    cur = conn.cursor()
+    cur.execute("CREATE DATABASE %s" % DATA_DB_NAME)
+    cur.execute("USE %s" % DATA_DB_NAME)
+    cur.execute(cookiesSql)
+    cur.execute(regusersSql)
+    cur.execute(requestsSql)
+    cur.execute("GRANT ALL ON %s.* TO 'ipedia'@'localhost' IDENTIFIED BY 'ipedia';" % DATA_DB_NAME)
+    cur.close()
+    print "Created '%s' database and granted perms to ipedia user" % DATA_DB_NAME
+
+def createIpediaDb(sqlDumpName,dbName,fRecreateDb=False,fRecreateDataDb=False):
     connRoot = getRootConnection()
     dbList = getDbList(connRoot)
     fDbExists = False
+    fDataDbExists = False
     for db in dbList:
-        print db
         if db==dbName:
             fDbExists = True
-            print "BINGO! db '%s' exists" % db
-    if fDbExists:
-        if fRecreate:
+        if db==DATA_DB_NAME:
+            fDataDbExists = True
+            print "Data database '%s' already exists" % DATA_DB_NAME
+    if not fDbExists:
+        createDb(connRoot,dbName)
+    else:
+        if fRecreateDb:
             delDb(connRoot,dbName)
+            createDb(connRoot,dbName)
         else:
             print "Database '%s' already exists. Use -recreatedb flag in order to force recreation of the database" % dbName
             sys.exit(0)
-    createDb(connRoot,dbName)
-    grantIpediaPrivs(connRoot,dbName)
-    createIpediaSchema(dbName)
+    if not fDataDbExists:
+        createDataDb(connRoot)
+    else:
+        if fRecreateDataDb:
+            delDataDb(connRoot)
+            createDataDb(connRoot)
+        else:
+            print "Database '%s' exists" % DATA_DB_NAME
 
 def createFtIndex():
     print "starting to create full-text index"
@@ -397,16 +448,18 @@ if __name__=="__main__":
     g_fVerbose = arsutils.fDetectRemoveCmdFlag("-verbose")
     g_fShowDups = arsutils.fDetectRemoveCmdFlag("-showdups")
     fRecreateDb = arsutils.fDetectRemoveCmdFlag("-recreatedb")
+    fRecreateDataDb = arsutils.fDetectRemoveCmdFlag("-recreatedatadb")
     articleLimit = arsutils.getRemoveCmdArgInt("-limit")
 
     if len(sys.argv) != 2:
         usageAndExit()
     sqlDump = sys.argv[1]
 
+    dbName = getDbNameFromFileName(sqlDump)
     try:
-        createIpediaDb(sqlDump,fRecreateDb)
+        createIpediaDb(sqlDump,dbName,fRecreateDb,fRecreateDataDb)
         timer = arsutils.Timer(fStart=True)
-        convertArticles(sqlDump,articleLimit)
+        convertArticles(sqlDump,dbName,articleLimit)
         timer.stop()
         timer.dumpInfo()
         createFtIndex()

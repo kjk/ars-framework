@@ -34,7 +34,7 @@ namespace ArsLexis
     Err Application::setInstance(UInt32 creatorId, Application* app) throw()
     {
         assert(app!=0);
-        Err error=errNone;
+        Err error;
 #ifndef NDEBUG        
         UInt32 value=0;
         assert(ftrErrNoSuchFeature==FtrGet(creatorId, featureInstancePointer, &value));
@@ -159,7 +159,7 @@ namespace ArsLexis
     
     void Application::loadForm(UInt16 formId)
     {
-        Err error=errNone;
+        Err error;
         Form* form(createForm(formId));
         if (form)
         {
@@ -188,7 +188,7 @@ namespace ArsLexis
         EventType event;
         do
         {
-            Err error=errNone;
+            Err error;
             waitForEvent(event);
             if (appStopEvent!=event.eType)
             {
@@ -212,7 +212,7 @@ namespace ArsLexis
 
     Err Application::handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16)
     {
-        Err error=errNone;
+        Err error;
         if (sysAppLaunchCmdNormalLaunch==cmd)
         {
             error=normalLaunch();

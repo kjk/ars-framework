@@ -80,19 +80,19 @@ namespace ArsLexis
             case winExitEvent:
                 handled=handleWindowExit(event.data.winExit);
                 break;
-                
+
             case frmOpenEvent:
                 handled=handleOpen();
                 break;
-                
+
             case frmCloseEvent:
                 handled=handleClose();
                 break;
-            
+
             case frmUpdateEvent:
                 handled=handleUpdate(event.data.frmUpdate.updateCode);
                 break;
-                
+
             case menuEvent:
                 handled=handleMenuCommand(event.data.menu.itemID);
                 break;

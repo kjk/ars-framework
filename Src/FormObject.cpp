@@ -55,4 +55,43 @@ namespace ArsLexis
         erase();
         insert(text, std::min(maxLength(), length));
     }
+
+#pragma mark -
+#pragma mark List
+
+    // At any given time an element of the list is selected. This function
+    // will set a new item selected of the pos curSelected + delta. delta
+    // can be negative. If asked to set selection to a inexistent item (<0 or
+    // >number of items) sets selection to the first/last item (this is so that
+    // the caller doesn't have to worry about this stuff)
+    void List::setSelectionDelta(int delta)
+    {
+        assert(0!=delta);
+
+        uint_t curSelection;
+
+        if (noListSelection==getSelection())
+            curSelection = 0;
+        else
+            curSelection = (uint_t)getSelection();
+
+        if (delta>0)
+        {
+            curSelection += (uint_t)delta;
+            if (curSelection>numberOfItems()-1)
+                curSelection=numberOfItems()-1;
+        }
+        else
+        {
+            delta = -delta;
+            if (curSelection<(uint_t)delta)
+                curSelection=0;
+            else
+                curSelection-=delta;
+        }
+        setSelection(curSelection);
+        makeItemVisible(curSelection);
+    }
+
+
 }
