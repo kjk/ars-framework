@@ -349,8 +349,13 @@ bool TextRenderer::handleMenuCmdBarOpen(EventType& event)
         return false;
     if (!definition_.hasSelection())
         return false;
-    if (noFocus != FrmGetFocus(*form()))
-        return false;
+    UInt16 focus = FrmGetFocus(*form());
+    if (noFocus != focus)
+    {
+        FormObjectKind kind = FrmGetObjectType(*form(), focus);
+        if (frmFieldObj == kind || frmTableObj == kind)
+            return false;
+    }
 //    if (!hasFocus())
 //        return false;
     event.data.menuCmdBarOpen.preventFieldButtons = true;
@@ -360,16 +365,21 @@ bool TextRenderer::handleMenuCmdBarOpen(EventType& event)
 
 bool TextRenderer::handleMenuEvent(const EventType& event)
 {
+    if (sysEditMenuCopyCmd != event.data.menu.itemID)
+        return false;
     if (!usesMenuBarCopyButton())
         return false;
     if (!visible())
         return false;
     if (!definition_.hasSelection())
         return false;
-    if (noFocus != FrmGetFocus(*form()))
-        return false;
-    if (sysEditMenuCopyCmd != event.data.menu.itemID)
-        return false;
+    UInt16 focus = FrmGetFocus(*form());
+    if (noFocus != focus)
+    {
+        FormObjectKind kind = FrmGetObjectType(*form(), focus);
+        if (frmFieldObj == kind || frmTableObj == kind)
+            return false;
+    }
     return copySelection();         
 }
 
