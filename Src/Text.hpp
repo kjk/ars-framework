@@ -150,13 +150,9 @@ namespace ArsLexis
 
     String GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd);
 
-    char_t* StringCopy2(const char_t *curStr, int len = -1);
-
     char_t *StringCopy(const char_t *str);
 
     char_t *StringCopy(const String& str);
-
-    char_t *StringCopyN(const char_t *str, int strLen);
 
     void FreeStringsFromCharPtrList(CharPtrList_t& strList);
 
@@ -188,4 +184,10 @@ namespace ArsLexis
 
     int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo);    
 }
+
+using ArsLexis::char_t;
+
+char_t *StringCopy2(const char_t *curStr, int len = -1);
+char_t *StringCopyN(const char_t *str, int strLen);
+
 #endif

@@ -402,32 +402,6 @@ char_t* StringCopy(const char_t *curStr)
     return newStr;
 }
 
-// note: caller needs to free memory with free
-char_t* StringCopy2(const char_t *curStr, int len)
-{
-    using namespace std;
-    if (-1 == len)
-        len = tstrlen(curStr);
-    char_t *newStr = (char_t*) malloc( sizeof(char_t)*(len+1) );
-    if (NULL==newStr)
-        return NULL;
-
-    memcpy(newStr, curStr, sizeof(char_t)*(len+1));
-    return newStr;
-}
-
-// note: caller needs to free memory with delete[]
-char_t* StringCopyN(const char_t* str, int strLen)
-{
-    using namespace std;
-    char_t *newStr = new char_t[strLen+1];
-    if (NULL==newStr)
-        return NULL;
-    memcpy(newStr, str, strLen*sizeof(char_t));
-    newStr[strLen] = chrNull;
-    return newStr;
-}
-
 // note: caller needs to free memory with delete[]
 char_t* StringCopy(const String& str)
 {
@@ -878,4 +852,31 @@ int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
 }
 
 } // namespace ArsLexis
+
+// note: caller needs to free memory with free
+char_t* StringCopy2(const char_t *curStr, int len)
+{
+    using namespace std;
+    if (-1 == len)
+        len = tstrlen(curStr);
+    char_t *newStr = (char_t*) malloc( sizeof(char_t)*(len+1) );
+    if (NULL==newStr)
+        return NULL;
+
+    memcpy(newStr, curStr, sizeof(char_t)*(len+1));
+    return newStr;
+}
+
+// note: caller needs to free memory with delete[]
+char_t* StringCopyN(const char_t* str, int strLen)
+{
+    using namespace std;
+    char_t *newStr = new char_t[strLen+1];
+    if (NULL==newStr)
+        return NULL;
+    memcpy(newStr, str, strLen*sizeof(char_t));
+    newStr[strLen] = chrNull;
+    return newStr;
+}
+
 

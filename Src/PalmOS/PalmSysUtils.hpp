@@ -7,6 +7,10 @@ UInt32 romVersion();
 UInt16 romVersionMajor();
 UInt16 romVersionMinor();
 
+using ArsLexis::char_t;
+char_t *getResource(UInt16 stringId);
+char_t *getDataResource(UInt16 dataId, UInt32 *resSizeOut);
+
 namespace ArsLexis
 {
     void getScreenBounds(RectangleType& bounds);
@@ -25,10 +29,6 @@ namespace ArsLexis
    
     Err getResource(UInt16 tableId, UInt16 index, String& out);
     
-    Err getResource(UInt16 stringId, String& out);
-
-    Err getDataResource(UInt16 stringId, String& out);
-
     Err WebBrowserCommand(Boolean subLaunch, UInt16 launchFlags, UInt16 command, const char *parameterP, UInt32 *resultP);
     
     bool highDensityFeaturesPresent();

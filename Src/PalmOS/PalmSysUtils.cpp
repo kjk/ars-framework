@@ -1,5 +1,8 @@
 #include <Debug.hpp>
 #include <SysUtils.hpp>
+#include <Text.hpp>
+
+using ArsLexis::char_t;
 
 UInt32 romVersion()
 {
@@ -94,48 +97,54 @@ FoundBrowser:
     return true;
 }
 
-
-Err ArsLexis::getResource(UInt16 stringId, String& out)
+// given the id of a string resource, return a copy of this resource.
+// Client needs to free the memory
+// Return NULL in case of an error
+char_t *getResource(UInt16 stringId)
 {
-    Err error=errNone;
+    char_t  *toReturn = NULL;
+
     MemHandle handle=DmGet1Resource(strRsc, stringId);
+    if (!handle)
+        return NULL;
+
+    char* str=(char*)MemHandleLock(handle);
+    if (NULL == str)
+        goto Exit;
+
+    toReturn = StringCopy2(str, MemHandleSize(handle));
+    MemHandleUnlock(handle);
+
+Exit:
     if (handle)
-    {
-        const char* str=static_cast<const char*>(MemHandleLock(handle));
-        if (str)
-        {
-            out.assign(str);
-            MemHandleUnlock(handle);
-        }
-        else
-            error=memErrChunkNotLocked;
         DmReleaseResource(handle);
-    }
-    else 
-        error=sysErrParamErr;
-    return error;
+    return toReturn;
 }
 
-Err ArsLexis::getDataResource(UInt16 dataId, String& out)
+// given the id of a data resource, return a copy of this resource and
+// the size of resource in resSizeOut.
+// Client needs to free the memory
+// Return NULL in case of an error
+char_t *getDataResource(UInt16 dataId, UInt32 *resSizeOut)
 {
-    Err error=errNone;
+    char_t  *toReturn = NULL;
+
     MemHandle handle=DmGet1Resource('data', dataId);
+    if (!handle)
+        return NULL;
+
+    char* str=(char*)MemHandleLock(handle);
+    if (NULL == str)
+        goto Exit;
+
+    *resSizeOut = MemHandleSize(handle);
+    toReturn = StringCopy2(str, *resSizeOut);
+    MemHandleUnlock(handle);
+
+Exit:
     if (handle)
-    {
-        const char* str=static_cast<const char*>(MemHandleLock(handle));
-        if (str)
-        {
-            UInt32 len = MemHandleSize(handle);
-            out.assign(str, len);
-            MemHandleUnlock(handle);
-        }
-        else
-            error=memErrChunkNotLocked;
         DmReleaseResource(handle);
-    }
-    else 
-        error=sysErrParamErr;
-    return error;
+    return toReturn;
 }
 
 Err ArsLexis::getResource(UInt16 tableId, UInt16 index, String& out)
@@ -164,7 +173,7 @@ Err ArsLexis::getResource(UInt16 tableId, UInt16 index, String& out)
             MemHandleUnlock(handle);
         }
         else
-            error=memErrChunkNotLocked;
+            error = memErrChunkNotLocked;
         DmReleaseResource(handle);
     }
     else 
