@@ -22,18 +22,12 @@ HmStyleList::~HmStyleList()
 void HmStyleList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t item, bool selected)
 {
     const uint_t itemsCount = this->itemsCount();
-    bool last = false;
-    if (itemsCount == item + 1)
-        last = true;
     graphics.erase(bounds);
-    if (!last) 
-    {
-        RGBColorType oldColor;
-        WinSetForeColorRGB(&breakColor_, &oldColor);
-        Coord y = bounds.y() + bounds.height() - 1;
-        graphics.drawLine(bounds.x(), y, bounds.x()+bounds.width(), y);
-        WinSetForeColorRGB(&oldColor, NULL);
-    }
+    RGBColorType oldColor;
+    WinSetForeColorRGB(&breakColor_, &oldColor);
+    Coord y = bounds.y() + bounds.height() - 1;
+    graphics.drawLine(bounds.x(), y, bounds.x()+bounds.width(), y);
+    WinSetForeColorRGB(&oldColor, NULL);
 }
 
 void HmStyleList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
