@@ -25,6 +25,10 @@ namespace ArsLexis{
 
     static const CurrencyArrayEntry currencies[CURRENCY_COUNT]=
     {
+        {_T("USD"), _T("United States Dollars"), _T("Ecuador, Micronesia (Federated States of), Palau") },
+        {_T("EUR"), _T("Euro"), _T("Austria, Belgium, Finland, France, Greece, Eire (Ireland), Italy, Luxembourg, Martinique, Portugal, Spain") },
+        {_T("JPY"), _T("Yen"), _T("Japan") },
+        {_T("GBP"), _T("Pounds"), _T("Britain (United Kingdom)") },
         {_T("DZD"), _T("Dinars"), _T("Algeria") },
         {_T("NAD"), _T("Dollars"), _T("Namibia") },
         {_T("KMF"), _T("Francs"), _T("Comoros") },
@@ -42,7 +46,6 @@ namespace ArsLexis{
         {_T("UAH"), _T("Hryvnia"), _T("Ukraine") },
         {_T("JOD"), _T("Dinars"), _T("Jordan") },
         {_T("SAR"), _T("Riyals"), _T("Saudi Arabia") },
-        {_T("EUR"), _T("Euro"), _T("Austria, Belgium, Finland, France, Greece, Eire (Ireland), Italy, Luxembourg, Martinique, Portugal, Spain") },
         {_T("HKD"), _T("Dollars"), _T("Hong Kong") },
         {_T("CHF"), _T("Switzerland Francs"), _T("Liechtenstein") },
         {_T("BYR"), _T("Rubles"), _T("Belarus") },
@@ -63,7 +66,6 @@ namespace ArsLexis{
         {_T("PHP"), _T("Pesos"), _T("Philippines") },
         {_T("ZAR"), _T("South Africa Rand"), _T("Lesotho") },
         {_T("NPR"), _T("Rupees"), _T("Nepal") },
-        {_T("GBP"), _T("Pounds"), _T("Britain (United Kingdom)") },
         {_T("NGN"), _T("Nairas"), _T("Nigeria") },
         {_T("ZWD"), _T("Zimbabwe Dollars"), _T("Zimbabwe") },
         {_T("CRC"), _T("Colones"), _T("Costa Rica") },
@@ -132,7 +134,6 @@ namespace ArsLexis{
         {_T("PLN"), _T("Zlotych"), _T("Poland") },
         {_T("KES"), _T("Shillings"), _T("Kenya") },
         {_T("GYD"), _T("Dollars"), _T("Guyana") },
-        {_T("USD"), _T("United States Dollars"), _T("Ecuador, Micronesia (Federated States of), Palau") },
         {_T("AZM"), _T("Manats"), _T("Azerbaijan") },
         {_T("TWD"), _T("New Dollars"), _T("Taiwan") },
         {_T("TOP"), _T("Pa'anga"), _T("Tonga") },
@@ -160,8 +161,7 @@ namespace ArsLexis{
         {_T("KGS"), _T("Soms"), _T("Kyrgyzstan") },
         {_T("ARS"), _T("Pesos"), _T("Argentina") },
         {_T("SZL"), _T("Emalangeni"), _T("Swaziland") },
-        {_T("BHD"), _T("Dinars"), _T("Bahrain") },
-        {_T("JPY"), _T("Yen"), _T("Japan") }
+        {_T("BHD"), _T("Dinars"), _T("Bahrain") }
 };
 
     uint_t getCurrenciesCount()
@@ -172,7 +172,7 @@ namespace ArsLexis{
     ArsLexis::Currency getCurrency(int pos)
     {
         assert (pos<CURRENCY_COUNT);
-        return Currency(currencies[pos].abbrev, currencies[pos].name, currencies[pos].countries);
+        return Currency(currencies[pos].name, currencies[pos].abbrev, currencies[pos].countries);
         
     }
 }
