@@ -73,12 +73,13 @@ namespace ArsLexis
         uint_t responseSize=response_.size();
         if (errNone!=error)
             goto Exit;
+        uint_t tries=0;
         if (responseSize<maxResponseSize_-chunkSize_)
         {
             error=resizeResponse(responseSize+chunkSize_);
             if (errNone!=error)
                 goto Exit;            
-            processReadyUiEvents(); 
+            //processReadyUiEvents(); 
             error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
             if (errNone!=error)
                 goto Exit;

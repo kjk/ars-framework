@@ -185,7 +185,7 @@ namespace ArsLexis
     
     void RootLogger::addSink(LogSink* newSink, uint_t threshold) throw()
     {
-        assert(newSink);
+        assert(NULL!=newSink);
         sinks_.push_back(new SinkWithThreshold(newSink, threshold));
     }
 
@@ -332,4 +332,9 @@ void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* file
 #endif    
 }
 
+#else // _PALM_OS
+// TODO: implement Win CE version
+void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* fileName, int line)
+{
+}
 #endif // _PALMOS
