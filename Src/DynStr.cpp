@@ -1,6 +1,8 @@
 #include <Debug.hpp>
 #include "DynStr.hpp"
 
+using ArsLexis::char_t;
+
 // for interop, get C-compatible string. You can write into this string
 // up to its termination 0 - this is guaranteed to belong to the DynStr
 // object. However:
@@ -44,8 +46,8 @@ void DynStrDelete(DynStr *dstr)
 {
     assert(NULL != dstr);
     if (NULL == dstr->str)
-        MemPtrFree(dstr->str);
-    MemPtrFree(dstr);
+        free(dstr->str);
+    free(dstr);
 }
 
 DynStr * DynStrNew(UInt32 bufSize)
@@ -58,24 +60,24 @@ void   DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment)
     dstr->reallocIncrement = increment;
 }
 
-DynStr *DynStrFromCharP(char_t *str, UInt32 initBufSize)
+DynStr *DynStrFromCharP(const char_t *str, UInt32 initBufSize)
 {
-    UInt32 strLen  = StrLen(str);
-    UInt32 bufSize = strLen+1;
+    UInt32 strLen  = tstrlen(str);
+    UInt32 bufSize = (strLen+1)*sizeof(char_t);
     DynStr * dstr;
 
     if (bufSize < initBufSize)
         bufSize = initBufSize;
 
-    dstr = (DynStr*)MemPtrNew(sizeof(DynStr));
+    dstr = (DynStr*)malloc(sizeof(DynStr));
     if (NULL==dstr)
         return NULL;
 
     dstr->reallocIncrement = 0;
-    dstr->str = (Char*)MemPtrNew(bufSize);
+    dstr->str = (Char*)malloc(bufSize);
     if (NULL == dstr->str)
     {
-        MemPtrFree(dstr);
+        free(dstr);
         return NULL;
     }
 
@@ -86,7 +88,7 @@ DynStr *DynStrFromCharP(char_t *str, UInt32 initBufSize)
     return dstr;
 }
 
-DynStr *DynStrFromCharP2(char_t *strOne, char_t *strTwo)
+DynStr *DynStrFromCharP2(const char_t *strOne, const char_t *strTwo)
 {
     UInt32 bufSize;
     DynStr * dstr;
@@ -108,14 +110,14 @@ DynStr *DynStrFromCharP2(char_t *strOne, char_t *strTwo)
     dstr->strLen = 0;
     DYNSTR_STR(dstr)[0] = '\0';
 
-    dstrNew = DynStrAppend(dstr, strTwo, strTwoLen);
+    dstrNew = DynStrAppendCharPBuf(dstr, strTwo, strTwoLen);
     assert(NULL != dstrNew);
     assert(dstrNew == dstr);
-    assert(0==DYNSTR_LEFT(dstr));
+    assert(0==DYNSTR_SIZE_LEFT(dstr));
     return dstr;
 }
 
-DynStr *DynStrFromCharP3(char_t *strOne, char_t *strTwo, char_t *strThree)
+DynStr *DynStrFromCharP3(const char_t *strOne, const char_t *strTwo, const char_t *strThree)
 {
     UInt32 bufSize;
     DynStr * dstr;
@@ -126,33 +128,45 @@ DynStr *DynStrFromCharP3(char_t *strOne, char_t *strTwo, char_t *strThree)
     assert(NULL!=strTwo);
     assert(NULL!=strThree);
 
-    strOneLen = StrLen(strOne);
-    strTwoLen = StrLen(strTwo);
-    strThreeLen = StrLen(strThree);
+    strOneLen = tstrlen(strOne);
+    strTwoLen = tstrlen(strTwo);
+    strThreeLen = tstrlen(strThree);
     bufSize  = strOneLen + strTwoLen + strThreeLen + 1;
 
     dstr = DynStrFromCharP(strOne, bufSize);
     if (NULL==dstr)
         return NULL;
 
-    dstrNew = DynStrAppend(dstr, strTwo, strTwoLen);
+    dstrNew = DynStrAppendCharPBuf(dstr, strTwo, strTwoLen);
     assert(NULL != dstrNew);
-    dstrNew = DynStrAppend(dstr, strThree, strThreeLen);
+    dstrNew = DynStrAppendCharPBuf(dstr, strThree, strThreeLen);
     assert(NULL != dstrNew);
     assert(dstrNew == dstr);
-    assert(0==DYNSTR_LEFT(dstr));
+    assert(0==DYNSTR_SIZE_LEFT(dstr));
     return dstr;
 }
 
-DynStr * DynStrAppendCharP(DynStr *dstr, char_t *str)
+// set the value of dstr to str, reallocating if necessary
+DynStr * DynStrAssignCharP(DynStr *dstr, const char_t *str)
 {
-    UInt32 strLen = StrLen(str);
-    return DynStrAppend(dstr, str, strLen);
+    DynStrTruncate(dstr, 0);
+    return DynStrAppendCharP(dstr, str);
 }
 
-DynStr *DynStrAppenDynStr(DynStr *dstr, DynStr *toAppend)
+DynStr * DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, UInt32 strLen)
 {
-    return DynStrAppend(dstr, DYNSTR_STR(toAppend), DynStrLen(toAppend));
+    return DynStrAppendData(dstr, (const char*)str, strLen*sizeof(char_t));
+}
+
+DynStr * DynStrAppendCharP(DynStr *dstr, const char_t *str)
+{
+    UInt32 strLen = tstrlen(str);
+    return DynStrAppendData(dstr, (const char*)str, strLen*sizeof(char_t));
+}
+
+DynStr *DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend)
+{
+    return DynStrAppendCharPBuf(dstr, DYNSTR_STR(toAppend), DynStrLen(toAppend));
 }
 
 // a generic append which appends arbitrary binary data
@@ -162,14 +176,14 @@ DynStr *DynStrAppenDynStr(DynStr *dstr, DynStr *toAppend)
 // Return pointer to itself or NULL if we had to re-allocate the buffer
 // but failed.
 // THE ORIGINAL DynStr - the client has to do it by himself.
-DynStr *DynStrAppend(DynStr *dstr, char_t *data, UInt32 dataSize)
+DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
 {
-    char_t *    curEnd;
+    char   *    curEnd;
     UInt32      newStrLen;
-    char_t *    newStr;
+    char   *    newData;
     UInt32      newBufSize;
 
-    if ( dataSize > DYNSTR_LEFT(dstr) )
+    if ( dataSize > DYNSTR_SIZE_LEFT(dstr) )
     {
         // need to re-allocate the buffer
         newBufSize = dstr->strLen+1+dataSize;
@@ -181,19 +195,19 @@ DynStr *DynStrAppend(DynStr *dstr, char_t *data, UInt32 dataSize)
                 newBufSize = dstr->bufSize + dstr->reallocIncrement;
             }
         }
-        newStr = (char_t *)MemPtrNew(newBufSize);
-        if (NULL == newStr)
+        newData = (char_t *)malloc(newBufSize);
+        if (NULL == newData)
             return NULL;
-        MemMove(newStr, DYNSTR_STR(dstr), DynStrLen(dstr)*sizeof(char_t));
-        MemPtrFree(DYNSTR_STR(dstr));
-        dstr->str     = newStr;
+        MemMove(newData, DYNSTR_STR(dstr), DynStrLen(dstr)*sizeof(char_t));
+        free(DYNSTR_STR(dstr));
+        dstr->str     = (char_t*)newData;
         dstr->bufSize = newBufSize;
     }
 
     // here we're sure we have enough space
-    assert( dataSize <= DYNSTR_LEFT(dstr) );
+    assert( dataSize <= DYNSTR_SIZE_LEFT(dstr) );
 
-    curEnd = DYNSTR_STR(dstr) + dstr->strLen;
+    curEnd = DYNSTR_STR(dstr) + (dstr->strLen*sizeof(char_t));
     MemMove(curEnd, data, dataSize);
     newStrLen = dstr->strLen + dataSize/sizeof(char_t);
     DYNSTR_STR(dstr)[newStrLen] = _T('\0');
@@ -207,8 +221,8 @@ DynStr *DynStrAppend(DynStr *dstr, char_t *data, UInt32 dataSize)
 // end of string
 char_t * DynStrCharPCopy(DynStr *dstr)
 {
-    UInt32 strLen = StrLen(DYNSTR_STR(dstr));
-    char_t *result = (Char*)MemPtrNew(strLen+1);
+    UInt32 strLen = tstrlen(DYNSTR_STR(dstr));
+    char_t *result = (char_t*)malloc(strLen+1);
     if (NULL == result)
         return NULL;
     MemMove(result, DYNSTR_STR(dstr), strLen+1);
@@ -237,11 +251,12 @@ void DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len)
 
     toMove = DynStrLen(dstr) - start - len;
     MemMove(str+start, str+start+len, toMove);
+    dstr->strLen -= len;
 }
 
 DynStr * DynStrAppendChar(DynStr *dstr, char_t c)
 {
-    return DynStrAppend(dstr, &c, 1);
+    return DynStrAppendData(dstr, (const char*)&c, sizeof(char_t));
 }
 
 #define uriUnescapedChars "-_.!~*'()"
@@ -297,7 +312,7 @@ DynStr *DynStrUrlEncode(DynStr *toEncode)
         {
             buffer[0] = '%';
             CharToHexString(c, &(buffer[1]) );
-            result = DynStrAppend(encodedUrl, buffer, 3);
+            result = DynStrAppendCharPBuf(encodedUrl, buffer, 3);
         }
         if (NULL == result)
         {
@@ -310,3 +325,25 @@ DynStr *DynStrUrlEncode(DynStr *toEncode)
     return encodedUrl;
 }
 
+void DynStrReplace(DynStr *dstr, char_t orig, char_t replace)
+{
+    UInt32 i;
+    UInt32 len = DynStrLen(dstr);
+    char_t * txt = DynStrGetCStr(dstr);
+    for (i=0; i<len; i++)
+    {
+        if (orig==txt[i])
+            txt[i] = replace;
+    }
+}
+
+#ifdef DEBUG
+void test_DynStrReplace()
+{
+    DynStr *dstr = DynStrFromCharP(_T("hello"), 0);
+    DynStrReplace(dstr, _T('h'), _T('p'));
+    assert( 0 == tstrcmp(_T("pello"), DYNSTR_STR(dstr)) );
+    DynStrReplace(dstr, _T('z'), _T('k'));
+    assert( 0 == tstrcmp(_T("pello"), DYNSTR_STR(dstr)) );
+}
+#endif

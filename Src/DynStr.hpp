@@ -40,24 +40,31 @@ typedef struct DynStrTag {
 #define DYNSTR_LEN(dstr) (dstr->strLen)
 /* this macro defines how much data do we have left in the buffer.
    that's how much we can add to the string without re-allocating it */
-#define DYNSTR_LEFT(dstr) (dstr->bufSize - dstr->strLen - 1)
+#define DYNSTR_SIZE_LEFT(dstr) (dstr->bufSize - (dstr->strLen - 1)*sizeof(char_t))
 
 DynStr *   DynStrNew(UInt32 bufSize);
 void       DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment);
-DynStr *   DynStrFromCharP(char_t *str, UInt32 initBufSize);
-DynStr *   DynStrFromCharP2(char_t *strOne, char_t *strTwo);
-DynStr *   DynStrFromCharP3(char_t *strOne, char_t *strTwo, char_t *strThree);
+DynStr *   DynStrFromCharP(const char_t *str, UInt32 initBufSize);
+DynStr *   DynStrFromCharP2(const char_t *strOne, const char_t *strTwo);
+DynStr *   DynStrFromCharP3(const char_t *strOne, const char_t *strTwo, const char_t *strThree);
+DynStr *   DynStrAssignCharP(DynStr *dstr, const char_t *str);
 void       DynStrTruncate(DynStr *dstr, UInt32 len);
 char_t *   DynStrGetCStr(DynStr *dstr);
 char_t *   DynStrGetData(DynStr *dstr);
 UInt32     DynStrLen(DynStr *dstr);
-DynStr *   DynStrAppend(DynStr *dstr, char_t *data, UInt32 dataSize);
-DynStr *   DynStrAppendCharP(DynStr *dstr, char_t *str);
-DynStr *   DynStrAppendChar(DynStr *dstr, char_t c);
+DynStr *   DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize);
+DynStr *   DynStrAppendCharP(DynStr *dstr, const char_t *str);
+DynStr *   DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, UInt32 strLen);
+DynStr *   DynStrAppendChar(DynStr *dstr, const char_t c);
 void       DynStrDelete(DynStr *dstr);
 char_t *   DynStrCharPCopy(DynStr *dstr);
 void       DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len);
-DynStr *   DynStrAppenDynStr(DynStr *dstr, DynStr *toAppend);
+DynStr *   DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend);
 DynStr *   DynStrUrlEncode(DynStr *srcUrl);
+void       DynStrReplace(DynStr *dstr, char_t orig, char_t replace);
+
+#ifdef DEBUG
+void test_DynStrReplace();
+#endif
 
 #endif // _DYNSTR_H_
