@@ -544,6 +544,18 @@ error_t KXmlParser::parseStartTag(bool xmldecl)
 
     attributeCount_ = 0;
 
+    if(completlyLoose_ && 0==name_.compare(_T("AD-")))
+    {
+        //just skip to > (this is advertisment so screw it!)
+        while(true)
+        {
+            if ((error=read(c))!=eNoError)
+                return error;
+            if (c == _T('>'))
+                break;
+        }
+    }
+    else //normal procedure
     while (true) {
         if ((error=skip())!=eNoError)
             return error;
@@ -1088,13 +1100,13 @@ error_t KXmlParser::next(EventType& ret)
 
 bool KXmlParser::getFeature(const String& feature) 
 {
-    if (XmlPullParser::FEATURE_PROCESS_NAMESPACES == feature)
+    if (0==feature.compare(FEATURE_PROCESS_NAMESPACES))
         return processNsp_;
     else 
         if (isProp(feature, false, _T("relaxed")))
             return relaxed_;
-        else
-            if(XmlPullParser::FEATURE_COMPLETLY_LOOSE == feature)
+        else            
+            if(0==feature.compare(FEATURE_COMPLETLY_LOOSE))
                 return completlyLoose_;
             else
                 return false;
