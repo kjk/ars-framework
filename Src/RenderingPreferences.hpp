@@ -1,9 +1,9 @@
 #ifndef __RENDERING_PREFERENCES_HPP__
 #define __RENDERING_PREFERENCES_HPP__
 
-#include "Debug.hpp"
-#include "BaseTypes.hpp"
-#include "Graphics.hpp"
+#include <Debug.hpp>
+#include <BaseTypes.hpp>
+#include <Graphics.hpp>
 
 enum HyperlinkType
 {
@@ -18,6 +18,11 @@ enum ElementStyle
     styleHeader
 };
 
+namespace ArsLexis {
+    class PrefsStoreReader;
+    class PrefsStoreWriter;
+}    
+
 class RenderingPreferences
 {
 
@@ -27,6 +32,8 @@ class RenderingPreferences
     };        
     
     uint_t standardIndentation_;
+    
+    void calculateIndentation();
     
 public:
 
@@ -52,7 +59,7 @@ public:
     {return noChange;}
     
     BulletType bulletType() const
-    {return bulletCircle;}
+    {return bulletType_;}
 
     struct StyleFormatting
     {
@@ -60,9 +67,12 @@ public:
         ArsLexis::Color textColor;
         
         StyleFormatting():
-            font(stdFont),
             textColor(1)
         {}
+        
+        enum {reservedPrefIdCount=3};
+        Err serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const;
+        Err serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId);
         
     };
     
@@ -82,10 +92,21 @@ public:
     {return standardIndentation_;}
     
     ArsLexis::Color backgroundColor() const
-    {return 0;}
+    {return backgroundColor_;}
+    
+    void setBulletType(BulletType type);
+    
+    void setBackgroundColor(ArsLexis::Color color)
+    {backgroundColor_=color;}
+    
+    enum {reservedPrefIdCount=20};
+    Err serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const;
+    Err serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId);
 
 private:
     
+    BulletType bulletType_;
+    ArsLexis::Color backgroundColor_;
     StyleFormatting hyperlinkDecorations_[hyperlinkTypesCount_];
     StyleFormatting styles_[stylesCount_];
 };

@@ -167,9 +167,9 @@ namespace {
         serialNumberPrefId,
         serialNumberRegFlagPrefId,
         lookupHistoryFirstPrefId,
+        renderingPrefsFirstPrefId=lookupHistoryFirstPrefId+LookupHistory::reservedPrefIdCount,
         
-        
-        preferenceIdNextAvail=lookupHistoryFirstPrefId+LookupHistory::reservedPrefIdCount
+        next=renderingPrefsFirstPrefId+RenderingPreferences::reservedPrefIdCount
     };
 
     // These globals will be removed by dead code elimination.
@@ -187,17 +187,22 @@ void iPediaApplication::loadPreferences()
     Err error=errNone;
     const char* text;
     if (errNone!=(error=reader->ErrGetStr(cookiePrefId, &text))) 
-        return;
+        goto OnError;
     prefs.cookie=text;
     if (errNone!=(error=reader->ErrGetStr(serialNumberPrefId, &text))) 
-        return;
+        goto OnError;
     prefs.serialNumber=text;
     if (errNone!=(error=reader->ErrGetBool(serialNumberRegFlagPrefId, reinterpret_cast<Boolean*>(&prefs.serialNumberRegistered))))
-        return;
-    if (errNone!=(error=history_.serializeIn(*reader, lookupHistoryFirstPrefId)))
-        return;
-        
+        goto OnError;
+    if (errNone!=(error=prefs.renderingPreferences.serializeIn(*reader, renderingPrefsFirstPrefId)))
+        goto OnError;
     preferences_=prefs;    
+    if (errNone!=(error=history_.serializeIn(*reader, lookupHistoryFirstPrefId)))
+        goto OnError;
+    return;
+            
+OnError:
+    return;        
 }
 
 void iPediaApplication::savePreferences()
@@ -209,6 +214,8 @@ void iPediaApplication::savePreferences()
     if (errNone!=(error=writer->ErrSetStr(serialNumberPrefId, preferences_.serialNumber.c_str())))
         goto OnError;
     if (errNone!=(error=writer->ErrSetBool(serialNumberRegFlagPrefId, preferences_.serialNumberRegistered)))
+        goto OnError;
+    if (errNone!=(error=preferences_.renderingPreferences.serializeOut(*writer, renderingPrefsFirstPrefId)))
         goto OnError;
     if (errNone!=(error=history_.serializeOut(*writer, lookupHistoryFirstPrefId)))
         goto OnError;

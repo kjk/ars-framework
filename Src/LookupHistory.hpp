@@ -27,6 +27,9 @@ public:
         reservedPrefIdCount=maxLength+2
     };
 
+    Err serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const;
+    Err serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId);
+    
     LookupHistory();
     
     ~LookupHistory();
@@ -75,10 +78,6 @@ public:
     
     bool hasCurrentTerm() const
     {return historyPosition_!=termHistory_.end();}
-    
-    Err serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const;
-    
-    Err serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId);
     
 };
 

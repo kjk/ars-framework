@@ -1,11 +1,14 @@
 #include "RenderingPreferences.hpp"
+#include <PrefsStore.hpp>
 
 using ArsLexis::FontEffects;
 using ArsLexis::Graphics;
 using ArsLexis::Font;
 
 RenderingPreferences::RenderingPreferences():
-    standardIndentation_(16)
+    standardIndentation_(16),
+    bulletType_(bulletCircle),
+    backgroundColor_(0)
 {
     styles_[styleHeader].font=largeFont;
     UInt32 screenDepths=0;
@@ -30,7 +33,11 @@ RenderingPreferences::RenderingPreferences():
     fx.setUnderline(FontEffects::underlineDotted);
     for (uint_t i=0; i<hyperlinkTypesCount_; ++i) 
         hyperlinkDecorations_[i].font.setEffects(fx);
-    
+    calculateIndentation();
+}
+
+void RenderingPreferences::calculateIndentation()
+{
     Font font(symbolFont);
     char bullet[3];
     bullet[0]=(bulletType()==bulletCircle)?symbolShiftPunc:symbolDiamondChr;
@@ -39,4 +46,96 @@ RenderingPreferences::RenderingPreferences():
     Graphics graphics;
     Graphics::FontSetter setFont(graphics, font);
     standardIndentation_=graphics.textWidth(bullet, 2);
+}
+
+void RenderingPreferences::setBulletType(BulletType type)
+{
+    if (bulletType_!=type)
+    {
+        bulletType_=type;
+        calculateIndentation();
+    }
+}
+    
+Err RenderingPreferences::serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const
+{
+    Err error=errNone;
+    if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, bulletType_)))
+        goto OnError;
+    if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, backgroundColor_)))
+        goto OnError;
+    for (uint_t i=0; i<hyperlinkTypesCount_; ++i)
+    {
+        if (errNone!=(error=hyperlinkDecorations_[i].serializeOut(writer, uniqueId)))
+            goto OnError;
+        uniqueId+=StyleFormatting::reservedPrefIdCount;
+    }
+    for (uint_t i=0; i<stylesCount_; ++i)
+    {
+        if (errNone!=(error=styles_[i].serializeOut(writer, uniqueId)))
+            goto OnError;
+        uniqueId+=StyleFormatting::reservedPrefIdCount;
+    }
+OnError:
+    return error;    
+}
+
+Err RenderingPreferences::serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId)
+{
+    Err error=errNone;
+    RenderingPreferences tmp;
+    UInt16 val;
+    if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
+        goto OnError;
+    tmp.setBulletType(static_cast<BulletType>(val));
+    if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
+        goto OnError;
+    tmp.setBackgroundColor(val);        
+    for (uint_t i=0; i<hyperlinkTypesCount_; ++i)
+    {
+        if (errNone!=(error=tmp.hyperlinkDecorations_[i].serializeIn(reader, uniqueId)))
+            goto OnError;
+        uniqueId+=StyleFormatting::reservedPrefIdCount;
+    }
+    for (uint_t i=0; i<stylesCount_; ++i)
+    {
+        if (errNone!=(error=tmp.styles_[i].serializeIn(reader, uniqueId)))
+            goto OnError;
+        uniqueId+=StyleFormatting::reservedPrefIdCount;
+    }
+    (*this)=tmp;
+OnError:
+    return error;    
+}
+
+Err RenderingPreferences::StyleFormatting::serializeOut(ArsLexis::PrefsStoreWriter& writer, int uniqueId) const
+{
+    Err error=errNone;
+    if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, font.fontId())))
+        goto OnError;
+    if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, font.effects().mask())))
+        goto OnError;
+    if (errNone!=(error=writer.ErrSetUInt16(uniqueId++, textColor)))
+        goto OnError;
+OnError:
+    return error;
+}
+
+Err RenderingPreferences::StyleFormatting::serializeIn(ArsLexis::PrefsStoreReader& reader, int uniqueId)
+{
+    Err error=errNone;
+    StyleFormatting tmp;
+    UInt16 val;
+    if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
+        goto OnError;
+    tmp.font.setFontId(static_cast<FontID>(val));
+    if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
+        goto OnError;
+    tmp.font.setEffects(ArsLexis::FontEffects(val));
+    if (errNone!=(error=reader.ErrGetUInt16(uniqueId++, &val)))
+        goto OnError;
+    tmp.textColor=val;
+    (*this)=tmp;
+OnError:    
+    return error;
 }

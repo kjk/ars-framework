@@ -1,5 +1,4 @@
 #include "HorizontalLineElement.hpp"
-#include "Graphics.hpp"
 
 using ArsLexis::Graphics;
 
