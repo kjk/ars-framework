@@ -19,5 +19,5 @@ void ArsLexis::logAllocation(void* ptr, bool free, const char* file, int line)
 
 UInt32 PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
-    return ArsLexis::Application::main<iPediaApplication, appFileCreator>(cmd, cmdPBP, launchFlags);
+    return ArsLexis::Application::main<iPediaApplication, appFileCreator, romIncompatibleAlert>(cmd, cmdPBP, launchFlags);
 }

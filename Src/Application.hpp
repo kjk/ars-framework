@@ -134,7 +134,7 @@ namespace ArsLexis
          * @param requiredVersion version needed to run this application.
          * @param alertId if version is lower than @c requiredVersion, this alert will be shown.
          */
-        Err checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId=frmInvalidObjectId);
+        static Err checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId=frmInvalidObjectId);
         
         /**
          * Creates and activates a new @c Form object.
@@ -279,7 +279,7 @@ namespace ArsLexis
          * @note This function is designed so that it should be the only code called from @c PilotMain() function,
          * unless you know what you're doing.
          */
-        template<class AppClass, UInt32 creatorId> 
+        template<class AppClass, UInt32 creatorId, UInt16 alertId> 
         static Err main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
         
         static void gotoForm(UInt16 formId)
@@ -311,29 +311,32 @@ namespace ArsLexis
 
     };
     
-    template<class AppClass, UInt32 creatorId> 
+    template<class AppClass, UInt32 creatorId, UInt16 alertId> 
     Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
     {
-        Err error=errNone;
-        AppClass* volatile app=static_cast<AppClass*>(getInstance(creatorId));
-        if (app)
-            error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
-        else
+        Err error=Application::checkRomVersion(AppClass::requiredRomVersion, launchFlags, alertId);
+        if (!error)
         {
-            if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
-                error=_CW_SetupExpandedMode();
-            if (!error)
+            AppClass* volatile app=static_cast<AppClass*>(getInstance(creatorId));
+            if (app)
+                error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
+            else
             {
-                ErrTry {
-                    app=new AppClass;
-                    error=app->initialize();
-                    if (!error)
-                        error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
+                if (0 == (launchFlags & sysAppLaunchFlagNewGlobals))
+                    error=_CW_SetupExpandedMode();
+                if (!error)
+                {
+                    ErrTry {
+                        app=new AppClass;
+                        error=app->initialize();
+                        if (!error)
+                            error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
+                    }
+                    ErrCatch (ex) {
+                        error=ex;
+                    } ErrEndCatch
+                    delete app;
                 }
-                ErrCatch (ex) {
-                    error=ex;
-                } ErrEndCatch
-                delete app;
             }
         }
         return error;

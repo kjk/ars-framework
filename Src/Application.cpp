@@ -78,8 +78,9 @@ namespace ArsLexis
     
     Err Application::checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UInt16 alertId)
     {
-        Err error=errNone;
-        if (romVersion() < requiredVersion)
+        UInt32 romVersion;
+        Err error=FtrGet(sysFtrCreator, sysFtrNumROMVersion, &romVersion);
+        if (romVersion < requiredVersion)
         {
             if ((launchFlags & 
                 (sysAppLaunchFlagNewGlobals | sysAppLaunchFlagUIApp)) ==
@@ -87,7 +88,7 @@ namespace ArsLexis
             {
                 if (frmInvalidObjectId!=alertId)
                     FrmAlert (alertId);
-                if (romVersion() < kPalmOS20Version)
+                if (romVersion < kPalmOS20Version)
                     AppLaunchWithCommand(sysFileCDefaultApp, sysAppLaunchCmdNormalLaunch, NULL);
             }
             error=sysErrRomIncompatible;

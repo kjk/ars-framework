@@ -75,8 +75,6 @@ iPediaApplication::~iPediaApplication()
 }
 
 
-static const UInt32 iPediaRequiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStageDevelopment,0);
-
 Err iPediaApplication::normalLaunch()
 {
     gotoForm(mainForm);
@@ -90,14 +88,6 @@ Err iPediaApplication::handleSystemNotify(SysNotifyParamType& notify)
     if (dia.available() && dia.notifyType()==notify.notifyType)
         dia.handleNotify();
     return errNone;
-}
-
-Err iPediaApplication::handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
-{
-    Err error=checkRomVersion(iPediaRequiredRomVersion, launchFlags, romIncompatibleAlert);
-    if (!error)
-        error=Application::handleLaunchCode(cmd, cmdPBP, launchFlags);
-    return error;
 }
 
 Err iPediaApplication::getNetLibrary(NetLibrary*& netLib)

@@ -61,7 +61,7 @@ public:
         
         StyleFormatting():
             font(stdFont),
-            textColor(UIColorGetTableEntryIndex(UIObjectForeground))
+            textColor(1)
         {}
         
     };

@@ -44,8 +44,8 @@ protected:
     
 public:
 
-    Err handleLaunchCode(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags);
-        
+    static const UInt32 requiredRomVersion=sysMakeROMVersion(3,5,0,sysROMStageDevelopment,0);
+    
     const ArsLexis::DIA_Support& getDIASupport() const
     {return diaSupport_;}
 
