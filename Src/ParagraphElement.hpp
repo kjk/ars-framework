@@ -8,6 +8,11 @@ class ParagraphElement: public LineBreakElement
 
     uint_t childIndentation_;
 
+protected:
+
+    void setChildIndentation(uint_t indent)
+    {childIndentation_=indent;}
+
 public:
     
     ParagraphElement():
@@ -17,9 +22,6 @@ public:
     uint_t childIndentation() const
     {return childIndentation_;}
     
-    void setChildIndentation(uint_t indent)
-    {childIndentation_=indent;}
-
 };
 
 class IndentedParagraphElement: public ParagraphElement

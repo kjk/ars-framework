@@ -1,39 +1,44 @@
 #include <Logging.hpp>
+
+#ifdef _PALM_OS
 #include <Application.hpp>
+#endif // _PALM_OS
 
 namespace ArsLexis
 {
 
-    void Logger::log(const char* text, uint_t length, uint_t level)
+    void Logger::log(const char_t* text, uint_t length, uint_t level)
     {
         String full;
         // 8=timestamp; 1=tab; 2=braces; 1=colon; 1=tab; 1=newline; 1=null
         full.reserve(8+1+2+contextLength_+1+1+length+1+1);
-        char buffer[9];
-        UInt32 timestamp=TimGetTicks();
-        StrPrintF(buffer, "%lx", timestamp);
-        full.append(buffer, 8).append("\t[", 2).append(context_, contextLength_).append("]:\t", 3).append(text, length).append(1, '\n');
+        char_t buffer[9];
+        tick_t timestamp=ticks();
+        tprintf(buffer, _T("%lx"), timestamp);
+        full.append(buffer, 8).append(_T("\t["), 2).append(context_, contextLength_).append(_T("]:\t"), 3).append(text, length).append(1, _T('\n'));
         logRaw(full, level);
     }
-    
+
+#ifndef _WIN32_WCE    
     Logger::LineAppender& Logger::LineAppender::operator<<(unsigned short ui)
     {
         if (log_)
         {
-            char buffer[26];
-            Int16 len=StrPrintF(buffer, "%hu (=0x%hx)", ui, ui);
+            char_t buffer[26];
+            int len=tprintf(buffer, _T("%hu (=0x%hx)"), ui, ui);
             if (len>0)
                 line_.append(buffer, len);
         }                
         return *this;
     }
+#endif // )WIN32_WCE
 
     Logger::LineAppender& Logger::LineAppender::operator<<(short i)
     {
         if (log_)
         {
-            char buffer[26];
-            Int16 len=StrPrintF(buffer, "%hd (=0x%hx)", i, i);
+            char_t buffer[26];
+            int len=tprintf(buffer, _T("%hd (=0x%hx)"), i, i);
             if (len>0)
                 line_.append(buffer, len);
         }                
@@ -70,38 +75,60 @@ namespace ArsLexis
         return LineAppender(*this, logInfo<=threshold_, logInfo);
     }
 
+#ifndef _MSC_VER
     // This explicit specialization doesn't differ in any way from the one that would be generated.
     // But it's here because it reduces size of code significantly.
     template<>
-    Logger::LineAppender Logger::operator<< <const char*> (const char* val)
+    Logger::LineAppender Logger::operator<< <const char_t*> (const char_t* val)
     {
         return LineAppender(*this, logLevelDefault<=threshold_, logLevelDefault)<<val;
     }
-        
+#endif  // _MSC_VER
 
-    RootLogger::RootLogger(const char* context, LogSink* sink, uint_t sinkThreshold):
+#ifndef _PALM_OS
+		
+	namespace {
+		RootLogger* rootLoggerInstance=0;
+	}
+
+#endif // _PALM_OS
+
+    RootLogger::RootLogger(const char_t* context, LogSink* sink, uint_t sinkThreshold):
         Logger(context)
     {
         if (sink)
             addSink(sink, sinkThreshold);
+#ifdef _PALM_OS
         Err err=FtrSet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32>(this));
         if (err)
-            error()<<"Unable to set RootLogger instance pointer, error: "<<err;
+            error()<<_T("Unable to set RootLogger instance pointer, error: ")<<err;
+#else
+		assert(rootLoggerInstance==0);
+		rootLoggerInstance=this;
+#endif // _PALM_OS
     }
 
     RootLogger::~RootLogger() throw()
     {
+#ifdef _PALM_OS
         FtrUnregister(Application::creator(), Application::featureRootLoggerPointer);
+#else
+		rootLoggerInstance=0;
+#endif // _PALM_OS
         std::for_each(sinks_.begin(), sinks_.end(), deleteSink);        
     }
 
     RootLogger* RootLogger::instance() throw()
     {
+#ifdef _PALM_OS
         RootLogger* logger=0;
         Err error=FtrGet(Application::creator(), Application::featureRootLoggerPointer, reinterpret_cast<UInt32*>(&logger));
         if (error)
             assert(false);
         return logger;
+#else
+		return rootLoggerInstance;
+#endif // _PALM_OS
     }
     
     void RootLogger::addSink(LogSink* newSink, uint_t threshold) throw()
@@ -114,32 +141,34 @@ namespace ArsLexis
     {
         Sinks_t::iterator end(sinks_.end());
         for (Sinks_t::iterator it(sinks_.begin()); it!=end; ++it)
-            if (it->second>=level)
-                it->first->output(text);
+            if ((*it).second>=level)
+                (*it).first->output(text);
     }
 
-    FunctionLogger::FunctionLogger(const char* context, Logger& parent):
+    FunctionLogger::FunctionLogger(const char_t* context, Logger& parent):
         ChildLogger(context, parent)
     {
-        log(">>> Enter");
+        log(_T(">>> Enter"));
     }
         
 
-    FunctionLogger::FunctionLogger(const char* context):
+    FunctionLogger::FunctionLogger(const char_t* context):
         ChildLogger(context)
     {
-        log(">>> Enter");
+        log(_T(">>> Enter"));
     }
     
     FunctionLogger::~FunctionLogger() throw()
     {
-        log("<<< Exit");
+        log(_T("<<< Exit"));
     }
 
 #pragma mark -
 #pragma mark HostFileLogSink    
 
-    HostFileLogSink::HostFileLogSink(const char* fileName) throw():
+#ifdef _PALM_OS
+
+    HostFileLogSink::HostFileLogSink(const char_t* fileName) throw():
         file_(HostFOpen(fileName, "w"))
     {}
     
@@ -191,7 +220,7 @@ namespace ArsLexis
         if (!db_)
             return;
         UInt16 index=dmMaxRecordIndex;
-        const char* text=str.c_str();
+        const char_t* text=str.c_str();
         UInt16 len=StrLen(text)+1;
         MemHandle handle=DmNewRecord(db_, &index, len);
         if (!handle)
@@ -207,5 +236,7 @@ namespace ArsLexis
         }
         DmReleaseRecord(db_, index, true);
     }
+    
+#endif // _PALM_OS
 
 }

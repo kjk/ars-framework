@@ -16,10 +16,13 @@ namespace ArsLexis
     
 #if defined(_WIN32_WCE)
 
+	typedef DWORD tick_t;
+
     typedef TCHAR char_t;
 
 	#define tstrlen _tcslen
 	#define tprintf _stprintf
+	#define ticks	GetTickCount
     
 #else
     
@@ -27,7 +30,11 @@ namespace ArsLexis
     
     #define _T(a) a
 
-    #if defined(__PALMOS_H__)    
+    #if defined(_PALM_OS)    
+		
+		typedef UInt32 tick_t;
+
+		#define ticks TimGetTicks
     
         #define tprintf StrPrintF
         #define tstrlen StrLen

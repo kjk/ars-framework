@@ -5,8 +5,8 @@
 
 // Explicit instantiation of ArsLexis::String so that we could be sure that all its functions will be in 1st segment and app won't crash on find etc.
 template class std::basic_string<ArsLexis::char_t>;
-template class std::char_traits<ArsLexis::char_t>;
-template class std::list<ArsLexis::Form*>;
+//template class std::char_traits<ArsLexis::char_t>;
+//template class std::list<ArsLexis::Form*>;
 
 namespace ArsLexis
 {

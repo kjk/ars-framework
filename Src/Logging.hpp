@@ -22,6 +22,8 @@ namespace ArsLexis
 
 #pragma mark -
 #pragma mark HostFileLogSink
+
+#ifdef _PALM_OS
     
     class HostFileLogSink: public LogSink, private NonCopyable
     {
@@ -29,7 +31,7 @@ namespace ArsLexis
         
     public:        
         
-        explicit HostFileLogSink(const char* fileName) throw();
+        explicit HostFileLogSink(const char_t* fileName) throw();
         
         ~HostFileLogSink() throw();
         
@@ -55,6 +57,8 @@ namespace ArsLexis
         void output(const String& str);
         
     };
+
+#endif    
     
 #pragma mark -
 #pragma mark DebuggerLogSink
@@ -71,7 +75,13 @@ namespace ArsLexis
         
         void output(const String& str)
         {
+#if defined(_PALM_OS)
             DbgMessage(str.c_str());
+#elif defined(_WIN32_WCE)
+            OutputDebugString(str.c_str());
+#else
+#error "Define version of DebuggerLogSink appropriate for your system."
+#endif            
         }
         
     };
@@ -81,7 +91,7 @@ namespace ArsLexis
 
     class Logger
     {
-        const char* context_;
+        const char_t* context_;
         uint_t contextLength_;
         uint_t threshold_;
         
@@ -99,9 +109,9 @@ namespace ArsLexis
             logLevelDefault=logDebug
         };
     
-        explicit Logger(const char* context) throw():
+        explicit Logger(const char_t* context) throw():
             context_(context),
-            contextLength_(StrLen(context_)),
+            contextLength_(tstrlen(context_)),
             threshold_(logLevelDefault)
         {}
         
@@ -114,10 +124,10 @@ namespace ArsLexis
         virtual ~Logger() throw()
         {}
         
-        const char* context() const throw()
+        const char_t* context() const throw()
         {return context_;}
         
-        void log(const char* text, uint_t length, uint_t level=logLevelDefault);
+        void log(const char_t* text, uint_t length, uint_t level=logLevelDefault);
         
         void log(const String& text, uint_t level=logLevelDefault)
         {log(text.data(), text.length(), level);}
@@ -159,7 +169,7 @@ namespace ArsLexis
                     logger_.log(line_, level_);
             }
             
-            LineAppender& operator<<(const char* text)
+            LineAppender& operator<<(const char_t* text)
             {
                 if (log_)
                     line_.append(text);
@@ -173,7 +183,7 @@ namespace ArsLexis
                 return *this;
             }
             
-            LineAppender& operator<<(char chr)
+            LineAppender& operator<<(char_t chr)
             {
                 if (log_)
                     line_.append(1, chr);
@@ -183,13 +193,15 @@ namespace ArsLexis
             LineAppender& operator<<(int i);
             LineAppender& operator<<(unsigned int ui);
             LineAppender& operator<<(short i);
+#ifndef _WIN32_WCE
             LineAppender& operator<<(unsigned short ui);
+#endif // _WIN32_WCE
             LineAppender& operator<<(long l);
             LineAppender& operator<<(unsigned long ul);
             
         };
 
-        template<typename T>
+        template<class T>
         LineAppender operator<<(T val);
         
         LineAppender operator()(uint_t level);
@@ -212,12 +224,14 @@ namespace ArsLexis
         
     };
     
-    template<typename T>
+    template<class T>
     Logger::LineAppender Logger::operator<<(T val)        
     {return LineAppender(*this, logLevelDefault<=threshold_, logLevelDefault)<<val;}
 
+#ifndef _MSC_VER
     template<>
-    Logger::LineAppender Logger::operator<< <const char*> (const char* val);
+    Logger::LineAppender Logger::operator<< <const char_t*> (const char_t* val);
+#endif // _MSC_VER
     
 #pragma mark -
 #pragma mark RootLogger
@@ -233,7 +247,7 @@ namespace ArsLexis
      
     public:
     
-        RootLogger(const char* context, LogSink* sink=0, uint_t sinkThreshold=logLevelDefault);
+        RootLogger(const char_t* context, LogSink* sink=0, uint_t sinkThreshold=logLevelDefault);
         
         void addSink(LogSink* newSink, uint_t threshold=logLevelDefault) throw();
         
@@ -256,12 +270,12 @@ namespace ArsLexis
         
     public:
         
-        explicit ChildLogger(const char* context) throw():
+        explicit ChildLogger(const char_t* context) throw():
             Logger(context),
             parent_(RootLogger::instance())
         {}
         
-        ChildLogger(const char* context, Logger& parent) throw():
+        ChildLogger(const char_t* context, Logger& parent) throw():
             Logger(context),
             parent_(&parent)
         {}
@@ -283,9 +297,9 @@ namespace ArsLexis
     {
     public:
     
-        FunctionLogger(const char* context, Logger& parent);
+        FunctionLogger(const char_t* context, Logger& parent);
 
-        explicit FunctionLogger(const char* context);
+        explicit FunctionLogger(const char_t* context);
         
         ~FunctionLogger() throw();
         
