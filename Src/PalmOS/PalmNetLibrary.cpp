@@ -15,7 +15,7 @@ namespace ArsLexis
     
     status_t NetLibrary::initialize(uint_t& ifError, uint_t configIndex, ulong_t openFlags)
     {
-        assert(closed());
+        assert(closed_);
         status_t error=errNone;
         if (!libraryOpened_)
             error=Library::initialize(netLibName, netCreator);
@@ -38,7 +38,7 @@ namespace ArsLexis
     
     status_t NetLibrary::close(bool immediate)
     {
-        assert(!closed());
+        assert(!closed_);
         status_t error=NetLibClose(refNum(), immediate);
         if (!error)
             closed_=true;
@@ -47,7 +47,7 @@ namespace ArsLexis
 
     NetLibrary::~NetLibrary()
     {
-        if (!closed())
+        if (!closed_)
             close();
     }
 

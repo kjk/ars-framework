@@ -14,10 +14,11 @@ namespace ArsLexis
         :private Library
 #endif        
     {
-        bool closed_:1;
         bool libraryOpened_:1;
         
     public:
+
+        bool closed_:1;
         
         NetLibrary();
 
@@ -26,9 +27,6 @@ namespace ArsLexis
         enum {defaultConfig};
 
         status_t initialize(uint_t& ifError, uint_t configIndex=defaultConfig, ulong_t openFlags=0);
-
-        bool closed() const 
-        {return closed_;}
 
         status_t close(bool immediate=false);
 
