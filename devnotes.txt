@@ -1,5 +1,0 @@
-## List of servers ##
-
-iPediaApplication.hpp
-look for serverLocalhost, serverDictPcArslexis
-
