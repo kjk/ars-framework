@@ -270,7 +270,7 @@ void ByteFormatParser::parseElementParams()
             break;
 
         case typeIndentedParagraphElement:
-            elems_.push_back(currentElement_ = new IndentedParagraphElement());
+            elems_.push_back(currentElement_ = new ParagraphElement(true));
             break;
             
         default:

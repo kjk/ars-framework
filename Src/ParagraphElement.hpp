@@ -3,7 +3,7 @@
 
 #include "LineBreakElement.hpp"
 
-class ParagraphElement: public LineBreakElement
+class ParagraphElement : public LineBreakElement
 {
 
     uint_t childIndentation_;
@@ -17,23 +17,24 @@ protected:
     {return childIndentation_;}
     
 public:
-    
-    ParagraphElement():
+
+    bool   fIndented;
+
+    ParagraphElement(bool fIndentedArg=false) : 
+        fIndented(fIndentedArg),
         childIndentation_(0)
     {}
 
-    ~ParagraphElement();
+    void calculateLayout(LayoutContext& layoutContext)
+    {
+        if (fIndented)
+            setChildIndentation(layoutContext.preferences.standardIndentation());
+        LineBreakElement::calculateLayout(layoutContext);
+
+    }
+
+    ~ParagraphElement() {};
     
 };
-
-class IndentedParagraphElement: public ParagraphElement
-{
-public:
-    
-    void calculateLayout(LayoutContext& layoutContext);
-
-    ~IndentedParagraphElement();
-    
-};    
 
 #endif

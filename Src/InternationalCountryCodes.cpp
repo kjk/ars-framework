@@ -291,7 +291,7 @@ namespace ArsLexis{
     {
         // We assume every country name starts with uppercase
         const CountryArrayEntry* end = countries + countriesCount();
-        CountryArrayEntry entry = {{}, {toUpper(inChar)}};
+        CountryArrayEntry entry = {{""}, {toUpper(inChar)}};
         const CountryArrayEntry* p = std::lower_bound(countries, end, entry, compareCountryByFirstChar);
         if (end == p)
             --p;
