@@ -2,18 +2,25 @@
 # Owner: Krzysztof Kowalczyk
 #
 # Purpose:
-#   Convert the *.sql to *.txt flat file in the format:
-#   title
-#   namespace
-#   length of text
-#   text
+#   Convert the *.sql to *.txt flat files in the format:
+#   ${name}_idx.txt:
+#     title
+#     $namespace,$body_offset,$body_len,$md5_hash
+#
+#   ${name}_body.txt:
+#     body 
+#
+#   ${name}_redirects.txt:
+#     title
+#     title_to_which_redirects (must be in ${name}_idx.txt file
 #
 # Usage:
 #   -limit N : only process first N rows
 #   -usepsyco : if used, will use psyco for speeding up, false by default
 #   -juststats : if used, doesn't write processed data, just calculates
 #                and prints the statistics
-#   fileName - which file to process
+#   -force : recreate the files even if they exist
+#   fileName : which file to process
 
 import sys,os,os.path,string,time,md5,bz2,wikipediasql
 try:
@@ -73,9 +80,14 @@ def dumpMostViewed():
     for (key,val) in l:
         print "%9d %s" % (val,key)
 
-# given argument name in argName, tries to return argument value
-# in command line args and removes those entries from sys.argv
-# return None if not found
+def fFileExists(filePath):
+    try:
+        st = os.stat(filePath)
+    except OSError:
+        # TODO: should check that Errno is 2
+        return False
+    return True
+
 def getRemoveCmdArg(argName):
     argVal = None
     try:
@@ -114,7 +126,7 @@ def dumpTiming():
     sys.stderr.write(str)
 
 def usageAndExit():
-    print "Usage: dumpSqlToTxt.py [-limit N] [-usepsyco] [-juststats] fileName"
+    print "Usage: dumpSqlToTxt.py [-limit N] [-usepsyco] [-juststats] [-force] fileName"
     sys.exit(0)
 
 def fIsBzipFile(inFileName):
@@ -142,14 +154,14 @@ def getBaseFileName(fileName):
 def genBaseAndSuffix(inFileName,suffix):
     return getBaseFileName(inFileName) + suffix
 
-def getTxtFileName(inFileName):
-    return genBaseAndSuffix(inFileName,".txt")
+def getIdxFileName(inFileName):
+    return genBaseAndSuffix(inFileName,"_idx.txt")
 
 def getRedirectsFileName(inFileName):
     return genBaseAndSuffix(inFileName,"_redirects.txt")
 
-def getHashFileName(inFileName):
-    return genBaseAndSuffix(inFileName,"_hash.txt")
+def getBodyFileName(inFileName):
+    return genBaseAndSuffix(inFileName,"_body.txt")
 
 # those come from namespace.php in wikipedia code
 wiki_namespaces = ["NS_MAIN", "NS_TALK", "NS_USER", "NS_USER_TALK", "NS_WP", "NS_WIKIPEDIA", "NS_WP_TALK", "NS_WIKIPEDIA_TALK", "NS_IMAGE", "NS_IMAGE_TALK", "NS_MEDIAWIKI", "NS_MEDIAWIKI_TALK", "NS_TEMPLATE", "NS_TEMPLATE_TALK", "NS_HELP", "NS_HELP_TALK" ]
@@ -171,7 +183,6 @@ def getNsInfo():
 #   which articles are most frequently redirected
 #   which articles are most frequently linked to
 #   how many articles are linked but do not exist
-#   detect #REDIRECTS which are not marked as redirects in SQL
 class WikipediaStats:
     def __init__(self):
         self.nsStats = []
@@ -205,17 +216,26 @@ class WikipediaStats:
                 avgArticleSize = float(totalArticlesSize)/float(articlesCount)
             print "  Average article size: %.2f" % avgArticleSize
 
-def convertFile(inName,limit,fJustStats):
+def convertFile(inName,limit,fJustStats=False,fSkipIfExists=False):
     if not fJustStats:
-        outName = getTxtFileName(inName)
+        txtName = getBodyFileName(inName)
+        idxFileName = getIdxFileName(inName)
         redirectsFileName = getRedirectsFileName(inName)
-        hashFileName = getHashFileName(inName)
-        foOut = open(outName, "wb")
+
+        if fFileExists(txtName) and fFileExists(idxFileName) and fFileExists(redirectsFileName):
+            if fSkipIfExists:
+                print "files exist and fSkipIfExists==True so skipping creation"
+                return
+            else:
+                print "files exist bug fSkipIfExists==False so create anyway"
+
+        foIdx = open(idxFileName,"wb")
+        foTxt = open(txtName, "wb")
         foRedirects = open(redirectsFileName, "wb")
-        foHash = open(hashFileName,"wb")
     stats = WikipediaStats()
     count = 0
     startTiming()
+    curPos = 0
     for article in wikipediasql.iterWikipediaArticles(inName):
         #print sqlArgs
         stats.addStats(article)
@@ -224,28 +244,31 @@ def convertFile(inName,limit,fJustStats):
         registerMostViewed(title,viewCount)
         if not fJustStats:
             ns = article.getNs()
-            txt = article.getText().strip()
-            foOut.write("%s\n" % title)
-            foOut.write("%d\n" % ns)
-            foOut.write("%d\n" % (len(txt)+1))
-            foOut.write("%s\n" % txt)
+            txt = article.getText()
 
             if article.fRedirect():
                 foRedirects.write("%s\n" % title)
                 foRedirects.write("%s\n" % txt)
             else:
+                if 0==txt.find("#REDIRECT [["):
+                    print "%s is a REDIRECT without being marked as such" % txt
+                txtLen = len(txt)
                 md5Hash = md5.new(txt)
-                foHash.write("%s\n" % title)
-                foHash.write("%s\n" % md5Hash.hexdigest())
+
+                foIdx.write("%s\n" % title)
+                foIdx.write("%d,%d,%d,%s\n" % (ns, curPos, txtLen, md5Hash.hexdigest()))
+                curPos += txtLen
+                foTxt.write(txt)
+
         count += 1
-        if 0 == count % 1000:
+        if 0 == count % 2000:
             print "processed %d items" % count
         if count>=limit:
             break
     if not fJustStats:
-        foOut.close()
+        foTxt.close()
+        foIdx.close()
         foRedirects.close()
-        foHash.close()
     endTiming()
     stats.dumpStats()
     dumpMostViewed()
@@ -257,11 +280,11 @@ if __name__=="__main__":
         limit = 9999999 # very big number
     else:
         limit = int(limit)
-    print "limit=%d" % limit
+    #print "limit=%d" % limit
     fJustStats = fDetectRemoveCmdFlag("-juststats")
 
-    # TODO: for now always do "just stats"
-    #fJustStats = True
+    fForce = fDetectRemoveCmdFlag("-force")
+    fSkipIfExists = not fForce
 
     fUsePsyco = fDetectRemoveCmdFlag("-usepsyco")
     if g_fPsycoAvailable and fUsePsyco:
@@ -273,4 +296,4 @@ if __name__=="__main__":
         usageAndExit()
 
     fileName = sys.argv[1]
-    convertFile(fileName,limit,fJustStats)
+    convertFile(fileName,limit,fJustStats,fSkipIfExists)

@@ -64,7 +64,7 @@ def fIsBzipFile(inFileName):
     return False
 
 BUF_SIZE = 32768
-class BigStr:
+class SQLTokenizer:
     def __init__(self,fileName):
         if fIsBzipFile(fileName):
             self.fo = bz2.BZ2File(fileName,"rb", 9)
@@ -95,6 +95,11 @@ class BigStr:
             endPos = pos + afterLen
         print "BEFORE: %s" % self.buf[startPos:self.curPos]
         print "AFTER: %s" % self.buf[self.curPos:endPos]
+        # when there's a crash pasing, save the conent of the whole
+        # buffer for further inspection
+        fo = open("tokenizer_buf.txt", "wb")
+        fo.write(self.buf)
+        fo.close()
 
     def getChar(self):
         if self.curPos==self.bufLen:
@@ -214,7 +219,7 @@ ST_AFTER_ARGS = 4
 # an iterator that given a *.sql or *.sql.bz2 wikipedia dump file
 # returns WikpediaArticle instances representing one wikipedia article
 def iterWikipediaArticles(sqlFileName):
-    st = BigStr(sqlFileName)
+    st = SQLTokenizer(sqlFileName)
     fSkipped = st.fSkipUntilTxt(BEG_TXT)
     assert fSkipped
     curState = ST_NONE
