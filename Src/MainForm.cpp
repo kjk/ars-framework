@@ -2,6 +2,7 @@
 #include <FormObject.hpp>
 #include "iPediaApplication.hpp"
 #include "LookupManager.hpp"
+#include "LookupHistory.hpp"
 #include <SysUtils.hpp>
 
 using namespace ArsLexis;

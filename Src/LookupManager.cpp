@@ -1,4 +1,5 @@
 #include "LookupManager.hpp"
+#include "LookupHistory.hpp"
 #include "iPediaApplication.hpp"
 #include "iPediaConnection.hpp"
 #include <Graphics.hpp>

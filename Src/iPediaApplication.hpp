@@ -7,9 +7,9 @@
 #include <Logging.hpp>
 #include "RenderingPreferences.hpp"
 #include "iPediaHyperlinkHandler.hpp"
-#include "LookupHistory.hpp"
 
 class LookupManager;
+class LookupHistory;
 
 #define serverLocalhost             "192.168.0.1:9000"
 #define serverDictPcArslexis    "dict-pc.arslexis.com:9000"
@@ -20,7 +20,7 @@ class iPediaApplication: public ArsLexis::Application
     ArsLexis::DIA_Support diaSupport_;
     UInt16 ticksPerSecond_;
     iPediaHyperlinkHandler hyperlinkHandler_;
-    LookupHistory history_;
+    LookupHistory* history_;
     LookupManager* lookupManager_;
     ArsLexis::String server_;
     
@@ -142,7 +142,10 @@ public:
     {stressMode_=enable;}
     
     const LookupHistory& history() const
-    {return history_;}
+    {
+        assert(0!=history_);
+        return *history_;
+    }
     
     bool hasHighDensityFeatures() const
     {return hasHighDensityFeatures_;}

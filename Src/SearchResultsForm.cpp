@@ -1,6 +1,7 @@
 #include "SearchResultsForm.hpp"
 #include <FormObject.hpp>
 #include "LookupManager.hpp"
+#include "LookupHistory.hpp"
 #include "MainForm.hpp"
 
 using ArsLexis::String;

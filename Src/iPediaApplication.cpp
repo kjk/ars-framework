@@ -5,6 +5,7 @@
 #include "RegistrationForm.hpp"
 #include "SearchResultsForm.hpp"
 #include "LookupManager.hpp"
+#include "LookupHistory.hpp"
 
 #include <PrefsStore.hpp>
 
@@ -14,6 +15,7 @@ using namespace ArsLexis;
 
 iPediaApplication::iPediaApplication():
     log_("root"),
+    history_(0),
     diaNotifyRegistered_(false),
     ticksPerSecond_(SysTicksPerSecond()),
     lookupManager_(0),
@@ -71,7 +73,10 @@ iPediaApplication::~iPediaApplication()
         unregisterNotify(diaSupport_.notifyType());
     
     if (lookupManager_)
-        delete lookupManager_;    
+        delete lookupManager_;
+
+    if (history_)
+        delete history_;
 
     logAllocation_=false;        
 }
@@ -79,6 +84,7 @@ iPediaApplication::~iPediaApplication()
 
 Err iPediaApplication::normalLaunch()
 {
+    history_=new LookupHistory();
     loadPreferences();
     gotoForm(mainForm);
     runEventLoop();
@@ -98,7 +104,10 @@ LookupManager* iPediaApplication::getLookupManager(bool create)
 {
     Err error=errNone;
     if (!lookupManager_ && create)
-        lookupManager_=new LookupManager(history_);
+    {
+        assert(0!=history_);
+        lookupManager_=new LookupManager(*history_);
+    }
     return lookupManager_;
 }
 
@@ -211,7 +220,8 @@ void iPediaApplication::loadPreferences()
     if (errNone!=(error=prefs.renderingPreferences.serializeIn(*reader, renderingPrefsFirstPrefId)))
         goto OnError;
     preferences_=prefs;    
-    if (errNone!=(error=history_.serializeIn(*reader, lookupHistoryFirstPrefId)))
+    assert(0!=history_);
+    if (errNone!=(error=history_->serializeIn(*reader, lookupHistoryFirstPrefId)))
         goto OnError;
     return;
             
@@ -231,7 +241,8 @@ void iPediaApplication::savePreferences()
         goto OnError;
     if (errNone!=(error=preferences_.renderingPreferences.serializeOut(*writer, renderingPrefsFirstPrefId)))
         goto OnError;
-    if (errNone!=(error=history_.serializeOut(*writer, lookupHistoryFirstPrefId)))
+    assert(0!=history_);
+    if (errNone!=(error=history_->serializeOut(*writer, lookupHistoryFirstPrefId)))
         goto OnError;
     if (errNone!=(error=writer->ErrSavePreferences()))
         goto OnError;
