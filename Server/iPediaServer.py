@@ -44,9 +44,6 @@ def startsWithIgnoreCase(s1, substr):
 		return True
 	return False
 
-#def escapeSQL(phrase):
-#	return phrase.replace("'", "''").replace("%", "\\%").replace("_","\\_")
-
 class iPediaProtocol(basic.LineReceiver):
 
 	def __init__(self):
@@ -159,7 +156,7 @@ class iPediaProtocol(basic.LineReceiver):
 		cursor=None
 		try:
 			db=self.getDatabase()
-			cursor=db.getDatabase()
+			cursor=db.cursor()
 			cursor.execute("""select id, cookie_id from registered_users where serial_number='%s'""" % db.escape_string(self.serialNumber))
 			row=cursor.fetchone()
 			if row:
