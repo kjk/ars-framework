@@ -3,11 +3,13 @@
 
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
-import MySQLdb, random, _mysql_exceptions, datetime, re
+import sys, re, random, datetime, MySQLdb, _mysql_exceptions
 
 # if true we'll log terms that redirect to themselves to a file
 g_fLogCircularReferences = True
 g_circularReferencesLogName = "circular.log"
+
+g_articleCount = 0
 
 class CircularDetector(object):
     def __init__(self,logFileName):
@@ -64,7 +66,7 @@ transactionIdField =    "Transaction-ID"
 getCookieField =        "Get-Cookie"
 cookieField =           "Cookie"
 getDefinitionField =    "Get-Definition"
-getRandomField =        "Get-Random"
+getRandomField =        "Get-Random-Definition"
 formatVersionField =    "Format-Version"
 definitionField =       "Definition"
 resultsForField =       "Results-For"
@@ -315,8 +317,8 @@ class iPediaProtocol(basic.LineReceiver):
             termStart=definition.find(termStartDelimiter)+2
             termEnd=definition.find(termEndDelimiter)
             term=definition[termStart:termEnd].replace('_', ' ')
-            print "Resolving term: ", term
-            query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(term)
+            #print "Resolving term: ", term
+            query="""SELECT id, term, definition FROM definitions WHERE term='%s' """ % db.escape_string(term)
             cursor.execute(query)
             row=cursor.fetchone()
             if not row:
@@ -331,7 +333,21 @@ class iPediaProtocol(basic.LineReceiver):
                 return None
         
     def findExactDefinition(self, db, cursor, term):
-        query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(term)
+        query="""SELECT id, term, definition FROM definitions WHERE term='%s';""" % db.escape_string(term)
+        cursor.execute(query)
+        row=cursor.fetchone()
+        if row:
+            definition=None
+            idTermDef=self.findTarget(db, cursor, (row[0], row[1], row[2]))
+            return idTermDef
+        else:
+            return None
+
+    def findRandomDefinition(self,db,cursor):
+        global g_articleCount
+        term_id = random.randint(1,g_articleCount)
+        #query="""SELECT id, term, definition FROM definitions  ORDER BY RAND() LIMIT 0,1;"""
+        query="""SELECT id, term, definition FROM definitions WHERE id='%d';""" % term_id
         cursor.execute(query)
         row=cursor.fetchone()
         if row:
@@ -344,6 +360,7 @@ class iPediaProtocol(basic.LineReceiver):
     internalLinkRe=re.compile(r'\[\[(.*?)(\|.*?)?\]\]', re.S)
                 
     def validateInternalLinks(self, db, cursor, definition):
+        sys.stdout.write("* Validaiting internal links: ")
         matches=[]
         for iter in iPediaProtocol.internalLinkRe.finditer(definition):
             matches.append(iter)
@@ -352,15 +369,15 @@ class iPediaProtocol(basic.LineReceiver):
         valid=[]
         for match in matches:
             term=match.group(1)
-            print "Verifiying: ", term
+            term
             if len(term) and (term not in tested):
                 idTermDef=self.findExactDefinition(db, cursor, term)
                 if idTermDef:
-                    print "Validated..."
+                    sys.stdout.write("'%s' [ok], " % term)
                     valid.append(term)
             if term not in valid:
                 name=match.group(match.lastindex).lstrip('| ').rstrip().replace('_', ' ')
-                print "Replacing with: ", name
+                sys.stdout.write("'%s' => '%s', " % (term,name))
                 definition=definition[:match.start()]+name+definition[match.end():]
         return definition
 
@@ -459,7 +476,22 @@ class iPediaProtocol(basic.LineReceiver):
         try:
             db=self.getDatabase()
             cursor=db.cursor()
-        except _mysql_exception.Error, ex:
+            idTermDef=self.findRandomDefinition(db, cursor)
+            if idTermDef:
+                self.definitionId, self.term, definition=idTermDef
+            if definition:
+                self.outputDefinition(self.preprocessDefinition(db, cursor, definition))
+            else:
+                self.termList=self.findFullTextMatches(db, cursor, self.requestedTerm)
+                if self.termList:
+                    self.outputField(resultsForField, self.requestedTerm)
+                    joinedList=""
+                    for term in self.termList:
+                        joinedList+=(term+'\n')
+                    self.outputPayloadField(searchResultsField, joinedList)
+                else:
+                    self.outputField(notFoundField)
+        except _mysql_exceptions.Error, ex:
             print ex
             if cursor:
                 cursor.close()
@@ -516,7 +548,6 @@ class iPediaProtocol(basic.LineReceiver):
             self.answer()
         else:
             print request
-            print ""
             
             if request.startswith(transactionIdField):
                 self.transactionId=self.extractFieldValue(request)
@@ -544,18 +575,19 @@ class iPediaProtocol(basic.LineReceiver):
             else:
                 self.error=iPediaServerError.malformedRequest
 
-        
 class iPediaFactory(protocol.ServerFactory):
 
     def createConnection(self):
         return MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
         
     def __init__(self):
+        global g_articleCount
         db=self.createConnection()
         cursor=db.cursor()
         cursor.execute("""select count(*) from definitions""")
         row=cursor.fetchone()
         self.articleCount=row[0]
+        g_articleCount=row[0]
         print "Number of Wikipedia articles: ", self.articleCount
         cursor.close()
         db.close()
