@@ -24,7 +24,8 @@ class MainForm: public iPediaForm
     void drawDefinition(ArsLexis::Graphics& graphics, ArsLexis::Rectangle& bounds);
     
     void updateScrollBar(const Definition& def);
-    
+ 
+    void randomArticle();
     void copySelectionToClipboard();
 
     void synchronizeWithHistory();

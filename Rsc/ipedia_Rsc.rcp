@@ -11,10 +11,12 @@ MENU ID mainMenuBar
 BEGIN
     PULLDOWN "Edit"
     BEGIN
-		MENUITEM "Copy"ID copyMenuItem "C"
+		MENUITEM "Random article" ID randomMenuItem  "R"
+        MENUITEM "Copy"ID copyMenuItem "C"
 		MENUITEM "Select All" ID selectAllMenuItem "S"
 		MENUITEM SEPARATOR ID AUTOID
-    END
+    	
+END
 
 
 	PULLDOWN "Server"

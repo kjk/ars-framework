@@ -384,11 +384,22 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             Application::popupForm(searchResultsForm);
             handled=true;
             break;
-            
+
+        case randomMenuItem:
+            randomArticle();
+            handled=true;
+            break;
+
         default:
             handled=iPediaForm::handleMenuCommand(itemId);
     }
     return handled;
+}
+
+void MainForm::randomArticle()
+{
+
+
 }
 
 void MainForm::copySelectionToClipboard()
