@@ -202,14 +202,23 @@ Serializer& Serializer::operator()(DynStr& value, uint_t id)
     }
     else if (!skipLastRecord_)
     {
-        data = (char_t*)malloc((len + 1) * sizeof(char_t));
-        if (NULL == data)
-            ErrThrow(memErrNotEnoughSpace);
-        
-        memzero(data, (len + 1) * sizeof(char_t));
-        serializeChunk(data, len * sizeof(char_t));
-        
-        DynStrAttachCharPBuf(&value, data, len, len + 1);
+        if (0 == len)
+        {
+            data = DynStrReleaseStr(&value);
+            if (NULL != data)
+                free(data);
+        }
+        else
+        {
+            data = (char_t*)malloc((len + 1) * sizeof(char_t));
+            if (NULL == data)
+                ErrThrow(memErrNotEnoughSpace);
+            
+            memzero(data, (len + 1) * sizeof(char_t));
+            serializeChunk(data, len * sizeof(char_t));
+            
+            DynStrAttachCharPBuf(&value, data, len, len + 1);
+        }
     }
     return *this;
 }
