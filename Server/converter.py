@@ -23,7 +23,7 @@
 #             is optimized for bulk conversion to an empty ipedia database
 #             but doesn't support -ts argument and has less reporting
 # -ts timestamp : limit the rows we update to those that have timestamp greater than the one give
-import MySQLdb, sys, datetime, re, unicodedata, time
+import MySQLdb, sys, datetime, re, unicodedata, time, entities
 
 # if True, we'll print a lot of debug text to stdout
 g_fVerbose       = False
@@ -163,7 +163,7 @@ trRe=re.compile("<tr.*?</tr>", re.I+re.S)
 tdRe=re.compile("<td.*?</td>", re.I+re.S)
 scriptRe=re.compile("<script.*?</script>", re.I+re.S)
 badLinkRe=re.compile(r"\[\[((\w\w\w?(-\w\w)?)|(simple)|(image)|(media)):.*?\]\]", re.I+re.S)
-numEntityRe=re.compile(r'&#(\d+);')
+#numEntityRe=re.compile(r'&#(\d+);')
 
 multipleLinesRe=re.compile("\n{3,100}")
 # replace multiple (1+) empty lines with just one empty line.
@@ -171,23 +171,23 @@ def stripMultipleNewLines(txt):
     txt=replaceRegExp(txt,multipleLinesRe,"\n\n")
     return txt
 
-def convertEntities(text):
-    matches=[]
-    for iter in numEntityRe.finditer(text):
-        matches.append(iter)
-    matches.reverse()
-    for match in matches:
-        num=int(text[match.start(1):match.end(1)])
-        if num>255:
-            char=unichr(num)
-            decomposed=unicodedata.normalize('NFKD', char)
-            valid=''
-            for char in decomposed:
-                if ord(char)<256:
-                    valid+=chr(ord(char))
-            if len(valid):
-                text=text[:match.start()]+valid+text[match.end():]
-    return text
+#def convertEntities(text):
+#    matches=[]
+#    for iter in numEntityRe.finditer(text):
+#        matches.append(iter)
+#    matches.reverse()
+#    for match in matches:
+#        num=int(text[match.start(1):match.end(1)])
+#        if num>255:
+#            char=unichr(num)
+#            decomposed=unicodedata.normalize('NFKD', char)
+#            valid=''
+#            for char in decomposed:
+#                if ord(char)<256:
+#                    valid+=chr(ord(char))
+#            if len(valid):
+#                text=text[:match.start()]+valid+text[match.end():]
+#    return text
 
 def convertDefinition(text):
     text=text.replace('\r','')
@@ -206,7 +206,8 @@ def convertDefinition(text):
     text=replaceTagList(text, ['p'], '<br>')
     text=replaceTagList(text, ['dfn', 'code', 'samp', 'kbd', 'var', 'abbr', 'acronym', 'blockquote', 'q', 'pre', 'ins', 'del', 'dir', 'menu', 'img', 'object', 'big', 'span', 'applet', 'font', 'basefont', 'tr', 'td', 'table', 'center', 'div'], '')
     text=replaceRegExp(text, badLinkRe, '')
-    text=convertEntities(text)
+    text=entities.convertNamedEntities(text)
+    text=entities.convertNumberedEntities(text)
     text=stripMultipleNewLines(text)
     text=text.strip()
     text+='\n'
