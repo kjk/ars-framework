@@ -27,7 +27,7 @@ namespace ArsLexis
         uint_t len=tstrlen(str);
         Coord_t charsWidth=textWidth(str, len);
         Point point(topLeft);
-        point.x+=((Coord_t)width-charsWidth)/2;
+        point.x += ((Coord_t)width-charsWidth)/2;
         drawText(str, len, point);
     }
     

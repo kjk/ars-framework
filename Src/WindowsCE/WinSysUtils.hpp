@@ -30,8 +30,9 @@ bool GetSpecialFolderPath(String& pathOut, BOOL fCreate=TRUE);
 
 int GetScrollBarDx();
 
-void  DeinitDataConnection();
+bool  FDataConnectionEstablished();
 bool  InitDataConnection();
+void  DeinitDataConnection();
 
 bool FDesktopIncludesMenuBar(SIPINFO *si);
 

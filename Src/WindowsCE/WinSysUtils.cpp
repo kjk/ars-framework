@@ -271,6 +271,14 @@ WasError:
 
 static HANDLE g_hConnection = NULL;
 
+// return true if ConnMgr* connection has already been established
+bool FDataConnectionEstablished()
+{
+    if (NULL!=g_hConnection)
+        return true;
+    return false;
+}
+
 // try to establish internet connection.
 // If can't (e.g. because tcp/ip stack is not working), display a dialog box
 // informing about that and return false
@@ -278,7 +286,7 @@ static HANDLE g_hConnection = NULL;
 // Can be called multiple times - will do nothing if connection is already established.
 bool InitDataConnection()
 {
-    if (NULL!=g_hConnection)
+    if (FDataConnectionEstablished())
         return true;
 
     if (!InitCellCore())
