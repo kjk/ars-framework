@@ -1,27 +1,27 @@
 #include <Debug.hpp>
-#include "dStr.hpp"
+#include "DynStr.hpp"
 
 // for interop, get C-compatible string. You can write into this string
-// up to its termination 0 - this is guaranteed to belong to the dStr
+// up to its termination 0 - this is guaranteed to belong to the DynStr
 // object. However:
-// - if you put 0 there, it'll screw up dStr's view of this string
-// - dStr is binary-safe while C str isn't so what you get here might
+// - if you put 0 there, it'll screw up DynStr's view of this string
+// - DynStr is binary-safe while C str isn't so what you get here might
 //   not be the whole string
-char_t *dStrGetCStr(dStr *dstr)
+char_t *DynStrGetCStr(DynStr *dstr)
 {
-    return DSTR_STR(dstr);
+    return DYNSTR_STR(dstr);
 }
 
-// same as dStrGetCStr but reinforces the notion that dStr can handle
+// same as DynStrGetCStr but reinforces the notion that DynStr can handle
 // arbitrary binary data
-char_t *dStrGetData(dStr *dstr)
+char_t *DynStrGetData(DynStr *dstr)
 {
-    return DSTR_DATA(dstr);
+    return DYNSTR_DATA(dstr);
 }
 
-// get length of the string. Note that since dStr is binary-safe, this
-// might be different (bigger) than StrLen(dStrGetCStr(dstr))
-UInt32 dStrLen(dStr *dstr)
+// get length of the string. Note that since DynStr is binary-safe, this
+// might be different (bigger) than StrLen(DynStrGetCStr(dstr))
+UInt32 DynStrLen(DynStr *dstr)
 {
     return dstr->strLen;
 }
@@ -31,16 +31,16 @@ UInt32 dStrLen(dStr *dstr)
 // The good thing about this function is that it doesn't
 // free the buffer, so it can be used to efficiently re-use
 // the string memory without reallocation
-void   dStrTruncate(dStr *dstr, UInt32 len)
+void   DynStrTruncate(DynStr *dstr, UInt32 len)
 {
     assert(NULL != dstr);
     assert(dstr->strLen >= len);
 
-    DSTR_STR(dstr)[len] = '\0';
+    DYNSTR_STR(dstr)[len] = '\0';
     dstr->strLen = len;
 }
 
-void dStrDelete(dStr *dstr)
+void DynStrDelete(DynStr *dstr)
 {
     assert(NULL != dstr);
     if (NULL == dstr->str)
@@ -48,26 +48,26 @@ void dStrDelete(dStr *dstr)
     MemPtrFree(dstr);
 }
 
-dStr * dStrNew(UInt32 bufSize)
+DynStr * DynStrNew(UInt32 bufSize)
 {
-    return dStrFromCharP("", bufSize);
+    return DynStrFromCharP("", bufSize);
 }
 
-void   dStrSetReallocIncrement(dStr *dstr, UInt32 increment)
+void   DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment)
 {
     dstr->reallocIncrement = increment;
 }
 
-dStr *dStrFromCharP(char_t *str, UInt32 initBufSize)
+DynStr *DynStrFromCharP(char_t *str, UInt32 initBufSize)
 {
     UInt32 strLen  = StrLen(str);
     UInt32 bufSize = strLen+1;
-    dStr * dstr;
+    DynStr * dstr;
 
     if (bufSize < initBufSize)
         bufSize = initBufSize;
 
-    dstr = (dStr*)MemPtrNew(sizeof(dStr));
+    dstr = (DynStr*)MemPtrNew(sizeof(DynStr));
     if (NULL==dstr)
         return NULL;
 
@@ -81,16 +81,16 @@ dStr *dStrFromCharP(char_t *str, UInt32 initBufSize)
 
     dstr->bufSize = bufSize;
     dstr->strLen = strLen;
-    MemMove( DSTR_STR(dstr), str, strLen + 1);
+    MemMove( DYNSTR_STR(dstr), str, strLen + 1);
 
     return dstr;
 }
 
-dStr *dStrFromCharP2(char_t *strOne, char_t *strTwo)
+DynStr *DynStrFromCharP2(char_t *strOne, char_t *strTwo)
 {
     UInt32 bufSize;
-    dStr * dstr;
-    dStr * dstrNew;
+    DynStr * dstr;
+    DynStr * dstrNew;
     UInt32 strOneLen, strTwoLen;
 
     assert(NULL!=strOne);
@@ -100,26 +100,26 @@ dStr *dStrFromCharP2(char_t *strOne, char_t *strTwo)
     strTwoLen = StrLen(strTwo);
     bufSize  = strOneLen + strTwoLen + 1;
 
-    dstr = dStrFromCharP(strOne, bufSize);
+    dstr = DynStrFromCharP(strOne, bufSize);
     if (NULL==dstr)
         return NULL;
 
     dstr->bufSize = bufSize;
     dstr->strLen = 0;
-    DSTR_STR(dstr)[0] = '\0';
+    DYNSTR_STR(dstr)[0] = '\0';
 
-    dstrNew = dStrAppend(dstr, strTwo, strTwoLen);
+    dstrNew = DynStrAppend(dstr, strTwo, strTwoLen);
     assert(NULL != dstrNew);
     assert(dstrNew == dstr);
-    assert(0==DSTR_LEFT(dstr));
+    assert(0==DYNSTR_LEFT(dstr));
     return dstr;
 }
 
-dStr *dStrFromCharP3(char_t *strOne, char_t *strTwo, char_t *strThree)
+DynStr *DynStrFromCharP3(char_t *strOne, char_t *strTwo, char_t *strThree)
 {
     UInt32 bufSize;
-    dStr * dstr;
-    dStr * dstrNew;
+    DynStr * dstr;
+    DynStr * dstrNew;
     UInt32 strOneLen, strTwoLen, strThreeLen;
 
     assert(NULL!=strOne);
@@ -131,39 +131,39 @@ dStr *dStrFromCharP3(char_t *strOne, char_t *strTwo, char_t *strThree)
     strThreeLen = StrLen(strThree);
     bufSize  = strOneLen + strTwoLen + strThreeLen + 1;
 
-    dstr = dStrFromCharP(strOne, bufSize);
+    dstr = DynStrFromCharP(strOne, bufSize);
     if (NULL==dstr)
         return NULL;
 
-    dstrNew = dStrAppend(dstr, strTwo, strTwoLen);
+    dstrNew = DynStrAppend(dstr, strTwo, strTwoLen);
     assert(NULL != dstrNew);
-    dstrNew = dStrAppend(dstr, strThree, strThreeLen);
+    dstrNew = DynStrAppend(dstr, strThree, strThreeLen);
     assert(NULL != dstrNew);
     assert(dstrNew == dstr);
-    assert(0==DSTR_LEFT(dstr));
+    assert(0==DYNSTR_LEFT(dstr));
     return dstr;
 }
 
-dStr * dStrAppendCharP(dStr *dstr, char_t *str)
+DynStr * DynStrAppendCharP(DynStr *dstr, char_t *str)
 {
     UInt32 strLen = StrLen(str);
-    return dStrAppend(dstr, str, strLen);
+    return DynStrAppend(dstr, str, strLen);
 }
 
-dStr *dStrAppendStr(dStr *dstr, dStr *toAppend)
+DynStr *DynStrAppenDynStr(DynStr *dstr, DynStr *toAppend)
 {
-    return dStrAppend(dstr, DSTR_STR(toAppend), dStrLen(toAppend));
+    return DynStrAppend(dstr, DYNSTR_STR(toAppend), DynStrLen(toAppend));
 }
 
 /*
 // a generic append which appends arbitrary binary data
-// to dStr. Re-allocates the string if neccesary. Note that
-// it means that you shouldn't use dStr passed as an argument
+// to DynStr. Re-allocates the string if neccesary. Note that
+// it means that you shouldn't use DynStr passed as an argument
 // anymore.
 // Return pointer to itself or NULL if we had to re-allocate the buffer
 // but failed.
-// THE ORIGINAL dStr - the client has to do it by himself.
-dStr *dStrAppend(dStr *dstr, char_t *data, UInt32 dataSize)
+// THE ORIGINAL DynStr - the client has to do it by himself.
+DynStr *DynStrAppend(DynStr *dstr, char_t *data, UInt32 dataSize)
 {
     UInt32  newRequiredSize;
     char_t *  curEnd;
@@ -171,7 +171,7 @@ dStr *dStrAppend(dStr *dstr, char_t *data, UInt32 dataSize)
     char_t *  newStr;
     UInt32  newLen;
 
-    if ( dataSize > DSTR_LEFT(dstr) )
+    if ( dataSize > DYNSTR_LEFT(dstr) )
     {
         // need to re-allocate the buffer
         newLen = dstr->strLen+1+dataSize;
@@ -186,23 +186,23 @@ dStr *dStrAppend(dStr *dstr, char_t *data, UInt32 dataSize)
         newStr = (Char*)MemPtrNew(newLen);
         if (NULL == newStr)
             return NULL;
-        MemMove(newStr, DSTR_STR(dstr), dStrLen(dstr));
-        MemPtrFree(DSTR_STR(dstr));
+        MemMove(newStr, DYNSTR_STR(dstr), DynStrLen(dstr));
+        MemPtrFree(DYNSTR_STR(dstr));
         dstr->str     = newStr;
         dstr->bufSize = newLen;
     }
 
     // here we're sure we have enough space
-    assert( bufSize <= DSTR_LEFT(dstr) );
+    assert( bufSize <= DYNSTR_LEFT(dstr) );
 
     // TODO: it might overflow UInt32. but what the hell. If the caller
     // wants more than 4 GB in total, then he has problems anyway
     newRequiredSize = dstr->strLen + 1 + bufSize; // 1 for terminating 0
 
-    curEnd = DSTR_STR(dstr) + dstr->strLen;
+    curEnd = DYNSTR_STR(dstr) + dstr->strLen;
     MemMove(curEnd, buf, bufSize);
     newStrLen = dstr->strLen + bufSize;
-    DSTR_STR(dstr)[newStrLen] = '\0';
+    DYNSTR_STR(dstr)[newStrLen] = '\0';
     dstr->strLen = newStrLen;
 
     return dstr;
@@ -212,43 +212,43 @@ dStr *dStrAppend(dStr *dstr, char_t *data, UInt32 dataSize)
 // return a C-compatible copy of the string. It might be different
 // than real data if the data has embedded 0, which for C means
 // end of string
-char_t * dStrCharPCopy(dStr *dstr)
+char_t * DynStrCharPCopy(DynStr *dstr)
 {
-    UInt32 strLen = StrLen(DSTR_STR(dstr));
+    UInt32 strLen = StrLen(DYNSTR_STR(dstr));
     char_t *result = (Char*)MemPtrNew(strLen+1);
     if (NULL == result)
         return NULL;
-    MemMove(result, DSTR_STR(dstr), strLen+1);
+    MemMove(result, DYNSTR_STR(dstr), strLen+1);
     return result;
 }
 
 // remove part of the string from dstr, starting at position start
 // of lenght len.
-// e.g. dStrRemoveStartLen("hello", 1, 2) => "hlo" (removed "el")
+// e.g. DynStrRemoveStartLen("hello", 1, 2) => "hlo" (removed "el")
 // len can be zero to simplify client code
 // start has to be withint string
-void dStrRemoveStartLen(dStr *dstr, UInt32 start, UInt32 len)
+void DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len)
 {
-    char_t *  str = DSTR_STR(dstr);
+    char_t *  str = DYNSTR_STR(dstr);
     UInt32  toMove;
 
     if (0==len)
         return;
 
-    assert(start<dStrLen(dstr));
+    assert(start<DynStrLen(dstr));
 
     // TODO: should I really quit? this hides errors in retail
     // on the plus side, it won't currupt memory in shipped software
-    if (start<dStrLen(dstr))
+    if (start<DynStrLen(dstr))
         return;
 
-    toMove = dStrLen(dstr) - start - len;
+    toMove = DynStrLen(dstr) - start - len;
     MemMove(str+start, str+start+len, toMove);
 }
 
-dStr * dStrAppendChar(dStr *dstr, char_t c)
+DynStr * DynStrAppendChar(DynStr *dstr, char_t c)
 {
-    return dStrAppend(dstr, &c, 1);
+    return DynStrAppend(dstr, &c, 1);
 }
 
 #define uriUnescapedChars "-_.!~*'()"
@@ -273,43 +273,43 @@ static void CharToHexString(char c, char* buffer)
     buffer[1]=numbers[c % 16];
 }
 
-// url-encode a srcUrl dStr and return a newly allocated dStr. Caller has to
+// url-encode a srcUrl DynStr and return a newly allocated DynStr. Caller has to
 // free the result. Return NULL if couldn't allocatte new string
-dStr *dStrUrlEncode(dStr *toEncode)
+DynStr *DynStrUrlEncode(DynStr *toEncode)
 {
-    dStr  * encodedUrl;
-    dStr  * result;
+    DynStr  * encodedUrl;
+    DynStr  * result;
     int     i, len;
     char_t    c;
     char_t    buffer[3];
 
-    // allocate a new dStr of 2x size (a safe margin for escaped characaters,
+    // allocate a new DynStr of 2x size (a safe margin for escaped characaters,
     // so that we don't have to re-allocate memory every time we
     // encode a character)
-    encodedUrl = dStrNew(2*dStrLen(toEncode));
+    encodedUrl = DynStrNew(2*DynStrLen(toEncode));
     if (NULL == encodedUrl)
         return NULL;
 
-    len = dStrLen(toEncode);
+    len = DynStrLen(toEncode);
     for (i=0; i<len; i++)
     {
-        c = DSTR_STR(toEncode)[i];
+        c = DYNSTR_STR(toEncode)[i];
         if ( ' ' == c )
-            result = dStrAppendChar(encodedUrl, '+');
+            result = DynStrAppendChar(encodedUrl, '+');
         else if ('\0'==c || (c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || isUriUnescapedChar(c))
         {
-            result = dStrAppendChar(encodedUrl, c);
+            result = DynStrAppendChar(encodedUrl, c);
         }
         else
         {
             buffer[0] = '%';
             CharToHexString(c, &(buffer[1]) );
-            result = dStrAppend(encodedUrl, buffer, 3);
+            result = DynStrAppend(encodedUrl, buffer, 3);
         }
         if (NULL == result)
         {
             // re-allocation of encodedUrl failed
-            dStrDelete(encodedUrl);
+            DynStrDelete(encodedUrl);
             return NULL;
         }
         assert(result == encodedUrl);
