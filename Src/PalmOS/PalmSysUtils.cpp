@@ -303,3 +303,43 @@ void delocalizeNumber(char_t* begin, char_t* end)
         ++begin;            
     }
 }
+
+bool selectDate(const char* title, Int16* month, Int16* day, Int16* year)
+{
+    return SelectDayV10(month, day, year, title);
+}
+
+void getDate(Int16* month, Int16* day, Int16* year)
+{
+    DateType dt;
+    DateSecondsToDate(TimGetSeconds(), &dt);
+    
+    *month = dt.month;
+    *year = dt.year + 1904;
+    *day = dt.day;
+}
+
+void localizeDate(char* outBuffer, Int16 month, Int16 day, Int16 year)
+{
+    DateFormatType dateFormat = static_cast<DateFormatType>(PrefGetPreference(prefDateFormat));
+    DateToAscii(month, day,year, dateFormat, outBuffer);
+}
+
+bool selectTime(const char* title, Int16* hour, Int16* minutes)
+{
+    return SelectOneTime(hour, minutes, title);
+}
+
+void getTime(Int16* hour, Int16* minutes)
+{
+    DateTimeType dt;
+    TimSecondsToDateTime(TimGetSeconds(), &dt);
+    *hour = dt.hour;
+    *minutes = dt.minute;
+}
+
+void localizeTime(char* outBuffer, Int16 hour, Int16 minutes)
+{
+    TimeFormatType timeFormat = static_cast<TimeFormatType>(PrefGetPreference(prefTimeFormat));
+    TimeToAscii (hour, minutes, timeFormat, outBuffer);
+}

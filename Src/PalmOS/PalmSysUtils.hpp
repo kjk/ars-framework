@@ -33,5 +33,18 @@ bool highDensityFeaturesPresent();
 
 bool notifyManagerPresent();
 
+bool selectDate(const char* title, Int16* month, Int16* day, Int16* year);
+
+void getDate(Int16* month, Int16* day, Int16* year);
+
+// assert that outBuffer length is more than needed
+void localizeDate(char* outBuffer, Int16 month, Int16 day, Int16 year);
+
+bool selectTime(const char* title, Int16* hour, Int16* minutes);
+
+void getTime(Int16* hour, Int16* minutes);
+
+// assert that outBuffer length is more than needed
+void localizeTime(char* outBuffer, Int16 hour, Int16 minutes);
 
 #endif
