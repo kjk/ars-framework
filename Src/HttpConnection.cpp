@@ -1,4 +1,5 @@
 #include <HttpConnection.hpp>
+#include <Text.hpp>
 
 namespace ArsLexis {
 
@@ -30,12 +31,17 @@ namespace ArsLexis {
     HttpConnection::HttpConnection(SocketConnectionManager& manager):
         SimpleSocketConnection(manager),
         protocolVersionMajor_(1),
-        protocolVersionMinor_(0)
+        protocolVersionMinor_(1),
+        requestMethod_(methodGet),
+        uri_("/"),
+        insideResposeHeaders_(false),
+        insideResponseBody_(false),
+        chunkedEncoding_(false),
+        skippingInfoResponse_(false)
     {}        
 
     HttpConnection::~HttpConnection() 
-    {
-    }
+    {}
 
     void HttpConnection::renderRequestLine(String& out) 
     {
@@ -54,14 +60,41 @@ namespace ArsLexis {
         out.append(field.first).append(": ", 2).append(field.second).append(crLf);
     }
 
-    void HttpConnection::renderRequest() 
+    void HttpConnection::commitRequest() 
     {
         String request;
         renderRequestLine(request);
         RequestFields_t::const_iterator end=requestFields_.end();
         for (RequestFields_t::const_iterator it=requestFields_.begin(); it!=end; ++it)
             renderHeaderField(request, *it);
+        setRequest(request);
+        requestFields_.clear();
     }
 
+    Err HttpConnection::handleResponseField(const String& field, const String& value)
+    {
+        Err error=errNone;
+        if (equalsIgnoreCase(field, "Transfer-Encoding"))
+        {
+            if (equalsIgnoreCase(field, "chunked"))
+                chunkedEncoding_=true;
+            else 
+                error=errHttpUnknownTransferEncoding;
+        }
+        return error;
+    }
+
+    Err HttpConnection::handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason)
+    {
+        Err error=errNone;
+        if (statusCode>=100 && statusCode<200)
+            skippingInfoResponse_=true;
+        else {
+            if (statusCode!=200)
+                error=errHttpUnsupportedStatusCode;
+            skippingInfoResponse_=false;                
+        }
+        return error;
+    }
     
 }

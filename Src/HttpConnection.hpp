@@ -40,6 +40,12 @@ namespace ArsLexis {
         
         void setUri(const String& uri)
         {uri_=uri;}
+        
+        enum Error {
+            errHttpUnknownTransferEncoding=errFirstAvailable,
+            errHttpUnsupportedStatusCode,
+            errFirstAvailable
+        };
 
     private:
     
@@ -48,6 +54,12 @@ namespace ArsLexis {
         uint_t protocolVersionMajor_:4;
         uint_t protocolVersionMinor_:4;
         RequestMethod requestMethod_:8;
+        
+        bool insideResposeHeaders_:1;
+        bool insideResponseBody_:1;
+        bool chunkedEncoding_:1;
+        bool skippingInfoResponse_:1;
+        
         String uri_;
         String messageBody_;
         typedef std::pair<String, String> RequestField_t;
@@ -56,15 +68,16 @@ namespace ArsLexis {
 
         void renderHeaderField(String& out, const RequestField_t& field);
         
-        void renderRequest();
+        void commitRequest();
         
     protected:
     
-        virtual Err handleResponseField(const String& field, const String& value)
-        {return errNone;}
+        virtual Err handleResponseField(const String& field, const String& value);
         
-        virtual Err handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason)
-        {return errNone;}        
+        virtual Err handleStatusLine(uint_t versionMajor, uint_t versionMinor, uint_t statusCode, const String& reason);
+        
+        virtual Err handleBodyIncrement(const String& body, ulong_t& length, bool finish)
+        {return errNone;}      
 
     };
 
