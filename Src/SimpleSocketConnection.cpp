@@ -75,12 +75,12 @@ namespace ArsLexis
             if (errNone!=error)
                 goto Exit;
             totalReceived_+=dataSize;
-            log().info()<<"notifyReadable(): totalReceived: "<<totalReceived_<<"; dataSize: "<<dataSize;
+            log().debug()<<"notifyReadable(): totalReceived: "<<totalReceived_<<"; dataSize: "<<dataSize;
             assert(dataSize<=chunkSize_);
             resizeResponse(responseSize+dataSize);
             if (0==dataSize)
             {   
-                log().info()<<_T("notifyReadable(): dataSize==0 (server shut socket down?)");
+                log().debug()<<_T("notifyReadable(): dataSize==0 (server shut socket down?)");
                 error=notifyFinished();
                 abortConnection();
             }
