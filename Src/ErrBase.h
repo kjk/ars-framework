@@ -7,8 +7,6 @@
 #ifndef _ERR_BASE_H_
 #define _ERR_BASE_H_
 
-#if defined(ARSLEXIS_USE_NEW_FRAMEWORK)
-
 #if !defined(appErrorClass)
 
 # if defined(_WIN32) || defined(_WIN32_WCE)
@@ -73,13 +71,4 @@
 # define errNone 0
 #endif
 
-#else
-
-#if defined(_PALM_OS)
-// this is for the old code in noah_palm project
-#include <ErrorBase.h>
-#define psErrorClass appErrorClass+0x0100  // PrefsStore
-#endif
-
-#endif // ARSLEXIS_USE_NEW_FRAMEWORK
 #endif

@@ -10,6 +10,7 @@
 
 #ifndef ARSLEXIS_USE_NEW_FRAMEWORK
 
+#include <ErrorBase.h>
 #include "ErrBase.h"
 #include "PalmOS.h"
 
