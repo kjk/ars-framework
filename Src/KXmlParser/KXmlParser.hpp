@@ -102,9 +102,6 @@ namespace KXml2{
         int     getEventType();
         void    defineEntityReplacementText(String entity, String value);
 
-
-    public:
-        error_t TestIt(int i);
     private: //public in java!
         error_t getAttributeName(String& ret, int index);
         String  getNamespace(String prefix);

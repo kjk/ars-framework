@@ -1191,7 +1191,3 @@ error_t KXmlParser::getAttributeName(String& ret, int index)
         return eNoError;
 }
 
-error_t KXmlParser::TestIt(int i)
-{
-    return eNoError;
-}
