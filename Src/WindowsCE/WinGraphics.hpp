@@ -5,13 +5,22 @@
 #include <BaseTypes.hpp>
 #include <Geometry.hpp>
 #include <Utility.hpp>
+#include "WinFont.h"
 
-#define INCLUDE_NATIVE_GRAPHICS
-#include <NativeGraphics.hpp>
-#undef INCLUDE_NATIVE_GRAPHICS
-
-namespace ArsLexis
+namespace ArsLexis 
 {
+
+    typedef COLORREF NativeColor_t;
+    typedef HDC NativeGraphicsHandle_t;    
+    typedef int NativeGraphicsState_t;
+    typedef WinFont NativeFont_t;
+
+    
+    struct NativeGraphicsSupport
+    {
+	    NativeFont_t font;
+    };
+
 
     class Graphics: private NonCopyable
     {
