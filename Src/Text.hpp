@@ -225,6 +225,12 @@ long StrFind(const char_t* str, long len, char_t chr);
  */
 long bufferToHexCode(const char* in, long inLength, char* out, long outLength);
 
+/**
+ * start becomes new start
+ * length becomes new length
+ */
+void strip(const char_t*& start, ulong_t& length);
+
 #ifdef DEBUG
 void test_TextUnitTestAll();
 #endif

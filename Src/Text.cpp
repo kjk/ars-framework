@@ -1020,6 +1020,23 @@ void StrStrip(char_t *str)
     return;
 }
 
+void strip(const char_t*& start, ulong_t& length)
+{
+    assert(NULL != start);
+    while (isSpace(start[0]) && length > 0)
+    {
+        length--;
+        start++;
+    }
+    while (length > 0)
+    {
+        if (isSpace(start[length-1]))
+            length--;
+        else
+            break;
+    }
+}
+
 // return true if this is an empty string (NULL or consits of white-space
 // characters only
 bool StrEmpty(const char_t *str)

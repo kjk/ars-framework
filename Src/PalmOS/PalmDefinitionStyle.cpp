@@ -130,11 +130,10 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
     return &res->style; 
 }
 
-//always return style!
-DefinitionStyle* parseStyle(const char* style, ulong_t length)
+
+static void parseAttribute(const char* attr, ulong_t attrLen, const char* val, ulong_t valLen, DefinitionStyle& style)
 {
-    DefinitionStyle* s = new_nt DefinitionStyle();
-    s->reset();
+    //TODO: implement this
 
 
     RGBColorType rgb;
@@ -143,8 +142,38 @@ DefinitionStyle* parseStyle(const char* style, ulong_t length)
     rgb.g = 0;
     rgb.index = 0;
     //TODO: this is only test...
-    s->foregroundColor = rgb;
+    style.foregroundColor = rgb;
 
+
+}
+
+//always return style!
+DefinitionStyle* parseStyle(const char* style, ulong_t length)
+{
+    DefinitionStyle* s = new_nt DefinitionStyle();
+    s->reset();
+
+    long curLen = length;
+    const char* start = style;
+    while (curLen > 0)
+    {
+        long nextParam = StrFind(start, curLen, ';');
+        if (-1 == nextParam)
+            nextParam = curLen;
+        long nameEnd = StrFind(start, nextParam, ':');
+        if (-1 != nameEnd)
+        {
+            const char* name = start;
+            ulong_t nameLen = nameEnd;
+            const char* value = start + nameEnd+1;
+            ulong_t valueLen = nextParam - nameEnd-1;
+            strip(value, valueLen);
+            strip(name, nameLen);
+            parseAttribute(name, nameLen, value, valueLen, *s);
+        }
+        curLen -= nextParam+1;
+        start += nextParam+1;
+    }
     return s;
 }
 
