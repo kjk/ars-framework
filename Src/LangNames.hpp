@@ -5,9 +5,9 @@
 
 //const char_t* GetLangNameByLangCode(const String& langCode);
 
-// Finds language name given its ISO 639 2-character code.
+// Finds language name given its wikipedia language code.
 // If unknown, returns NULL.
-// Note: code doesn't have to be null-terminated, only 2 first characters are checked (case-insensitive).
-const char_t* GetLangNameByLangCode(const char_t* code);
+// Note: code doesn't have to be null-terminated.
+const char_t* GetLangNameByLangCode(const char_t* code, ulong_t codeLength);
 
 #endif
