@@ -40,6 +40,8 @@ namespace ArsLexis
     
         Resolver(NetLibrary& netLibrary);
         
+        void initialize();
+        
        ~Resolver();
        
        void updateCacheEntry(const String& name, NetIPAddr address);

@@ -8,8 +8,12 @@ Err LookupManager::initialize()
     Err error=netLibrary_.initialize(ifError);
     if (errNone==error && errNone!=ifError)
         error=ifError;
-    iPediaApplication& app=iPediaApplication::instance();
-    lastDefinition_.setHyperlinkHandler(&app.hyperlinkHandler());        
+    if (!error)
+    {
+        iPediaApplication& app=iPediaApplication::instance();
+        lastDefinition_.setHyperlinkHandler(&app.hyperlinkHandler());        
+        resolver_.initialize();
+    }
     return error;
 }
 

@@ -13,7 +13,6 @@ namespace ArsLexis
         for (int i=0; i<dnsAddressesCount_; ++i)
             dnsAddresses_[i]=0;
         cache_[name]=address;         
-        queryServerAddresses();   
     }
 
     Resolver::Resolver(NetLibrary& netLib):
@@ -133,5 +132,11 @@ namespace ArsLexis
             Err error=netLib_.getSetting(i>0?netSettingSecondaryDNS:netSettingPrimaryDNS, &dnsAddresses_[i], addressSize);
         }        
     }
+    
+    void Resolver::initialize()
+    {
+        queryServerAddresses();
+    }
+    
 
 }
