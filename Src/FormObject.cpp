@@ -157,7 +157,7 @@ namespace ArsLexis
         else if (!isTreo && (frmFieldObj == kind || frmTableObj == kind))
             FrmSetFocus(*form_, index_);
         form_->focusedControlIndex_ = index_;
-        form_->entryFocusControlId_ = id_;
+//        form_->entryFocusControlId_ = id_;
 /*        
 
  || frmGadgetObj == kind ||

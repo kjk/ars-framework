@@ -212,6 +212,7 @@ namespace ArsLexis
             {
                 FormObject object(*this, entryFocusControlId_);
                 object.focus();
+                entryFocusControlId_ = frmInvalidObjectId;
                 update();
             }
         }
@@ -271,7 +272,7 @@ namespace ArsLexis
         const FormType* form=*this;
         if (data.exitWindow==static_cast<const void*>(form))
         {
-        
+        /*
             if (!application().runningOnTreo600())
             {
                 UInt16 index = FrmGetFocus(form);
@@ -281,7 +282,7 @@ namespace ArsLexis
             }
             else 
                 entryFocusControlId_ = frmInvalidObjectId;
-                
+        */                
             getScreenBounds(screenBoundsBeforeWinExit_);
         }
         return false;
