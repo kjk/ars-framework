@@ -21,9 +21,11 @@ namespace ArsLexis
         UInt16 id_;
         FormType* form_;
         
-        bool deleteOnClose_:1;
-        bool deleteAfterEvent_:1;
-        bool controlsAttached_:1;
+        bool deleteOnClose_;
+        bool deleteAfterEvent_;
+        bool controlsAttached_;
+        bool formOpenReceived_;
+        bool winEnterReceived_;
         
         mutable String title_;
         UInt16 entryFocusControlId_;
@@ -38,6 +40,8 @@ namespace ArsLexis
         //bool handleFocusTransfer(EventType& event);
         
         void handleObjectFocusChange(const EventType& event);
+        
+        void handleFocusOnEntry();
         
     protected:
     
@@ -65,10 +69,7 @@ namespace ArsLexis
         /**
          * Redraws form. 
          */
-        virtual void draw(UInt16 updateCode=frmRedrawUpdateCode)
-        {
-            FrmDrawForm(form_);
-        }
+        virtual void draw(UInt16 updateCode = frmRedrawUpdateCode);
 
         virtual bool handleWindowEnter(const struct _WinEnterEventType&);
         

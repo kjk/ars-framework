@@ -76,7 +76,9 @@ namespace ArsLexis
         trackingGadget_(0),
         entryFocusControlId_(frmInvalidObjectId),
         focusedControlIndex_(noFocus),
-        returnToFormId_(frmInvalidObjectId)
+        returnToFormId_(frmInvalidObjectId),
+        formOpenReceived_(false),
+        winEnterReceived_(false)
     {
         getScreenBounds(screenBoundsBeforeWinExit_);
     }
@@ -211,9 +213,22 @@ namespace ArsLexis
     bool Form::handleOpen()
     {
         assert(controlsAttached_);
+        formOpenReceived_ = true;
         deleteOnClose_ = false;
         update();
         return true;
+    }
+    
+    void Form::handleFocusOnEntry() 
+    {
+        if (frmInvalidObjectId != entryFocusControlId_)
+        {
+            FormObject object(*this, entryFocusControlId_);
+            object.focus();
+            entryFocusControlId_ = frmInvalidObjectId;
+            if (visible())
+                object.draw();
+        }
     }
     
     bool Form::handleWindowEnter(const struct _WinEnterEventType& data)
@@ -232,14 +247,7 @@ namespace ArsLexis
                 event.data.winDisplayChanged.newBounds = newBounds;
                 EvtAddUniqueEventToQueue(&event, 0, true);
             }
-            if (frmInvalidObjectId != entryFocusControlId_)
-            {
-                FormObject object(*this, entryFocusControlId_);
-                object.focus();
-                entryFocusControlId_ = frmInvalidObjectId;
-                if (visible())
-                    object.draw();
-            }
+            winEnterReceived_ = true;
         }
         return false;
     }
@@ -401,6 +409,13 @@ namespace ArsLexis
         return true;
     }
 */
-        
+
+    void Form::draw(UInt16 updateCode)
+    {
+        FrmDrawForm(form_);
+        if (formOpenReceived_ && winEnterReceived_)
+            handleFocusOnEntry();
+    }
+
 }
 
