@@ -24,12 +24,16 @@ namespace ArsLexis
     
     SocketConnectionManager::SocketConnectionManager():
         selector_(netLib_, false),
-        resolver_(netLib_)
+        resolver_(netLib_),
+        connectionsCount_(0)
     {}
     
     SocketConnectionManager::~SocketConnectionManager()
     {
-        std::for_each(connections_.begin(), connections_.end(), ObjectDeleter<SocketConnection>());
+        for(int i=0; i<connectionsCount_; i++)
+        {
+            delete connections_[i];
+        }
     }
     
     status_t SocketConnectionManager::openNetLib()
@@ -42,40 +46,58 @@ namespace ArsLexis
         return error;
     }
 
-    bool SocketConnectionManager::manageFinishedConnections()
+    void SocketConnectionManager::compactConnections()
     {
-        bool done=false;
-        Connections_t::iterator it=connections_.begin();
-        while (it!=connections_.end())
+        int countAfter = connectionsCount_;
+        int curPos = 0;
+        for (int i=0; i<connectionsCount_; i++)
         {
-            if (SocketConnection::stateFinished==(*it)->state())
+            if (NULL!=connections_[i])
             {
-                SocketConnection* conn=*it;
-                delete conn;
-                Connections_t::iterator next=it;
-                ++next;
-                connections_.erase(it);
-                done=true;
-                it=next;
+                if (i!=curPos)
+                {
+                    connections_[curPos] = connections_[i];
+                    curPos++;
+                }
             }
             else
-                ++it;
+            {
+                --countAfter;
+            }
         }
-        if (done)
+        assert(countAfter!=connectionsCount_);
+        connectionsCount_ = countAfter;
+    }
+        
+    bool SocketConnectionManager::manageFinishedConnections()
+    {
+        bool fDeletedConnection=false;
+        for (int i=0; i<connectionsCount_; i++)
         {
-            if (connections_.empty())
+            SocketConnection* conn=connections_[i];
+            if (SocketConnection::stateFinished==conn->state())
+            {
+                delete conn;
+                connections_[i]=NULL;
+                fDeletedConnection=true;
+            }
+        }
+        if (fDeletedConnection)
+        {
+            compactConnections();
+            if (0==connectionsCount_)
                 netLib_.close();
         }
-        return done;
+        return fDeletedConnection;
     }
 
     bool SocketConnectionManager::manageUnresolvedConnections()
     {
-        Connections_t::iterator end=connections_.end();
-        for (Connections_t::iterator it=connections_.begin(); it!=end; ++it)
-            if (SocketConnection::stateUnresolved==(*it)->state())
+        for (int i=0; i<connectionsCount_; i++)
+        {
+            SocketConnection* conn = connections_[i];
+            if (SocketConnection::stateUnresolved==conn->state())
             {
-                SocketConnection* conn=*it;
                 status_t error=errNone;
                 if (netLib_.closed())
                     error=openNetLib();
@@ -85,29 +107,33 @@ namespace ArsLexis
                 {
                     conn->handleError(error);
                     delete conn;
-                    connections_.erase(it);
+                    connections_[i]=NULL;
+                    compactConnections();
                 }
                 return true;                            
             }
+        }
         return false;
     }
         
     bool SocketConnectionManager::manageUnopenedConnections()
     {
-        Connections_t::iterator end=connections_.end();
-        for (Connections_t::iterator it=connections_.begin(); it!=end; ++it)
-            if (SocketConnection::stateUnopened==(*it)->state())
+        for (int i=0; i<connectionsCount_; i++)
+        {
+            SocketConnection* conn = connections_[i];
+            if (SocketConnection::stateUnopened==conn->state())
             {
-                SocketConnection* conn=*it;
                 status_t error=conn->open();
                 if (error)
                 {
                     conn->handleError(error);
                     delete conn;
-                    connections_.erase(it);
+                    connections_[i]=NULL;
+                    compactConnections();
                 }
                 return true;
             }
+        }
         return false;
     }
         
@@ -126,11 +152,10 @@ namespace ArsLexis
         if (errNone != error)
             return error;
             
-        Connections_t::iterator end=connections_.end();
-        for (Connections_t::iterator it=connections_.begin(); it!=end; ++it)
+        for (int i=0; i<connectionsCount_; i++)
         {
             status_t connErr=errNone;
-            SocketConnection* conn=*it;
+            SocketConnection* conn = connections_[i];
             assert(SocketConnection::stateOpened==conn->state());
             bool done=false;
             if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
@@ -150,24 +175,27 @@ namespace ArsLexis
                 unregisterEvents(*conn);
                 connErr=conn->notifyReadable();
                 done=true;
-                
             }
             if (connErr)
             {
                 conn->handleError(connErr);
                 delete conn;
-                connections_.erase(it);
+                connections_[i]=NULL;
             }
             if (done)
                 break;
         }
+        compactConnections();
         return errNone;
     }
     
     void SocketConnectionManager::abortConnections() 
     {
-        std::for_each(connections_.begin(), connections_.end(), ObjectDeleter<SocketConnection>());
-        connections_.clear();                
+        for(int i=0; i<connectionsCount_; i++)
+        {
+            delete connections_[i];
+        }
+        connectionsCount_ = 0;
     }
     
     SocketConnection::SocketConnection(SocketConnectionManager& manager):
@@ -280,7 +308,10 @@ namespace ArsLexis
     status_t SocketConnection::enqueue()
     {
         assert(stateUnresolved==state());
-        manager_.connections_.push_back(this);
+        if (manager_.connectionsCount_>=MAX_CONNECTIONS)
+            return netErrUnimplemented;
+        manager_.connections_[manager_.connectionsCount_] = this;
+        manager_.connectionsCount_ += 1;
         return errNone;
     }
 
