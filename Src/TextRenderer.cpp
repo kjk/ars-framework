@@ -157,6 +157,7 @@ bool TextRenderer::handleEvent(EventType& event)
 
 bool TextRenderer::handleEnter(const EventType& event)
 {
+    focus();
     return handleMouseEvent(event);
 }
 
@@ -267,15 +268,19 @@ bool TextRenderer::handleKeyDownEvent(const EventType& event)
 {
     if (form()->application().runningOnTreo600() && !hasFocus())
         return false;
+    bool fieldHasFocus = false;
+    UInt16 index = FrmGetFocus(*form());
+    if (noFocus != index && frmFieldObj == FrmGetObjectType(*form(), index))
+        fieldHasFocus = true;
     Definition::NavigatorKey key = Definition::NavigatorKey(-1);
     Form& form = *this->form();
     if (form.fiveWayUpPressed(&event) ||  chrUpArrow == event.data.keyDown.chr)
         key = Definition::navKeyUp;
     else if (form.fiveWayDownPressed(&event) ||  chrDownArrow == event.data.keyDown.chr)
         key = Definition::navKeyDown;
-    else if (form.fiveWayLeftPressed(&event) || chrLeftArrow == event.data.keyDown.chr)
+    else if (!fieldHasFocus && (form.fiveWayLeftPressed(&event) || chrLeftArrow == event.data.keyDown.chr))
         key = Definition::navKeyLeft;
-    else if (form.fiveWayRightPressed(&event) || chrRightArrow == event.data.keyDown.chr)
+    else if (!fieldHasFocus && (form.fiveWayRightPressed(&event) || chrRightArrow == event.data.keyDown.chr))
         key = Definition::navKeyRight;
     else if (form.fiveWayCenterPressed(&event) || chrLineFeed == event.data.keyDown.chr)
         key = Definition::navKeyCenter;
