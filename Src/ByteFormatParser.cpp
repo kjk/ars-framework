@@ -186,6 +186,10 @@ bool ByteFormatParser::parseParam()
                 case _T('b'):
                     currentElement_->setStyle(styleBoldBlack);
                     break;
+                    
+                case _T('g'):
+                    currentElement_->setStyle(styleGray);
+                    break;
                 //TODO: add more styles?
             }
             break;
