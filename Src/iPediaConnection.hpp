@@ -74,7 +74,7 @@ protected:
 
 public:
 
-    void open();
+    Err open();
     
     iPediaConnection(LookupManager& lm);
     

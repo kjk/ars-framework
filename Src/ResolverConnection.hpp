@@ -44,7 +44,7 @@ namespace ArsLexis
 
         ~ResolverConnection();
         
-        void open();
+        Err open();
         
     };
     

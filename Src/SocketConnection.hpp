@@ -96,7 +96,7 @@ namespace ArsLexis
         void setAddress(const SocketAddress& address)
         {address_=address;}
 
-        virtual void open();
+        virtual Err open();
         
         void registerEvent(SocketSelector::EventType event)
         {

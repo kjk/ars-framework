@@ -108,7 +108,7 @@ namespace ArsLexis
             manager_.removeConnection(*this);
     }
 
-    void SocketConnection::open()
+    Err SocketConnection::open()
     {
         assert(address_!=0);
         Err error=socket_.open();
@@ -116,7 +116,7 @@ namespace ArsLexis
         {
             log().debug()<<"open(): unable to open socket, "<<error;
             handleError(error);
-            return;
+            return error;
         }
 
         manager_.addConnection(*this);
@@ -126,7 +126,7 @@ namespace ArsLexis
         {
             log().info()<<"open(), can't setNonBlocking(), "<<error;
             handleError(error);
-            return;
+            return error;
         }
 
         error=socket_.connect(address_, transferTimeout());
@@ -146,13 +146,14 @@ namespace ArsLexis
         {
             log().error()<<"open(): can't connect(), "<<error;
             handleError(error);
-            return;
+            return error;
         }
 
         registerEvent(SocketSelector::eventException);
         registerEvent(SocketSelector::eventWrite);
 
         assert(errNone==error);
+        return error;
     }
 
     void SocketConnection::notifyException()
