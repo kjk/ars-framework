@@ -94,7 +94,14 @@ namespace ArsLexis
         FntCharsInWidth(text, &w, &len, &dontMind);
         length=len;
         width=w;
-    }	        
+    }
+
+    uint_t Graphics::wordWrap2(const char_t* text, uint_t availableDx, uint_t& textDx)
+    {
+        int charsThatFit = FntWordWrap(text, availableDx);
+        textDx = textWidth(text, charsThatFit);
+        return charsThatFit;
+    }
 
     void Graphics::erase(const Rectangle& rect)
     {

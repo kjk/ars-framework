@@ -84,8 +84,8 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
     uint_t lineHeight=graphics.fontHeight();
     
     const char_t* text=text_.c_str()+layoutContext.renderingProgress;
-    left+=layoutContext.usedWidth;
-    top+=(layoutContext.baseLine-baseLine);
+    left += layoutContext.usedWidth;
+    top += (layoutContext.baseLine-baseLine);
     
     if (layoutContext.isFirstInLine())
         while (ArsLexis::isSpace(*text))
@@ -95,15 +95,15 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         }            
 
     uint_t nextWhitespace=findNextWhitespace(text_, layoutContext.renderingProgress)-layoutContext.renderingProgress;
-    uint_t length=graphics.wordWrap(text, layoutContext.availableWidth());
+    uint_t txtDx;
+
+    uint_t length=graphics.wordWrap2(text, layoutContext.availableWidth(), txtDx);
     if (0==layoutContext.renderingProgress && !layoutContext.isFirstInLine() && length<nextWhitespace)
     {
         uint_t newLineLength=graphics.wordWrap(text, layoutContext.screenWidth-indent);
         if (nextWhitespace<=newLineLength)
             return;
     }
-
-    uint_t width=graphics.textWidth(text, length);
 
     if (text_.length()==layoutContext.renderingProgress+length &&
         !ArsLexis::isSpace(text_[text_.length()-1]) &&
@@ -115,23 +115,29 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         LayoutContext copy(layoutContext.graphics, layoutContext.preferences, layoutContext.screenWidth);
         copy.baseLine=layoutContext.baseLine;
         copy.usedHeight=layoutContext.usedHeight;
-        copy.usedWidth=layoutContext.usedWidth+width;
+        copy.usedWidth=layoutContext.usedWidth+txtDx;
         layoutContext.nextTextElement->calculateLayout(copy);
         if (0==copy.renderingProgress && !layoutContext.isFirstInLine()) 
         {
             uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
             assert(rangeLength<((uint_t)-1)/2);
             length=rangeLength;
-            width=graphics.textWidth(text, length);
+            txtDx=graphics.textWidth(text, length);
         }
     }
 
-    uint_t charsToDraw=length;
-    while (charsToDraw && 
+    uint_t charsToDraw = length;
+    uint_t curTxtDx = txtDx;
+    while ( (charsToDraw>0) && 
         ArsLexis::isSpace(*(text+charsToDraw-1)) && 
-        layoutContext.availableWidth()<graphics.textWidth(text, charsToDraw))
+        (layoutContext.availableWidth()<curTxtDx))
+    {
         --charsToDraw;
-    uint_t dispWidth=graphics.textWidth(text, charsToDraw);
+        curTxtDx = graphics.textWidth(text, charsToDraw);
+    }
+
+    uint_t dispWidth = curTxtDx;
+
     if (dispWidth>layoutContext.availableWidth())
         return;
 
@@ -140,18 +146,18 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
             layoutContext.selectionStart, layoutContext.selectionEnd, Point(left, top));
         if (isHyperlink())
-            defineHotSpot(*definition, ArsLexis::Rectangle(left, top, width, lineHeight));
+            defineHotSpot(*definition, ArsLexis::Rectangle(left, top, txtDx, lineHeight));
     }
 
     if (!render)
         layoutContext.extendHeight(lineHeight, baseLine);
 
-    left+=width;    
-    text+=length;
+    left += txtDx;    
+    text += length;
     if (*text)
     {
-        layoutContext.renderingProgress+=length;
-        layoutContext.usedWidth+=width;
+        layoutContext.renderingProgress += length;
+        layoutContext.usedWidth += txtDx;
 /*        
         if (tryPacking)
         {
@@ -181,7 +187,7 @@ void GenericTextElement::calculateOrRender(LayoutContext& layoutContext, uint_t 
         }    */        
     }
     else
-        layoutContext.markElementCompleted(width);    
+        layoutContext.markElementCompleted(txtDx);    
 }
 
 void GenericTextElement::calculateLayout(LayoutContext& layoutContext)

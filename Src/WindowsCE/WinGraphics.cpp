@@ -1,5 +1,5 @@
-#include <WinGraphics.hpp>
-#include <Wingdi.h>
+#include <Text.hpp>
+#include "WinGraphics.hpp"
 
 namespace ArsLexis
 {
@@ -240,41 +240,48 @@ namespace ArsLexis
         return fntDescent;
     }
 
+    uint_t Graphics::wordWrap2(const char_t* text, uint_t availableDx, uint_t& textDx)
+    {
+        int     lenThatFits;
+        SIZE    size;
+        int     textLen = tstrlen(text);
+
+DoItAgain:
+        GetTextExtentExPoint(handle_, text, textLen, availableDx, &lenThatFits, NULL, &size);
+
+        if ( (lenThatFits==textLen) || (0==lenThatFits))
+        {
+            textDx = size.cx;
+            return lenThatFits;
+        }
+
+        // the string is too big so try to find a line-breaking spot
+        // TODO: this is actually broken. after getting the text, we should
+        // re-check if it fits in width
+        int curPos = lenThatFits-1;
+        while (curPos>0) // we don't want to break at first character
+        {
+            if (isSpace(text[curPos]))
+            {
+                textLen = curPos+1;
+                // this time it should succeed 100%
+                goto DoItAgain;
+            }
+            --curPos;
+        }
+        textDx = 0;
+        return 0;
+    }
+
     // given a string text, determines how many characters of this string can
     // be displayed in a given width. If text is bigger than width, a line
     // break will be on newline, tab or a space.
     // Mimics Palm OS function FntWordWrap()
     uint_t Graphics::wordWrap(const char_t* text, uint_t width)
     {
-        int     len;
-        SIZE    size;
-        int     textLen = tstrlen(text);
-        //FontEffects fx=font_.effects();
-
-        //if (fx.mask()!=0)
-            //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
-        GetTextExtentExPoint(handle_, text, textLen, width, &len, NULL, &size);
-        //if (fx.mask()!=0)
-            //resetEffects();
-
-        if (len==textLen)
-            return len;
-
-        // the string is too big so try to find a line-breaking spot
-        int curPos = len;
-        while (curPos>0) // we don't want to break at first character
-        {            
-            if ((text[curPos]==' ')  ||
-                (text[curPos]=='\t') ||
-                (text[curPos]=='\n')
-               ) 
-            {
-                return curPos;
-            }
-            --curPos;
-        }
-        // we didn't find a line-breaking spot, so return everything that'll fit
-        return len;
+        uint_t textDx;
+        uint_t lenThatFits = wordWrap2(text, width, textDx);
+        return lenThatFits;
     }
 
     uint_t Graphics::textWidth(const char_t* text, uint_t length)
