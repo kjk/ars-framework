@@ -69,7 +69,6 @@ class WikipediaArticleFromSql:
         self.row = row
         assert not fInvalidRedirect(row)
         self.md5Hash = None
-        self.row[CUR_TITLE] = self.row[CUR_TITLE].strip()
         txt = row[CUR_TEXT]
         #redirectNum = int(row[CUR_IS_REDIRECT])
         #assert redirectNum==0 or redirectNum==1
@@ -427,13 +426,19 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=
             title = fo.readline()
             if len(title)==0:
                 break
-            title = title.strip()
             if fIsRedirectLine(title):
                 redirect = fo.readline()
+                title = title.strip()
+                if title == REDIRECT_MARK:
+                    #need this to remove stupid redirecto of 0xa0=>Space_(punctuation)
+                    print "title after stripping is equal to '%s' (REDIRECT_MARK), so skipping" % REDIRECT_MARK
+                    continue
+                redirect = redirect[:-len(REDIRECT_MARK)]
                 article = WikipediaArticleRedirect(title,redirect.strip())
             else:
                 line = fo.readline()
                 lineParts = line.split(",")
+                #try:
                 ns = int(lineParts[0])
                 assert ns==NS_MAIN
                 txtOffset = int(lineParts[1])
@@ -441,6 +446,9 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=
                 md5Hash = lineParts[3]
                 viewCount = int(lineParts[4])
                 article = WikipediaArticleFromCache(sqlFileName,title,ns,txtOffset,txtLen,md5Hash,viewCount)
+                #except:
+                #    print "failed to parse as an article for title '%s'" % title
+
             yield article
             count += 1
             if limit and count > limit:
@@ -481,6 +489,12 @@ def iterWikipediaArticles(sqlFileName,limit=None,fUseCache=False,fRecreateCache=
                 if fInvalidRedirect(args):
                     print "rejected '%s' as invalid redirect" % args[CUR_TITLE].strip()
                     print args[CUR_TEXT].strip()
+                    args = []
+                    continue
+                args[CUR_TITLE] = args[CUR_TITLE].strip()
+                if 0==len(args[CUR_TITLE]):
+                    # reject titles consisting only of spaces and newlines
+                    print "rejected '%s' as invalid (len==0) title" % args[CUR_TEXT]
                     args = []
                     continue
                 article = WikipediaArticleFromSql(args)

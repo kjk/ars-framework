@@ -117,18 +117,23 @@ def resolveRedirect(title,cur_redirect, allRedirects, allArticles):
     if allArticles.has_key(cur_redirect):
         return cur_redirect
     visited = [title]
+    visited.append(cur_redirect)
     while True:
         if allArticles.has_key(cur_redirect):
             # this points to a valid article, so we resolved the redirect
             return cur_redirect
         if allRedirects.has_key(cur_redirect):
-            visited.append(cur_redirect)
+            # there is some other redirects for this -> keep looking
             cur_redirect = allRedirects[cur_redirect]
             if cur_redirect in visited:
                 #print "found circular redirect: %s" % cur_redirect
-                return None
-        dumpUnresolvedRedirect(visited)
-        return None
+                break
+            visited.append(cur_redirect)
+        else:
+            # no more redirects -> we couldn't resolve the redirect
+            break
+    dumpUnresolvedRedirect(visited)
+    return None
 
 def getConvIdxFileName(inFileName):
     return wikipediasql.genBaseAndSuffix(inFileName,"_conv_idx.txt")
@@ -247,7 +252,7 @@ def convertArticles(sqlDump,articleLimit):
     count = 0
     redirects = {}
     articlesLinks = {}
-    fTesting = True
+    fTesting = False
     if fTesting:
         fUseCache = False
         fRecreateCache = True
@@ -267,7 +272,7 @@ def convertArticles(sqlDump,articleLimit):
             articlesLinks[title] = 1
         count += 1
         if 0 == count % 1000:
-            sys.stderr.write("processed %d rows, last term=%s\n" % (count,title))
+            sys.stderr.write("processed %d rows, last term=%s\n" % (count,title.strip()))
         if articleLimit and count >= articleLimit:
             break
     # verify redirects
@@ -303,7 +308,7 @@ def convertArticles(sqlDump,articleLimit):
             noLinks = articleconvert.removeInvalidLinks(converted,redirects, articlesLinks)
             if noLinks:
                 converted = noLinks
-            convertedArticle = ConvertedArticle(article.getNamespace(), article.getTitle(), article.getText())
+            convertedArticle = ConvertedArticle(article.getNamespace(), article.getTitle(), converted)
 
         if article.fRedirect():
             # what now?
@@ -334,7 +339,7 @@ def convertArticles(sqlDump,articleLimit):
         convWriter.write(convertedArticle)
         count += 1
         if count % 1000 == 0:
-            sys.stderr.write("phase 2 processed %d" % count)
+            sys.stderr.write("phase 2 processed %d, last term=%s\n" % (count,article.getTitle()))
 
     convWriter.close()
     deinitDatabase()
