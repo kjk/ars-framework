@@ -13,16 +13,17 @@
 namespace ArsLexis
 {
 
-	void sendEvent(uint_t event, const void* data=0, uint_t dataSize=0, bool unique=false);
-	
-	template<class EventData>
-	void sendEvent(uint_t event, const EventData& data, bool unique=false)
-	{sendEvent(event, &data, sizeof(data), unique);}
+    void sendEvent(uint_t event, const void* data=0, uint_t dataSize=0, bool unique=false);
 
-	void processReadyUiEvents();
-	
-	void localizeNumber(char_t* begin, char_t* end);
-	
+    template<class EventData>
+    void sendEvent(uint_t event, const EventData& data, bool unique=false)
+    {sendEvent(event, &data, sizeof(data), unique);}
+    void sendEventString(uint_t e, const char_t *txt, bool unique);
+
+    void processReadyUiEvents();
+
+    void localizeNumber(char_t* begin, char_t* end);
+
 }
 
 #endif

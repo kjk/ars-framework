@@ -195,6 +195,12 @@ void ArsLexis::sendEvent(uint_t e, const void* data, uint_t dataSize, bool uniqu
         EvtAddEventToQueue(&event);
 }
 
+void ArsLexis::sendEventString(uint_t e, const char_t *txt, bool unique)
+{
+    uint_t stringSize = tstrlen(txt)*sizeof(char_t);
+    sendEvent(e, static_cast<const void*>(txt), stringSize, unique);
+}
+
 void ArsLexis::processReadyUiEvents()
 {
     EventType event;
