@@ -58,7 +58,7 @@ void   DynStrTruncate(DynStr *dstr, UInt32 len)
 
 /* free memory used by DynStr. Use for structures allocated on stack and
    initialized with DynStrInit */
-inline void DynStrFree(DynStr *dstr)
+void DynStrFree(DynStr *dstr)
 {
     assert(NULL != dstr);
     if (NULL != dstr->str)
@@ -146,10 +146,6 @@ DynStr *DynStrFromCharP2(const char_t *strOne, const char_t *strTwo)
     dstr = DynStrFromCharP(strOne, bufSize);
     if (NULL == dstr)
         return NULL;
-
-    dstr->bufSize = bufSize;
-    dstr->strLen = 0;
-    DYNSTR_STR(dstr)[0] = '\0';
 
     dstrNew = DynStrAppendCharPBuf(dstr, strTwo, strTwoLen);
     assert(NULL != dstrNew);
@@ -448,7 +444,7 @@ static void test_DynStrRemoveStartLen()
 
 static void test_DynStrTruncate()
 {
-    char    *str = NULL;
+    char_t *str = NULL;
     DynStr  dstr;
 
     DynStrInit(&dstr, 0);
@@ -476,9 +472,33 @@ static void test_DynStrTruncate()
 
 }
 
+static void test_DynStrFromCharP()
+{
+    DynStr * dstr;
+    char_t * str;
+
+    dstr = DynStrFromCharP("hello", 0);
+    assert( 5 == DynStrLen(dstr) );
+    str = DynStrGetCStr(dstr);
+    assert( 0 == StrCompare("hello", str));
+    DynStrDelete(dstr);
+
+    dstr = DynStrFromCharP2("from", "hell");
+    assert( 8 == DynStrLen(dstr) );
+    str = DynStrGetCStr(dstr);
+    assert( 0 == StrCompare("fromhell", str));
+    DynStrDelete(dstr);
+
+    dstr = DynStrFromCharP3("me", "", "llow");
+    assert( 6 == DynStrLen(dstr) );
+    str = DynStrGetCStr(dstr);
+    assert( 0 == StrCompare("mellow", str));
+    DynStrDelete(dstr);
+}
 
 void test_DynStrAll()
 {
+    test_DynStrFromCharP();
     test_DynStrReplace();
     test_DynStrAppendToNull();
     test_DynStrRemoveStartLen();

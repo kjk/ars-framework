@@ -96,6 +96,7 @@ void DeinitLogging()
         }
     }
 
+    DynStrFree(&lg->curLine);
 
     if (NULL != lg)
         free(lg);
