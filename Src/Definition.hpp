@@ -175,7 +175,7 @@ private:
     
     void elementAtWidth(Graphics& graphics, const LinePosition_t& line, Coord_t width, ElementPosition_t& elem, uint_t& progress, uint_t& wordEnd, bool word = false);
     
-    void removeSelectionOrShowPopup(const Point& point, Graphics& graphics);
+    bool removeSelectionOrShowPopup(const Point& point, Graphics& graphics);
     
 public:
 
@@ -449,6 +449,7 @@ private:
     bool navigatingDown_;
     bool trackingSelection_;
     bool selectionIsHyperlink_;
+    bool consumeNextPenUp_;
 
     bool navigateHyperlink(Graphics& graphics, bool next);
 };

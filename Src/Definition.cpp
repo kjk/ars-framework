@@ -128,7 +128,8 @@ Definition::Definition():
     selectionClickHandler(NULL),
     selectionClickHandlerContext(NULL),
     model_(NULL),
-    modelOwner_(ownModelNot)
+    modelOwner_(ownModelNot),
+    consumeNextPenUp_(false)
 {}
 
 namespace {
@@ -855,7 +856,7 @@ Definition::LinePosition_t Definition::lineAtHeight(Coord_t height)
     return end;
 }
 
-void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphics)
+bool Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphics)
 {
     ElementPosition_t start = selectionStartElement_;
     ElementPosition_t end = selectionEndElement_;
@@ -889,13 +890,15 @@ void Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphi
         ++end;
 
     if (inside)
-        selectionClickHandler(point, text, selectionClickHandlerContext);
-    else
     {
-        selectionStartElement_ = selectionEndElement_ = elements_.end();
-        selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
-        renderElementRange(graphics, start, end);
+        consumeNextPenUp_ = true;
+        selectionClickHandler(point, text, selectionClickHandlerContext);
+        return true;
     }
+    selectionStartElement_ = selectionEndElement_ = elements_.end();
+    selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
+    renderElementRange(graphics, start, end);
+    return false;
 }
 
 
@@ -978,15 +981,25 @@ bool Definition::trackTextSelection(Graphics& graphics, const Point& point, uint
 
 bool Definition::extendSelection(Graphics& graphics, const Point& point, uint_t clickCount)
 {
+    if (consumeNextPenUp_ && 0 != clickCount)
+    {
+        consumeNextPenUp_ = false;
+        return false;
+    }
+        
     navigatingDown_ = navigatingUp_ = false;
     if (elements_.empty())
         return false;
+
     if (!trackingSelection_ && !(bounds_ && point))
         return false;
-    if (!trackingSelection_ && elements_.end() != selectionStartElement_)
-        removeSelectionOrShowPopup(point, graphics);
+
+    if (!trackingSelection_ && elements_.end() != selectionStartElement_ && removeSelectionOrShowPopup(point, graphics))
+        return true;
+
     if (trackHyperlinkHighlight(graphics, point, clickCount))
         return true;
+
     if (usesMouseSelection())
         return trackTextSelection(graphics, point, clickCount);
     return false;
