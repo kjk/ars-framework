@@ -7,6 +7,7 @@
 #include "SocketConnection.hpp"
 #include "RenderingPreferences.hpp"
 #include "iPediaHyperlinkHandler.hpp"
+#include "Resolver.hpp"
 
 class iPediaApplication: public ArsLexis::Application 
 {
@@ -22,6 +23,7 @@ class iPediaApplication: public ArsLexis::Application
     RenderingPreferences renderingPrefs_;
     
     iPediaHyperlinkHandler hyperlinkHandler_;
+    ArsLexis::Resolver* resolver_;
     
     void detectViewer();
 
@@ -51,6 +53,7 @@ public:
     Err initialize();
     
     Err getConnectionManager(ArsLexis::SocketConnectionManager*& manager);
+    Err getResolver(ArsLexis::Resolver*& resolver);
     
     UInt16 ticksPerSecond() const
     {return ticksPerSecond_;}

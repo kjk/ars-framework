@@ -91,16 +91,17 @@ static Err extractFieldIntValue(const String& text, UInt16 fieldStart, UInt16 fi
 {
     Err error=errNone;
     String textValue=extractFieldValue(text, fieldStart, fieldEnd);
-    if (!textValue.empty())        error=numericValue(textValue.data(), textValue.data()+textValue.length(), value, base);
+    if (!textValue.empty())
+        error=numericValue(textValue.data(), textValue.data()+textValue.length(), value, base);
     else
         error=sysErrParamErr;
     return error;
 }
 
-Err iPediaConnection::open(const SocketAddress& address, Int32 timeout)
+void iPediaConnection::open()
 {
     prepareRequest();
-    return SimpleSocketConnection::open(address, timeout);
+    SimpleSocketConnection::open();
 }
 
 void iPediaConnection::processLine(UInt16 start, UInt16 end)

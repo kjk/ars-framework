@@ -20,7 +20,7 @@ namespace ArsLexis
 
         virtual ~Library();
         
-        Err initialize(const char* name, UInt32 creator, UInt32 type='libr');
+        Err initialize(const char* name, UInt32 creator, UInt32 type=sysFileTLibrary);
 
         UInt16 refNum() const
         {return refNum_;}

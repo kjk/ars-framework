@@ -12,7 +12,8 @@ iPediaApplication::iPediaApplication():
     diaNotifyRegistered_(false),
     netLib_(0),
     connectionManager_(0),
-    ticksPerSecond_(SysTicksPerSecond())
+    ticksPerSecond_(SysTicksPerSecond()),
+    resolver_(0)
 {
 }
 
@@ -78,6 +79,8 @@ iPediaApplication::~iPediaApplication()
         delete connectionManager_;
     if (netLib_)        
         delete netLib_;
+    if (resolver_)
+        delete resolver_;        
 }
 
 
@@ -119,6 +122,7 @@ Err iPediaApplication::getNetLibrary(NetLibrary*& netLib)
             assert(!ifError);
             netLib_=tmp;
             connectionManager_=new SocketConnectionManager(*netLib_);
+            resolver_=new Resolver();
         }
     }
     if (!error)
@@ -172,5 +176,15 @@ Err iPediaApplication::getConnectionManager(SocketConnectionManager*& manager)
     if (!error)
         assert(connectionManager_!=0);
     manager=connectionManager_;
+    return error;
+}
+
+Err iPediaApplication::getResolver(Resolver*& resolver)
+{
+    NetLibrary* netLib=0;
+    Err error=getNetLibrary(netLib);
+    if (!error)
+        assert(resolver_!=0);
+    resolver=resolver_;
     return error;
 }

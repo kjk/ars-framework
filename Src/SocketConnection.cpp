@@ -76,8 +76,8 @@ namespace ArsLexis
                         if (!--eventsCount)
                             break;
                     } 
-                    // There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
-                    // Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
+                    //! @bug There's another bug in PalmOS that causes us to receive exception notification, even though we didn't register for it.
+                    //! Well, that's not a real problem, because not registering for exceptions should be considered a bug anyway...
                     if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventException))
                     {
                         unregisterEvents(*conn);
@@ -94,17 +94,22 @@ namespace ArsLexis
     
     SocketConnection::SocketConnection(SocketConnectionManager& manager):
         manager_(manager),
+        transferTimeout_(evtWaitForever),
+        address_(0),
         socket_(manager.netLib_)
     {
     }
     
     SocketConnection::~SocketConnection()
     {
-        manager_.removeConnection(*this);
+        NetSocketRef ref=socket_;
+        if (ref)
+            manager_.removeConnection(*this);
     }
     
-    Err SocketConnection::open(const SocketAddress& address, Int32 timeout)
+    void SocketConnection::open()
     {
+        assert(address_!=0);
         Err error=socket_.open();
         if (!error)
         {
@@ -112,14 +117,17 @@ namespace ArsLexis
             Boolean flag=true;
             error=socket_.setOption(netSocketOptLevelSocket, netSocketOptSockNonBlocking, &flag, sizeof(flag));
             if (!error)
-                error=socket_.connect(address, timeout);
+                error=socket_.connect(*address_, transferTimeout());
             if (!error || netErrWouldBlock==error)
             {
                 registerEvent(SocketSelector::eventException);
                 registerEvent(SocketSelector::eventWrite);
             }
+            else 
+                handleError(error);
         }
-        return error;
+        else
+            handleError(error);
     }
 
     void SocketConnection::notifyException()
@@ -135,8 +143,8 @@ namespace ArsLexis
         assert(socketRef!=0);
         Err status=errNone;
         UInt16 size=sizeof(status);
-        // PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
-        // Nevertheless status is also filled in these cases and seems right...
+        //! @bug PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.
+        //! Nevertheless status is also filled in these cases and seems right...
         Err error=socket_.getOption(netSocketOptLevelSocket, netSocketOptSockErrorStatus, &status, size);
         return status;
     }

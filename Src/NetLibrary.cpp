@@ -44,15 +44,14 @@ namespace ArsLexis
             close();
     }
 
-    Err NetLibrary::getHostByName(const char* name, NetHostInfoBufType* hostInfoBuffer, Int32 timeout)
+    Err NetLibrary::getSetting(UInt16 setting, void* value, UInt16& valueLength) const
     {
-        assert(refNum());
-        assert(name!=0);
-        Err error=errNone;
-        NetHostInfoType* hostInfo=NetLibGetHostByName(refNum(), name, hostInfoBuffer, timeout, &error);
-        if (!hostInfo)
-            assert(error);
-        return error;
+        return NetLibSettingGet(refNum(), setting, value, &valueLength);
+    }
+    
+    Err NetLibrary::setSetting(UInt16 setting, const void* value, UInt16 valueLength)
+    {
+        return NetLibSettingSet(refNum(), setting, const_cast<void*>(value), valueLength);
     }
 
 }

@@ -14,7 +14,6 @@ namespace ArsLexis
         UInt16 chunkSize_;
         
         bool sending_;
-        UInt32 transferTimeout_;
         UInt16 requestBytesSent_;
         
     protected:
@@ -22,9 +21,6 @@ namespace ArsLexis
         void notifyWritable();
         
         void notifyReadable();
-        
-        virtual void handleError(Err error)
-        {abortConnection();}
         
         virtual void finalize()
         {abortConnection();}
@@ -39,7 +35,7 @@ namespace ArsLexis
         
     public:
 
-        SimpleSocketConnection(SocketConnectionManager& manager, const String& request=ArsLexis::String());
+        SimpleSocketConnection(SocketConnectionManager& manager);
         
         ~SimpleSocketConnection();
         
@@ -48,9 +44,6 @@ namespace ArsLexis
 
         void setMaxResponseSize(UInt16 size)
         {maxResponseSize_=size;}
-        
-        void setTransferTimeout(Int32 timeout)
-        {transferTimeout_=timeout;}
         
         void setChunkSize(UInt16 size)
         {chunkSize_=size;}

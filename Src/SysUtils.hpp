@@ -21,7 +21,7 @@ namespace ArsLexis
     
     String deviceIdToken();
     
-    Err numericValue(const char* begin, const char* end, Int32& result, UInt16 base);
+    Err numericValue(const char* begin, const char* end, Int32& result, UInt16 base=10);
 }
 
 #endif

@@ -34,12 +34,17 @@ namespace ArsLexis
         
         Err manageConnectionEvents(Int32 timeout=evtWaitForever);
         
+        NetLibrary& netLibrary()
+        {return netLib_;}
+        
         friend class SocketConnection;
     };
 
     class SocketConnection
     {
         SocketConnectionManager& manager_;
+        Int32 transferTimeout_;
+        const SocketAddress* address_;
         
     protected:
 
@@ -61,8 +66,20 @@ namespace ArsLexis
         SocketConnection(SocketConnectionManager& manager);
         
     public:
+    
+        virtual void handleError(Err error)
+        {abortConnection();}
+        
+        void setTransferTimeout(Int32 timeout)
+        {transferTimeout_=timeout;}
+        
+        Int32 transferTimeout() const
+        {return transferTimeout_;}
+        
+        void setAddress(const SocketAddress& address)
+        {address_=&address;}
 
-        virtual Err open(const SocketAddress& address, Int32 timeout=evtWaitForever);
+        virtual void open();
         
         void registerEvent(SocketSelector::EventType event)
         {
@@ -70,6 +87,9 @@ namespace ArsLexis
         }
         
         virtual ~SocketConnection();
+        
+        SocketConnectionManager& manager()
+        {return manager_;}
         
         friend class SocketConnectionManager;
     };

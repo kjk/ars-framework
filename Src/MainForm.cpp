@@ -86,14 +86,14 @@ void MainForm::handleControlSelect(const ctlSelect& data)
     Err error=app.getConnectionManager(manager);
     if (!error)
     {
+        Resolver* resolver=0;
+        error=app.getResolver(resolver);
         assert(manager);
+        assert(resolver);
         iPediaConnection* conn=new iPediaConnection(*manager);
         conn->setTransferTimeout(app.ticksPerSecond()*15L);
-        conn->setChunkSize(256);
         conn->setTerm("Science fiction");
-        error=conn->open(INetSocketAddress(0x7f000001, 9000));
-        if (!(errNone==error || netErrWouldBlock==error))
-            delete conn;
+        resolver->resolveAndConnect(conn, "localhost:9000");
     }
 }
 

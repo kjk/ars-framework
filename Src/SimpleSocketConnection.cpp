@@ -3,13 +3,11 @@
 namespace ArsLexis
 {
 
-    SimpleSocketConnection::SimpleSocketConnection(SocketConnectionManager& manager, const String& request):
+    SimpleSocketConnection::SimpleSocketConnection(SocketConnectionManager& manager):
         SocketConnection(manager),
-        request_(request),
         maxResponseSize_(32768),
         sending_(true),
-        transferTimeout_(evtWaitForever),
-        chunkSize_(1024),
+        chunkSize_(256),
         requestBytesSent_(0)
     {
     }
@@ -26,7 +24,7 @@ namespace ArsLexis
         if (requestLeft>chunkSize_)
             requestLeft=chunkSize_;
         UInt16 dataSize=0;
-        Err error=socket_.send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout_);
+        Err error=socket_.send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
         if (errNone==error || netErrWouldBlock==error)
         {
             registerEvent(SocketSelector::eventException);
@@ -51,7 +49,7 @@ namespace ArsLexis
         UInt16 dataSize=0;
         UInt16 responseSize=response_.size();
         response_.resize(responseSize+chunkSize_);
-        Err error=socket_.receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout_);
+        Err error=socket_.receive(dataSize, const_cast<char*>(response_.data())+responseSize, chunkSize_, transferTimeout());
         if (!error)
         {
             assert(dataSize<=chunkSize_);

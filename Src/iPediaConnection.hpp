@@ -41,7 +41,7 @@ protected:
 
 public:
 
-    Err open(const ArsLexis::SocketAddress& address, Int32 timeout=evtWaitForever);
+    void open();
     
     iPediaConnection(ArsLexis::SocketConnectionManager& manager);
     
