@@ -25,6 +25,7 @@ namespace ArsLexis
         bool controlsAttached_:1;
         mutable String title_;
         UInt16 focusControlId_;
+        RectangleType screenBoundsBeforeWinExit_;
         
         FormGadget* trackingGadget_;
         

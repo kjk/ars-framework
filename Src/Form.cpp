@@ -2,6 +2,7 @@
 #include <Application.hpp>
 #include <Graphics.hpp>
 #include <FormGadget.hpp>
+#include <SysUtils.hpp>
 
 namespace ArsLexis 
 {
@@ -67,7 +68,9 @@ namespace ArsLexis
         controlsAttached_(false),
         trackingGadget_(0),
         focusControlId_(frmInvalidObjectId)
-    {}
+    {
+        getScreenBounds(screenBoundsBeforeWinExit_);
+    }
     
     void Form::attachControls()
     {
@@ -158,11 +161,24 @@ namespace ArsLexis
     {
         assert(NULL != form_);
         assert(controlsAttached_);
-        if (static_cast<const void*>(form_) == data.enterWindow && frmInvalidObjectId != focusControlId_)
+        if (static_cast<const void*>(form_) == data.enterWindow)
         {
-            FormObject object(*this, focusControlId_);
-            object.focus();
-            update();
+            RectangleType newBounds;
+            getScreenBounds(newBounds);
+            if (newBounds.extent.x != screenBoundsBeforeWinExit_.extent.x || newBounds.extent.y != screenBoundsBeforeWinExit_.extent.y) 
+            {
+                EventType event;
+                MemSet(&event, sizeof(event), 0);
+                event.eType=(eventsEnum)winDisplayChangedEvent;
+                event.data.winDisplayChanged.newBounds = newBounds;
+                EvtAddUniqueEventToQueue(&event, 0, true);
+            }
+            if (frmInvalidObjectId != focusControlId_)
+            {
+                FormObject object(*this, focusControlId_);
+                object.focus();
+                update();
+            }
         }
         return false;
     }
@@ -224,6 +240,7 @@ namespace ArsLexis
             if (noFocus != index)
                 focusControlId_ = FrmGetObjectId(form, index);
             releaseFocus();
+            getScreenBounds(screenBoundsBeforeWinExit_);
         }
         return false;
     }
