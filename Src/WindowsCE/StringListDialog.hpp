@@ -11,5 +11,6 @@ using ArsLexis::String;
 typedef std::list<const char_t *> StrList_t;
 
 bool FGetStringFromList(HWND hwnd, StrList_t strList, String& strOut);
+bool FGetStringFromListRemoveDups(HWND hwnd, StrList_t strList, String& strOut);
 
 #endif

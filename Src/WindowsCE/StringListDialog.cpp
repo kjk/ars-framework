@@ -20,6 +20,7 @@ Makes it easier to use this code.
 
 WNDPROC g_oldListWndProc;
 HWND    g_hRecentLookupDlg = NULL;
+bool    g_fRemoveDups = false;
 
 #define SELECT_PRESSED  1
 #define CANCEL_PRESSED  2
@@ -82,7 +83,16 @@ static BOOL InitStringList(HWND hDlg)
 
     do {
         str = *iter;
-        SendMessage(ctrl, LB_ADDSTRING, 0, (LPARAM)str);
+        if (g_fRemoveDups)
+        {
+            int idx = SendMessage(ctrl, LB_FINDSTRINGEXACT, 0, (LPARAM)str);
+            if (LB_ERR == idx)
+                SendMessage(ctrl, LB_ADDSTRING, 0, (LPARAM)str);
+        }
+        else
+        {
+            SendMessage(ctrl, LB_ADDSTRING, 0, (LPARAM)str);
+        }
         iter++;
     } while (iter!=iterEnd);
 
@@ -121,6 +131,7 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
 bool FGetStringFromList(HWND hwnd, StrList_t strList, ArsLexis::String& strOut)
 {
     g_strList = strList;
+    g_fRemoveDups = false;
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
     if (SELECT_PRESSED==result)
     {
@@ -129,5 +140,20 @@ bool FGetStringFromList(HWND hwnd, StrList_t strList, ArsLexis::String& strOut)
     }
 
     return false;
+}
+
+bool FGetStringFromListRemoveDups(HWND hwnd, StrList_t strList, String& strOut)
+{
+    g_strList = strList;
+    g_fRemoveDups = true;
+    int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
+    if (SELECT_PRESSED==result)
+    {
+        strOut.assign(g_selectedWord);
+        return true;
+    }
+
+    return false;
+
 }
 
