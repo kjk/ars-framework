@@ -262,19 +262,29 @@ bool TextRenderer::handleKeyDownEvent(const EventType& event)
 {
     Definition::NavigatorKey key = Definition::NavigatorKey(-1);
     Form& form = *this->form();
-    if (form.fiveWayUpPressed(&event))
+    if (form.fiveWayUpPressed(&event) ||  chrUpArrow == event.data.keyDown.chr)
         key = Definition::navKeyUp;
-    else if (form.fiveWayDownPressed(&event))
+    else if (form.fiveWayDownPressed(&event) ||  chrDownArrow == event.data.keyDown.chr)
         key = Definition::navKeyDown;
-    else if (form.fiveWayLeftPressed(&event))
+    else if (form.fiveWayLeftPressed(&event) || chrLeftArrow == event.data.keyDown.chr)
         key = Definition::navKeyLeft;
-    else if (form.fiveWayRightPressed(&event))
+    else if (form.fiveWayRightPressed(&event) || chrRightArrow == event.data.keyDown.chr)
         key = Definition::navKeyRight;
-    else if (form.fiveWayCenterPressed(&event))
+    else if (form.fiveWayCenterPressed(&event) || chrLineFeed == event.data.keyDown.chr)
         key = Definition::navKeyCenter;
+    bool handled = false;
     if (Definition::NavigatorKey(-1) != key)
-        return definition_.navigatorKey(key);
-    return false;
+    {
+        checkDrawingWindow();
+        Graphics graphics(drawingWindow_);
+        ActivateGraphics activate(graphics);
+        handled = definition_.navigatorKey(graphics, renderingPreferences_, key);
+        if (handled)
+            updateForm(graphics);
+    }
+    if (handled)
+        doUpdateScrollbar();
+    return handled;
 }
 
 void TextRenderer::drawFocusRing()
@@ -293,3 +303,38 @@ void TextRenderer::removeFocusRing()
     HsNavRemoveFocusRing(*form());
 }
 
+bool TextRenderer::copySelection() const
+{
+    String text;
+    definition_.selectionToText(text);
+    if (text.empty())
+        return false;
+    ClipboardAddItem(clipboardText, text.data(), text.length());
+    return true;
+}
+
+bool TextRenderer::handleMenuCmdBarOpen(EventType& event)
+{
+    if (!visible())
+        return false;
+    if (!definition_.hasSelection())
+        return false;
+    if (!hasFocus())
+        return false;
+    event.data.menuCmdBarOpen.preventFieldButtons = true;
+    Err error = MenuCmdBarAddButton(menuCmdBarOnLeft, BarCopyBitmap, menuCmdBarResultMenuItem, sysEditMenuCopyCmd, "Copy");
+    return false;
+}
+
+bool TextRenderer::handleMenuEvent(const EventType& event)
+{
+    if (!visible())
+        return false;
+    if (!definition_.hasSelection())
+        return false;
+    if (!hasFocus())
+        return false;
+    if (sysEditMenuCopyCmd != event.data.menu.itemID)
+        return false;
+    return copySelection();         
+}

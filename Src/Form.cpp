@@ -65,7 +65,7 @@ namespace ArsLexis
         controlsAttached_(false),
         trackingGadget_(0),
         entryFocusControlId_(frmInvalidObjectId),
-        focusedControlIndex_(frmInvalidObjectId)
+        focusedControlIndex_(noFocus)
     {
         getScreenBounds(screenBoundsBeforeWinExit_);
     }
@@ -167,7 +167,19 @@ namespace ArsLexis
             case menuEvent:
                 handled=handleMenuCommand(event.data.menu.itemID);
                 break;
-
+                
+            case fldEnterEvent:
+                focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.fldEnter.fieldID);
+                break;
+            
+            case frmGadgetEnterEvent:
+                focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.gadgetEnter.gadgetID);
+                break;
+            
+            case tblEnterEvent:
+                focusedControlIndex_ = FrmGetObjectIndex(form_, event.data.tblEnter.tableID);
+                break;
+            
         }
         return handled;
     }

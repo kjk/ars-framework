@@ -544,10 +544,24 @@ void Definition::renderLayout(Graphics& graphics, const RenderingPreferences& pr
 
 void Definition::selectionToText(String& out) const
 {
+    if (selectionStartElement_ == elements_.end())
+        return;
     Elements_t::const_iterator end=elements_.end();
+    uint_t start, stop;
     for (Elements_t::const_iterator it=elements_.begin(); it!=end; ++it)
     {
-        (*it)->toText(out);
+        if (it >= selectionStartElement_ && it <=selectionEndElement_)
+        {
+            if (it == selectionStartElement_)
+                start = selectionStartProgress_;
+            else 
+                start = 0;
+            if (it == selectionEndElement_)
+                stop = selectionEndProgress_;
+            else
+                stop = LayoutContext::progressCompleted;
+            (*it)->toText(out, start, stop);
+        }
     }
 }
 
@@ -596,11 +610,40 @@ static bool insideHotSpot(const Point& p, Definition::ElementPosition_t begin, D
     return false;
 }
 
+void Definition::extendSelectionToFullHyperlink()
+{
+    assert(elements_.end() != selectionStartElement_);
+    ElementPosition_t pos = selectionStartElement_;
+    while (true)
+    {
+        if (pos == elements_.begin())
+            break;
+        --pos;
+       if (!hyperlinksEqual(*pos, *selectionStartElement_))
+            break;
+       selectionStartElement_ = pos;
+    }
+    pos = selectionEndElement_;
+    while (true) 
+    {
+        ++pos;
+        if (pos == elements_.end())
+            break;
+        if (!hyperlinksEqual(*pos, *selectionEndElement_))
+            break;
+        selectionEndElement_ = pos;
+    }
+    inactiveSelectionStartElement_ = selectionStartElement_;
+    inactiveSelectionEndElement_ = selectionEndElement_;
+    ++inactiveSelectionEndElement_;
+}
+
+
 bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPreferences& prefs, const Point& point, uint_t clickCount) 
 {
     if (trackingSelection_ && !selectionIsHyperlink_)
         return false;
-    if (selectionIsHyperlink_) 
+    else if (trackingSelection_ && selectionIsHyperlink_) 
     {
         assert(trackingSelection_);
         assert(selectionEndProgress_ == LayoutContext::progressCompleted);
@@ -636,6 +679,14 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
     }
     else 
     {
+        if (selectionIsHyperlink_)
+        {
+            assert(elements_.end() != inactiveSelectionStartElement_);
+            selectionStartElement_  = selectionEndElement_ = elements_.end();
+            renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+            inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+            selectionIsHyperlink_ = false;
+        }
         HotSpot* hotSpot = NULL;
         HotSpots_t::const_iterator end=hotSpots_.end();
         for (HotSpots_t::const_iterator it=hotSpots_.begin(); it!=end; ++it)
@@ -653,29 +704,7 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const RenderingPref
             selectionStartProgress_ = 0;
             selectionEndProgress_ = LayoutContext::progressCompleted;
             selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &hotSpot->element());
-            ElementPosition_t pos = selectionStartElement_;
-            while (true)
-            {
-                if (pos == elements_.begin())
-                    break;
-                --pos;
-               if (!hyperlinksEqual(*pos, *selectionStartElement_))
-                    break;
-               selectionStartElement_ = pos;
-            }
-            pos = selectionEndElement_;
-            while (true) 
-            {
-                ++pos;
-                if (pos == elements_.end())
-                    break;
-                if (!hyperlinksEqual(*pos, *selectionEndElement_))
-                    break;
-                selectionEndElement_ = pos;
-            }
-            inactiveSelectionStartElement_ = selectionStartElement_;
-            inactiveSelectionEndElement_ = selectionEndElement_;
-            ++inactiveSelectionEndElement_;
+            extendSelectionToFullHyperlink();
             renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             return true;
         }
@@ -842,8 +871,154 @@ bool Definition::mouseDrag(ArsLexis::Graphics& graphics, const RenderingPreferen
 Definition::HyperlinkHandler::~HyperlinkHandler()
 {}
 
-bool Definition::navigatorKey(NavigatorKey navKey)
+bool Definition::navigatorKey(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey)
 {
+    if (usesUpDownScroll())
+    {
+        int items = 0;
+        switch (navKey)
+        {
+            case navKeyUp:
+                items = -shownLinesCount() + 1;
+                break;
+                
+            case navKeyDown:
+                items = shownLinesCount() - 1;
+                break;
+        }
+        if (0 != items)
+        {
+            scroll(graphics, prefs, items);
+            return true;
+        }
+    }
+    if (usesHyperlinkNavigation())
+    {
+        switch (navKey)
+        {
+            case navKeyRight:
+                return navigateHyperlink(graphics, prefs, true);
+            
+            case navKeyLeft:
+                return navigateHyperlink(graphics, prefs, false);
+            
+            
+        }
+    }
+    
     return false;
 }
 
+static bool isHyperlink(Definition::ElementPosition_t pos)
+{
+    if (!(*pos)->isTextElement())
+        return false;
+    GenericTextElement* textElem = static_cast<GenericTextElement*>(*pos);
+    if (!textElem->isHyperlink())
+        return false;
+    return true;
+}
+
+bool Definition::navigateHyperlink(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, bool next)
+{
+    if (empty())
+        return false;
+    Lines_t::iterator firstLine = lines_.begin() + firstLine_;
+    Lines_t::iterator lastLine = lines_.begin() + lastLine_;
+    ElementPosition_t firstElem = firstLine->firstElement;
+    ElementPosition_t lastElem = elements_.end();
+    if (lines_.end() != lastLine)
+    {
+        lastElem = lastLine->firstElement;
+        if (lastLine->renderingProgress != 0)
+            ++lastElem;
+    }
+    if (selectionIsHyperlink_)
+    {
+        assert(elements_.end() != inactiveSelectionStartElement_);
+        if ((inactiveSelectionStartElement_ >= firstElem && inactiveSelectionStartElement_ <lastElem) 
+         || (inactiveSelectionEndElement_ > firstElem && inactiveSelectionEndElement_ <= lastElem)
+         || (inactiveSelectionStartElement_ < firstElem && inactiveSelectionEndElement_ >= lastElem))
+        {
+            if (next)
+                firstElem = inactiveSelectionEndElement_;
+            else
+                lastElem = inactiveSelectionStartElement_;
+        }
+    }
+    bool needToScroll = false;
+    ElementPosition_t pos;
+    if (next)
+    {
+        pos = firstElem;
+        while (true)
+        {
+            if (elements_.end() == pos)
+                return false;
+            if (isHyperlink(pos))
+                break;
+            ++pos;
+        }
+        if (pos >= lastElem)
+            needToScroll = true;
+    }
+    else
+    {
+        pos = lastElem;
+        while (true)
+        {
+            if (elements_.begin() == pos)
+                return false;
+            --pos;
+            if (isHyperlink(pos))
+                break;
+        }
+        if (pos < firstElem)
+            needToScroll = true;
+    }
+    selectionStartElement_ = selectionEndElement_ = elements_.end();
+    selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
+    renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+
+    selectionIsHyperlink_ = true;
+    selectionStartElement_ = selectionEndElement_ = pos;
+    selectionStartProgress_ = 0;
+    if (needToScroll)
+    {
+        int linesToScroll = 0;
+        Lines_t::iterator line;
+        if (next)
+        {
+            line = lastLine;
+            while (true)
+            {
+                ++linesToScroll;
+                if (lines_.end() == line)
+                    break;
+                if (line->firstElement > pos)
+                    break;
+                ++line;
+            }
+        }
+        else
+        {
+            line = firstLine;
+            while (true)
+            {
+                --linesToScroll;
+                if (line->firstElement <= pos)
+                    break;
+                --line;
+            }
+        }
+        scroll(graphics, prefs, linesToScroll);
+    }
+    extendSelectionToFullHyperlink();
+    renderElementRange(graphics, prefs, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+    return true;
+}
+
+bool Definition::hasSelection() const
+{
+    return selectionStartElement_ != elements_.end();
+}

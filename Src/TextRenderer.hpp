@@ -83,6 +83,12 @@ namespace ArsLexis
         bool handleScrollRepeat(const EventType& event);
         
         bool handleKeyDownEvent(const EventType& event);
+        
+        bool copySelection() const;
+        
+        bool handleMenuCmdBarOpen(EventType& event);
+        
+        bool handleMenuEvent(const EventType& event);
 
     protected:
     

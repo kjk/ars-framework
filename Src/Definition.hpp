@@ -227,7 +227,7 @@ public:
         navKeyCenter
     };
     
-    bool navigatorKey(NavigatorKey navKey);
+    bool navigatorKey(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, NavigatorKey navKey);
     
     enum InteractionBehaviorOption {
         behavDoubleClickSelection = 1,
@@ -288,6 +288,8 @@ public:
 
     ElementPosition_t lastElementPosition()
     { return elements_.end();}
+    
+    bool hasSelection() const;
 
 private:
 
@@ -329,6 +331,8 @@ private:
     
     void moveHotSpots(const ArsLexis::Point& delta);
     
+    void extendSelectionToFullHyperlink();
+    
     ElementPosition_t selectionStartElement_;
     ElementPosition_t selectionEndElement_;
     ElementPosition_t mouseDownElement_;
@@ -344,6 +348,7 @@ private:
     RenderingProgressReporter* renderingProgressReporter_; 
     uint_t interactionBehavior_;
     
+    bool navigateHyperlink(ArsLexis::Graphics& graphics, const RenderingPreferences& prefs, bool next);
 };
 
 #endif
