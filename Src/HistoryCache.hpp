@@ -10,18 +10,23 @@ public:
 
     enum {
         maxCacheEntries = 10, 
-        maxCacheEntryNameLength = 255
+        maxCacheEntryUrlLength = 255,
+        maxCacheEntryTitleLength = 63
     };
     
 private:
     
-    typedef char_t CacheEntryNameBuffer_t[maxCacheEntryNameLength + 1];
+    typedef char_t CacheEntryUrlBuffer_t[maxCacheEntryUrlLength + 1];
+    typedef char_t CacheEntryTitleBuffer_t[maxCacheEntryTitleLength + 1];
     typedef char_t StreamNameBuffer_t[DataStore::maxStreamNameLength + 1];
 
     struct IndexEntry 
     {
-        CacheEntryNameBuffer_t cacheEntryName;
+        CacheEntryUrlBuffer_t url;
         StreamNameBuffer_t streamName;
+        CacheEntryTitleBuffer_t title;
+        
+        IndexEntry();
     };
     
     IndexEntry* indexEntries_;    
@@ -51,13 +56,17 @@ public:
     
     ulong_t entryIndex(const char_t* entry) const;
     
+    const char_t* entryUrl(ulong_t index) const;
+    
     const char_t* entryTitle(ulong_t index) const;
+    
+    void setEntryTitle(ulong_t index, const char_t* title);
     
     status_t removeEntry(ulong_t index);
     
-    status_t appendEntry(const char_t* title, ulong_t& index);
+    status_t appendEntry(const char_t* url, ulong_t& index);
     
-    status_t replaceEntries(ulong_t from, const char_t* newEntry);
+    status_t replaceEntries(ulong_t from, const char_t* newUrl);
     
     DataStoreReader* readerForEntry(ulong_t index);
     

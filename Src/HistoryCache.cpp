@@ -10,7 +10,8 @@ using std::memcpy;
 #define HISTORY_CACHE_INDEX_STREAM _T("_History Cache Index")
 
 enum {
-    itemsCountSerialId
+    serialIdIndexVersion,
+    serialIdItemsCount
 };
 
 HistoryCache::HistoryCache():
@@ -65,6 +66,12 @@ status_t HistoryCache::open(const char_t* dsName)
     return readIndex();
 }
 
+HistoryCache::IndexEntry::IndexEntry()
+{
+    using namespace std;
+    memset(this, 0, sizeof(*this));
+}
+
 status_t HistoryCache::readIndex()
 {
     assert(NULL != dataStore);
@@ -86,7 +93,8 @@ FreshIndex:
     ulong_t count;
     Serializer serialize(reader);
     ErrTry {
-        serialize(count, itemsCountSerialId);
+        serialize(count, serialIdIndexVersion);
+        serialize(count, serialIdItemsCount);
         if (count > maxCacheEntries)
             cap = count;
         indexEntries_ = new_nt IndexEntry[cap];
@@ -96,8 +104,9 @@ FreshIndex:
         for (ulong_t i = 0; i < count; ++i)
         {
             IndexEntry& entry = indexEntries_[i];
-            serialize(entry.cacheEntryName, maxCacheEntryNameLength + 1);
+            serialize(entry.url, maxCacheEntryUrlLength + 1);
             serialize(entry.streamName, DataStore::maxStreamNameLength + 1);
+            serialize(entry.title, maxCacheEntryTitleLength + 1);
         }
         indexEntriesCount_ = count;
     }
@@ -118,15 +127,18 @@ status_t HistoryCache::writeIndex()
     volatile status_t err = writer.open(HISTORY_CACHE_INDEX_STREAM);
     if (errNone != err)
         return err;
-        
+     
+    ulong_t indexVersion = 1;
     Serializer serialize(writer);
     ErrTry {
-        serialize(indexEntriesCount_, itemsCountSerialId);
+        serialize(indexVersion, serialIdIndexVersion);      
+        serialize(indexEntriesCount_, serialIdItemsCount);
         for (ulong_t i = 0; i < indexEntriesCount_; ++i)
         {
             IndexEntry& entry = indexEntries_[i];
-            serialize(entry.cacheEntryName, maxCacheEntryNameLength + 1);
+            serialize(entry.url, maxCacheEntryUrlLength + 1);
             serialize(entry.streamName, DataStore::maxStreamNameLength + 1);
+            serialize(entry.title, maxCacheEntryTitleLength + 1);
         }
     }
     ErrCatch(ex)
@@ -140,16 +152,35 @@ ulong_t HistoryCache::entryIndex(const char_t* entry) const
 {
     for (ulong_t i = 0; i <indexEntriesCount_; ++i)
     {   
-        if (0 == tstrcmp(entry, indexEntries_[i].cacheEntryName))
+        if (0 == tstrcmp(entry, indexEntries_[i].url))
             return i;
     }
     return entryNotFound;
 }
 
+const char_t* HistoryCache::entryUrl(ulong_t index) const
+{
+    assert(index < indexEntriesCount_);
+    return indexEntries_[index].url;
+}
+
 const char_t* HistoryCache::entryTitle(ulong_t index) const
 {
     assert(index < indexEntriesCount_);
-    return indexEntries_[index].cacheEntryName;
+    return indexEntries_[index].title;
+}
+
+void HistoryCache::setEntryTitle(ulong_t index, const char_t* str)
+{
+    assert(index < indexEntriesCount_);
+    size_t len = tstrlen(str);
+    if (len > maxCacheEntryTitleLength)
+        len = maxCacheEntryTitleLength;
+    
+    IndexEntry& entry = indexEntries_[index];
+    using namespace std;
+    memcpy(entry.title, str, len * sizeof(char_t));
+    entry.title[len] = _T('\0');
 }
 
 status_t HistoryCache::removeEntry(ulong_t index)
@@ -175,12 +206,12 @@ status_t HistoryCache::appendEntry(const char_t* title, ulong_t& index)
             return err;
     
     ulong_t len = tstrlen(title);
-    if (len > maxCacheEntryNameLength)
-        len = maxCacheEntryNameLength;
+    if (len > maxCacheEntryUrlLength)
+        len = maxCacheEntryUrlLength;
     
     IndexEntry& entry = indexEntries_[indexEntriesCount_];
-    memcpy(entry.cacheEntryName, title, len * sizeof(char_t));
-    entry.cacheEntryName[len] = _T('\0');
+    memcpy(entry.url, title, len * sizeof(char_t));
+    entry.url[len] = _T('\0');
     
     tprintf(entry.streamName, _T("_History %lx%lx"), ticks(), random(ULONG_MAX));
     
