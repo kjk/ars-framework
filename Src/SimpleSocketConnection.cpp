@@ -36,7 +36,6 @@ namespace ArsLexis
         uint_t dataSize=0;
         processReadyUiEvents();
         status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, transferTimeout());
-//        status_t error=socket().send(dataSize, request_.data()+requestBytesSent_, requestLeft, 0);
         if (errNone==error || netErrWouldBlock==error)
         {
             registerEvent(SocketSelector::eventException);

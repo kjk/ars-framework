@@ -65,7 +65,7 @@ namespace ArsLexis {
         char_t versionBuffer[versionBufferLength];
         uint_t major=protocolVersionMajor_;
         uint_t minor=protocolVersionMinor_;
-        int verLen=StrPrintF(versionBuffer, _T("%hu.%hu"), major, minor);
+        int verLen=tprintf(versionBuffer, _T("%u.%u"), major, minor);
         out.append(method).append(1, _T(' ')).append(uri_).append(_T(" HTTP/"), 6).append(versionBuffer, verLen).append(crLf);
     }
 
