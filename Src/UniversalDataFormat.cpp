@@ -2,6 +2,7 @@
 #include <set>
 #include <map>
 #include <Utility.hpp>
+#include <Text.hpp>
 
 #ifdef __MWERKS__
 # pragma far_code
@@ -64,4 +65,15 @@ const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo)
 ArsLexis::String UniversalDataFormat::getItemTextAsString(int itemNo, int elemNo)
 {
     return getItemText(itemNo, elemNo);
+}
+
+// -1 means error
+long UniversalDataFormat::getItemTextAsPositiveLong(int itemNo, int elemNo)
+{
+    const ArsLexis::char_t* text = getItemText(itemNo, elemNo);
+    long result;
+    ArsLexis::status_t error = ArsLexis::numericValue(text,text+StrLen(text),result);
+    if (error)
+        return -1;
+    return result;
 }

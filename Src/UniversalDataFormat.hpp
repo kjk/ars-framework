@@ -39,6 +39,8 @@ public:
     const ArsLexis::char_t *getItemText(int itemNo, int elemNo);
     
     ArsLexis::String getItemTextAsString(int intemNo, int elemNo);
+  
+    long getItemTextAsPositiveLong(int itemNo, int elemNo);
     
     friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo);
 };
