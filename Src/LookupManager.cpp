@@ -141,6 +141,16 @@ void LookupManager::lookupRandomTerm()
     resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
 }
 
+void LookupManager::search(const ArsLexis::String& expression)
+{
+    historyChange_=historyReplaceForward;
+    iPediaConnection* conn=new iPediaConnection(*this);
+    conn->setTerm(expression);
+    conn->setPerformFullTextSearch(true);
+    resolver_.resolveAndConnect(conn, iPediaApplication::instance().server());
+}
+
+
 void LookupManager::moveHistory(bool forward)
 {
     if ((forward && history_.hasNext()) || (!forward && history_.hasPrevious()))

@@ -107,6 +107,8 @@ public:
 
     Definition& lastDefinition() 
     {return lastDefinition_;}
+    
+    void search(const ArsLexis::String& expression);
 
     void lookupTerm(const ArsLexis::String& term);
 

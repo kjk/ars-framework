@@ -31,6 +31,8 @@ END
        	MENUITEM "Search Results" ID searchResultsMenuItem  "S"
 	MENUITEM SEPARATOR
 	MENUITEM "About" ID aboutMenuItem  "A"
+	MENUITEM SEPARATOR
+	MENUITEM "Stress Mode" ID toggleStressModeMenuItem "M"   
 END
 END	
 

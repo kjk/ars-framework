@@ -22,6 +22,7 @@ class iPediaApplication: public ArsLexis::Application
     iPediaHyperlinkHandler hyperlinkHandler_;
     LookupManager* lookupManager_;
     ArsLexis::String server_;
+    bool stressMode_;
     
     void detectViewer();
     
@@ -124,6 +125,12 @@ public:
     
     static iPediaApplication& instance()
     {return static_cast<iPediaApplication&>(Application::instance());}
+    
+    bool inStressMode() const
+    {return stressMode_;}
+    
+    void toggleStressMode(bool enable)
+    {stressMode_=enable;}
 
 private:
     

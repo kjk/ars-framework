@@ -34,6 +34,8 @@ class MainForm: public iPediaForm
     
     void setControlsState(bool enabled);
     
+    void handleToggleStressMode();
+    
 protected:
 
     void resize(const ArsLexis::Rectangle& screenBounds);

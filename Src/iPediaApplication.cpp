@@ -15,7 +15,8 @@ iPediaApplication::iPediaApplication():
     diaNotifyRegistered_(false),
     ticksPerSecond_(SysTicksPerSecond()),
     lookupManager_(0),
-    server_(serverLocalhost)
+    server_(serverLocalhost),
+    stressMode_(false)
 {
 #ifndef NDEBUG
 //    log_.replaceSink(new HostFileLogSink("\\log\\iPedia.log"));

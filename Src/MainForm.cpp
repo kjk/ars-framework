@@ -336,7 +336,26 @@ void MainForm::updateAfterLookup()
             field.replaceText(lookupManager->lastInputTerm().c_str());
             field.selectWholeText();                    
         }    
-        update();        
+        update();
+        if (app.inStressMode())
+        {
+            EventType event;
+            MemSet(&event, sizeof(event), 0);
+            event.eType=penDownEvent;
+            event.penDown=true;
+            event.tapCount=1;
+            event.screenX=1;
+            event.screenY=50;
+            EvtAddEventToQueue(&event);
+            MemSet(&event, sizeof(event), 0);
+            event.eType=penUpEvent;
+            event.penDown=false;
+            event.tapCount=1;
+            event.screenX=1;
+            event.screenY=50;
+            EvtAddEventToQueue(&event);
+            randomArticle();
+        }        
     }
 }
 
@@ -441,6 +460,11 @@ bool MainForm::handleMenuCommand(UInt16 itemId)
             }                
             handled=true;
             break;
+
+        case toggleStressModeMenuItem:
+            handleToggleStressMode();
+            handled=true;
+            break;
             
         default:
             handled=iPediaForm::handleMenuCommand(itemId);
@@ -454,14 +478,7 @@ void MainForm::randomArticle()
     LookupManager* lookupManager=app.getLookupManager(true);
     assert(lookupManager); // shouldn't it be always here?
     if (lookupManager && !lookupManager->lookupInProgress())
-    {
         lookupManager->lookupRandomTerm();
-        if (showDefinition!=displayMode())
-        {
-            updateAfterLookup();
-            update();
-        }
-    }
 }
 
 void MainForm::copySelectionToClipboard()
@@ -496,4 +513,16 @@ bool MainForm::handleWindowEnter(const struct _WinEnterEventType& data)
         }
     }        
     return iPediaForm::handleWindowEnter(data);
+}
+
+void MainForm::handleToggleStressMode()
+{
+    iPediaApplication& app=static_cast<iPediaApplication&>(application());
+    if (app.inStressMode())
+        app.toggleStressMode(false);
+    else
+    {
+        app.toggleStressMode(true);
+        randomArticle();
+    }        
 }
