@@ -77,6 +77,10 @@ public:
     DataStoreWriter* writerForEntry(ulong_t index);
     
     void close();
+    
+    // Moves the entry to be the last in the cache. 
+    // On succesful return index is updated to new value.
+    status_t moveEntryToEnd(ulong_t& index);
    
 };
 

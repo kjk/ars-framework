@@ -274,6 +274,26 @@ DataStoreWriter* HistoryCache::writerForEntry(ulong_t index)
     return writer;
 }
 
+status_t HistoryCache::moveEntryToEnd(ulong_t& index)
+{   
+    assert(index < indexEntriesCount_);
+    if (index == indexEntriesCount_ - 1)
+        return errNone;
+        
+    // IndexEntry is quite big, so better not to use stack to allocate it.
+    IndexEntry* tmp = new_nt IndexEntry;
+    if (NULL == tmp)
+        return memErrNotEnoughSpace;
+    
+    memmove(tmp, indexEntries_ + index, sizeof(*tmp));
+    memmove(indexEntries_ + index, indexEntries_ + (index + 1), (indexEntriesCount_ - (index + 1)) * sizeof(*tmp));
+    memmove(indexEntries_ + (indexEntriesCount_ - 1), tmp, sizeof(*tmp));
+    
+    delete tmp;
+    index = (indexEntriesCount_ - 1);
+    return errNone;
+}
+
 #ifdef DEBUG
 
 static void test_HistoryCacheWrite()

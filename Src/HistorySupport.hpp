@@ -25,28 +25,33 @@ class HistorySupport
     };
     ActionType lastAction_;
     
-    bool move(bool next);
-    
     bool selectEntry(HistoryCache& cache, ulong_t index);
+    
+    bool followUrl(HistoryCache& cache, const char_t* url);
     
 public:
 
     typedef status_t (* PopupMenuFillHandler_t)(const HistoryCache& cache, PopupMenuModel& model, void* userData);
     
-    HyperlinkHandlerBase* hyperlinkHandler;
     PopupMenuFillHandler_t popupMenuFillHandler;
     void* popupMenuFillHandlerData;
+    
+    HyperlinkHandlerBase* hyperlinkHandler;
+    
+    typedef bool (* CacheReadHandler_t)(HistoryCache& cache, const char_t* url);
+    
+    CacheReadHandler_t cacheReadHandler;
 
     HistorySupport(Form& form);
     
     ~HistorySupport();
     
-    status_t setup(const char_t* cacheName, uint_t popupMenuId, uint_t historyButtonId, HyperlinkHandlerBase* hyperlinkHandler);
+    status_t setup(const char_t* cacheName, uint_t popupMenuId, uint_t historyButtonId, HyperlinkHandlerBase* hyperlinkHandler, CacheReadHandler_t cacheReadHandler);
     
     bool handleEventInForm(EventType& event);
     
     /**
-     * return index of that entry (entryNotFound (-1) if not found)
+     * return index of that entry (entryNotFound if not found)
      */
     ulong_t setEntryTitleForUrl(const char_t* title, const char_t* url);
     
@@ -60,9 +65,11 @@ public:
     
     void lookupFinished(bool success, const char_t* entryTitle);
     
-    bool moveNext() {return move(true);}
+    bool move(int delta);
     
-    bool movePrevious() {return move(false);}
+    bool moveNext() {return move(1);}
+    
+    bool movePrevious() {return move(-1);}
     
     bool loadLastEntry();
     

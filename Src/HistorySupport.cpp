@@ -46,7 +46,8 @@ HistorySupport::HistorySupport(Form& form):
     popupMenuFillHandler(FillPopupMenuModelFromHistory),
     popupMenuFillHandlerData(NULL),
     hyperlinkHandler(NULL),
-    lastAction_(actionNewSearch)
+    lastAction_(actionNewSearch),
+    cacheReadHandler(NULL)
 {
 }
 
@@ -55,21 +56,22 @@ HistorySupport::~HistorySupport()
     free(cacheName_);
 }
 
-status_t HistorySupport::setup(const char_t* cacheName, uint_t popupMenuId, uint_t historyButtonId, HyperlinkHandlerBase* hyperlinkHandler)
+status_t HistorySupport::setup(const char_t* cacheName, uint_t popupMenuId, uint_t historyButtonId, HyperlinkHandlerBase* hh, CacheReadHandler_t readHandler)
 {
     free(cacheName_);
     if (NULL == (cacheName_ = StringCopy2(cacheName)))
         return memErrNotEnoughSpace;
         
-    this->hyperlinkHandler = hyperlinkHandler;        
-    popupMenu_.hyperlinkHandler = hyperlinkHandler;
+    this->hyperlinkHandler = hh;        
     popupMenuId_ = popupMenuId;
     historyButtonId_ = historyButtonId;
+    cacheReadHandler = readHandler;
     return errNone;
 }
 
 bool HistorySupport::handleEventInForm(EventType& event)
 {
+    assert(NULL != cacheReadHandler);
     if (NULL == cacheName_)
         return false;
         
@@ -84,7 +86,6 @@ bool HistorySupport::handleEventInForm(EventType& event)
     if (errNone != (err = popupMenuFillHandler(cache, *popupMenu_.model(), popupMenuFillHandlerData)))
         return false;
         
-    cache.close();
     popupMenu_.initialSelection = currentHistoryIndex_;
         
     RectangleType rect;
@@ -99,7 +100,8 @@ bool HistorySupport::handleEventInForm(EventType& event)
         return true;
     }   
     currentHistoryIndex_ = sel;
-    
+    const char_t* url = cache.entryUrl(currentHistoryIndex_);
+    followUrl(cache, url);
     return true;
 }
 
@@ -134,16 +136,14 @@ ulong_t HistorySupport::setLastEntryTitle(const char_t* title)
 
 bool HistorySupport::selectEntry(HistoryCache& cache, ulong_t index)
 {
-    assert(NULL != hyperlinkHandler);
     if (index >= cache.entriesCount())
         return false;
     
-    String url = cache.entryUrl(index);
+    const char_t* url = cache.entryUrl(index);
     currentHistoryIndex_ = index;
     lastAction_ = actionSelect;
-    cache.close();
-    hyperlinkHandler->handleHyperlink(url, NULL);
-    return true;
+    
+    return followUrl(cache, url);
 }
 
 
@@ -179,14 +179,12 @@ void HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
     lastAction_ = actionNewSearch;
 }
 
-bool HistorySupport::move(bool next)
+bool HistorySupport::move(int delta)
 {
-    long index = long(currentHistoryIndex_);
-    if (next)
-        ++index;
-    else
-        --index;
-    
+    if (0 == delta)
+        return true;
+        
+    long index = long(currentHistoryIndex_) + delta;
     if (index < 0)
         return false;
         
@@ -210,4 +208,16 @@ bool HistorySupport::loadLastEntry()
         
     return selectEntry(cache, cache.entriesCount() - 1);    
 }
-    
+
+bool HistorySupport::followUrl(HistoryCache& cache, const char_t* url)
+{
+    assert(NULL != cacheReadHandler);
+    if (cacheReadHandler(cache, url))
+        return true;
+    if (NULL == hyperlinkHandler)        return false;
+    cache.close();
+    hyperlinkHandler->handleHyperlink(url, NULL);
+    return true;
+}
+
+
