@@ -30,13 +30,13 @@ namespace ArsLexis
         {   
             struct 
             {
-                Weight weight:2;
-                bool italic: 1;
-                bool isSmall:1;
-                bool strike:1;
-                bool superscript:1;
-                bool subscript:1;
-                Underline underline:2;
+                uint_t weight:2;
+                uint_t italic: 1;
+                uint_t isSmall:1;
+                uint_t strike:1;
+                uint_t superscript:1;
+                uint_t subscript:1;
+                uint_t underline:2;
             } fx;
             uint_t mask;
         } effects_;
@@ -50,7 +50,7 @@ namespace ArsLexis
         {effects_.fx.weight=weight;}
 
         Weight weight() const
-        {return effects_.fx.weight;}
+        {return static_cast<Weight>(effects_.fx.weight);}
 
         bool isSmall() const
         {return effects_.fx.isSmall;}
@@ -65,7 +65,7 @@ namespace ArsLexis
         {effects_.fx.strike=val;}
 
         Underline underline() const
-        {return effects_.fx.underline;}
+        {return static_cast<Underline>(effects_.fx.underline);}
 
         void setUnderline(Underline val)
         {effects_.fx.underline=val;}

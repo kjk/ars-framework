@@ -22,7 +22,8 @@ public:
     enum RedrawCode
     {
         redrawAll=frmRedrawUpdateCode,
-        redrawProgressIndicator
+        redrawProgressIndicator,
+        redrawFirstAvailable
     };
     
     iPediaForm(iPediaApplication& app, UInt16 formId):
