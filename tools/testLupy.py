@@ -157,9 +157,9 @@ def index(fileName,limit):
         if ns != 0:
             continue
         try:
-            # TODO: check Wikipedia if latin-1 is the right encoding
-            txt = txt.decode("latin-1")
-            title = title.decode("latin-1")
+            # iso-8859-1 is the default encoding used in Wikipedia
+            txt = txt.decode("iso-8859-1")
+            title = title.decode("iso-8859-1")
             indexOneArticle(indexer,title,txt)
             count += 1
             if count >= limit:
