@@ -56,8 +56,8 @@ static int getPrefItemSize(PrefItem& item)
     return 0;
 }
     
-PrefsStoreReader::PrefsStoreReader(const char_t *dbName, ulong_t dbCreator, ulong_t dbType)
-    : _dbName(dbName), _dbCreator(dbCreator), _dbType(dbType),_handle(INVALID_HANDLE_VALUE)
+PrefsStoreReader::PrefsStoreReader(const char_t *dbName)
+    : _dbName(dbName), _handle(INVALID_HANDLE_VALUE)
 {
     String fullPath = GetDbPath(dbName);
     if (fullPath.empty())
@@ -225,8 +225,8 @@ status_t PrefsStoreReader::ErrGetPrefItemWithId(int uniqueId, PrefItem *prefItem
     return errNone;
 }
     
-PrefsStoreWriter::PrefsStoreWriter(const char_t *dbName, ulong_t dbCreator, ulong_t dbType)
-    : _dbName(dbName), _dbCreator(dbCreator), _dbType(dbType), _itemsCount(0),_handle(INVALID_HANDLE_VALUE)
+PrefsStoreWriter::PrefsStoreWriter(const char_t *dbName)
+    : _dbName(dbName), _handle(INVALID_HANDLE_VALUE)
 {
     String fullPath = GetDbPath(dbName);
     if (fullPath.empty())
