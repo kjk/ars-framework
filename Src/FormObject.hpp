@@ -204,6 +204,32 @@ namespace ArsLexis
         void setGraphics(DmResID bitmapId, DmResID selBitmapId=NULL)
         {CtlSetGraphics(object(), bitmapId, selBitmapId);}
         
+        void setValue(int val)
+        {CtlSetValue(object(), val);}
+        
+        int value() const
+        {return CtlGetValue(object());}
+        
+        void setSliderValues(const uint_t* minVal, const uint_t* maxVal, const uint_t* pageSize, const uint_t* value)
+        {
+            CtlSetSliderValues(object(), 
+                reinterpret_cast<const unsigned short*>(minVal), 
+                reinterpret_cast<const unsigned short*>(maxVal),
+                reinterpret_cast<const unsigned short*>(pageSize),
+                reinterpret_cast<const unsigned short*>(value)
+            );
+        }
+        
+        void getSliderValues(uint_t& minVal, uint_t& maxVal, uint_t& pageSize, uint_t& value) const
+        {
+            CtlGetSliderValues(object(), 
+                reinterpret_cast<unsigned short*>(&minVal), 
+                reinterpret_cast<unsigned short*>(&maxVal),
+                reinterpret_cast<unsigned short*>(&pageSize),
+                reinterpret_cast<unsigned short*>(&value)
+            );
+        }
+           
         ~Control();
                 
     };
