@@ -392,6 +392,7 @@ charAvailable:
     start:
         if (stateAfterBodyCr==state_ || stateAfterLastChunkCr==state_)
         {
+            log().debug()<<"ChunkedBodyReader::read";
             error=BodyReader::read(c);
             if (errNone!=error)
                 return error;

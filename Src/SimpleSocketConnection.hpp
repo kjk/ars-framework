@@ -17,6 +17,7 @@ namespace ArsLexis
         NarrowString response_;
         uint_t maxResponseSize_;
         uint_t chunkSize_;
+        ulong_t totalReceived_;
         
         bool sending_;
         uint_t requestBytesSent_;

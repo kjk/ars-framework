@@ -90,7 +90,7 @@ namespace ArsLexis
 #endif
     }
 
-    inline void ByteStreamToTxt(const NarrowString& inStream, String& outTxt)
+    inline void ByteStreamToText(const NarrowString& inStream, String& outTxt)
     {
 #if defined(_WIN32)
         /*Why this doesn't work I have no idea

@@ -9,7 +9,8 @@ namespace ArsLexis
         maxResponseSize_(32768),
         sending_(true),
         chunkSize_(256),
-        requestBytesSent_(0)
+        requestBytesSent_(0),
+        totalReceived_(0)
     {}
     
     status_t SimpleSocketConnection::resizeResponse(NarrowString::size_type size)
@@ -69,14 +70,17 @@ namespace ArsLexis
             error=resizeResponse(responseSize+chunkSize_);
             if (errNone!=error)
                 goto Exit;            
-            processReadyUiEvents();
+            processReadyUiEvents(); 
             error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
             if (errNone!=error)
                 goto Exit;
+            totalReceived_+=dataSize;
+            log().info()<<"notifyReadable(): totalReceived: "<<totalReceived_<<"; dataSize: "<<dataSize;
             assert(dataSize<=chunkSize_);
             resizeResponse(responseSize+dataSize);
             if (0==dataSize)
             {   
+                log().info()<<_T("notifyReadable(): dataSize==0 (server shut socket down?)");
                 error=notifyFinished();
                 abortConnection();
             }
