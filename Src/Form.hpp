@@ -34,7 +34,9 @@ namespace ArsLexis
         
         static Boolean routeEventToForm(EventType* event);
         
-        bool handleFocusTransfer(EventType& event);
+        //bool handleFocusTransfer(EventType& event);
+        
+        void handleObjectFocusChange(const EventType& event);
         
     protected:
     
@@ -148,8 +150,7 @@ namespace ArsLexis
         UInt16 focusedObject() const
         {return FrmGetFocus(form_);}
         
-        void releaseFocus()
-        {FrmSetFocus(form_, noFocus);}
+        void releaseFocus();
         
         void setTitle(const String& title);
         

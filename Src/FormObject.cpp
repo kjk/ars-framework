@@ -3,6 +3,7 @@
 #include <DeviceInfo.hpp>
 #include <FormGadget.hpp>
 #include <68k/Hs.h>
+#include <Application.hpp>
 
 namespace ArsLexis
 {
@@ -69,6 +70,7 @@ namespace ArsLexis
         setBounds(rect);
     }
     
+    /*
     bool FormObject::focusable() const
     {
         FormObjectKind kind = type();
@@ -96,6 +98,7 @@ namespace ArsLexis
         }
         return false;
     }
+    */
     
     void FormObject::hide()
     {
@@ -121,17 +124,35 @@ namespace ArsLexis
         }
     }
         
+    void FormObject::enableNavigation()
+    {   
+        assert(valid());
+        if (!form_->application().runningOnTreo600())
+            return;
+        UInt16 after;
+        UInt16 above;
+        UInt16 below;
+        UInt16 flags;
+        Err error = FrmGetNavEntry(*form_, id_, &after, &above, &below, &flags);
+        assert(errNone == error);
+        flags &= (~kFrmNavObjectFlagsSkip);
+        error = FrmSetNavEntry(*form_, id_, after, above, below, flags);
+        assert(errNone == error);        
+    }
     
     void FormObject::focus()
     {
-        if (!focusable())
-            return;
         assert(valid());
-        if (!valid())
-            return;
         FormObjectKind kind = type();
-        bool isTreo = isTreo600();
-        if (frmFieldObj == kind || frmTableObj == kind || frmGadgetObj == kind ||
+        bool isTreo = form_->application().runningOnTreo600();
+        if (isTreo && frmInvalidObjectId != id_)
+            HsNavObjectTakeFocus(*form_, id_);
+        else if (!isTreo && (frmFieldObj == kind || frmTableObj == kind))
+            FrmSetFocus(*form_, index_);
+        form_->entryFocusControlId_ = id_;
+/*        
+
+ || frmGadgetObj == kind ||
             (isTreo && (frmControlObj == kind || frmPopupObj == kind)))
         {
             FormGadget* gadget;
@@ -161,13 +182,14 @@ namespace ArsLexis
             if (form_->visible())
                 draw();
         }
+*/                
     }
     
     void FormObject::draw()
     {
         assert(valid());
-        if (!form_->visible())
-            return;
+//        if (!form_->visible())
+//            return;
         FormObjectKind kind = type();
         switch (kind)
         {
@@ -198,7 +220,7 @@ namespace ArsLexis
                 SclDrawScrollBar(static_cast<ScrollBarType*>(object_));
                 break;
     
-            default:
+            default: // There's no other way to redraw other components 
                 form_->draw();
         }        
     }

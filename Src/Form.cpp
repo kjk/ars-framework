@@ -3,6 +3,7 @@
 #include <Graphics.hpp>
 #include <FormGadget.hpp>
 #include <SysUtils.hpp>
+#include <68k/Hs.h>
 
 namespace ArsLexis 
 {
@@ -49,8 +50,8 @@ namespace ArsLexis
                 if (!form->controlsAttached_)
                     form->attachControls();
                 result = form->handleEvent(*event);
-                if (!result && keyDownEvent == event->eType && app.runningOnTreo600())
-                    result = form->handleFocusTransfer(*event);
+//                if (!result && keyDownEvent == event->eType && app.runningOnTreo600())
+//                    result = form->handleFocusTransfer(*event);
             }
             if (form->deleteAfterEvent_)
             {
@@ -106,11 +107,40 @@ namespace ArsLexis
         application_.unregisterForm(*this);
     }
     
+    void Form::releaseFocus()
+    {
+        FrmSetFocus(form_, noFocus);
+        if (application().runningOnTreo600())
+            HsNavRemoveFocusRing(form_);
+    }
+    
+    void Form::handleObjectFocusChange(const EventType& event)
+    {
+        const frmObjectFocusTake& data = reinterpret_cast<const frmObjectFocusTake&>(event.data);
+        assert(id_ == data.formID);
+        UInt16 index = FrmGetObjectIndex(form_, data.objectID);
+        if (frmInvalidObjectId == index)
+            return;
+        FormObjectKind kind = FrmGetObjectType(form_, index);
+        if (frmGadgetObj != kind)
+            return;
+        FormGadget* gadget = static_cast<FormGadget*>(FrmGetGadgetData(form_, index));
+        assert(NULL != gadget);
+        bool hasFocus = (event.eType == frmObjectFocusTakeEvent);
+        gadget->hasFocus_ = hasFocus;
+        gadget->handleFocusChange(hasFocus ? FormGadget::focusTaking : FormGadget::focusLosing);
+    }
+    
     bool Form::handleEvent(EventType& event)
     {
         bool handled=false;
         switch (event.eType)
         {
+            case frmObjectFocusTakeEvent:
+            case frmObjectFocusLostEvent:
+                handleObjectFocusChange(event);                
+                break;
+                
             case winEnterEvent:
                 handled=handleWindowEnter(event.data.winEnter);
                 break;
@@ -239,10 +269,17 @@ namespace ArsLexis
         const FormType* form=*this;
         if (data.exitWindow==static_cast<const void*>(form))
         {
-            UInt16 index = FrmGetFocus(form);
-            if (noFocus != index)
-                entryFocusControlId_ = FrmGetObjectId(form, index);
-            releaseFocus();
+        
+            if (!application().runningOnTreo600())
+            {
+                UInt16 index = FrmGetFocus(form);
+                if (noFocus != index)
+                    entryFocusControlId_ = FrmGetObjectId(form, index);
+                releaseFocus();
+            }
+            else 
+                entryFocusControlId_ = frmInvalidObjectId;
+                
             getScreenBounds(screenBoundsBeforeWinExit_);
         }
         return false;
@@ -278,6 +315,7 @@ namespace ArsLexis
         application().gotoForm(this);
     }
     
+    /*
     bool Form::handleFocusTransfer(EventType& event)
     {
         if (!application().runningOnTreo600())
@@ -338,6 +376,7 @@ namespace ArsLexis
         object.focus();
         return true;
     }
+*/
         
 }
 

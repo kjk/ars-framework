@@ -43,7 +43,8 @@ void FormGadget::drawProxy()
 {
     if (!visible())
         return;
-        
+    if (form()->application().runningOnTreo600() && hasFocus())
+        drawFocusRing();
     Graphics graphics(form()->windowHandle());
     Rectangle rect;
     bounds(rect);
@@ -59,7 +60,7 @@ void FormGadget::drawProxy()
             {
                 Graphics offscreen(wh);
                 ActivateGraphics active(offscreen);
-                draw(graphics);
+                handleDraw(graphics);
                 offscreen.copyArea(rect, graphics, rect.topLeft);
             }
             WinDeleteWindow(wh, false);
@@ -70,11 +71,11 @@ void FormGadget::drawProxy()
     if (!db)
     {
         Graphics::ClipRectangleSetter setClip(graphics, rect);
-        draw(graphics);
+        handleDraw(graphics);
     }
 }
 
-void FormGadget::draw(Graphics& graphics)
+void FormGadget::handleDraw(Graphics& graphics)
 {}
 
 bool FormGadget::handleEnter(const EventType& event)
@@ -117,3 +118,8 @@ bool FormGadget::handleGadgetCommand(UInt16 command, void* param)
     return handled;
 }
 
+void FormGadget::handleFocusChange(FocusChange change)
+{
+    if (focusTaking == change && form()->application().runningOnTreo600() && visible() && form()->visible())
+        drawFocusRing();
+}

@@ -88,6 +88,8 @@ namespace ArsLexis
 
         void anchor(const Rectangle& boundingBox, FormObjectAnchorStyle horizAnchor=anchorNot, Coord rightMargin=0, FormObjectAnchorStyle vertAnchor=anchorNot, Coord bottomMargin=0);
         
+        void enableNavigation();
+        
         friend class Form;
     };
     

@@ -168,7 +168,7 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
     drawItem(graphics, itemBounds, item, selected);    
 }
 
-void ExtendedList::draw(Graphics& graphics)
+void ExtendedList::handleDraw(Graphics& graphics)
 {
 //    if (false)  // temporary, to disable over-riding colors set in the constructor
     if (!windowSettingsChecked_)
@@ -255,7 +255,7 @@ void ExtendedList::setTopItem(uint_t item, RedrawOption ro)
     assert(item<itemsCount());
     topItem_=item;
     if (redraw==ro)
-        draw();        
+        drawProxy();        
 }
 
 void ExtendedList::setItemHeight(uint_t h, RedrawOption ro)
@@ -264,7 +264,7 @@ void ExtendedList::setItemHeight(uint_t h, RedrawOption ro)
     assert(h<height());
     itemHeight_=h;
     if (redraw==ro)
-        draw();
+        drawProxy();
 }
 
 void ExtendedList::setSelection(int item, RedrawOption ro)
@@ -298,7 +298,7 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
     if (redraw==ro)
     {
 //        if (scrolled)
-        draw();
+        drawProxy();
 /*        
         else 
         {
@@ -320,6 +320,16 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
     }
 }
 
+void ExtendedList::drawFocusRing()
+{
+    assert(hasFocus());
+    assert(form()->application().runningOnTreo600());
+    RectangleType rect;
+    FrmGetObjectBounds(*form(), index(), &rect);
+    Err error = HsNavDrawFocusRing(*form(), id(), hsNavFocusRingNoExtraInfo, &rect, hsNavFocusRingStyleSquare, false);
+    assert(errNone == error);
+}
+
 void ExtendedList::setItemRenderer(ItemRenderer* itemRenderer, RedrawOption ro)
 {
     if (0!=(itemRenderer_=itemRenderer) && 0!=itemRenderer->itemsCount())
@@ -328,7 +338,7 @@ void ExtendedList::setItemRenderer(ItemRenderer* itemRenderer, RedrawOption ro)
         topItem_=noListSelection;
     selection_=noListSelection;
     if (redraw==ro)
-        draw();
+        drawProxy();
 }
 
 void ExtendedList::adjustVisibleItems(RedrawOption ro) 
@@ -341,7 +351,7 @@ void ExtendedList::adjustVisibleItems(RedrawOption ro)
     {
         topItem_=std::max(0, total-visible);
         if (redraw==ro)
-            draw();
+            drawProxy();
     }
 }
 
@@ -562,7 +572,7 @@ void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& pe
         else
             topItem_=topItemBeforeTracking_;
         if (topItem_!=prevTopItem)
-            draw();
+            drawProxy();
     }
     if (!penUp)
         return;
@@ -577,13 +587,13 @@ void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& pe
     {
         topItem_-=viewCapacity;
         topItem_=std::max(0, topItem_);
-        draw();
+        drawProxy();
     }
     else if (height>bounds.height()-scrollButtonHeight_ && itemsCount>viewCapacity && topItem_<itemsCount-viewCapacity)
     {
         topItem_+=viewCapacity;
         topItem_=std::min(itemsCount-viewCapacity, topItem_);
-        draw();
+        drawProxy();
     }
 }
 
@@ -694,5 +704,4 @@ void ExtendedList::notifyItemsChanged()
         selection_=noListSelection;    
     }
 }
-
 

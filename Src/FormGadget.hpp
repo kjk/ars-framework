@@ -17,12 +17,14 @@ namespace ArsLexis {
         bool usable_;
         bool doubleBuffer_;
         bool hasFocus_;
-
+        
     protected:        
 
         void drawProxy();
         
-        virtual void draw(Graphics& graphics);
+        virtual void drawFocusRing() {}
+        
+        virtual void handleDraw(Graphics& graphics);
         
         virtual bool handleEvent(EventType& event);
         
@@ -35,6 +37,13 @@ namespace ArsLexis {
         void setDoubleBuffer(bool val)
         {doubleBuffer_=val;}
         
+        enum FocusChange {
+            focusTaking,
+            focusLosing
+        };
+        
+        virtual void handleFocusChange(FocusChange change);
+        
     public:
     
         bool visible() const
@@ -45,8 +54,6 @@ namespace ArsLexis {
         
         bool hasFocus() const {return hasFocus_;}
         
-        void setFocus(bool value = true) {hasFocus_ = value;}
-    
         explicit FormGadget(Form& form, UInt16 id=frmInvalidObjectId);
         
         ~FormGadget();

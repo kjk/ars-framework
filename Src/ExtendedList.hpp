@@ -34,10 +34,7 @@ namespace ArsLexis {
         
         uint_t visibleItemsCount() const;
         
-        void draw()
-        {drawProxy();}
-        
-        void setSelection(int item, RedrawOption ro=redraw);
+        void setSelection(int item, RedrawOption ro=redrawNot);
 
         int selection() const
         {return selection_;}
@@ -68,7 +65,7 @@ namespace ArsLexis {
 
         //! For compatibility with List.
         void setCustomDrawHandler(CustomDrawHandler* customDrawHandler)
-        {setItemRenderer(customDrawHandler);}
+        {setItemRenderer(customDrawHandler, redrawNot);}
         
         enum KeyHandlerOptions {
             optionScrollPagesWithLeftRight=1,
@@ -125,10 +122,12 @@ namespace ArsLexis {
         
     protected:
     
+        void drawFocusRing();
+    
         const ItemRenderer* itemRenderer() const
         {return itemRenderer_;}
     
-        void draw(Graphics& graphics);
+        void handleDraw(Graphics& graphics);
         
         virtual void drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t item, bool selected);
         
