@@ -40,6 +40,45 @@ namespace ArsLexis
         return *this;
     }
 
+    Logger::LineAppender Logger::operator()(uint_t level)
+    {
+        return LineAppender(*this, level<=threshold_, level);
+    }
+    
+    Logger::LineAppender Logger::critical()
+    {
+        return LineAppender(*this, logCritical<=threshold_, logCritical);
+    }
+
+    Logger::LineAppender Logger::error()
+    {
+        return LineAppender(*this, logError<=threshold_, logError);
+    }
+    
+    Logger::LineAppender Logger::debug()
+    {
+        return LineAppender(*this, logDebug<=threshold_, logDebug);
+    }
+
+    Logger::LineAppender Logger::warning()
+    {
+        return LineAppender(*this, logWarning<=threshold_, logWarning);
+    }
+
+    Logger::LineAppender Logger::info()
+    {
+        return LineAppender(*this, logInfo<=threshold_, logInfo);
+    }
+
+    // This explicit specialization doesn't differ in any way from the one that would be generated.
+    // But it's here because it reduces size of code significantly.
+    template<>
+    Logger::LineAppender Logger::operator<< <const char*> (const char* val)
+    {
+        return LineAppender(*this, logLevelDefault<=threshold_, logLevelDefault)<<val;
+    }
+        
+
     RootLogger::RootLogger(const char* context, LogSink* sink, uint_t sinkThreshold):
         Logger(context)
     {

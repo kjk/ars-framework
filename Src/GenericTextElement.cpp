@@ -26,18 +26,16 @@ GenericTextElement::~GenericTextElement()
 }
 
 namespace {
-
-#ifdef NDEBUG
-    inline
-#endif
+    
     static uint_t findNextWhitespace(const String& text, uint_t fromPos)
     {
-        return std::find_if(text.begin()+fromPos, text.end(), std::isspace)-text.begin();
+        uint_t length=text.length();
+        for (uint_t i=fromPos; i<length; ++i)
+            if (std::isspace(text[i]))
+                return i;
+        return length;
     }
 
-#ifdef NDEBUG
-    inline
-#endif
     static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
     {
         String::const_reverse_iterator it(text.rend()-start-length);

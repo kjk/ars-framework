@@ -192,23 +192,17 @@ namespace ArsLexis
         template<typename T>
         LineAppender operator<<(T val);
         
-        LineAppender operator()(uint_t level)
-        {return LineAppender(*this, level<=threshold_, level);}
+        LineAppender operator()(uint_t level);
+
+        LineAppender critical();
+
+        LineAppender error();
         
-        LineAppender critical()
-        {return (*this)(logCritical);}
+        LineAppender debug();
 
-        LineAppender error()
-        {return (*this)(logError);}
-        
-        LineAppender debug()
-        {return (*this)(logDebug);}
+        LineAppender warning();
 
-        LineAppender warning()
-        {return (*this)(logDebug);}
-
-        LineAppender info()
-        {return (*this)(logInfo);}
+        LineAppender info();
 
     protected:
         
@@ -220,7 +214,10 @@ namespace ArsLexis
     
     template<typename T>
     Logger::LineAppender Logger::operator<<(T val)        
-    {return (*this)(logLevelDefault)<<val;}
+    {return LineAppender(*this, logLevelDefault<=threshold_, logLevelDefault)<<val;}
+
+    template<>
+    Logger::LineAppender Logger::operator<< <const char*> (const char* val);
     
 #pragma mark -
 #pragma mark RootLogger
