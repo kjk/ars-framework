@@ -64,6 +64,7 @@ transactionIdField =    "Transaction-ID"
 getCookieField =        "Get-Cookie"
 cookieField =           "Cookie"
 getDefinitionField =    "Get-Definition"
+getRandomField =        "Get-Random"
 formatVersionField =    "Format-Version"
 definitionField =       "Definition"
 resultsForField =       "Results-For"
@@ -116,6 +117,7 @@ class iPediaProtocol(basic.LineReceiver):
         self.userId=None
         self.serialNumber=None
         self.definitionId=None
+        self.getRandom=None
         self.linesCount=0
         
     def getDatabase(self):
@@ -448,9 +450,23 @@ class iPediaProtocol(basic.LineReceiver):
             if cursor:
                 cursor.close()
             self.error=iPediaServerError.serverFailure
-            return False;
+            return False
         return True
-        
+
+    def handleGetRandomRequest(self):
+        cursor=None
+        definition=None
+        try:
+            db=self.getDatabase()
+            cursor=db.cursor()
+        except _mysql_exception.Error, ex:
+            print ex
+            if cursor:
+                cursor.close()
+            self.error=iPediaServerError.serverFailure
+            return False
+        return True
+
     def answer(self):
         
         print ""
@@ -458,7 +474,7 @@ class iPediaProtocol(basic.LineReceiver):
         print ""
         
         if self.transactionId:
-                self.outputField(transactionIdField, self.transactionId)
+            self.outputField(transactionIdField, self.transactionId)
         else:
             return self.finish()
         
@@ -477,6 +493,9 @@ class iPediaProtocol(basic.LineReceiver):
         
         if self.term and not self.handleDefinitionRequest():
             return self.finish()                                
+
+        if self.getRandom and not self.handleGetRandomRequest():
+            return self.finish()
 
         self.finish()
 
@@ -519,6 +538,9 @@ class iPediaProtocol(basic.LineReceiver):
             
             elif request.startswith(registerField):
                 self.serialNumber=self.extractFieldValue(request)
+
+            elif request.startswith(getRandomField):
+                self.getRandom = True
             else:
                 self.error=iPediaServerError.malformedRequest
 
@@ -528,7 +550,6 @@ class iPediaFactory(protocol.ServerFactory):
     def createConnection(self):
         return MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
         
-
     def __init__(self):
         db=self.createConnection()
         cursor=db.cursor()

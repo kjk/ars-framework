@@ -3,7 +3,7 @@
 #
 # Converts the original wiki database in enwiki.cur to the format used
 # by iPedia server
-# 
+#
 # Command line parameters:
 #  -verbose : if used will print a lot of debugging input to stdout. May slow
 #             down conversion process
@@ -15,11 +15,19 @@
 #             original articles from enwiki db, this option will limit it to N
 #             articles which should be enough to detect major problems with
 #             the converter
+# -showdups : sets g_fShowDups to True. The idea is that if we convert to an empty ipedia.definitions
+#             database, we should never have duplicates. If we have it means that we're loosing
+#             some of the original definitions. With this flag we dump dups to stdout.
+#             Don't use if ipedia.definitions isn't empty
 
 import MySQLdb, sys, datetime, re, unicodedata
 
-#if True, we'll print a lot of debug text to stdout
+# if True, we'll print a lot of debug text to stdout
 g_fVerbose       = False
+
+# if True, we'll show if we're updating ipedia table twice for the same term
+# shouldn't happen if it was empty to begin with
+g_fShowDups      = False
 
 g_connOne        = None
 g_connTwo        = None
@@ -97,7 +105,7 @@ def dbEscape(txt):
 def stripUnconsistentBlocks(text, startPattern, endPattern):
     opened=0
     spanStart=-1
-    spans=[]    
+    spans=[]
     pattern=r"(%s)|(%s)" % (startPattern, endPattern)
     blockRe=re.compile(pattern, re.I+re.S)
     for match in blockRe.finditer(text):
@@ -121,7 +129,7 @@ def stripUnconsistentBlocks(text, startPattern, endPattern):
 
 def stripBlocks(text, blockElem):
     return stripUnconsistentBlocks(text, '<%s.*?>' % blockElem, '</%s>' % blockElem)
-    
+
 def replaceRegExp(text, regExp, repl):
     match=regExp.search(text)
     while match:
@@ -129,12 +137,12 @@ def replaceRegExp(text, regExp, repl):
         text=text[0:match.start()]+repl+text[match.end():]
         match=regExp.search(text)
     return text
-    
+
 def replaceTagList(text, tagList, repl):
     for tag in tagList:
         text=replaceRegExp(text, re.compile(r'<(/)?%s(\s+.*?)?>' % tag, re.I), repl)
     return text
-    
+
 commentRe=re.compile("<!--.*?-->", re.S)
 divRe=re.compile("<div.*?</div>", re.I+re.S)
 tableRe=re.compile("<table.*?</table>", re.I+re.S)
@@ -175,13 +183,13 @@ def convertDefinition(text):
     text=text.replace('\r','')
     text=text.replace('&minus;', '-') # no idea why would someone use &minus; but it happens e.g. in "electron"
     text=replaceRegExp(text, commentRe, '')     # This should be safe, as it's illegal in html to nest comments
-    
+
     text=stripBlocks(text, 'div')
     text=stripBlocks(text, 'table')
     text=stripUnconsistentBlocks(text, r'\{\|', r'\|\}')
 
     text=replaceRegExp(text, scriptRe, '')
-    
+
     text=replaceTagList(text, ['b', 'strong'], "'''")
     text=replaceTagList(text, ['em', 'i', 'cite'], "''")
     text=replaceTagList(text, ['hr'], '----')
@@ -193,16 +201,14 @@ def convertDefinition(text):
     text+='\n'
     return text
 
-def convertTermWithId(term_id,fForceConvert=False):
-    global g_fVerbose, g_connTwo
+# definition is cur_text from the table
+# ts is cur_timestamp from the table
+def convertTerm(cur_title,definition,ts,fForceConvert=False):
+    global g_fVerbose, g_fShowDups, g_connTwo
 
-    cur_data_cur = getNamedCursor(g_connTwo, "cur_data_cur")
     ipedia_write_cur = getNamedCursor(g_connTwo, "ipedia_write_cur")
-    cur_data_cur.execute("""SELECT cur_title,cur_text,cur_timestamp FROM enwiki.cur WHERE cur_namespace=0 AND cur_id='%s'""" % term_id)
-    defRow=cur_data_cur.fetchone()
-    term=defRow[0].replace('_', ' ')
-    definition=defRow[1]
-    ts=defRow[2]
+
+    term=cur_title.replace('_', ' ')
     timestamp=datetime.datetime(int(ts[0:4]), int(ts[4:6]), int(ts[6:8]), int(ts[8:10]), int(ts[10:12]), int(ts[12:14]))
     if g_fVerbose:
         log_txt = "term: %s " % term
@@ -211,7 +217,9 @@ def convertTermWithId(term_id,fForceConvert=False):
     check_cur.execute("""SELECT id, last_modified FROM definitions WHERE term='%s'""" % dbEscape(term))
     outRow=check_cur.fetchone()
     if outRow:
-        if g_fVerbose: 
+        if g_fShowDups:
+            print "dup: " + cur_title
+        if g_fVerbose:
             log_txt +=  "cur:" + outRow[1] + " new: " + str(timestamp)
         if fForceConvert or str(outRow[1])<str(timestamp):
             if g_fVerbose:
@@ -230,93 +238,87 @@ def convertTermWithId(term_id,fForceConvert=False):
 
     if g_fVerbose:
         print log_txt
-    return term
 
 def convertAll(articleLimit,fForceConvert):
     global g_connOne
-    query="""SELECT cur_id FROM cur WHERE cur_namespace=0"""
-    if len(sys.argv)>1:
-        print sys.argv
-        query+=""" AND cur_timestamp>'%s'""" % dbEscape(sys.argv[1])
 
-    if articleLimit != -1:
-        query+=""" LIMIT %d""" % articleLimit
-
-    cursor = getNamedCursor(g_connOne,"all_cur_ids")
-    cursor.execute(query)
-    print "cursor.execute() done"
     rowCount = 0
     rowsLeft = getEnwikiRowCount()
-
+    rowsPerQuery = 500
+    curOffset = 0
+    cursor = getNamedCursor(g_connOne,"all_cur_ids")
     while True:
-        row=cursor.fetchone()
-        if not row:
+        query="""SELECT cur_title,cur_text,cur_timestamp FROM cur WHERE cur_namespace=0"""
+        if len(sys.argv)>1:
+            query+=""" AND cur_timestamp>'%s'""" % dbEscape(sys.argv[1])
+        query+=""" LIMIT %d,%d""" % (curOffset, rowsPerQuery)
+        #print query
+        cursor.execute(query)
+        processedInOneFetch = 0
+        for row in cursor.fetchall():
+            convertTerm(row[0],row[1],row[2],fForceConvert)
+            rowCount += 1
+            rowsLeft -= 1
+            processedInOneFetch += 1
+            if 0 == rowCount % 500:
+                sys.stderr.write("processed %d rows, left %d, last term=%s\n" % (rowCount,rowsLeft,row[0]))
+            if articleLimit and rowCount >= articleLimit:
+                return
+        if 0 == processedInOneFetch:
             break
-        term = convertTermWithId(row[0],fForceConvert)
-        rowCount += 1
-        rowsLeft -= 1
-        if 0 == rowCount % 100:
-            print "processed %d rows, left %d, last term=%s" % (rowCount,rowsLeft,term)
-
-#    for row in cursor.fetchall():
-#        term = convertTermWithId(row[0],fForceConvert)
-#        rowCount += 1
-#        rowsLeft -= 1
-#        if 0 == rowCount % 100:
-#            print "processed %d rows, left %d, last term=%s" % (rowCount,rowsLeftterm)
+        curOffset += rowsPerQuery
 
 def convertOneTerm(term):
     global g_connTwo
-    query="""SELECT cur_id FROM enwiki.cur WHERE cur_namespace=0 AND cur_title='%s'""" % dbEscape(term)
+    query="""SELECT cur_title,cur_text,cur_timestamp FROM cur WHERE cur_namespace=0"""
     cursor=g_connTwo.cursor()
     cursor.execute(query)
     row=cursor.fetchone()
+    cursor.close()
     if not row:
         print "Didn't find a row in enwiki.cur with cur_title='%s'" % dbEscape(term)
     else:
         termId = row[0]
-        convertTermWithId(termId,True)
-    cursor.close()
+        convertTerm(row[0],row[1],row[2],True)
+
+def fDetectRemoveCmdFlag(flag):
+    fFlagPresent = False
+    try:
+        pos = sys.argv.index(flag)
+        fFlagPresent = True
+        sys.argv[pos:pos+1] = []
+    except:
+        pass
+    return fFlagPresent
+
+# given argument name in argName, tries to return argument value
+# in command line args and removes those entries from sys.argv
+# return None if not found
+def getRemoveCmdArg(argName):
+    argVal = None
+    try:
+        pos = sys.argv.index(argName)
+        argVal = sys.argv[pos+1]
+        sys.argv[pos:pos+2] = []
+    except:
+        pass
+    return argVal
 
 if __name__=="__main__":
 
     initDatabase()
-    fForceConvert = False
-    try:
-        pos = sys.argv.index("-force")
-        fForceConvert = True
-        sys.argv[pos] = []
-    except:
-        pass
 
-    try:
-        pos = sys.argv.index("-verbose")
-        g_fVerbose = True
-        print sys.argv
-        sys.argv[pos:pos+1] = []
-        print sys.argv
-    except:
-        pass
+    fForceConvert = fDetectRemoveCmdFlag( "-force" )
+    g_fVerbose = fDetectRemoveCmdFlag( "-verbose" )
+    g_fShowDups = fDetectRemoveCmdFlag( "-showdups" )
 
-    articleLimit = -1
-    pos = -1
-    try:
-        pos = sys.argv.index("-limit")
-    except:
-        pass
-    if pos != -1:
-        articleLimit = int(sys.argv[pos+1])
-        #print sys.argv
-        sys.argv[pos:pos+2] = []
-        #print sys.argv
+    print "g_fShowDups=%d" % g_fShowDups
+    articleLimit = getRemoveCmdArg("-limit")
+    if articleLimit:
+        articleLimit = int(articleLimit)
 
-    pos = -1
-    try:
-        pos = sys.argv.index("-one")
-    except:
-        pass
-    if pos != -1:
-        termToConvert = sys.argv[pos+1]
+    termToConvert = getRemoveCmdArg("-one")
+    if None!=termToConvert:
         g_fVerbose = True
         convertOneTerm(termToConvert)
     else:
