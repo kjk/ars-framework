@@ -62,44 +62,59 @@ namespace ArsLexis
     {
         if (sending_) 
             log().debug()<<_T("notifyReadable(): called while sending data, probably some connection error occured");
-        status_t status=errNone;
-        status_t error=getSocketErrorStatus(status);
+        status_t status = errNone;
+        status_t error = getSocketErrorStatus(status);
         if (errNone == error)
             error=status;
-        else {
+        else 
+        {
             log().info()<<_T("notifyReadable(): getSocketErrorStatus() returned error (ignored): ")<<error;
             error=errNone;
         }
-        uint_t dataSize=0;
-        uint_t responseSize=response_.size();
-        uint_t tries=0;
         if (errNone!=error)
             goto Exit;
-        if (responseSize<maxResponseSize_-chunkSize_)
+
+        uint_t curResponseSize=response_.size();
+
+        if (curResponseSize>=maxResponseSize_-chunkSize_)
         {
-            error=resizeResponse(responseSize+chunkSize_);
-            if (errNone!=error)
-                goto Exit;            
-            error=socket().receive(dataSize, &response_[responseSize], chunkSize_, transferTimeout());
-            if (errNone!=error)
-                goto Exit;
-            totalReceived_+=dataSize;
-            assert(dataSize<=chunkSize_);
-            resizeResponse(responseSize+dataSize);
-            if (chunkSize_ != dataSize)
-            {   
-                log().info()<<_T("notifyReadable(): dataSize != chunkSize_ (server shut socket down?)");
-                error=notifyFinished();
-                abortConnection();
-            }
-            else
-            {
-                registerEvent(SocketSelector::eventRead);
-                error=notifyProgress();
-            }
+            error=errResponseTooLong;
+            goto Exit;
+        }
+
+        error = resizeResponse(curResponseSize+chunkSize_);
+        if (errNone!=error)
+            goto Exit;
+
+        uint_t dataSize = 0;
+        char *newDataBuf = (char*)&response_[curResponseSize];
+        error = socket().receive(dataSize, newDataBuf, chunkSize_, transferTimeout());
+        if (errNone!=error)
+            goto Exit;
+
+        totalReceived_ += dataSize;
+        assert(dataSize<=chunkSize_);
+
+        // TODO: I don't like this resize hack. It's not very safe to do things
+        // this way. Also, I don't know how resize is implemented - it might
+        // call realloc() for every resize which would be inefficient and probably
+        // lead to memory fragmentation. It would be better to do reserver()/resize()
+        // than resize()/resize()
+        // maybe we should just use temporary buffer for receive() or manually
+        // control the whole response buffer as char* instead of abusing NarrowString
+        resizeResponse(curResponseSize+dataSize);
+        //if (chunkSize_ != dataSize)
+        if (0==dataSize)
+        {   
+            log().info()<<_T("notifyReadable(): dataSize != chunkSize_ (server shut socket down?)");
+            error = notifyFinished();
+            abortConnection();
         }
         else
-            error=errResponseTooLong;
+        {
+            registerEvent(SocketSelector::eventRead);
+            error=notifyProgress();
+        }
 Exit:
         if (errNone!=error)
             log().error()<<_T("notifyReadable(): Socket::receive() returned error: ")<<error;

@@ -84,33 +84,34 @@ namespace ArsLexis
                 {
                     if (length>0)
                         error=payloadHandler_->handleIncrement(resp, length, true);
-                    if (!error)
-                    {
-                        error = notifyPayloadFinished();
-                        resp.erase(0, payloadLengthLeft_+lineSeparatorLength);
-                        NarrowString newResp;
-                        TextToByteStream(resp, newResp);
-                        setResponse(newResp);
-                        goOn=true;
-                    }                        
+                    if (errNone!=error)
+                        goto Exit;
+                    error = notifyPayloadFinished();
+                    resp.erase(0, payloadLengthLeft_+lineSeparatorLength);
+                    NarrowString newResp;
+                    TextToByteStream(resp, newResp);
+                    setResponse(newResp);
+                    goOn=true;
                 }
                 else
                 {
-                    bool finishPayload=(resp.length()>=payloadLengthLeft_);
-                    if (errNone==(error=payloadHandler_->handleIncrement(resp, length, finishPayload)))
-                    {
-                        if (finishPayload)
-                            error = notifyPayloadFinished();
-                        resp.erase(0, length);
-                        NarrowString newResp;
-                        TextToByteStream(resp, newResp);
-                        setResponse(newResp);
-                        payloadLengthLeft_-=length;
-                    }                            
+                    bool finishPayload = (resp.length()>=payloadLengthLeft_);
+                    error = payloadHandler_->handleIncrement(resp, length, finishPayload);
+                    if (errNone!=error)
+                        goto Exit;
+
+                    if (finishPayload)
+                        error = notifyPayloadFinished();
+                    resp.erase(0, length);
+                    NarrowString newResp;
+                    TextToByteStream(resp, newResp);
+                    setResponse(newResp);
+                    payloadLengthLeft_-=length;
                     goOn=false;
                 }
             }
         } while (goOn && !error);
+Exit:
         return error;
     }
 
@@ -128,8 +129,13 @@ namespace ArsLexis
         // empty line means end of response
         if (0==lineEnd)
             return errNone;
-        // didn't find the separator => error
-        if ((resp.npos==separatorPos) || (separatorPos>=lineEnd))
+
+        assert(String::npos!=separatorPos);
+        if (String::npos==separatorPos)
+            return errResponseMalformed;
+
+        assert(separatorPos<lineEnd);
+        if (separatorPos>=lineEnd)
             return errResponseMalformed;
 
         name.assign(resp, 0, separatorPos);
@@ -143,7 +149,10 @@ namespace ArsLexis
         // we must have space after ":"
         String::size_type expectedSpacePos = separatorPos+1;
         if (_T(' ') != resp[expectedSpacePos])
+        {
+            assert(false);
             return errResponseMalformed;
+        }
 
         String::size_type valueStartPos = separatorPos+2;
         assert(valueStartPos<=lineEnd);

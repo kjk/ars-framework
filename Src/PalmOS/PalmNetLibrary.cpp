@@ -107,7 +107,13 @@ namespace ArsLexis
     
     int NetLibrary::socketReceive(NativeSocket_t socket, void* buf, uint_t bufLen, uint_t flags, void* fromAddrP, uint_t* fromLen, long  timeout, status_t& err)
     {
-        return NetLibReceive(*this, socket, buf, bufLen, flags, fromAddrP, reinterpret_cast<UInt16*>(fromLen), timeout, &err);
+        err = errNone;
+        int res = NetLibReceive(*this, socket, buf, bufLen, flags, fromAddrP, reinterpret_cast<UInt16*>(fromLen), timeout, &err);
+        if (-1!=res)
+        {
+            assert(errNone==err);
+        }
+        return res;
     }
 
     int NetLibrary::socketConnect(NativeSocket_t  socket, const SocketAddr& sockAddr, uint_t addrLen, long timeout, status_t& err)

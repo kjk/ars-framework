@@ -77,19 +77,38 @@ namespace ArsLexis
             assert(error);
         return error;
     }
-    
+
+    // read data from the socket until we get an error or fill out the buffer
+    // or the other side closes the socket
     status_t SocketBase::receive(uint_t& received, void* buffer, uint_t bufferLength, long timeout, uint_t flags)
     {
         assert(isOpen());
-        status_t error=errNone;
-        int result=netLib_.socketReceive(socket_, buffer, bufferLength, flags, 0, 0, timeout, error);
-        if (result>=0)
+        status_t error = errNone;
+        int result;
+
+        uint_t bytesRead = 0;
+        uint_t bytesLeft = bufferLength;
+
+        while (true)
         {
-            assert(!error);
-            received+=result;
+            result = netLib_.socketReceive(socket_, buffer, bytesLeft, flags, 0, 0, timeout, error);
+            if (errNone != error)
+                break;
+            assert(result >= 0);
+            if (0==result)
+                break;
+
+            bytesRead += result;
+            bytesLeft -= result;
+            // TODO: if you remove break, we'll try to fill out the buffer until
+            // we get all the data or the connection is closed
+            // currently it break iPedia (we get malfromedResponse for an
+            // unknown reason)
+            break;
+            if (0==bytesLeft)
+                break;
         }
-        else
-            assert(error);
+        received = bytesRead;
         return error;
     }
 

@@ -114,10 +114,10 @@ namespace ArsLexis
     
         enum Error
         {
-            errResponseTooLong=sockConnErrorClass,
-            errResponseMalformed,
-            errNetLibUnavailable,
-            errFirstAvailable
+            errResponseTooLong=sockConnErrorClass,  // 0x8200
+            errResponseMalformed,  // 0x8201
+            errNetLibUnavailable,  // 0x8202
+            errFirstAvailable      // 0x8203
         };
         
         virtual status_t enqueue();

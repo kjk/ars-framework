@@ -45,7 +45,10 @@ namespace ArsLexis
     protected:
     
         virtual status_t handleField(const String& name, const String& value)
-        {return errResponseMalformed;}
+        {
+            assert(false);
+            return errResponseMalformed;
+        }
         
         PayloadHandler* releasePayloadHandler()
         {return payloadHandler_.release();}
