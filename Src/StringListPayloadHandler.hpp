@@ -22,7 +22,7 @@ namespace ArsLexis {
 
         virtual status_t listReady(Strings_t& strings)=0;
         
-        status_t handleIncrement(const String& payload, ulong_t& length, bool finish);
+        status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
         
     private:
         

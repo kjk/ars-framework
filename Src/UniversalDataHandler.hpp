@@ -35,7 +35,7 @@ public:
 
     ~UniversalDataHandler();
 
-    ArsLexis::status_t handleIncrement(const ArsLexis::String& payload, ulong_t& length, bool finish);
+    ArsLexis::status_t handleIncrement(const ArsLexis::char_t * payload, ulong_t& length, bool finish);
 };
 
 #endif

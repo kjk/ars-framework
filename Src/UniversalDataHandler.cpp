@@ -131,7 +131,7 @@ inline status_t UniversalDataHandler::handlePayloadFinish()
     return errNone;
 }
 
-status_t UniversalDataHandler::handleIncrement(const ArsLexis::String& payload, ulong_t& length, bool finish)
+status_t UniversalDataHandler::handleIncrement(const char_t * payload, ulong_t& length, bool finish)
 {
     status_t error = LineBufferedPayloadHandler::handleIncrement(payload, length, finish);
     if (errNone==error && finish)

@@ -4,7 +4,8 @@
 #include <DynStr.hpp>
 
 #define lineSeparator _T("\n")
-static const uint_t lineSeparatorLength=1;
+#define lineSeparatorChar _T('\n')
+#define lineSeparatorLength 1
 
 namespace ArsLexis
 {
@@ -63,7 +64,7 @@ namespace ArsLexis
         return error;
     }
 
-    status_t FieldPayloadProtocolConnection::handlePayloadIncrement(const String& payload, ulong_t& length, bool finish)
+    status_t FieldPayloadProtocolConnection::handlePayloadIncrement(const char_t * payload, ulong_t& length, bool finish)
     {
         assert(NULL != payloadHandler_.get());
         return payloadHandler_->handleIncrement(payload, length, finish);
@@ -71,63 +72,109 @@ namespace ArsLexis
 
     status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
     {
-        bool goOn=false;
-        status_t error=errNone;
-        String resp;
-        ByteStreamToText(response(), resp);
+        bool goOn = false;
+        status_t error = errNone;
+        char_t * resp = ArsLexis::StrToUtf16(response().c_str());
+        char_t * toFree = resp;
+        if (NULL == resp)
+            return 1; // TODO: better error
         // TODO: on Palm avoid TextToByteStream() - it's just a copy of data (I think)
         do 
         {
             if (!inPayload_)
             {
-                String::size_type end=resp.find(lineSeparator);
-                goOn=(resp.npos!=end);
+                long toConsume = ::StrFind(resp, -1, lineSeparatorChar);
+                if (-1 == toConsume)
+                    goOn = false;
+                else
+                    goOn = true;
+
                 if (finish || goOn)
                 {
-                    if (!goOn)
-                        end=resp.length();
-                    error=processLine(end);
-                    resp.erase(0, end+1);
-                    NarrowString newResp;
-                    TextToByteStream(resp, newResp);
-                    setResponse(newResp);
+                    if (goOn)
+                    {
+                        error = processLine(toConsume);
+                        resp += toConsume+1; // swallow also lineSeparator
+                    }
+                    else
+                    {
+                        toConsume = tstrlen(resp);
+                        error = processLine(toConsume);
+                        resp += toConsume;
+                        assert(_T('\0') == resp[0]);
+                    }
+                    char * newResp = Utf16ToStr(resp);
+                    if (NULL == newResp)
+                    {
+                        error = 1;  // TODO: better error
+                        goto Exit;
+                    }
+
+                    NarrowString newRespString(newResp);
+                    setResponse(newRespString);
+                    free(newResp);
                 }
             }
             else
             {
-                ulong_t length=std::min<ulong_t>(payloadLengthLeft_, resp.length());
-                if (resp.length()>=payloadLengthLeft_+lineSeparatorLength)
+                ulong_t respLen = tstrlen(resp);
+                ulong_t length = respLen;
+                if (length > payloadLengthLeft_)    // TODO: is it even possible?
+                    length = payloadLengthLeft_;
+
+                if (respLen >= payloadLengthLeft_ + lineSeparatorLength)
                 {
-                    if (length>0)
+                    if (length > 0)
                         error = handlePayloadIncrement(resp, length, true);
                     if (errNone!=error)
                         goto Exit;
                     error = notifyPayloadFinished();
-                    resp.erase(0, payloadLengthLeft_+lineSeparatorLength);
-                    NarrowString newResp;
-                    TextToByteStream(resp, newResp);
-                    setResponse(newResp);
-                    goOn=true;
+
+                    resp += payloadLengthLeft_ + lineSeparatorLength;
+                    char * newResp = Utf16ToStr(resp);
+                    if (NULL == newResp)
+                    {
+                        error = 1;  // TODO: better error
+                        goto Exit;
+                    }
+
+                    NarrowString newRespString(newResp);
+                    setResponse(newRespString);
+                    free(newResp);
+                    goOn = true;
                 }
                 else
                 {
-                    bool finishPayload = (resp.length()>=payloadLengthLeft_);
+                    bool finishPayload = false;
+                    if (respLen >= payloadLengthLeft_)
+                        finishPayload = true;
                     error = handlePayloadIncrement(resp, length, finishPayload);
                     if (errNone!=error)
                         goto Exit;
 
                     if (finishPayload)
                         error = notifyPayloadFinished();
-                    resp.erase(0, length);
-                    NarrowString newResp;
-                    TextToByteStream(resp, newResp);
-                    setResponse(newResp);
-                    payloadLengthLeft_-=length;
-                    goOn=false;
+
+                    resp += length;
+                    char * newResp = Utf16ToStr(resp);
+                    if (NULL == newResp)
+                    {
+                        error = 1;  // TODO: better error
+                        goto Exit;
+                    }
+
+                    NarrowString newRespString(newResp);
+                    setResponse(newRespString);
+                    free(newResp);
+
+                    payloadLengthLeft_ -= length;
+                    goOn = false;
                 }
             }
         } while (goOn && !error);
 Exit:
+        if (NULL != toFree)
+            free(toFree);
         return error;
     }
 
@@ -139,7 +186,7 @@ Exit:
     {
         String name, value;
         String resp;
-        ByteStreamToText(response(), resp);
+        ByteStreamToText(response(), resp); // TODO: replace with TxtToUtf16()
         String::size_type separatorPos=resp.find(_T(":"));
 
         // empty line means end of response
@@ -206,7 +253,7 @@ status_t FeedHandlerFromReader(ArsLexis::FieldPayloadProtocolConnection::Payload
             
         str.resize(before += length);
         
-        if (errNone != (err = handler.handleIncrement(str, before, chunk != length)))
+        if (errNone != (err = handler.handleIncrement(str.c_str(), before, chunk != length)))
             return err;
             
         str.erase(0, before);

@@ -23,7 +23,7 @@ namespace ArsLexis {
     
         ~LineBufferedPayloadHandler();
         
-        status_t handleIncrement(const String& payload, ulong_t& length, bool finish);
+        status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish);
                 
     
     };

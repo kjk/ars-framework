@@ -26,7 +26,7 @@ namespace ArsLexis
         
             virtual ~PayloadHandler();
             
-            virtual status_t handleIncrement(const String& payload, ulong_t& length, bool finish)=0;
+            virtual status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish)=0;
             
         };
         
@@ -43,7 +43,7 @@ namespace ArsLexis
         
     protected:
     
-        virtual status_t handlePayloadIncrement(const String& payload, ulong_t& length, bool finish);
+        virtual status_t handlePayloadIncrement(const char_t* payload, ulong_t& length, bool finish);
         
         virtual status_t handleField(const String& name, const String& value)
         {

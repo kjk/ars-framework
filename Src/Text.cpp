@@ -25,66 +25,68 @@ char_t UnicodeToPalm[24][2] =
  8364, 128, 8482, 153, 8776, 152, 9674, 141
 };
 
+static unsigned char Utf16ToChar(char_t in)
+{
+    if (in <= 255)
+    {
+        // is it common code ?
+        return (unsigned char)in;
+    }
+
+    // Maybe binary search - MS doesn't support 
+    // as always standard and bsearch
+    for (int i=0; i<24; i++)
+    {
+        if (UnicodeToPalm[i][0]==in)
+            return (unsigned char)UnicodeToPalm[i][1];
+    }
+    assert(false); //we never shall reach this point
+    return 0;
+}
+
 struct CharToByte
 { 
-    char operator()(char_t in) 
+    unsigned char operator()(char_t in) 
     {   
-        if (in<=255)
-        {
-            // is it common code ?
-            return char(in);
-        }
-        else // it's unicode char
-        {
-            // Maybe binary search - MS doesn't support 
-            // as always standard and bsearch
-            for (int i=0; i<24; i++)
-            {
-                if (UnicodeToPalm[i][0]==in)
-                    return (char)UnicodeToPalm[i][1];
-            }
-            assert(false); //we never shall reach this point
-            return 0;
-        }
+        return Utf16ToChar(in);
     }
 };
 
-struct ByteToChar 
-{ 
-    char_t operator()(unsigned char in)
+static char_t CharToUtf16(unsigned char in)
+{
+    if ((in >= 128) && (in <= 159))
+        return PalmToUnicode[in-128];
+
+    if ('\t' == in)
     {
-        if ((in>=128)&&(in<=159))
-            return PalmToUnicode[in-128];
-        else
-        {
-            if ('\t'==in)
-            {
-                // special case for tab - Palm ignores it, wince displays
-                // as a rectangle
-                return char_t(' ');
-            }
-            return char_t(in);
-        }
+        // special case for tab - Palm ignores it, wince displays
+        // as a rectangle
+        return char_t(' ');
     }
-};
+    return char_t(in);
+}
 #endif
 
-void TextToByteStream(const String& inTxt, NarrowString& outStream)
+
+char *Utf16ToStr(const char_t *txt)
 {
-#if defined(_WIN32)
-    /*Why this doesn't work I have no idea
-    char *out=NULL;
-    int size = WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, 0, NULL,NULL);
-    out=new char[size];
-    WideCharToMultiByte(CP_OEMCP, WC_SEPCHARS, inTxt.c_str(), -1, out, size, NULL,NULL);
-    outStream.assign(out);
-    delete []out;*/
-    outStream.reserve(inTxt.length());
-    std::transform(inTxt.begin(), inTxt.end(), std::back_inserter(outStream), CharToByte());
+#ifdef _PALM_OS
+    return StringCopy(txt);
 #else
-    outStream.assign(inTxt);
+    uint_t   txtLen = tstrlen(txt);    
+    char_t * res = malloc(txtLen+1);
+    if (NULL == res)
+        return NULL;
+
+    for (uint_t i=0; i<txtLen; i++)
+    {
+        res[i] = Utf16ToChar(txt[i]);
+    }
+    res[txtLen] = '\0';
+    return res;
 #endif
 }
+
 
 void ByteStreamToText(const NarrowString& inStream, String& outTxt)
 {
@@ -100,6 +102,26 @@ void ByteStreamToText(const NarrowString& inStream, String& outTxt)
     std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
 #else
     outTxt.assign(inStream);
+#endif
+}
+
+// do a primitive conversion of txt in Palm charset to utf-16
+char_t *StrToUtf16(const char *txt)
+{
+#ifdef _PALM_OS
+    return StringCopy(txt);
+#else
+    uint_t   txtLen = strlen(txt);
+    char_t * res = malloc((txtLen+1)*sizeof(char_t));
+    if (NULL == res)
+        return NULL;
+
+    for (uint_t i=0; i<txtLen; i++)
+    {
+        res[i] = CharToUtf16(txt[i]);
+    }
+    res[txtLen] = _T('\0');    
+    return res;
 #endif
 }
 
@@ -863,7 +885,8 @@ char_t* StringCopy2__(const char_t *curStr, int len, const char_t* file, int lin
     if (NULL == newStr)
         return NULL;
 
-    memcpy(newStr, curStr, sizeof(char_t) * (len + 1));
+    memcpy(newStr, curStr, sizeof(char_t) * len);
+    newStr[len] = chrNull;
     return newStr;
 }
 
@@ -909,26 +932,28 @@ long StrFind(const char_t* str, long len, char_t chr)
 
 
 #ifdef DEBUG
-
 static void test_StrEmpty()
 {
     assert(true == StrEmpty(NULL));
-    assert(true == StrEmpty(""));
-    assert(true == StrEmpty(" "));
-    assert(true == StrEmpty("          "));
-    assert(false == StrEmpty(" a"));
+    assert(true == StrEmpty(_T("")));
+    assert(true == StrEmpty(_T(" ")));
+    assert(true == StrEmpty(_T("          ")));
+    assert(false == StrEmpty(_T(" a")));
 }
 
 static void test_StrFind()
 {
-    assert(-1 == StrFind(NULL, -1, ' '));
-    assert(-1 == StrFind("abcd", -1, 'e'));
-    assert(1 == StrFind("abcd", -1, 'b'));
-    assert(-1 == StrFind("abcd", 3, 'd'));
+    assert(-1 == StrFind(NULL, -1, _T(' ')));
+    assert(-1 == StrFind(_T("abcd"), -1, _T('e')));
+    assert( 1 == StrFind(_T("abcd"), -1, _T('b')));
+    assert(-1 == StrFind(_T("abcd"), 3, _T('d')));
+    assert( 0 == StrFind(_T("hello"), -1, _T('h')) );
+    assert( 4 == StrFind(_T("hello"), -1, _T('o')) );
 }
 
 void test_TextUnitTestAll()
 {
+    test_StrFind();
     test_StrEmpty();
     test_StrFind();
 }

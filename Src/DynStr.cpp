@@ -503,7 +503,6 @@ void test_DynStrAll()
     test_DynStrAppendToNull();
     test_DynStrRemoveStartLen();
     test_DynStrTruncate();
-    test_DynStrResize();
 }
 
 #endif

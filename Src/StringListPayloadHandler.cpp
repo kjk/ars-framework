@@ -5,7 +5,7 @@ namespace ArsLexis {
     StringListPayloadHandler::~StringListPayloadHandler()
     {}
     
-    status_t StringListPayloadHandler::handleIncrement(const String& payload, ulong_t& length, bool finish)
+    status_t StringListPayloadHandler::handleIncrement(const char_t* payload, ulong_t& length, bool finish)
     {
         status_t error=LineBufferedPayloadHandler::handleIncrement(payload, length, finish);
         if (finish && errNone==error)

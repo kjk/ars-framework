@@ -9,10 +9,10 @@ namespace ArsLexis {
     LineBufferedPayloadHandler::~LineBufferedPayloadHandler()
     {}
     
-    status_t LineBufferedPayloadHandler::handleIncrement(const String& payload, ulong_t& length, bool finish)
+    status_t LineBufferedPayloadHandler::handleIncrement(const char_t * payload, ulong_t& length, bool finish)
     {
         lineBuffer_.append(payload, 0, length);
-        String::size_type pos=lineBuffer_.find(delimiter_);
+        String::size_type pos = lineBuffer_.find(delimiter_);
         while (true) 
         {
             if (lineBuffer_.npos==pos && !finish)
