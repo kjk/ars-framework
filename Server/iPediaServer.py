@@ -4,7 +4,7 @@
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 import MySQLdb
-import sys
+import random
 
 lineSeparator =		"\n"
 fieldSeparator =	": "
@@ -102,7 +102,20 @@ class iPediaProtocol(basic.LineReceiver):
 		return True
 		
 	def createCookie(self, cursor):
-		self.cookie=123456789		
+		finished=False
+		randMax=2**32-1
+		result=None
+		while not finished:
+			result=""
+			for i in range(4):
+				val=random.randint(0, randMax)
+				hexVal=hex(val)[2:10]
+				result+=hexVal
+			cursor.execute("""select id from cookies where cookie='%s'""" % result)
+			row=cursor.fetchone()
+			if not row:
+				finished=True
+		self.cookie=result
 		
 	def handleGetCookieRequest(self):
 
@@ -125,7 +138,7 @@ class iPediaProtocol(basic.LineReceiver):
 					self.userId=row[0]
 			else:
 				self.createCookie(cursor)
-				cursor.execute("""insert into cookies (cookie, device_info_token, issue_date) values (%d, '%s', now())""" % (self.cookie, db.escape_string(self.deviceInfoToken)))
+				cursor.execute("""insert into cookies (cookie, device_info_token, issue_date) values ('%s', '%s', now())""" % (self.cookie, db.escape_string(self.deviceInfoToken)))
 				self.cookieId=cursor.lastrowid
 			cursor.close()										
 			self.outputField(cookieField, str(self.cookie))
@@ -208,20 +221,19 @@ class iPediaProtocol(basic.LineReceiver):
 		result=None
 		history=[self.term]
 		while not finished:
-#			query="""select id, definition from definitions where term='%s' """ % db.escape_string(self.term.replace(' ', '_'))
-			query="""select 1, cur_text from enwiki.cur where cur_title='%s' """ % db.escape_string(self.term.replace(' ', '_'))
-			print query
+#			query="""select id, term, definition from definitions where term='%s' """ % db.escape_string(self.term.replace(' ', '_'))
+			query="""select 1, cur_title, cur_text from enwiki.cur where cur_title='%s' order by cur_timestamp desc limit 1""" % db.escape_string(self.term.replace(' ', '_'))
 			cursor.execute(query)
 			row=cursor.fetchone()
 			if row:
-				result=row[1]
-				print result
+				result=row[2]
 				if startsWithIgnoreCase(result, redirectCommand):
 					termStart=result.find(termStartDelimiter)+2
 					termEnd=result.find(termEndDelimiter)
 					self.term=result[termStart:termEnd]
 				else:
-					result=result.replace('\r', '')  #.replace("<b>","\'\'\'").replace("</b>","\'\'\'").replace("<i>","\'\'").replace("</i>","\'\'").replace("<em>","\'\'").replace("</em>","\'\'")
+					result=result.replace('\r', '')  
+					self.term=row[1].replace('_', ' ');
 					finished=True
 			else: 
 				result=None				
