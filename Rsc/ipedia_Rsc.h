@@ -1,2 +1,7 @@
-/* This is a temporary file that will be replaced by PilRC when
-   the main resource file for your project is compiled. */
+/* pilrc generated file.  Do not edit!*/
+#define MainClearTextButton 1008
+#define MainDescriptionField 1007
+#define MainForm 1006
+#define RomIncompatibleAlert 1005
+#define EditOnlyMenuBar 1003
+#define MainMenuBar 1001
