@@ -121,7 +121,11 @@ namespace ArsLexis
     public:
         struct hostent& hostInfo()  { return *hostInfo_; }
         //TODO: correct apropriately - set s_addr
-        IPAddr getAddress() {  IPAddr ret; ret.ip=0; return ret; }
+        IPAddr getAddress() {  
+            IPAddr ret; 
+            ret.ip = *(long*)hostInfo_->h_addr_list[0];
+            return ret; 
+        }
         void setHostInfo(struct hostent *hostInfo) { hostInfo_=hostInfo; }
     };
 

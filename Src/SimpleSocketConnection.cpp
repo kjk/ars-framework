@@ -12,7 +12,7 @@ namespace ArsLexis
         requestBytesSent_(0)
     {}
     
-    status_t SimpleSocketConnection::resizeResponse(String::size_type size)
+    status_t SimpleSocketConnection::resizeResponse(NarrowString::size_type size)
     {
         status_t error=errNone;
         ErrTry {

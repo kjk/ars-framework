@@ -1,4 +1,5 @@
 #include <FieldPayloadProtocolConnection.hpp>
+#include <Text.hpp>
 
 namespace ArsLexis
 {
@@ -50,7 +51,8 @@ namespace ArsLexis
     {
         bool goOn=false;
         status_t error=errNone;
-        String& resp=response();
+        String resp;
+        ByteStreamToText(response(),resp);
         do 
         {
             if (!inPayload())
@@ -63,6 +65,9 @@ namespace ArsLexis
                         end=resp.length();
                     error=processLine(end);
                     resp.erase(0, end+1);
+                    NarrowString newResp;
+                    TextToByteStream(resp, newResp);
+                    setResponse(newResp);
                 }
             }
             else
@@ -76,6 +81,9 @@ namespace ArsLexis
                     {
                         notifyPayloadFinished();
                         resp.erase(0, payloadLengthLeft_+lineSeparatorLength);
+                        NarrowString newResp;
+                        TextToByteStream(resp, newResp);
+                        setResponse(newResp);
                         goOn=true;
                     }                        
                 }
@@ -87,6 +95,9 @@ namespace ArsLexis
                         if (finishPayload)
                             notifyPayloadFinished();
                         resp.erase(0, length);
+                        NarrowString newResp;
+                        TextToByteStream(resp, newResp);
+                        setResponse(newResp);
                         payloadLengthLeft_-=length;
                     }                            
                     goOn=false;
@@ -99,7 +110,8 @@ namespace ArsLexis
     status_t FieldPayloadProtocolConnection::processLine(uint_t lineEnd)
     {
         String name, value;
-        const String& resp=response();
+        String resp;
+        ByteStreamToText(response(), resp);
         String::size_type separatorPos=resp.find(fieldSeparator);
         if (resp.npos!=separatorPos && separatorPos<lineEnd)
         {

@@ -13,15 +13,15 @@ namespace ArsLexis
     
     class SimpleSocketConnection: public SocketConnection
     {
-        String request_;
-        String response_;
+        NarrowString request_;
+        NarrowString response_;
         uint_t maxResponseSize_;
         uint_t chunkSize_;
         
         bool sending_;
         uint_t requestBytesSent_;
         
-        status_t resizeResponse(String::size_type size);
+        status_t resizeResponse(NarrowString::size_type size);
         
     protected:
         
@@ -33,10 +33,13 @@ namespace ArsLexis
         
         virtual status_t notifyProgress();
         
-        void setRequest(const String& request)
+        void setRequest(const NarrowString& request)
         {request_=request;}
         
-        String& response()
+        void setResponse(const NarrowString& response)
+        {response_=response;}
+
+        NarrowString& response()
         {return response_;}
         
     public:
