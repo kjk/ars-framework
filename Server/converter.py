@@ -1,4 +1,4 @@
-import MySQLdb, sys, datetime, re
+import MySQLdb, sys, datetime, re, unicodedata
 
 db=MySQLdb.Connect(host='localhost', user='ipedia', passwd='ipedia', db='ipedia')
 
@@ -53,6 +53,25 @@ trRe=re.compile("<tr.*?</tr>", re.I+re.S)
 tdRe=re.compile("<td.*?</td>", re.I+re.S)
 scriptRe=re.compile("<script.*?</script>", re.I+re.S)
 badLinkRe=re.compile(r"\[\[((\w\w\w?(-\w\w)?)|(simple)|(image)|(media)):.*?\]\]", re.I+re.S)
+numEntityRe=re.compile(r'&#(\d+);')
+
+def convertEntities(text):
+    matches=[]
+    for iter in numEntityRe.finditer(text):
+        matches.append(iter)
+    matches.reverse()
+    for match in matches:
+        num=int(text[match.start(1):match.end(1)])
+        if num>255:
+            char=unichr(num)
+            decomposed=unicodedata.normalize('NFKD', char)
+            valid=''
+            for char in decomposed:
+                if ord(char)<256:
+                    valid+=chr(ord(char))
+            if len(valid):
+                text=text[:match.start()]+valid+text[match.end():]
+    return text
 
 def convertDefinition(text):
     text=text.replace('\r','')
@@ -69,11 +88,12 @@ def convertDefinition(text):
     text=replaceTagList(text, ['hr'], '----')
     text=replaceTagList(text, ['dfn', 'code', 'samp', 'kbd', 'var', 'abbr', 'acronym', 'blockquote', 'q', 'p', 'pre', 'ins', 'del', 'dir', 'menu', 'img', 'object', 'big', 'span', 'applet', 'font', 'basefont', 'tr', 'td', 'table', 'center', 'div'], '')
     text=replaceRegExp(text, badLinkRe, '')
+    text=convertEntities(text)
     text=text.strip()
     text+='\n'
     return text
 
-query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0  """
+query=query="""select cur_title, cur_text, cur_timestamp from enwiki.cur where cur_namespace=0 """
 
 if len(sys.argv)>1:
     query+=""" and cur_timestamp>'%s'""" % db.escape_string(sys.argv[1])
