@@ -49,7 +49,7 @@ namespace ArsLexis {
 
         status_t write(char_t chr);
 
-        status_t write(const char_t* begin, const char_t* end);
+        status_t write(const char_t* begin, uint_t length);
         
         status_t flush();
         

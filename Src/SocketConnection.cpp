@@ -281,5 +281,4 @@ namespace ArsLexis
     void SocketConnection::handleError(status_t)
     {abortConnection();}
         
-
 }

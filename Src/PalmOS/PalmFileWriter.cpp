@@ -50,11 +50,9 @@ namespace ArsLexis {
         return error;        
     }
     
-    status_t FileWriter::write(const char_t* begin, const char_t* end)
+    status_t FileWriter::write(const char_t* begin, uint_t length)
     {
         assert(isOpen());
-        assert(end>=begin);
-        ulong_t length=end-begin;
         if (0==length)
             return errNone;
         status_t error;
