@@ -472,7 +472,7 @@ def convertNamedEntities(term, text):
         if latin1_refs.has_key(name):
             text=text[:match.start()]+chr(latin1_refs[name])+text[match.end():]
         else:
-            text=text[:match.start()]+name+text[match.end():]
+            text=text[:match.start()]+'/'+name+'/'+text[match.end():]
     return text;
 
 def convertNumberedEntities(term, text):

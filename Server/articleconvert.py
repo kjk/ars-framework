@@ -98,38 +98,8 @@ def replaceWikiMacros(term, text):
 
     for (macro,replacement) in wikiMacrosReplacements.items():
         text = text.replace(macro, replacement)
-# TODO: old code, remove
-#    text=text.replace("{{msg:stub}}", wikiStubText)
-#    text=text.replace("{{msg:spoiler}}", wikiSpoilerText)
-#    text=text.replace("{{msg:disambig}}", wikiDisambigText)
-#    text=text.replace("{{msg:copyvio1}}", wikiCopyVio1Text)
-#    text=text.replace("{{msg:copyvio2}}", wikiCopyVio2Text)
-#    text=text.replace("{{msg:NPOV}}", wikiNPOVText)
-#    text=text.replace("{{msg:disputed}}", wikiDisputedText)
-#    text=text.replace("{{msg:inclusion}}", wikiInclusionText)
-#    text=text.replace("{{msg:protected}}", wikiProtectedText)
-#    text=text.replace("{{msg:inuse}}", wikiInUseText)
-#    text=text.replace("{{msg:controversial}}", wikiControversialText)
     text=replaceRegExp(text, wikiMacroRe, "")
     return text
-
-#def convertEntities(text):
-#    matches=[]
-#    for iter in numEntityRe.finditer(text):
-#        matches.append(iter)
-#    matches.reverse()
-#    for match in matches:
-#        num=int(text[match.start(1):match.end(1)])
-#        if num>255:
-#            char=unichr(num)
-#            decomposed=unicodedata.normalize('NFKD', char)
-#            valid=''
-#            for char in decomposed:
-#                if ord(char)<256:
-#                    valid+=chr(ord(char))
-#            if len(valid):
-#                text=text[:match.start()]+valid+text[match.end():]
-#    return text
 
 # main function: given the text of wikipedia article in original wikipedia
 # format, return the article in our own format
