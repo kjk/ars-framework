@@ -6,30 +6,39 @@ using ArsLexis::char_t;
 
 static void *buildDataForEvent(ulong_t eventId, ulong_t magicNumber, ulong_t type, char *eventData, ulong_t dataLen)
 {
-    char *data = (char*)malloc(sizeof(eventId)+sizeof(magicNumber)+sizeof(type)+dataLen);
-    if (NULL==data) 
+    char* data = (char*)malloc(sizeof(eventId)+sizeof(magicNumber)+sizeof(type)+dataLen);
+    if (NULL == data) 
         return NULL;
+    void* p = data;
+    MemMove(data, &eventId, sizeof(eventId));
+    data += sizeof(eventId);
     MemMove(data, &magicNumber, sizeof(magicNumber));
     data += sizeof(magicNumber);
-    MemMove(data, (char*)&magicNumber, sizeof(magicNumber));
-    data += sizeof(magicNumber);
-    MemMove(data, (char*)&type, sizeof(type));
+    MemMove(data, &type, sizeof(type));
     data += sizeof(type);
     MemMove(data, eventData, dataLen);
-    return (void*)data;
+    return p;
 }  
 
-void *createExtendedEventText(ulong_t eventId, const char_t *txt)
+void *createExtendedEventText(ulong_t eventId, const char_t* txt, ulong_t length)
 {
-    return buildDataForEvent(eventId, EVT_MAGIC_NUMBER, EXT_EVT_TEXT_TYPE, (char*)txt, sizeof(char_t)*(tstrlen(txt)+1));
+    return buildDataForEvent(eventId, EVT_MAGIC_NUMBER, EXT_EVT_TEXT_TYPE, (char*)txt, sizeof(char_t)*(length+1));
 };
 
 void sendTextEvent(ulong_t eventId, const ArsLexis::char_t *txt)
 {
-    void *data = createExtendedEventText(eventId, txt);
+    void *data = createExtendedEventText(eventId, txt, tstrlen(txt));
     if (NULL!=data)
         sendExtendedEvent(data);
 }
+
+void sendTextEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length)
+{
+    void *data = createExtendedEventText(eventId, txt, length);
+    if (NULL!=data)
+        sendExtendedEvent(data);
+}
+
 
 void sendExtendedEvent(void *eventData)
 {
@@ -38,7 +47,7 @@ void sendExtendedEvent(void *eventData)
 
 ulong_t   getExtendedEventId(EventType *event)
 {
-    void *data = reinterpret_cast<void*>(&(event->data));    
+    void *data = *reinterpret_cast<void**>(&event->data);  
     return getExtendedEventId(data);
 }
 
@@ -74,14 +83,22 @@ char_t *getTextEventDataCopy(void *eventData)
 
 char_t *getTextEventDataCopy(EventType *event)
 {
-    void *data = reinterpret_cast<void*>(&(event->data));    
+    void *data = *reinterpret_cast<void**>(&event->data);
     return getTextEventDataCopy(data);
+}
+
+const char_t* getTextEventData(EventType* event)
+{
+    void *eventData = *reinterpret_cast<void**>(&event->data);
+    assert(EVT_MAGIC_NUMBER == getExtendedEventMagicNumber(eventData));
+    const char_t *data = (const char_t*)((const char*)eventData+sizeof(ulong_t)+sizeof(ulong_t)+sizeof(ulong_t));
+    return data;
 }
 
 void freeExtendedEvent(EventType *event)
 {
-    assert(extEvent == event.eType);
-    void *data = reinterpret_cast<void*>(&(event->data));    
+    assert(extEvent == event->eType);
+    void *data = *reinterpret_cast<void**>(&event->data);
     free(data);
 }
 
