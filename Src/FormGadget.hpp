@@ -55,7 +55,8 @@ namespace ArsLexis {
         //! Warning! this function overwrites non-virtual FormObject::attachByIndex(). 
         //! Take care not to call it through FormObject pointer or reference.
         void attachByIndex(UInt16 index);
-            
+          
+        friend class Form;  
     };   
 
 }

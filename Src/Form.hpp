@@ -11,6 +11,8 @@ namespace ArsLexis
 {
 
     class Application;
+    
+    class FormGadget;
         
     class Form: private NonCopyable
     {
@@ -21,6 +23,8 @@ namespace ArsLexis
         bool deleteOnClose_:1;
         bool deleteAfterEvent_:1;
         mutable String title_;
+        
+        FormGadget* trackingGadget_;
         
         static Boolean routeEventToForm(EventType* event);
         
@@ -156,6 +160,7 @@ namespace ArsLexis
         {return fiveWay_.CenterPressed(event);}
 
         friend class Application;
+        friend class FormGadget;
     };
     
 }

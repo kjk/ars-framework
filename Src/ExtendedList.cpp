@@ -1,6 +1,10 @@
 #include <ExtendedList.hpp>
 #include <Graphics.hpp>
 
+#ifdef __MWERKS__
+#pragma pcrelconstdata on
+#endif
+
 using namespace ArsLexis;
 
 ExtendedList::ExtendedList(Form& form, UInt16 id):
@@ -8,9 +12,18 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     itemRenderer_(0),
     selection_(noListSelection),
     topItem_(noListSelection),
-    itemHeight_(12),
-    scrollBarWidth_(7)
+    itemHeight_(18),
+    scrollBarWidth_(7),
+    scrollButtonHeight_(7)
 {
+    setRgbColor(itemBackground_, 76, 124, 189);
+    setRgbColor(selectedItemBackground_, 87, 152, 211);
+//    setRgbColor(listBackground_, 65, 97, 166);
+    setRgbColor(listBackground_, 255, 255, 255);
+//    WinSetBackColorRGB(0, &listBackground_);
+    setRgbColor(foreground_, 255, 255, 255);
+
+    
 //    UInt32 screenDepths=1;
 //    Boolean color=false;
 //    Err error=WinScreenMode(winScreenModeGet, NULL, NULL, &screenDepths, &color);
@@ -23,8 +36,12 @@ void ExtendedList::drawItem(Graphics& graphics, const Rectangle& bounds, uint_t 
 {
     assert(item<itemsCount());
     assert(0!=itemRenderer_);
-    drawItemBackground(graphics, bounds, item, selected);
-    itemRenderer_->drawItem(graphics, *this, item, bounds);
+    RGBColorType oldColor;
+    WinSetBackColorRGB(selected?&selectedItemBackground_:&itemBackground_, &oldColor);
+    Rectangle rect=bounds;
+    drawItemBackground(graphics, rect, item, selected);
+    itemRenderer_->drawItem(graphics, *this, item, rect);
+    WinSetBackColorRGB(&oldColor, 0);
 }
 
 void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item)
@@ -32,7 +49,7 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const Rectangle& listBounds
     assert(noListSelection!=topItem_);
     assert(topItem_<=item);
     uint_t offset=item-topItem_;
-    Rectangle itemBounds(listBounds.x(), listBounds.y()+offset*itemHeight_, listBounds.width()-scrollBarWidth_, itemHeight_);
+    Rectangle itemBounds(listBounds.x(), listBounds.y()+offset*itemHeight_, listBounds.width()-visibleScrollBarWidth(), itemHeight_);
     Rectangle clipRectangle(itemBounds);
     if (clipRectangle.y()+clipRectangle.height()>listBounds.y()+listBounds.height())
     {
@@ -59,9 +76,15 @@ void ExtendedList::draw(Graphics& graphics)
         ++itemsToDisplay;
     uint_t itemsBelow=itemsCount-topItem_;
     itemsToDisplay=std::min(itemsToDisplay, itemsBelow);
+    
+    RGBColorType oldFore, oldText;
+    WinSetForeColorRGB(&foreground_, &oldFore);
+    WinSetTextColorRGB(&foreground_, &oldText);
     for (uint_t i=0; i<itemsToDisplay; ++i)
         drawItemProxy(graphics, listBounds, topItem_+i);
-    listBounds.x()=listBounds.x()+listBounds.width()-scrollBarWidth_;
+    WinSetTextColorRGB(&oldText, 0);
+    WinSetForeColorRGB(&oldFore, 0);
+    listBounds.x()=listBounds.x()+listBounds.width()-visibleScrollBarWidth();
     Graphics::ClipRectangleSetter setClip(graphics, listBounds);
     drawScrollBar(graphics, listBounds);
 }
@@ -141,10 +164,16 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
             Graphics graphics(form()->windowHandle());
             Rectangle listBounds;
             bounds(listBounds);
+
+            RGBColorType oldFore, oldText;
+            WinSetForeColorRGB(&foreground_, &oldFore);
+            WinSetTextColorRGB(&foreground_, &oldText);
             if (noListSelection!=oldSelection)
                 drawItemProxy(graphics, listBounds, oldSelection);
             if (noListSelection!=selection_)
                 drawItemProxy(graphics, listBounds, selection_);
+            WinSetTextColorRGB(&oldText, 0);
+            WinSetForeColorRGB(&oldFore, 0);
         }
     }
 }
@@ -174,12 +203,78 @@ void ExtendedList::adjustVisibleItems(RedrawOption ro)
     }
 }
 
-void ExtendedList::drawItemBackground(Graphics& graphics, const Rectangle& bounds, uint_t item, bool selected)
+namespace {
+
+    static void saturate(UInt8& val, int level)
+    {
+        if (level>0)
+        {
+            if (255-level>val)
+                val+=level;
+            else
+                val=255;
+        }
+        else
+        {
+            if (0-level<val)
+                val+=level;
+            else
+                val=0;
+        }
+    }
+    
+    static void saturate(RGBColorType& rgb, int level)
+    {
+        saturate(rgb.r, level);
+        saturate(rgb.g, level);
+        saturate(rgb.b, level);
+    }
+    
+}
+
+void ExtendedList::drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t item, bool selected)
 {
+    RGBColorType oldColor;
+    
+    RGBColorType bgColor=(selected?selectedItemBackground_:itemBackground_);
+    RGBColorType tmp=bgColor;
+    saturate(tmp, 20);
+    WinSetForeColorRGB(&tmp, &oldColor);
+    const uint_t x0=bounds.x();
+    const uint_t y0=bounds.y();
+    const uint_t x1=x0+bounds.width()-1;
+    const uint_t y1=y0+bounds.height()-1;
+    graphics.drawLine(x0+1, y0, x1-1, y0);
+    graphics.drawLine(x0, y0+1, x0, y1-2);
+    graphics.drawLine(x0, y0+1, x0+1, y0+1);
+    tmp=bgColor;
+    saturate(tmp, 10);
+    WinSetForeColorRGB(&tmp, 0);
+    graphics.drawLine(x0+2, y0+1, x1-2, y0+1);
+    graphics.drawLine(x0+1, y0+2, x0+1, y1-3);
+    tmp=bgColor;
+    saturate(tmp, -20);
+    WinSetForeColorRGB(&tmp, 0);
+    graphics.drawLine(x0+1, y1-1, x1-1, y1-1);
+    graphics.drawLine(x1, y0+1, x1, y1-2);
+    graphics.drawLine(x1-1, y1-2, x1, y1-2);
+    tmp=bgColor;
+    saturate(tmp, -10);
+    WinSetForeColorRGB(&tmp, 0);
+    graphics.drawLine(x0+1, y1-2, x1-2, y1-2);
+    graphics.drawLine(x1-1, y0+1, x1-1, y1-3);
+    WinSetForeColorRGB(&oldColor, 0);
+    bounds.explode(2, 2, -4, -5);
+    graphics.erase(bounds);
+    
 }
 
 void ExtendedList::drawBackground(Graphics& graphics, const Rectangle& bounds)
 {
+    RGBColorType oldColor;
+    WinSetBackColorRGB(&listBackground_, &oldColor);
+    graphics.erase(bounds);
+    WinSetBackColorRGB(&oldColor, 0);
 }
 
 void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
@@ -210,18 +305,11 @@ bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
         delta=page;
     else if ((optionFireListSelectOnCenter & options) && form.fiveWayCenterPressed(&event))
     {
-        EventType e;
-        MemSet(&e, sizeof(e), 0);
-/*        
-        if (noListSelection!=(e.data.lstSelect.selection=selection()))
+        if (noListSelection!=selection_)
         {
-            e.eType=lstSelectEvent;
-            e.data.lstSelect.listID=id();
-            e.data.lstSelect.pList=object();
-            EvtAddEventToQueue(&e);
+            fireItemSelectEvent();
             handled = true;
         }
-*/        
     }
     else {
         switch (event.data.keyDown.chr)
@@ -273,6 +361,120 @@ void ExtendedList::setSelectionDelta(int delta, RedrawOption ro)
     if (redraw==ro)
         draw();
 }
+
+bool ExtendedList::handleEvent(EventType& event)
+{
+    bool handled=false;
+    switch (event.eType) 
+    {
+        case penMoveEvent:
+            handlePenMove(event);
+            handled=true;
+            break;
+        
+        case penUpEvent:
+            handlePenUp(event);
+            handled=true;
+            break;
+            
+        default:
+            handled=FormGadget::handleEvent(event);            
+    }
+    return handled;
+}
+
+bool ExtendedList::handleEnter(const EventType& event)
+{
+    Point penPos(event.screenX, event.screenY);
+    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
+    Rectangle bounds;
+    this->bounds(bounds);
+    assert(bounds && penPos);
+    Rectangle itemsBounds=bounds;
+    itemsBounds.width()-=visibleScrollBarWidth();
+    if (itemsBounds && penPos)
+        handlePenInItemsList(bounds, penPos, false);
+    else 
+        handlePenInScrollBar(bounds, penPos, false);
+    return true;
+}
+
+void ExtendedList::handlePenInItemsList(const Rectangle& bounds, const Point& penPos, bool penUp)
+{
+    uint_t itemsCount=0;
+    if (0==(itemsCount=this->itemsCount()))
+        return;
+    assert(noListSelection!=topItem_);
+    assert(topItem_<itemsCount);
+    uint_t item=topItem_+(penPos.y-bounds.y())/itemHeight_;
+    if (selection_!=item && item<itemsCount)
+        setSelection(item, redraw);
+    if (penUp && item<itemsCount)
+        fireItemSelectEvent();
+}
+
+void ExtendedList::handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp)
+{
+    //! @todo handle pen in scrollbar
+}
+
+void ExtendedList::handlePenUp(const EventType& event)
+{
+    Point penPos(event.screenX, event.screenY);
+    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
+    Rectangle bounds;
+    this->bounds(bounds);
+    if (!(bounds && penPos))
+        return;
+    Rectangle itemsBounds=bounds;
+    itemsBounds.width()-=visibleScrollBarWidth();
+    if (itemsBounds && penPos)
+        handlePenInItemsList(bounds, penPos, true);
+    else
+        handlePenInScrollBar(bounds, penPos, true);
+}
+
+void ExtendedList::handlePenMove(const EventType& event)
+{
+    Point penPos(event.screenX, event.screenY);
+    WinDisplayToWindowPt(reinterpret_cast<Int16*>(&penPos.x), reinterpret_cast<Int16*>(&penPos.y));
+    Rectangle bounds;
+    this->bounds(bounds);
+    if (!(bounds && penPos))
+    {
+        //! @todo add scrolling when pen moves outside of list
+    }
+    else
+    {
+        Rectangle itemsBounds=bounds;
+        itemsBounds.width()-=visibleScrollBarWidth();
+        if (itemsBounds && penPos)
+            handlePenInItemsList(bounds, penPos, false);
+        else
+            handlePenInScrollBar(bounds, penPos, false);
+    }    
+}
+
+void ExtendedList::fireItemSelectEvent()
+{
+    EventType event;
+    MemSet(&event, sizeof(event), 0);
+    event.eType=lstSelectEvent;
+    event.data.lstSelect.listID=id();
+    event.data.lstSelect.pList=reinterpret_cast<ListType*>(object());
+    event.data.lstSelect.selection=selection_;
+    EvtAddEventToQueue(&event);
+}
+        
+bool ExtendedList::scrollBarVisible() const
+{
+    uint_t itemsCount=0;
+    if (0==(itemsCount=this->itemsCount()))
+        return false;
+    uint_t viewCapacity=height()/itemHeight_;
+    return itemsCount>viewCapacity;
+}
+
 
 
 

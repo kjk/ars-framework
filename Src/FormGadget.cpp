@@ -44,8 +44,17 @@ Boolean FormGadget::gadgetHandler(FormGadgetTypeInCallback* g, UInt16 cmd, void*
     FormGadget* gadget=const_cast<FormGadget*>(static_cast<const FormGadget*>(g->data));
     assert(0!=gadget);
     assert(gadget->id()==g->id);
-    gadget->visible_=g->attr.visible;
     gadget->usable_=g->attr.usable;
+    if (formGadgetDrawCmd==cmd && gadget->usable_ && !g->attr.visible)
+        g->attr.visible=true;
+    gadget->visible_=g->attr.visible;
+    if (formGadgetHandleEventCmd==cmd)
+    {
+        assert(0!=param);
+        EventType* event=static_cast<EventType*>(param);
+        if (frmGadgetEnterEvent==event->eType)
+            gadget->form()->trackingGadget_=gadget;
+    }
     return gadget->handleGadgetCommand(cmd, param);
 }
    
@@ -82,9 +91,6 @@ bool FormGadget::handleEvent(EventType& event)
         case frmGadgetMiscEvent:
             handled=handleMiscEvent(event);
             break;
-
-        default:
-            assert(false);
     }
     return handled;
 }

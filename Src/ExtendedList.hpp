@@ -90,6 +90,8 @@ namespace ArsLexis {
         uint_t itemHeight() const
         {return itemHeight_;}
         
+        bool scrollBarVisible() const;
+        
         uint_t scrollBarWidth() const
         {return scrollBarWidth_;}
         
@@ -103,7 +105,7 @@ namespace ArsLexis {
     
         void draw(Graphics& graphics);
         
-        virtual void drawItemBackground(Graphics& graphics, const Rectangle& bounds, uint_t item, bool selected);
+        virtual void drawItemBackground(Graphics& graphics, Rectangle& bounds, uint_t item, bool selected);
         
         virtual void drawItem(Graphics& graphics, const Rectangle& bounds, uint_t item, bool selected);
         
@@ -113,16 +115,37 @@ namespace ArsLexis {
         
         virtual void drawScrollBar(Graphics& graphics, const Rectangle& bounds);
         
+        bool handleEvent(EventType& event);
+        
+        bool handleEnter(const EventType& event);
+        
     private:
     
         void drawItemProxy(Graphics& graphics, const Rectangle& listBounds, uint_t item);
+        
+        void handlePenInScrollBar(const Rectangle& bounds, const Point& penPos, bool penUp);
+        
+        void handlePenInItemsList(const Rectangle& bounds, const Point& penPos, bool penUp);
+        
+        void handlePenUp(const EventType& event);
+        
+        void handlePenMove(const EventType& event);
+        
+        void fireItemSelectEvent();
+        
+        uint_t visibleScrollBarWidth() const
+        {return scrollBarVisible()?scrollBarWidth_:0;}
         
         ItemRenderer* itemRenderer_;
         int selection_;
         int topItem_;
         uint_t itemHeight_;
         uint_t scrollBarWidth_;
-        
+        uint_t scrollButtonHeight_;
+        RGBColorType itemBackground_;
+        RGBColorType selectedItemBackground_;
+        RGBColorType listBackground_;
+        RGBColorType foreground_;
     };
     
 }

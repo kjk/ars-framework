@@ -190,6 +190,14 @@ namespace ArsLexis {
         
     };
     
+    inline void setRgbColor(RGBColorType& rgb, UInt8 r, UInt8 g, UInt8 b) 
+    {
+        rgb.index=0;
+        rgb.r=r;
+        rgb.g=g;
+        rgb.b=b;
+    }
+    
 }
 
 #endif

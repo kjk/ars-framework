@@ -1,6 +1,7 @@
 #include <Form.hpp>
 #include <Application.hpp>
 #include <Graphics.hpp>
+#include <FormGadget.hpp>
 
 namespace ArsLexis 
 {
@@ -31,8 +32,19 @@ namespace ArsLexis
         }
         Boolean result=false;
         if (form)
-        {
-            result=form->handleEvent(*event);
+        {   
+            if (0!=form->trackingGadget_)
+            {
+                if (penMoveEvent==event->eType)
+                    result=form->trackingGadget_->handleEvent(*event);
+                else if (penUpEvent==event->eType)
+                {
+                    result=form->trackingGadget_->handleEvent(*event);
+                    form->trackingGadget_=0;
+                }
+            }
+            if (!result)
+                result=form->handleEvent(*event);
             if (form->deleteAfterEvent_)
             {
 //                result=true; // If we don't return true after Frm
@@ -47,7 +59,8 @@ namespace ArsLexis
         id_(id),
         form_(0), 
         deleteOnClose_(true),
-        deleteAfterEvent_(false)
+        deleteAfterEvent_(false),
+        trackingGadget_(0)
     {
     }
     
