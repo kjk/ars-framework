@@ -18,7 +18,8 @@ iPediaApplication::iPediaApplication():
     ticksPerSecond_(SysTicksPerSecond()),
     lookupManager_(0),
     server_(serverLocalhost),
-    stressMode_(false)
+    stressMode_(false),
+    hasHighDensityFeatures_(false)
 {
 #ifdef INTERNAL_BUILD
     log_.addSink(new MemoLogSink(), log_.logError);
@@ -27,6 +28,11 @@ iPediaApplication::iPediaApplication():
     log_.addSink(new DebuggerLogSink(), log_.logWarning);
 #endif    
 #endif
+
+    UInt32 version=0;
+    Err error=FtrGet(sysFtrCreator, sysFtrNumWinVersion, &version);
+    if (errNone==error && version>=4)
+        hasHighDensityFeatures_=true;
 }
 
 inline void iPediaApplication::detectViewer()

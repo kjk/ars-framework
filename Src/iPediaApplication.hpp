@@ -25,6 +25,7 @@ class iPediaApplication: public ArsLexis::Application
     LookupManager* lookupManager_;
     ArsLexis::String server_;
     bool stressMode_;
+    bool hasHighDensityFeatures_;    
     
     void detectViewer();
     
@@ -137,6 +138,9 @@ public:
     
     const LookupHistory& history() const
     {return history_;}
+    
+    bool hasHighDensityFeatures() const
+    {return hasHighDensityFeatures_;}
     
 private:
     

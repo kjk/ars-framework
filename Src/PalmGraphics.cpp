@@ -97,6 +97,14 @@ namespace ArsLexis
             setForegroundColor(color);
         }
     }
-    
+ 
+    void Graphics::copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
+    {
+        NativeRectangle_t nr=toNative(sourceArea);
+        WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
+    }
+
+
+   
 
 }

@@ -13,6 +13,9 @@ protected:
     
     virtual void resize(const ArsLexis::Rectangle&)
     {}
+
+    WindowFormatType windowFormat() const
+    {return static_cast<const iPediaApplication&>(application()).hasHighDensityFeatures()?nativeFormat:screenFormat;}
     
 public:
 
@@ -27,7 +30,7 @@ public:
     {}
     
     Err initialize();
-
+    
 };
 
 #endif

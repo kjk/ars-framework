@@ -144,7 +144,30 @@ void MainForm::drawDefinition(Graphics& graphics, const ArsLexis::Rectangle& bou
         rect.explode(2, 2, -12, -4);
         Err error=errNone;
         ErrTry {
-            definition->render(graphics, rect, renderingPreferences(), false);
+            bool doubleBuffer=true;
+            const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+            if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
+                doubleBuffer=false;
+                
+            if (doubleBuffer)
+            {
+                WinHandle wh=WinCreateOffscreenWindow(bounds.width(), bounds.height(), windowFormat(), &error);
+                if (wh!=0)
+                {
+                    WinSetDrawWindow(wh);
+                    Graphics offscreen(wh);
+                    definition->render(offscreen, rect, renderingPreferences(), false);
+                    WinSetDrawWindow(windowHandle());
+                    offscreen.copyArea(rect, graphics, rect.topLeft);
+                    WinDeleteWindow(wh, false);
+                    wh=0;
+                }
+                else 
+                    doubleBuffer=false;
+            }
+            if (!doubleBuffer)
+                definition->render(graphics, rect, renderingPreferences(), false);
+            error=errNone;
         }
         ErrCatch (ex) { // Before anybody starts reorganizing this code, please read reference about ErrCatch() and the use of 'volatile'
             error=ex;
@@ -187,24 +210,52 @@ void MainForm::draw(UInt16 updateCode)
 
 inline void MainForm::handleScrollRepeat(const EventType& event)
 {
-    Definition* definition=getDefinition();
-    if (definition)
-    {
-        Graphics graphics(windowHandle());
-        definition->scroll(graphics, renderingPreferences(), event.data.sclRepeat.newValue-event.data.sclRepeat.value);
-    }        
+    scrollDefinition(event.data.sclRepeat.newValue-event.data.sclRepeat.value, scrollLine, false);
 }
 
-void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit)
+void MainForm::scrollDefinition(int units, MainForm::ScrollUnit unit, bool updateScrollbar)
 {
     Definition* definition=getDefinition();
     if (definition)
     {
-        Graphics graphics(windowHandle());
+        WinHandle thisWindow=windowHandle();
+        Graphics graphics(thisWindow);
         if (scrollPage==unit)
             units*=(definition->shownLinesCount());
-        definition->scroll(graphics, renderingPreferences(), units);
-        updateScrollBar(*definition);
+        
+        bool doubleBuffer=true;
+        if (-1==units || 1==units)
+            doubleBuffer=false;
+            
+        const iPediaApplication& app=static_cast<const iPediaApplication&>(application());
+        if (app.romVersionMajor()<5 && app.diaSupport() && app.diaSupport().hasSonySilkLib())
+            doubleBuffer=false;
+
+        if (doubleBuffer)
+        {
+            Rectangle b=bounds();
+            Rectangle rect=b;
+            rect.explode(2, 17, -12, -37);
+            Err error=errNone;
+
+            WinHandle wh=WinCreateOffscreenWindow(b.width(), b.height(), windowFormat(), &error);
+            if (wh!=0)
+            {
+                Graphics offscreen(wh);
+                graphics.copyArea(b, offscreen, Point(0, 0));
+                WinSetDrawWindow(wh);
+                definition->scroll(offscreen, renderingPreferences(), units);
+                offscreen.copyArea(b, graphics, Point(0, 0));
+                WinSetDrawWindow(thisWindow);
+                WinDeleteWindow(wh, false);
+            }
+            else
+                doubleBuffer=false;
+        }            
+        if (!doubleBuffer)
+            definition->scroll(graphics, renderingPreferences(), units);
+        if (updateScrollbar)
+            updateScrollBar(*definition);
     }
 }
 

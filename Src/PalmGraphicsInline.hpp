@@ -14,13 +14,6 @@ namespace ArsLexis
         WinEraseRectangle(&nr, 0);
     }
     
-    inline void Graphics::copyArea(const Rectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
-    {
-        NativeRectangle_t nr=toNative(sourceArea);
-        WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
-    }
-
-
     inline void Graphics::drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1)
     {
         WinDrawLine(x0, y0, x1, y1);

@@ -67,7 +67,19 @@ protected:
     bool handleMenuCommand(UInt16 itemId);
     
     bool handleOpen();
+    
+public:
 
+    enum ScrollUnit
+    {
+        scrollLine,
+        scrollPage
+    };
+    
+private:
+    
+    void scrollDefinition(int units, ScrollUnit unit, bool updateScrollbar);
+    
 public:
     
     MainForm(iPediaApplication& app);
@@ -86,16 +98,11 @@ public:
     void setDisplayMode(DisplayMode displayMode)
     {displayMode_=displayMode;}
     
-    enum ScrollUnit
-    {
-        scrollLine,
-        scrollPage
-    };
-    
-    void scrollDefinition(int units, ScrollUnit unit);
-    
     void setUpdateDefinitionOnEntry(bool val=true)
     {updateDefinitionOnEntry_=val;}
+
+    void scrollDefinition(int units, ScrollUnit unit)
+    {scrollDefinition(units, unit, true);}
     
 private:
     
