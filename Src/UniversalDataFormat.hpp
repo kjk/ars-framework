@@ -38,6 +38,8 @@ public:
     int getItemElementsCount(int itemNo) const;
     
     const ArsLexis::char_t *getItemText(int itemNo, int elemNo) const;
+
+    const ArsLexis::char_t *getItemTextAndLen(int itemNo, int elemNo, uint_t *lenOut) const;
     
     ArsLexis::String getItemTextAsString(int intemNo, int elemNo) const;
   

@@ -388,6 +388,7 @@ String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
     return str.substr(lineStartPos, lineLen);
 }
 
+// note: caller needs to free memory with delete[]
 char_t* StringCopy(const char_t *curStr)
 {
     using namespace std;
@@ -401,6 +402,7 @@ char_t* StringCopy(const char_t *curStr)
     return newStr;
 }    
 
+// note: caller needs to free memory with delete[]
 char_t* StringCopyN(const char_t* str, int strLen)
 {
     using namespace std;
