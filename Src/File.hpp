@@ -41,6 +41,8 @@ namespace ArsLexis {
 
         status_t open(const char_t* name, ulong_t openMode, ulong_t type=0, ulong_t creator=0, uint_t cardNo=0);
         
+        DmOpenRef databaseHandle();
+        
 #elif defined(_WIN32)
 
         //! @note If all the parameters except fileName will have sensible default values then it'll be possible to use the same call to open() on both platforms.

@@ -140,3 +140,15 @@ status_t File::seek(SeekOffset offset, SeekType type)
     return error;        
 }
 
+DmOpenRef File::databaseHandle()
+{
+    if (!isOpen())
+        return 0;
+    DmOpenRef ref;
+    Int32 size = sizeof(ref);
+    Err error = FileControl(fileOpGetOpenDbRef, handle_, &ref, &size);
+    if (errNone != error)
+        return 0;
+    assert(sizeof(ref) == size);
+    return ref; 
+}

@@ -116,6 +116,27 @@ status_t DataStore::open()
     status_t error = file_.open(fileName_.c_str(), fileModeUpdate);
     if (errNone != error)
         return error;
+#ifdef _PALM_OS
+    DmOpenRef ref = file_.databaseHandle();
+    if (0 != ref) 
+    {   
+        LocalID localId;
+        UInt16 cardNo;
+        UInt16 attribs;
+        error = DmOpenDatabaseInfo(ref, &localId, NULL, NULL, &cardNo, NULL);
+        if (errNone != error)
+            goto Continue;
+        error = DmDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        if (errNone != error)
+            goto Continue;
+        if (0 != attribs & dmHdrAttrBackup)
+            goto Continue;
+        attribs |= dmHdrAttrBackup;
+        error = DmSetDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+Continue:
+        error = errNone;
+    }
+#endif    
     error = readIndex();
     if (errNone != error)
         goto OnError;
