@@ -48,23 +48,46 @@ void HmStyleList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
         graphics.drawBitmap(upBimapId(), Point(bounds.x()+(scrollBarWidth()-bmpWidth)/2, bounds.y()+(scrollButtonHeight()-bmpHeight)/2));
     if (frmInvalidObjectId != downBitmapId())
         graphics.drawBitmap(downBitmapId(), Point(bounds.x()+(scrollBarWidth()-bmpWidth)/2, bounds.y()+bounds.height()-scrollButtonHeight()+(scrollButtonHeight()-bmpHeight)/2));
-
-/*        
-    Rectangle traktorBounds = 
-    buttonBounds=orig;
-    buttonBounds.y()=bounds.y()+scrollButtonHeight_;
-    buttonBounds.height()=bounds.height()-2*scrollButtonHeight_;
-    long totalHeight=buttonBounds.height();
-    long viewCapacity=this->height()/itemHeight_;
+    long viewCapacity=this->height()/itemHeight();
     long itemsCount=this->itemsCount();
     assert(itemsCount>viewCapacity);
-    long traktorHeight=(viewCapacity*totalHeight)/itemsCount+1;
-    traktorHeight=std::max(traktorHeight, 5L);
-    graphics.erase(buttonBounds);
-    buttonBounds.y()+=(long(topItem_)*totalHeight)/itemsCount;
-    buttonBounds.height()=traktorHeight;
-    drawBevel(graphics, buttonBounds, selectedItemBackground_, screenIsDoubleDensity_); */
+
+    int resMulti = 1;
+    UInt16 coordSystem;
+    if (screenIsDoubleDensity())
+    {
+        resMulti = 2;
+        coordSystem = WinSetCoordinateSystem(kCoordinatesNative);
+    }
+
+    int traktorWidth = 3*resMulti;
+    int scrollBarWidth = resMulti * this->scrollBarWidth();
+    int scrollButtonHeight = resMulti * this->scrollButtonHeight();
+    long totalHeight = (bounds.height()-2)*resMulti  - scrollButtonHeight*2;
+    long traktorHeight = (viewCapacity*totalHeight)/itemsCount + 1;
+    long minTraktorHeight = 5*resMulti;
+    int boundsX = bounds.x()*resMulti;
+    int boundsY = bounds.y()*resMulti;
+    int traktorX = boundsX + (scrollBarWidth - traktorWidth)/2;
+    int traktorY = resMulti + boundsY + scrollButtonHeight + (long(topItem())*totalHeight)/itemsCount;
+    
+    traktorHeight = std::max(traktorHeight, minTraktorHeight);
+
+    PatternType oldPattern = WinGetPatternType();
+    WinSetBackColorRGB(&foreground(), NULL);
+    WinSetForeColorRGB(&listBackground(), NULL);
+    WinSetPatternType(grayPattern);
+    RectangleType rect = {{traktorX, boundsY + scrollButtonHeight + resMulti}, {traktorWidth, totalHeight}};
+    WinPaintRectangle(&rect, 0);
+    WinSetBackColorRGB(&foreground(), NULL);
+    WinSetPatternType(blackPattern);
+    graphics.erase(Rectangle(traktorX, traktorY, traktorWidth, traktorHeight));
+
+    if (screenIsDoubleDensity())
+        WinSetCoordinateSystem(coordSystem);
+        
     WinSetBackColorRGB(&oldBgColor, NULL);
     WinSetForeColorRGB(&oldFgColor, NULL);
+    WinSetPatternType(oldPattern);
 }
         

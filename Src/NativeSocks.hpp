@@ -56,7 +56,9 @@ namespace ArsLexis
     const int socketOptLevelTCP = IPPROTO_TCP;
     const int  socketOptSockErrorStatus= SO_ERROR ;
     const int socketOptTCPMaxSeg=netFeatureUnimplemented;
-    const int netSocketDirOutput = 1;
+    const int netSocketDirOutput = SD_SEND;
+    const int netSocketDirInput = SD_RECEIVE;
+    const int netSocketDirBoth = SD_BOTH;
     //TODO: Move errors to ErrBase.h and correct return values returned 
     //in WinNetLibrary
 

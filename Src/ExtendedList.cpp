@@ -383,7 +383,7 @@ void ExtendedList::drawScrollBar(Graphics& graphics, const Rectangle& bounds)
     long viewCapacity=this->height()/itemHeight_;
     long itemsCount=this->itemsCount();
     assert(itemsCount>viewCapacity);
-    long traktorHeight=(viewCapacity*totalHeight)/itemsCount+1;
+    long traktorHeight=(viewCapacity*totalHeight)/itemsCount + 1;
     traktorHeight=std::max(traktorHeight, 5L);
     graphics.erase(buttonBounds);
     WinSetBackColorRGB(&oldBgColor, NULL);
