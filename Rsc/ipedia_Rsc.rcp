@@ -11,14 +11,9 @@ MENU ID mainMenuBar
 BEGIN
     PULLDOWN "Edit"
     BEGIN
-		MENUITEM "Undo" ID 10000 "U"
-		MENUITEM "Cut" ID 10001 "X"
-		MENUITEM "Copy"ID 10002 "C"
-		MENUITEM "Paste" ID 10003 "P"
-		MENUITEM "Select All" ID 10004 "S"
-		MENUITEM SEPARATOR ID 10005
-		MENUITEM "Keyboard" ID 10006 "K"
-		MENUITEM "Graffiti Help" ID 10007 "G"
+		MENUITEM "Copy"ID copyMenuItem "C"
+		MENUITEM "Select All" ID selectAllMenuItem "S"
+		MENUITEM SEPARATOR ID AUTOID
     END
 
 
@@ -124,17 +119,32 @@ BEGIN
     BUTTONS "OK"
 END
 
+ALERT ID connectionTimedOutAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Timed Out"
+    MESSAGE "Connection timed out."
+    BUTTONS "OK"
+END
 
+ALERT ID connectionErrorAlert
+    DEFAULTBUTTON 0
+    ERROR
+BEGIN
+    TITLE "Error"
+    MESSAGE "Connection terminated."
+    BUTTONS "OK"
+END
 
 FORM ID mainForm AT (0 0 160 160)
 	NOSAVEBEHIND NOFRAME
-	MENUID mainMenuBar DEFAULTBTNID goButton 
+	MENUID mainMenuBar DEFAULTBTNID searchButton 
 BEGIN
 	TITLE "iPedia"
        	SCROLLBAR ID definitionScrollBar  AT (152 16 7 124) USABLE VALUE 50 MIN 0 MAX 100 PAGESIZE 10
-	LABEL "Term:" ID termLabel  AT (18 146)
-	FIELD ID termInputField  AT (44 PrevTop 87 Auto) MAXCHARS 255 EDITABLE UNDERLINED DYNAMICSIZE MULTIPLELINES HASSCROLLBAR  
-	BUTTON "Go" ID goButton  AT (134 PrevTop AUTO AUTO)
+	FIELD ID termInputField  AT (18 146 97 Auto) MAXCHARS 255 EDITABLE UNDERLINED DYNAMICSIZE MULTIPLELINES HASSCROLLBAR  
+	BUTTON "Search" ID searchButton   AT (PrevRight+2 PrevTop AUTO AUTO)
 	BUTTON "\2" ID backButton  AT (0 147 10 12) FONT 4 NOFRAME NONUSABLE   
 	BUTTON "\3" ID forwardButton   AT (8 147 10 12) FONT 4 NOFRAME NONUSABLE 
 	FIELD ID currentTermField  AT (40 1 118 Auto) MAXCHARS 255   NONEDITABLE
@@ -173,7 +183,7 @@ END
 
 
 FORM ID registrationForm AT ( 2 90 156 68 )
-MODAL DEFAULTBTNID okButton 
+MODAL DEFAULTBTNID okButton SAVEBEHIND  
 BEGIN
         TITLE "Registration"
 	LABEL "Enter your registration number:" AUTOID   AT (5 20)
