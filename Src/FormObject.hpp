@@ -137,12 +137,20 @@ namespace ArsLexis
 
         void setText(const char* text)
         {return FldSetTextPtr(object(), const_cast<char*>(text));}
+        
+        void setText(const String& text)
+        {setText(text.c_str());}
 
         void draw()
         {FldDrawField(object());}
 
         void setText(MemHandle handle)
         {FldSetTextHandle(object(), handle);}
+        
+        status_t setEditableText(const char* text, uint_t length);
+        
+        status_t setEditableText(const String& text)
+        {return setEditableText(text.data(), text.length());}
 
         enum {npos=(uint_t)-1};
 

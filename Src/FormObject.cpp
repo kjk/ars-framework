@@ -67,6 +67,21 @@ namespace ArsLexis
         erase();
         insert(text, std::min(maxLength(), length));
     }
+    
+    status_t Field::setEditableText(const char* data, uint_t length)
+    {
+        MemHandle handle=MemHandleNew(length+1);
+        if (NULL==handle)
+            return memErrNotEnoughSpace;
+        char* text=static_cast<char*>(MemHandleLock(handle));
+        if (NULL==text)
+            return memErrChunkNotLocked;
+        StrNCopy(text, data, length);
+        text[length]=chrNull;
+        MemHandleUnlock(handle);
+        setText(handle);
+        return errNone;
+    }
 
 #pragma mark -
 #pragma mark List

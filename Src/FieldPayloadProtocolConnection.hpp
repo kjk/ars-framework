@@ -4,6 +4,15 @@
 #include <SimpleSocketConnection.hpp>
 #include <BaseTypes.hpp>
 
+#define transactionIdField      _T("Transaction-ID")
+#define protocolVersionField    _T("Protocol-Version")
+#define clientVersionField      _T("Client-Version")
+#define getCookieField          _T("Get-Cookie")
+#define cookieField             _T("Cookie")
+#define registerField           _T("Register")
+#define formatVersionField      _T("Format-Version")
+#define errorField              _T("Error")
+
 namespace ArsLexis
 {
 
