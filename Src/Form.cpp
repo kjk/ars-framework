@@ -5,6 +5,7 @@
 #include <SysUtils.hpp>
 #include <68k/Hs.h>
 #include <ExtendedEvent.hpp>
+#include <Text.hpp>
 
 static void updateForm(int formId, UInt16 updateCode)
 {
@@ -89,6 +90,7 @@ namespace ArsLexis
         application_(app),
         id_(id),
         form_(0), 
+        title_(NULL),
         deleteOnClose_(true),
         deleteAfterEvent_(false),
         controlsAttached_(false),
@@ -128,6 +130,8 @@ namespace ArsLexis
     
     Form::~Form() 
     {
+        if (NULL != title_)
+            free(title_);
         if (deleteOnClose_) 
             FrmDeleteForm(form_);
         application_.unregisterForm(*this);
@@ -324,11 +328,14 @@ namespace ArsLexis
     }        
 
 
-    void Form::setTitle(const String& title)
+    void Form::setTitle(const char_t* title)
     {
         assert(form_!=0);
         FrmSetTitle(form_, "");
-        title_=title;
+        char_t *newTitle = StringCopy2(title,-1);
+        if (NULL == newTitle)
+            return;
+        title_ = newTitle;
         //! @bug On Sony Clie (OS 4.1) I experience bug described in Reference as corrected in post-OS 3.0... (Previous title is not erased)
         if (visible())
         {
@@ -338,14 +345,16 @@ namespace ArsLexis
             graph.erase(rect);
         }        
 
-        FrmSetTitle(form_, const_cast<char*>(title_.c_str()));            
+        FrmSetTitle(form_, (char*)title_);            
     }
     
-    const String& Form::title() const
+    const char_t *Form::title()
     {
         assert(form_!=0);
-        if (title_.empty())
-            title_.assign(FrmGetTitle(form_));
+        if (NULL == title_)
+        {
+            title_ = StringCopy2(FrmGetTitle(form_), -1);
+        }
         return title_;
     }
     

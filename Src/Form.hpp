@@ -28,7 +28,7 @@ namespace ArsLexis
         bool formOpenReceived_;
         bool winEnterReceived_;
         
-        mutable String title_;
+        char_t * title_;
         UInt16 entryFocusControlId_;
         UInt16 focusedControlIndex_;
         UInt16 returnToFormId_;
@@ -160,9 +160,9 @@ namespace ArsLexis
         
         void releaseFocus();
         
-        void setTitle(const String& title);
+        void setTitle(const char_t* title);
         
-        const String& title() const;
+        const char_t *title();
 
         bool fiveWayLeftPressed(const EventType *event) const
         {return fiveWay_.LeftPressed(event);}
