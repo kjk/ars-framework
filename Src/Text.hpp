@@ -125,6 +125,24 @@ namespace ArsLexis
     
     bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end);
     
+    inline bool equalsIgnoreCase(const String& s1, const char_t* s2)
+    {
+        using namespace std;
+        return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2, s2+strlen(s2));
+    }
+
+    inline bool equalsIgnoreCase(const char_t* s2, const String& s1)
+    {
+        using namespace std;
+        return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2, s2+strlen(s2));
+    }
+
+    inline bool equalsIgnoreCase(const char_t* s1, const char_t* s2)
+    {
+        using namespace std;
+        return equalsIgnoreCase(s1, s1+strlen(s1), s2, s2+strlen(s2));
+    }
+    
     inline bool equalsIgnoreCase(const String& s1, const String& s2)
     {return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2.data(), s2.data()+s2.length());}
 

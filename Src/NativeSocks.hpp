@@ -11,7 +11,7 @@
 namespace ArsLexis 
 {
     
-    const int netFeatureUnimplemented=-1;
+    const int netFeatureUnimplemented=INT_MAX;
 
 #if defined(_PALM_OS)
 
