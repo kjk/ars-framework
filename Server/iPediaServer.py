@@ -1,6 +1,16 @@
 #! /usr/bin/env python
 # -*- coding: iso-8859-1 -*-
 
+# Copyright: Krzysztof Kowalczyk
+# Owner: Andrzej Ciarkowski
+#
+# Purpose: server component for iPedia
+#
+# Usage:
+#   -silent : will supress most of the messages logged to stdout. TODO: in the
+#             future will be replaced with -verbose flag (i.e. we'll be silent
+#             by default)
+
 from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 import sys, re, random, datetime, MySQLdb, _mysql_exceptions
@@ -10,6 +20,9 @@ g_fLogCircularReferences = True
 g_circularReferencesLogName = "circular.log"
 
 g_articleCount = 0
+
+# if True we'll print debugging info
+g_fVerbose = None
 
 class CircularDetector(object):
     def __init__(self,logFileName):
@@ -128,18 +141,22 @@ class iPediaProtocol(basic.LineReceiver):
         return self.db
 
     def outputField(self, name, value=None):
+        global g_fVerbose
         field=name
         if value:
             field+=fieldSeparator+value
         field+=lineSeparator
         self.transport.write(field)
-        print field
+        if g_fVerbose:
+            print field
         
     def outputPayloadField(self, name, payload):
+        global g_fVerbose
         self.outputField(name, str(len(payload)))
         self.transport.write(payload)
         self.transport.write(lineSeparator)
-        print payload
+        if g_fVerbose:
+            print payload
         
     def logRequest(self):
         cursor=None
@@ -176,6 +193,7 @@ class iPediaProtocol(basic.LineReceiver):
         
 
     def finish(self):
+        global g_fVerbose
         if self.error:
             self.outputField(errorField, str(self.error))
         self.transport.loseConnection()
@@ -183,11 +201,11 @@ class iPediaProtocol(basic.LineReceiver):
             self.logRequest()
             self.db.close()
             self.db=None
-                                
-        print ""
-        print "--------------------------------------------------------------------------------"
-        print ""
 
+        if g_fVerbose:
+            print ""
+            print "--------------------------------------------------------------------------------"
+            print ""
             
     def validateDeviceInfo(self):
         return True
@@ -308,6 +326,7 @@ class iPediaProtocol(basic.LineReceiver):
         self.outputPayloadField(definitionField, definition)
         
     def findTarget(self, db, cursor, idTermDef):
+        global g_fVerbose
         defId, term, definition=idTermDef
         history=[]
         while True:
@@ -326,9 +345,10 @@ class iPediaProtocol(basic.LineReceiver):
 
             defId, term, definition=row[0], row[1], row[2]
             if defId in history:
-                print "--------------------------------------------------------------------------------"
-                print "WARNING! Circular reference: ", term
-                print "--------------------------------------------------------------------------------"
+                if g_fVerbose:
+                    print "--------------------------------------------------------------------------------"
+                    print "WARNING! Circular reference: ", term
+                    print "--------------------------------------------------------------------------------"
                 logCircular(defId,term)
                 return None
         
@@ -361,7 +381,10 @@ class iPediaProtocol(basic.LineReceiver):
     internalLinkRe=re.compile(r'\[\[(.*?)(\|.*?)?\]\]', re.S)
                 
     def validateInternalLinks(self, db, cursor, definition):
-        sys.stdout.write("* Validaiting internal links: ")
+        global g_fVerbose
+
+        if g_fVerbose:
+            sys.stdout.write("* Validaiting internal links: ")
         matches=[]
         for iter in iPediaProtocol.internalLinkRe.finditer(definition):
             matches.append(iter)
@@ -374,11 +397,13 @@ class iPediaProtocol(basic.LineReceiver):
             if len(term) and (term not in tested):
                 idTermDef=self.findExactDefinition(db, cursor, term)
                 if idTermDef:
-                    sys.stdout.write("'%s' [ok], " % term)
+                    if g_fVerbose:
+                        sys.stdout.write("'%s' [ok], " % term)
                     valid.append(term)
             if term not in valid:
                 name=match.group(match.lastindex).lstrip('| ').rstrip().replace('_', ' ')
-                sys.stdout.write("'%s' => '%s', " % (term,name))
+                if g_fVerbose:
+                    sys.stdout.write("'%s' => '%s', " % (term,name))
                 definition=definition[:match.start()]+name+definition[match.end():]
         return definition
 
@@ -441,6 +466,7 @@ class iPediaProtocol(basic.LineReceiver):
             return termList
         
     def handleDefinitionRequest(self):
+        sys.stderr.write( "'%s' returned from handleDefinitionRequest()\n" % self.requestedTerm )
         cursor=None
         definition=None
         try:
@@ -481,6 +507,8 @@ class iPediaProtocol(basic.LineReceiver):
             while not idTermDef:
                 idTermDef=self.findRandomDefinition(db, cursor)
             self.definitionId, self.term, definition=idTermDef
+            sys.stderr.write( "'%s' returned from handleGetRandomRequest()\n" % self.term )
+
             self.outputDefinition(self.preprocessDefinition(db, cursor, definition))
             cursor.close()
             
@@ -493,10 +521,12 @@ class iPediaProtocol(basic.LineReceiver):
         return True
 
     def answer(self):
-        
-        print ""
-        print "--------------------------------------------------------------------------------"
-        print ""
+        global g_fVerbose
+
+        if g_fVerbose:
+            print ""
+            print "--------------------------------------------------------------------------------"
+            print ""
         
         if self.transactionId:
             self.outputField(transactionIdField, self.transactionId)
@@ -540,7 +570,8 @@ class iPediaProtocol(basic.LineReceiver):
         if request == ""  or self.error:
             self.answer()
         else:
-            print request
+            if g_fVerbose:
+                print request
             
             if request.startswith(transactionIdField):
                 self.transactionId=self.extractFieldValue(request)
@@ -589,7 +620,35 @@ class iPediaFactory(protocol.ServerFactory):
 
     protocol = iPediaProtocol
 
+# given argument name in argName, tries to return argument value
+# in command line args and removes those entries from sys.argv
+# return None if not found
+def getRemoveCmdArg(argName):
+    argVal = None
+    try:
+        pos = sys.argv.index(argName)
+        argVal = sys.argv[pos+1]
+        sys.argv[pos:pos+2] = []
+    except:
+        pass
+    return argVal
+
+def fDetectRemoveCmdFlag(flag):
+    fFlagPresent = False
+    try:
+        pos = sys.argv.index(flag)
+        fFlagPresent = True
+        sys.argv[pos:pos+1] = []
+    except:
+        pass
+    return fFlagPresent
+
 def main():
+    global g_fVerbose
+    g_fVerbose = True
+    if fDetectRemoveCmdFlag( "-silent" ):
+        g_fVerbose = False
+
     reactor.listenTCP(9000, iPediaFactory())
     reactor.run()
 
