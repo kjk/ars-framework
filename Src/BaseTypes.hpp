@@ -40,6 +40,10 @@ typedef unsigned long ulong_t;
 # include <windows.h>
 # include <tchar.h>
 
+#ifdef small
+#undef small
+#endif
+
 # define ErrTry __try
 # define ErrCatch(theErr) __except (EXCEPTION_EXECUTE_HANDLER) { DWORD theErr=GetExceptionCode();
 # define ErrEndCatch }
@@ -60,7 +64,7 @@ namespace ArsLexis
 
     typedef unsigned short LocalID;
     
-    typedef std::basic_string<unsigned char>   NarrowString;
+    typedef std::basic_string<char>   NarrowString;
 
 # define tstrlen   _tcslen
 # define tstrcmp   _tcscmp

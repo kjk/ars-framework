@@ -91,7 +91,9 @@ public:
     void AttachCharPBuf(char_t* buf, UInt32 len, UInt32 bufLen) {DynStrAttachCharPBuf(this, buf, len, bufLen);}
 };
 
-template<> inline void std::swap(DynStr& s1, DynStr& s2) {DynStrSwap(&s1, &s2);}
+namespace std {
+template<> inline void swap(DynStr& s1, DynStr& s2) {DynStrSwap(&s1, &s2);}
+}
 
 void ReplaceCDynStrP(CDynStr** target, CDynStr* newValue);
 void ReplaceCharP(char_t** target, char_t* newValue);

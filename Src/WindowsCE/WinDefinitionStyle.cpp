@@ -11,12 +11,12 @@ struct StaticStyleEntry
     // For use by binary search (std::lower_bound())
     bool operator<(const StaticStyleEntry& other) const
     {
-        return tstrcmp(name, other.name) < 0;
+        return strcmp(name, other.name) < 0;
     }
 
     bool operator!=(const StaticStyleEntry& other) const
     {
-        return tstrcmp(name, other.name) != 0;
+        return strcmp(name, other.name) != 0;
     }
     
 };
@@ -28,38 +28,40 @@ struct StaticStyleEntry
 StaticAssert<COLOR_NOT_DEF_INDEX != COLOR_DEF_INDEX>;
 
 #define COLOR_NOT_DEF  {COLOR_NOT_DEF_INDEX, COLOR_NOT_DEF_COLOR, COLOR_NOT_DEF_COLOR, COLOR_NOT_DEF_COLOR}
-#define RGB(r,g,b)  {COLOR_DEF_INDEX,r,g,b}
-#define WHITE    RGB(255,255,255)
-#define BLACK    RGB(0,0,0)
-#define GREEN    RGB(0,196,0)
-#define BLUE     RGB(0,0,255)
-#define RED      RGB(255,0,0)
-#define YELLOW   RGB(255,255,0)
-#define GRAY     RGB(127,127,127)
+#define rgb(r,g,b)  {COLOR_DEF_INDEX,r,g,b}
+#define WHITE    rgb(255,255,255)
+#define BLACK    rgb(0,0,0)
+#define GREEN    rgb(0,196,0)
+#define BLUE     rgb(0,0,255)
+#define RED      rgb(255,0,0)
+#define YELLOW   rgb(255,255,0)
+#define GRAY     rgb(127,127,127)
 
-#define COLOR_UI_MENU_SELECTED_FILL   RGB(51,0,153)
-#define COLOR_UI_FORM_FRAME           RGB(51,0,153)
+#define COLOR_UI_MENU_SELECTED_FILL   rgb(51,0,153)
+#define COLOR_UI_FORM_FRAME           rgb(51,0,153)
 
 #define FONT_NOT_DEF  FontID(-1)
 #define NOT_DEF         DefinitionStyle::notDefined
-#define TRUE            DefinitionStyle::yes
-#define FALSE           DefinitionStyle::no
+#define YES            DefinitionStyle::yes
+#define NO           DefinitionStyle::no
 #define UNDERLINE_NOT_DEF UnderlineModeTag(-1)
 
 #define COLOR(name, color) \
     {(name), {color, COLOR_NOT_DEF, FONT_NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, UNDERLINE_NOT_DEF}}
 #define COLOR_BOLD(name, color) \
-    {(name), {color, COLOR_NOT_DEF, FONT_NOT_DEF, TRUE, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, UNDERLINE_NOT_DEF}}
+    {(name), {color, COLOR_NOT_DEF, FONT_NOT_DEF, YES, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, UNDERLINE_NOT_DEF}}
 #define COLOR_AND_FONT(name, color, font) \
     {(name), {color, COLOR_NOT_DEF, font, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, UNDERLINE_NOT_DEF}}
 #define COLOR_AND_FONT_BOLD(name, color, font) \
-    {(name), {color, COLOR_NOT_DEF, font, TRUE, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, UNDERLINE_NOT_DEF}}
+    {(name), {color, COLOR_NOT_DEF, font, YES, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, UNDERLINE_NOT_DEF}}
 
 // keep this array sorted!
 static const StaticStyleEntry staticStyleTable[] =
 {
     //do not touch .xxx styles (keep them 
-    {styleNameDefault, {BLACK, WHITE, stdFont, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, noUnderline}},
+
+/*
+    {styleNameDefault, {BLACK, WHITE, stdFont, NO, NO, NO, NO, NO, NO, noUnderline}},
     {styleNameHyperlink, {COLOR_UI_FORM_FRAME, COLOR_NOT_DEF, FONT_NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, NOT_DEF, grayUnderline}},
 
     COLOR(styleNameBlack,BLACK),
@@ -79,6 +81,7 @@ static const StaticStyleEntry staticStyleTable[] =
     COLOR_BOLD(styleNameStockPriceDown, RED),
     COLOR_BOLD(styleNameStockPriceUp, GREEN),
     COLOR(styleNameYellow,YELLOW)
+ */
     //TODO: add more and more:)
 };
 
@@ -107,9 +110,12 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
 
     if (NULL == name || 0 == length)
         return NULL;
-    char* nameBuf = StringCopy2N(name, length);
+    char* nameBuf = (char*)malloc(length + 1);
     if (NULL == nameBuf)
         return NULL;
+
+	memcpy(nameBuf, name, length);
+	nameBuf[length] = '\0';
     
     StaticStyleEntry entry = COLOR(nameBuf, COLOR_NOT_DEF);
     const StaticStyleEntry* end = staticStyleTable + ARRAY_SIZE(staticStyleTable);

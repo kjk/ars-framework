@@ -47,7 +47,7 @@ static status_t blockingResolve(SocketAddress& out, NetLibrary& netLib, const St
     return errNone;
 }
 
-status_t resolve(SocketAddress& out, NetLibrary& netLib, char_t *address, ushort_t port, ulong_t timeout)
+status_t resolve(SocketAddress& out, NetLibrary& netLib, const char_t* address, ushort_t port, ulong_t timeout)
 {
     String validAddress;
     String addressStr(address);

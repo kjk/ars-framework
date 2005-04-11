@@ -110,7 +110,8 @@ protected:
     SocketConnection(SocketConnectionManager& manager);
 
 public:
-    char_t *  serverAddress;
+
+    const char_t*  serverAddress;
 
     State state() const
     {return state_;}

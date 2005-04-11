@@ -41,6 +41,7 @@ static unsigned char Utf16ToChar(char_t in)
     return 0;
 }
 
+/*
 struct CharToByte
 { 
     unsigned char operator()(char_t in) 
@@ -48,6 +49,7 @@ struct CharToByte
         return Utf16ToChar(in);
     }
 };
+*/
 
 static char_t CharToUtf16(unsigned char in)
 {
@@ -65,14 +67,14 @@ static char_t CharToUtf16(unsigned char in)
 #endif
 
 
-char *Utf16ToStr(const char_t *txt, long txtLen)
+char* Utf16ToStr(const char_t *txt, long txtLen)
 {
 #ifdef _PALM_OS
     return StringCopy2N(txt, txtLen);
 #else
     if (-1 == txtLen)
         txtLen = tstrlen(txt);    
-    char_t * res = malloc(txtLen+1);
+    char* res = (char*)malloc(txtLen+1);
     if (NULL == res)
         return NULL;
 
@@ -85,23 +87,23 @@ char *Utf16ToStr(const char_t *txt, long txtLen)
 #endif
 }
 
+/*
 void ByteStreamToText(const NarrowString& inStream, String& outTxt)
 {
 #if defined(_WIN32)
-    /*Why this doesn't work I have no idea
-    char_t *out=NULL;
-    int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
-    out=new char_t[size];
-    MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
-    outTxt.assign(out);
-    delete []out;*/
+    //char_t *out=NULL;
+    //int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
+    //out=new char_t[size];
+    //MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
+    //outTxt.assign(out);
+    //delete [] out;
     outTxt.reserve(inStream.length());
     std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
 #else
     outTxt.assign(inStream);
 #endif
 }
-
+*/
 // do a primitive conversion of txt in Palm charset to utf-16
 char_t *StrToUtf16(const char *txt, long txtLen)
 {
@@ -295,7 +297,7 @@ ArsLexis::String hexBinEncode(const String& in)
         // at some point this was char_t (i.e. signed char on Palm)
         // and it caused bugs due to b being promoted to unsigned int, which
         // was negative for b values > 127
-        unsigned char b=*(it++);
+        unsigned char b = (unsigned char)(*(it++));
         hexChar = numToHex(b / 16);
         out.append(1,hexChar);
         hexChar = numToHex(b % 16);
@@ -946,7 +948,7 @@ int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
 }
 
 // note: caller needs to free memory with free
-char_t* StringCopy2__(const char_t *curStr, int len, const char_t* file, int line)
+char_t* StringCopy2__(const char_t *curStr, int len, const char* file, int line)
 {
     using namespace std;
     if (-1 == len)
@@ -973,7 +975,7 @@ char_t* StringCopyN(const char_t* str, int strLen)
 }
 
 // note: caller needs to free memory with free
-char* CharCopyN__(const char* curStr, int len, const char_t* file, int line)
+char* CharCopyN__(const char* curStr, int len, const char* file, int line)
 {
     using namespace std;
     if (-1 == len)

@@ -170,8 +170,13 @@ Exit:
 status_t FieldPayloadProtocolConnection::processLine(uint_t lineEnd)
 {
     String name, value;
+#ifdef _PALM_OS
+    String resp = response();
+#else
     String resp;
     ByteStreamToText(response(), resp); // TODO: replace with TxtToUtf16()
+#endif
+
     String::size_type separatorPos=resp.find(_T(":"));
 
     // empty line means end of response

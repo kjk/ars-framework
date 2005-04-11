@@ -2,7 +2,6 @@
 #define __ARSLEXIS_PALM_DEFINITION_STYLE_HPP__
 
 #include <BaseTypes.hpp>
-#include <Windows.h>
 
 typedef int FontID;
 
@@ -23,7 +22,7 @@ public:
     TriState            italic;
     TriState            superscript;
     TriState            subscript;
-    TriState            small2;
+    TriState            small;
     TriState            strike;
     UnderlineModeType   underline; // -1 if not defined
     

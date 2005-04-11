@@ -202,14 +202,14 @@ char_t *StrToUtf16(const char *txt, long txtLen = -1);
 
 using ArsLexis::char_t;
 
-char_t *StringCopy2__(const char_t *curStr, int len, const char_t* file, int line);
+char_t *StringCopy2__(const char_t *curStr, int len, const char* file, int line);
 
 #define StringCopy2(str) StringCopy2__(str, -1, __FILE__, __LINE__)
 #define StringCopy2N(str, len) StringCopy2__(str, len, __FILE__, __LINE__)
 
 char_t *StringCopyN(const char_t *str, int strLen);
 
-char* CharCopyN__(const char* curStr, int len, const char_t* file, int line);
+char* CharCopyN__(const char* curStr, int len, const char* file, int line);
 #define CharCopyN(str, len) CharCopyN__(str, len, __FILE__, __LINE__)
 
 bool StrEmpty(const char_t *str);
