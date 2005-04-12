@@ -2,52 +2,35 @@
 #define _WINFONT_H_
 
 #include <windows.h>
-#include "FontEffects.hpp"
-
-HFONT getFont(int height, FontEffects effects);
 
 class WinFont  
 {
-    private:
-    FontEffects effects_;
     HFONT       handle_;
-    int         fontHeight_;
+	mutable uint_t* refCount_;
+
+	void release();
 
 public:
 
-    void setEffects(FontEffects effects)
-    {
-        effects_ = effects;
-        handle_ = getFont(fontHeight_, effects_);
-    }
+    WinFont(HFONT handle = NULL);
 
-    void addEffects(const FontEffects& fx)
-    {
-        effects_ += fx;
-        handle_ = getFont(fontHeight_, effects_);
-    }
+	bool createIndirect(const LOGFONT& f);
 
-    FontEffects effects() const
-    {
-        return effects_;
-    }
+	bool valid() const {return NULL != handle_;}
 
-    WinFont()
-    {
-        fontHeight_ = 11;
-        handle_ = getFont(fontHeight_, effects_);
-    }
+	WinFont(const WinFont& other);
 
-    WinFont(int height)
-    {
-        fontHeight_ = height;
-        handle_ = getFont(fontHeight_, effects_);        
-    }
+	WinFont& operator=(const WinFont& other);
 
-    HFONT getHandle() const
-    {
-        return handle_;
-    }
+	~WinFont() {release();}
+	
+    HFONT handle() const {return handle_;}
+
+private:
+	
+	void attach(HFONT handle, bool nonDesctuctible);
+
+	friend class Graphics;
 };
 
 #endif

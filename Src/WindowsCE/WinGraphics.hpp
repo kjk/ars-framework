@@ -11,25 +11,28 @@ class DefinitionStyle;
 
 typedef COLORREF NativeColor_t;
 typedef HDC NativeGraphicsHandle_t;    
-typedef struct
+
+struct GraphicsState
 {
     int state;
-    WinFont fnt;
-    uint_t fntHeight;
-    uint_t fntDescent;
-} NativeGraphicsState_t;
+    uint_t fontHeight;
+    uint_t fontBaseline;
+	WinFont font;
+};
 
-typedef WinFont NativeFont_t;
+typedef GraphicsState NativeGraphicsState_t;
 
 class Graphics: private NonCopyable
 {
     NativeGraphicsHandle_t handle_;
     uint_t          fontHeight_;
-    uint_t          fontDescent_;
-    NativeFont_t    font_;
+    uint_t          fontBaseline_;
     HWND            hwnd_;
     LOGPEN          pen_;
     NativeColor_t   penColor_;
+
+	HFONT	originalFont_;
+	WinFont  currentFont_;
 
 #ifdef DEBUG
     int             statePushCounter_;
@@ -37,11 +40,16 @@ class Graphics: private NonCopyable
 
 	void initPen();
 
+	void init();
+
+	void queryFontMetrics();
+
 public:
     typedef NativeGraphicsHandle_t Handle_t;
     typedef NativeColor_t Color_t;
-    typedef NativeFont_t Font_t;
     typedef NativeGraphicsState_t State_t;
+
+	typedef WinFont Font_t;
 
     explicit Graphics(const Handle_t& handle);
 	explicit Graphics(HWND hwnd);
@@ -101,31 +109,6 @@ public:
         
     };  
     
-    Font_t setFont(const Font_t& font);
-    
-    Font_t font() const;
-
-    
-    class FontSetter: private NonCopyable
-    {
-        Graphics& graphics_;
-        Font_t originalFont_;
-
-    public:
-    
-        FontSetter(Graphics& graphics, const Font_t& font):
-            graphics_(graphics),
-            originalFont_(graphics_.setFont(font))
-        {}
-        
-        ~FontSetter()
-        {graphics_.setFont(originalFont_);}
-        
-        void changeTo(const Font_t& font)
-        {graphics_.setFont(font);}
-        
-    };
-    
     State_t pushState();
 
     void popState(const State_t& state);
@@ -144,9 +127,9 @@ public:
         {graphics_.popState(state_);}
     };      
     
-    uint_t fontHeight() const;
+    uint_t fontHeight() const {return fontHeight_;}
     
-    uint_t fontBaseline() const;      
+    uint_t fontBaseline() const {return fontBaseline_;}
     
     void drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted=false);
     
@@ -166,6 +149,8 @@ public:
 
     void drawTextInBounds(const ArsLexis::String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter = true);
 
+	void setFont(const WinFont& font);
+
 private:
     void drawTextInBoundsInternal(const ArsLexis::String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter, int lines);
 
@@ -177,9 +162,10 @@ public:
 
     void applyStyle(const DefinitionStyle* style, bool isHyperlink);
 
+	const WinFont& font() const {return currentFont_;}
+
 };
 
-typedef Graphics::Font_t Font;
 typedef Graphics::Color_t Color;
 
 #endif

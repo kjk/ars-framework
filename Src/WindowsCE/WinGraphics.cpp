@@ -6,16 +6,27 @@ Graphics::Graphics(const NativeGraphicsHandle_t& handle):
     handle_(handle), 
 	hwnd_(NULL)
 {
-#ifdef DEBUG
-    statePushCounter_ = 0;
-#endif
-	initPen();
+	init();
 }
 
 Graphics::Graphics(HWND hwnd):
     handle_(::GetDC(hwnd)), 
 	hwnd_(hwnd)
 {
+	init();
+}
+
+void Graphics::init()
+{
+	fontHeight_ = 0;
+	fontBaseline_ = 0;
+
+	currentFont_.attach((HFONT)GetStockObject(SYSTEM_FONT), true);
+	assert(currentFont_.valid());
+	originalFont_ = (HFONT)SelectObject(handle_, currentFont_.handle());
+	assert(NULL != originalFont_);
+	queryFontMetrics();
+
 #ifdef DEBUG
     statePushCounter_ = 0;
 #endif
@@ -30,32 +41,28 @@ void Graphics::initPen()
     SelectObject(handle_,hgdiobj);
 }
 
-Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
+void Graphics::setFont(const WinFont& font)
 {
-    Font_t oldFont = font_;
-    font_ = font;
-    //FntSetFont(support_.font.withEffects());
-    SelectObject(handle_, font.getHandle());
-    FontEffects fx = font_.effects();
+	assert(font.valid());
+	if (!font.valid())
+		return;
 
-    TEXTMETRIC ptm;
-    GetTextMetrics(handle_, &ptm);
-    if (fx.subscript() || fx.superscript())
-        fontHeight_ = ptm.tmHeight*4/3;
-    else
-        fontHeight_ = ptm.tmHeight;        
-    fontDescent_ = ptm.tmDescent;
-
-    return oldFont;
+	if (currentFont_.handle() != font.handle())
+	{
+		SelectObject(handle_, font.handle());
+		queryFontMetrics();
+	}
+	currentFont_ = font;
 }
+
 
 Graphics::State_t Graphics::pushState()
 {
     State_t st;
     st.state = SaveDC(handle_);
-    st.fnt = font_;
-    st.fntHeight = fontHeight_;
-    st.fntDescent = fontDescent_;
+    st.fontHeight = fontHeight_;
+    st.fontBaseline = fontBaseline_;
+	st.font = currentFont_;
 
 #ifdef DEBUG
     statePushCounter_ += 1;
@@ -66,9 +73,9 @@ Graphics::State_t Graphics::pushState()
 void Graphics::popState(const Graphics::State_t& state)
 {
     RestoreDC(handle_,state.state);
-    font_ = state.fnt;
-    fontHeight_ = state.fntHeight;
-    fontDescent_ = state.fntDescent;
+    fontHeight_ = state.fontHeight;
+    fontBaseline_ = state.fontBaseline;
+	currentFont_ = state.font;
 
 #ifdef DEBUG
     statePushCounter_ -= 1;
@@ -78,6 +85,9 @@ void Graphics::popState(const Graphics::State_t& state)
 
 Graphics::~Graphics()
 {
+	if (NULL != originalFont_)
+		SelectObject(handle_, originalFont_);
+
 #ifdef DEBUG
     assert(0 == statePushCounter_);
 #endif
@@ -90,26 +100,12 @@ Graphics::~Graphics()
 
 void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
 {
-    FontEffects fx=font_.effects();
-
     uint_t len=length;
     uint_t width=0x7fffffff;
     charsInWidth(text, len, width);
 
     uint_t height=fontHeight();
     uint_t top=topLeft.y;
-
-    
-    if (fx.subscript())
-        top+=(height*4)/10;
-
-    if (fx.isSmall())
-        top+=(height*1)/10;
-    
-   
-    //if (fx.mask()!=0)
-        //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(),fx.isSmall());
-    
 
     NativeColor_t back;
     NativeColor_t fore;
@@ -131,45 +127,6 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
         SetBkColor(handle_,fore);
     }
 
-    //if (fx.mask()!=0)            
-        //resetEffects();
-
-    /*if (fx.strikeOut())
-    {
-        uint_t baseline=fontBaseline();
-        // top=topLeft.y+baseline*0.667;
-        top = topLeft.y + ((baseline * 667) / 1000);
-        drawLine(topLeft.x, top, topLeft.x+width, top);
-    }*/
-
-    //int style;
-    /*switch (fx.underline())
-    {
-        case FontEffects::underlineDotted:
-            style = PS_DASH;
-            break;
-        case FontEffects::underlineSolid:
-            style = PS_SOLID;
-            break;
-    }*/
-    //Still underlining doesn't work
-    /*if (fx.underline()!=FontEffects::underlineNone)
-    {
-        LOGPEN pen;
-        //TODO: again not effective
-        HGDIOBJ hgdiobj = GetCurrentObject(handle_,OBJ_PEN);
-        GetObject(hgdiobj, sizeof(pen), &pen);
-        pen.lopnStyle = style;
-        HPEN newPen=CreatePenIndirect(&pen);
-        SelectObject(handle_,newPen);
-        uint_t baseline=fontBaseline();
-        top=topLeft.y + height - baseline+1;
-        drawLine(topLeft.x, top, topLeft.x+width, top);            
-        SelectObject(handle_,hgdiobj);
-        DeleteObject(newPen);
-    }*/
-
-    //(handle_, topLeft.x , topLeft.y, text, length);
 }
 
 void Graphics::erase(const ArsRectangle& rect)
@@ -220,40 +177,6 @@ NativeColor_t Graphics::setTextColor(NativeColor_t color)
     return SetTextColor(handle_,color ); 
 }
 
-uint_t Graphics::fontHeight() const
-{
-    /*LOGFONT fnt;
-    HGDIOBJ font=GetCurrentObject(handle_, OBJ_FONT);
-    GetObject(font, sizeof(fnt), &fnt); 
-    //FntLineHeight();
-    //FontEffects fx=support_.font.effects();
-    //if (fx.superscript() || fx.subscript())
-    //    height*=1.333;*/
-    
-    /*FontEffects fx=font_.effects();
-
-    TEXTMETRIC ptm;
-    GetTextMetrics(handle_, &ptm);
-    if(fx.isSmall())
-        return (uint_t)(ptm.tmHeight*0.9);
-    else
-        return ptm.tmHeight;*/
-    //return -fnt.lfHeight;
-    return this->fontHeight_;
-    
-}
-
-uint_t Graphics::fontBaseline() const
-{
-    //uint_t baseline=FntBaseLine();
-    //if (support_.font.effects().superscript())
-        //baseline+=(FntLineHeight()*0.333);
-    /*const FontEffects fx=font_.effects();
-    TEXTMETRIC ptm;
-    GetTextMetrics(handle_, &ptm);*/
-    return fontDescent_;
-}
-
 uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
 {
     int     lenThatFits;
@@ -299,33 +222,19 @@ uint_t Graphics::wordWrap(const char_t* text, uint_t width)
 
 uint_t Graphics::textWidth(const char_t* text, uint_t length)
 {
-    FontEffects fx=font_.effects();
     SIZE size;
-    //if (fx.mask()!=0)            
-        //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
     GetTextExtentPoint(handle_, text, length, &size);
-    //if (fx.mask()!=0)
-        //resetEffects();
     return size.cx;
 }
 
 void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
 {
-    FontEffects fx=font_.effects();
     int   len;
     SIZE  size;
-    //if (fx.mask()!=0)
-        //setEffects(fx.weight(), fx.italic(), fx.subscript()||fx.superscript(), fx.isSmall());
     GetTextExtentExPoint(handle_, text, length, width, &len, NULL, &size ); 
-    //if (fx.mask()!=0)
-        //resetEffects();
-
     length = len;
     width = size.cx;
 }
-
-Graphics::Font_t Graphics::font() const
-{return font_;}
 
 /*void Graphics::setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall)
 {
@@ -358,6 +267,18 @@ Graphics::Font_t Graphics::font() const
     /*SelectObject(handle_, oldFont_);
     DeleteObject(newFont_);
 }*/
+
+void Graphics::queryFontMetrics()
+{
+	TEXTMETRIC metrics;
+	BOOL res = GetTextMetrics(handle_, &metrics);
+	if (!res)
+		return;
+
+	fontHeight_ = metrics.tmHeight;
+	fontBaseline_ = metrics.tmAscent;
+}
+
 
 void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
 {

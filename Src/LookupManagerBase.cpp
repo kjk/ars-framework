@@ -16,7 +16,10 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
 
     ArsRectangle rect(bounds);
     rect.explode(2, 2, -4, -4);
+#ifndef _WIN32
     Graphics::FontSetter setFont(graphics, Font());
+#endif
+
 #ifdef _WIN32        
     Graphics::ColorSetter colorTxt(graphics, Graphics::colorText, RGB(0,0,0));
 #endif

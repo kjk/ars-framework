@@ -3,8 +3,7 @@
 
 #include "WinFont.h"
 
-using namespace ArsLexis;
-
+/*
 typedef struct FontCacheEntry_ {
     HFONT fntHandle_;
     int   dy_;
@@ -116,4 +115,76 @@ HFONT getFont(int height, FontEffects effects)
         height = height * 9 / 10;
 
     return createFont(height, weight, fUnderline, fStrike);
+}
+*/
+
+WinFont::WinFont(HFONT handle):
+	handle_(handle),
+	refCount_(NULL)
+{
+	if (NULL != handle_)
+		refCount_ = new uint_t(1);
+}
+
+void WinFont::release()
+{
+	if (NULL == handle_)
+	{
+		assert(NULL == refCount_);
+		return;
+	}
+	assert(0 != *refCount_);
+	if (0 == --*refCount_)
+	{
+		delete refCount_;
+		refCount_ = NULL;
+		DeleteObject((HGDIOBJ)handle_);
+		handle_ = NULL;
+	}
+}
+
+void WinFont::attach(HFONT handle, bool nonDestructible)
+{
+	assert(NULL == handle_);
+	assert(NULL == refCount_);
+	if (NULL == handle)
+		return;
+
+	refCount_ = new uint_t(nonDestructible ? 2 : 1);
+	handle_ = handle;
+}
+
+
+bool WinFont::createIndirect(const LOGFONT& f)
+{
+	release();
+	attach(CreateFontIndirect(&f), false);
+	return (NULL != handle_);
+}
+
+WinFont::WinFont(const WinFont& other):
+	handle_(other.handle_),
+	refCount_(other.refCount_)
+{
+	if (NULL != handle_)
+	{
+		assert(NULL != refCount_);
+		++*refCount_;
+	}
+}
+
+WinFont& WinFont::operator=(const WinFont& other)
+{
+	if (this == &other)
+		return *this;
+
+	release();
+	handle_ = other.handle_;
+	refCount_ = other.refCount_;
+	if (NULL != handle_)
+	{
+		assert(NULL != refCount_);
+		++*refCount_;
+	}
+	return *this;
 }
