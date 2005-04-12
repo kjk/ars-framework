@@ -2,13 +2,28 @@
 #include <Text.hpp>
 #include "WinGraphics.hpp"
 
-Graphics::Graphics(const NativeGraphicsHandle_t& handle, HWND hwnd):
-    handle_(handle), hwnd_(hwnd)
+Graphics::Graphics(const NativeGraphicsHandle_t& handle):
+    handle_(handle), 
+	hwnd_(NULL)
 {
 #ifdef DEBUG
     statePushCounter_ = 0;
 #endif
+	initPen();
+}
 
+Graphics::Graphics(HWND hwnd):
+    handle_(::GetDC(hwnd)), 
+	hwnd_(hwnd)
+{
+#ifdef DEBUG
+    statePushCounter_ = 0;
+#endif
+	initPen();
+}
+
+void Graphics::initPen()
+{
     HGDIOBJ hgdiobj = GetStockObject(BLACK_PEN);
     GetObject(hgdiobj, sizeof(pen_), &pen_);
     penColor_=pen_.lopnColor;
@@ -26,10 +41,10 @@ Graphics::Font_t Graphics::setFont(const Graphics::Font_t& font)
     TEXTMETRIC ptm;
     GetTextMetrics(handle_, &ptm);
     if (fx.subscript() || fx.superscript())
-        fntHeight = ptm.tmHeight*4/3;
+        fontHeight_ = ptm.tmHeight*4/3;
     else
-        fntHeight = ptm.tmHeight;        
-    fntDescent = ptm.tmDescent;
+        fontHeight_ = ptm.tmHeight;        
+    fontDescent_ = ptm.tmDescent;
 
     return oldFont;
 }
@@ -39,8 +54,8 @@ Graphics::State_t Graphics::pushState()
     State_t st;
     st.state = SaveDC(handle_);
     st.fnt = font_;
-    st.fntHeight = fntHeight;
-    st.fntDescent = fntDescent;
+    st.fntHeight = fontHeight_;
+    st.fntDescent = fontDescent_;
 
 #ifdef DEBUG
     statePushCounter_ += 1;
@@ -52,8 +67,8 @@ void Graphics::popState(const Graphics::State_t& state)
 {
     RestoreDC(handle_,state.state);
     font_ = state.fnt;
-    fntHeight = state.fntHeight;
-    fntDescent = state.fntDescent;
+    fontHeight_ = state.fntHeight;
+    fontDescent_ = state.fntDescent;
 
 #ifdef DEBUG
     statePushCounter_ -= 1;
@@ -64,12 +79,13 @@ void Graphics::popState(const Graphics::State_t& state)
 Graphics::~Graphics()
 {
 #ifdef DEBUG
-    assert(0==statePushCounter_);
+    assert(0 == statePushCounter_);
 #endif
-    if(hwnd_)
-        ReleaseDC(this->hwnd_,this->handle_);
+
+    if(NULL != hwnd_)
+        ReleaseDC(hwnd_, handle_);
     else
-        DeleteDC(this->handle_);
+        DeleteDC(handle_);
 }
 
 void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
@@ -223,7 +239,7 @@ uint_t Graphics::fontHeight() const
     else
         return ptm.tmHeight;*/
     //return -fnt.lfHeight;
-    return this->fntHeight;
+    return this->fontHeight_;
     
 }
 
@@ -235,7 +251,7 @@ uint_t Graphics::fontBaseline() const
     /*const FontEffects fx=font_.effects();
     TEXTMETRIC ptm;
     GetTextMetrics(handle_, &ptm);*/
-    return fntDescent;
+    return fontDescent_;
 }
 
 uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
@@ -342,4 +358,8 @@ Graphics::Font_t Graphics::font() const
     /*SelectObject(handle_, oldFont_);
     DeleteObject(newFont_);
 }*/
+
+void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
+{
+}
 

@@ -14,6 +14,7 @@
 #if !defined(appErrorClass)
 
 #if defined(_WIN32) || defined(_WIN32_WCE)
+#include <winerror.h>
 
 /////////////////////////////////
 // The following comes from winerror.h
@@ -56,7 +57,10 @@
 
 #define appErrorClass 0xe0000000
 #define errNone NO_ERROR
-#define sysErrParamErr ERROR_INVALID_DATA
+
+#define sysErrParamErr					ERROR_INVALID_DATA
+#define memErrNotEnoughSpace		ERROR_NOT_ENOUGH_MEMORY
+
 #define errConnectionFailed appErrorClass+1
 
 // The next lines probably will have to be uncommented for portable SocketConnection to work

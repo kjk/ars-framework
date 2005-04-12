@@ -3,8 +3,10 @@
 #include <SocketAddress.hpp>
 #include <NetLibrary.hpp>
 
+#ifdef __MWERKS__
 #pragma mark -
 #pragma mark SocketBase
+#endif
 
 SocketBase::SocketBase(NetLibrary& netLib):
     netLib_(netLib),
@@ -186,8 +188,10 @@ status_t SocketBase::getLinger(CommonSocketLinger_t& linger) const
 }
 */    
 
+#ifdef __MWERKS__
 #pragma mark -
 #pragma mark SocketSelector
+#endif
 
 SocketSelector::SocketSelector(NetLibrary& netLib, bool catchStandardEvents):
     netLib_(netLib),

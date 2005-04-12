@@ -34,7 +34,7 @@ namespace ArsLexis
      */
     void handleBadAlloc();
     
-    void logAllocation(void* ptr, size_t size, bool free, const ArsLexis::char_t* file, int line);
+    void logAllocation(void* ptr, size_t size, bool free, const char* file, int line);
     
     void cleanAllocationLogging();
     

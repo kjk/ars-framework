@@ -1,5 +1,6 @@
 #ifndef _WINFONT_H_
 #define _WINFONT_H_
+
 #include <windows.h>
 #include "FontEffects.hpp"
 
@@ -13,6 +14,7 @@ class WinFont
     int         fontHeight_;
 
 public:
+
     void setEffects(FontEffects effects)
     {
         effects_ = effects;

@@ -87,7 +87,6 @@ char* Utf16ToStr(const char_t *txt, long txtLen)
 #endif
 }
 
-/*
 void ByteStreamToText(const NarrowString& inStream, String& outTxt)
 {
 #if defined(_WIN32)
@@ -98,12 +97,12 @@ void ByteStreamToText(const NarrowString& inStream, String& outTxt)
     //outTxt.assign(out);
     //delete [] out;
     outTxt.reserve(inStream.length());
-    std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), ByteToChar());
+    std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), Utf16ToChar);
 #else
     outTxt.assign(inStream);
 #endif
 }
-*/
+
 // do a primitive conversion of txt in Palm charset to utf-16
 char_t *StrToUtf16(const char *txt, long txtLen)
 {

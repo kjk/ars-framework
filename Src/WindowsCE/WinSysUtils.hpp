@@ -11,8 +11,6 @@ ulong_t random(ulong_t range);
 void sendEvent(uint_t event, short wph, short wpl, int lp);
 struct EventData {LPARAM lParam; WPARAM wParam;};
 
-using ArsLexis::String;
-
 int RectDx(RECT *rect);
 int RectDy(RECT *rect);
 

@@ -37,9 +37,10 @@ ulong_t random(ulong_t range)
 // must be defined elsewhere e.g. iPediaApplication.cpp
 extern HWND g_hwndForEvents;
 
-void sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique)
+void sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique, const Point*)
 {
-    assert(dataSize<=sizeof(EventData));
+	// TODO: do something to store Point
+    assert(dataSize <= sizeof(EventData));
     EventData i;
     memcpy(&i, data, dataSize);
     PostMessage(g_hwndForEvents, event, i.wParam, i.lParam);
@@ -52,12 +53,7 @@ void sendEvent(uint_t event, short wph, short wpl, int lp)
 
 void localizeNumber(char_t* begin, char_t* end)
 {
-   
-}
-
-void processReadyUiEvents()
-{
-
+	// TODO: implement localizeNumber()   
 }
 
 // Put the text of currently selected item in list control into txtOut
@@ -65,40 +61,28 @@ void processReadyUiEvents()
 bool ListCtrlGetSelectedItemText(HWND ctrl, String& txtOut)
 {
     int idx = SendMessage(ctrl, LB_GETCURSEL, 0, 0);
-    if (-1==idx)
+    if (-1 == idx)
     {
         txtOut.clear();
         return false;
     }
     int len = SendMessage(ctrl, LB_GETTEXTLEN, idx, 0);
-    char_t *buf = new char_t[len+1];
-    ZeroMemory(buf, sizeof(char_t)*(len+1));
-    SendMessage(ctrl, LB_GETTEXT, idx, (LPARAM) buf);
-    txtOut.assign(buf);
-    delete [] buf;
+	txtOut.resize(len + 1);
+    SendMessage(ctrl, LB_GETTEXT, idx, (LPARAM) &txtOut[0]);
+	txtOut.resize(len);
     return true;
 }
 
 // return a text in text edit window represented by hwnd in txtOut
-void GetEditWinText(HWND hwnd, ArsLexis::String &txtOut)
+void GetEditWinText(HWND hwnd, String& txtOut)
 {
-    // 128 should be enough for anybody
-    TCHAR buf[128] = {0};
-
-    //ZeroMemory(buf,sizeof(buf));
-
-    int len = SendMessage(hwnd, EM_LINELENGTH, 0,0)+1;
-
-    if (len < sizeof(buf)/sizeof(buf[0]) )
-    {
-        len = SendMessage(hwnd, WM_GETTEXT, len, (LPARAM)buf);
-        txtOut.assign(buf);
-    }
-    else
-        txtOut.clear();
+    int len = SendMessage(hwnd, EM_LINELENGTH, 0, 0);
+	txtOut.resize(len + 1);
+	len = SendMessage(hwnd, WM_GETTEXT, len + 1, (LPARAM)&txtOut[0]);	
+	txtOut.resize(len);
 }
 
-void SetEditWinText(HWND hwnd, const ArsLexis::String& txt)
+void SetEditWinText(HWND hwnd, const String& txt)
 {
     SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)txt.c_str());
 }

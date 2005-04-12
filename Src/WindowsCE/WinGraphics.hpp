@@ -5,8 +5,9 @@
 #include <BaseTypes.hpp>
 #include <Geometry.hpp>
 #include <Utility.hpp>
-#include <list>
 #include "WinFont.h"
+
+class DefinitionStyle;
 
 typedef COLORREF NativeColor_t;
 typedef HDC NativeGraphicsHandle_t;    
@@ -23,8 +24,8 @@ typedef WinFont NativeFont_t;
 class Graphics: private NonCopyable
 {
     NativeGraphicsHandle_t handle_;
-    uint_t          fntHeight;
-    uint_t          fntDescent;
+    uint_t          fontHeight_;
+    uint_t          fontDescent_;
     NativeFont_t    font_;
     HWND            hwnd_;
     LOGPEN          pen_;
@@ -34,13 +35,16 @@ class Graphics: private NonCopyable
     int             statePushCounter_;
 #endif
 
+	void initPen();
+
 public:
     typedef NativeGraphicsHandle_t Handle_t;
     typedef NativeColor_t Color_t;
     typedef NativeFont_t Font_t;
     typedef NativeGraphicsState_t State_t;
 
-    explicit Graphics(const Handle_t& handle, HWND hwnd);
+    explicit Graphics(const Handle_t& handle);
+	explicit Graphics(HWND hwnd);
     
     ~Graphics();
 
@@ -170,6 +174,8 @@ public:
 
     Handle_t handle() 
     {return handle_;}
+
+    void applyStyle(const DefinitionStyle* style, bool isHyperlink);
 
 };
 

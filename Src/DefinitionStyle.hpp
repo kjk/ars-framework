@@ -6,16 +6,7 @@
 #if defined(_PALM_OS)
  #include <PalmOS/PalmDefinitionStyle.hpp>
 #else
- // same as defined in <PalmOS.h>
- typedef enum 
- {
-     noUnderline, 
-     grayUnderline, 
-     solidUnderline, 
-     colorUnderline 
- } UnderlineModeType;
  #include <WindowsCE\WinDefinitionStyle.hpp>
- //#error "Define DefinitionStyle for your build target."
 #endif
 
 enum 

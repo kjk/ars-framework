@@ -156,9 +156,6 @@ const ArsLexis::status_t netErrWouldBlock = WSAEWOULDBLOCK;
 const ArsLexis::status_t netErrSocketBusy = WSAEADDRINUSE;
 const ArsLexis::status_t netErrUnimplemented = WSAEOPNOTSUPP;
 
-const ArsLexis::status_t memErrorClass = 0x0100;
-const ArsLexis::status_t memErrNotEnoughSpace = memErrorClass | 2;
-    
 #endif
 
 #endif //__ARSLEXIS_NATIVESOCKS_HPP__
