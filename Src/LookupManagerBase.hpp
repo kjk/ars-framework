@@ -67,7 +67,7 @@ public:
     virtual ~LookupProgressReportingSupport();
     
     void setProgressReporter(LookupProgressReporter* reporter)
-    {progressReporter_.reset(reporter);}
+    {progressReporter_ = ProgressReporterPtr(reporter);}
     
 };
 

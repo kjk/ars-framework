@@ -34,6 +34,8 @@ class SocketConnectionManager: private NonCopyable
     bool manageUnresolvedConnections();
     bool manageUnopenedConnections();
 
+	status_t handleTimeout(long span);
+
 
 public:
 
@@ -76,6 +78,7 @@ private:
     long                     transferTimeout_;
     SocketAddress            address_;
     Socket                   socket_;
+	long					currentTimeout_;
 
 protected:
 
@@ -108,6 +111,8 @@ protected:
     {manager_.registerEvent(*this, event);}
 
     SocketConnection(SocketConnectionManager& manager);
+
+	void resetTimeout() {currentTimeout_ = 0;}
 
 public:
 

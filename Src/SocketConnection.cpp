@@ -128,6 +128,23 @@ bool SocketConnectionManager::manageUnopenedConnections()
     }
     return false;
 }
+
+status_t SocketConnectionManager::handleTimeout(long span)
+{
+	for (int i = 0; i < connectionsCount_; ++i)
+	{
+        SocketConnection* conn = connections_[i];
+		conn->currentTimeout_ += span;
+		if (conn->currentTimeout_ > conn->transferTimeout_)
+		{
+			conn->handleError(netErrTimeout);
+			delete conn;
+			connections_[i] = NULL;
+		}
+	}
+	compactConnections();
+	return errNone;
+}
     
 status_t SocketConnectionManager::manageConnectionEvents(long timeout)
 {
@@ -141,6 +158,9 @@ status_t SocketConnectionManager::manageConnectionEvents(long timeout)
         return errNone;
     
     status_t error=selector_.select(timeout);
+	if (netErrTimeout == error)
+		return handleTimeout(timeout);
+
     if (errNone != error)
         return error;
         
@@ -153,18 +173,21 @@ status_t SocketConnectionManager::manageConnectionEvents(long timeout)
         if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
         {
             unregisterEvents(*conn);
+			conn->resetTimeout();
             connErr=conn->notifyException();
             done=true;
         }                        
         else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
         {
             unregisterEvents(*conn);
+			conn->resetTimeout();
             connErr=conn->notifyWritable();
             done=true;
         } 
         else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
         {
             unregisterEvents(*conn);
+			conn->resetTimeout();
             connErr=conn->notifyReadable();
             done=true;
         }
@@ -208,9 +231,8 @@ status_t SocketConnectionManager::waitForEvent(EventType& event, long timeout)
             return errNone;
         status_t error=selector_.selectWithInputEvents(timeout);
         if (netErrTimeout == error)
-        {
-            //TODO: check timeout status of all connections and shutdown these who need it
-        }
+			return handleTimeout(timeout);
+
         if (errNone != error)
             return error;
             
@@ -222,16 +244,19 @@ status_t SocketConnectionManager::waitForEvent(EventType& event, long timeout)
             if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
             {
                 unregisterEvents(*conn);
+				conn->resetTimeout();
                 connErr = conn->notifyException();
             }                        
             else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
             {
                 unregisterEvents(*conn);
+				conn->resetTimeout();
                 connErr = conn->notifyWritable();
             } 
             else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
             {
                 unregisterEvents(*conn);
+				conn->resetTimeout();
                 connErr = conn->notifyReadable();
             }
             if (connErr)
@@ -266,7 +291,8 @@ SocketConnection::SocketConnection(SocketConnectionManager& manager):
     manager_(manager),
     state_(stateUnresolved),
     transferTimeout_(evtWaitForever),
-    socket_(manager.netLib_)
+    socket_(manager.netLib_),
+	currentTimeout_(0)
 {
 }
 

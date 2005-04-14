@@ -86,7 +86,7 @@ void   DynStrTruncate(DynStr *dstr, UInt32 len)
 
     if (NULL != dstr->str)
     {
-        dstr->str[len] = '\0';
+        dstr->str[len] = _T('\0');
         dstr->strLen = len;
     }
 }
@@ -119,7 +119,7 @@ DynStr * DynStrInit(DynStr* dstr, UInt32 bufSize)
     dstr->str = NULL;
     if (0 != bufSize)
     {
-        dstr->str = (char_t*)malloc(bufSize);
+        dstr->str = (char_t*)malloc(bufSize * sizeof(char_t));
         assert( NULL != dstr->str );
         if (NULL == dstr->str)
             return NULL;
@@ -277,17 +277,15 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
     char *  newStr;
     UInt32  newBufSize;
 
-    if ( dataSize > DynStrLeft(dstr) )
+    if ( dataSize > DynStrLeft(dstr) * sizeof(char_t))
     {
         // need to re-allocate the buffer
-        newBufSize = dstr->strLen+1+dataSize;
+        newBufSize = (dstr->strLen + 1) * sizeof(char_t) + dataSize;
         if (0 != dstr->reallocIncrement)
         {
             // if reallocIncrement wants us to alloc bigger buffer, do it
-            if (dstr->bufSize + dstr->reallocIncrement > newBufSize)
-            {
-                newBufSize = dstr->bufSize + dstr->reallocIncrement;
-            }
+            if ((dstr->bufSize + dstr->reallocIncrement) * sizeof(char_t) > newBufSize)
+                newBufSize = (dstr->bufSize + dstr->reallocIncrement) * sizeof(char_t);
         }
         newStr = (char*)malloc(newBufSize);
         assert( NULL != newStr );
@@ -295,23 +293,23 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
             return NULL;
         if (NULL != dstr->str)
         {
-            memmove(newStr, dstr->str, dstr->strLen*sizeof(char_t));
+            memmove(newStr, dstr->str, dstr->strLen * sizeof(char_t));
             free(dstr->str);
         }
         dstr->str     = (char_t*)newStr;
-        dstr->bufSize = newBufSize;
+        dstr->bufSize = newBufSize / sizeof(char_t);
     }
 
     // here we're sure we have enough space
-    assert( dataSize <= DynStrLeft(dstr) );
+    assert( dataSize <= DynStrLeft(dstr) * sizeof(char_t));
 
     if (NULL != dstr->str)
     {
         curEnd = (char*)(dstr->str + dstr->strLen);
         memmove(curEnd, data, dataSize);
     }
-    newStrLen = dstr->strLen + dataSize;
-    dstr->str[newStrLen] = '\0';
+    newStrLen = dstr->strLen + dataSize / sizeof(char_t);
+    dstr->str[newStrLen] = _T('\0');
     dstr->strLen = newStrLen;
 
     return dstr;
@@ -329,12 +327,12 @@ char_t * DynStrCharPCopy(DynStr *dstr)
         strLen = 0;
     else
         strLen = tstrlen(dstr->str);
-    result = (char_t*)malloc(strLen+1);
+    result = (char_t*)malloc((strLen+1) * sizeof(char_t));
     if (NULL == result)
         return NULL;
     if (strLen > 0)
         memmove(result, dstr->str, strLen);
-    result[strLen] = '\0';
+    result[strLen] = _T('\0');
     return result;
 }
 
@@ -365,7 +363,7 @@ void DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len)
     toMove = dstr->strLen - start - len;
     memmove(str+start, str+start+len, toMove);
     dstr->strLen -= len;
-    dstr->str[dstr->strLen] = '\0';
+    dstr->str[dstr->strLen] = _T('\0');
 }
 
 DynStr * DynStrAppendChar(DynStr *dstr, char_t c)
@@ -416,9 +414,9 @@ DynStr *DynStrUrlEncode(DynStr *toEncode)
     for (i=0; i<len; i++)
     {
         c = DYNSTR_STR(toEncode)[i];
-        if ( ' ' == c )
-            result = DynStrAppendChar(encodedUrl, '+');
-        else if ('\0'==c || (c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || isUriUnescapedChar(c))
+        if ( _T(' ') == c )
+            result = DynStrAppendChar(encodedUrl, _T('+'));
+        else if (_T('\0') == c || (c>= _T('a') && c <= _T('z')) || (c >= _T('A') && c <= _T('Z')) || (c >= _T('0') && c <= _T('9')) || isUriUnescapedChar(c))
         {
             result = DynStrAppendChar(encodedUrl, c);
         }

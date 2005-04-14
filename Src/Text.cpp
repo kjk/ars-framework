@@ -1305,10 +1305,11 @@ static void test_StrFind()
 
 static void test_HexCode()
 {
+    using namespace std;
     char buffer[20];
     assert(12 == bufferToHexCode("?text?",6,buffer,20));
     buffer[12] = '\0';
-    assert(0 == tstrcmp(buffer,"3f746578743f"));
+    assert(0 == strcmp(buffer,"3f746578743f"));
 }
 
 void test_TextUnitTestAll()

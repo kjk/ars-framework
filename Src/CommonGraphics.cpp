@@ -163,7 +163,7 @@ void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& 
         //draw rest
         if (length < text.length())
         {
-            String restOfText(text, length);
+            String restOfText(text, 0, length);
             strip(restOfText);
             Coord_t         heightChange = itemBounds.height()/lines;
             newBounds.topLeft.y += heightChange;

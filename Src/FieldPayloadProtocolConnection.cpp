@@ -72,7 +72,7 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 {
                     error = processLine(toConsume);
                     resp += toConsume+1; // swallow also lineSeparator
-                    assert( respLen >= toConsume+1 );
+                    assert( respLen >= ulong_t(toConsume + 1));
                     respLen -= (toConsume+1);
                 }
                 else

@@ -1,6 +1,5 @@
 
 #include <FileReader.hpp>
-#include <cassert>
 
 FileReader::FileReader():
     handle_(INVALID_HANDLE_VALUE)
