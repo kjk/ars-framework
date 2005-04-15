@@ -201,9 +201,9 @@ static uint_t charToNumber(const char_t chr)
 
 #define MAX_BASE 26  // arbitrary but good enough for us
 
-ArsLexis::status_t numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
+status_t numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
 {
-    ArsLexis::status_t error = errNone;
+    status_t error = errNone;
     bool     negative = false;
     long     res = 0;
     uint_t   num;
@@ -1131,6 +1131,165 @@ bool equals(const char_t* s1, ulong_t s1len, const char_t* s2, ulong_t s2len)
         return false;
     return 0 == tstrncmp(s1, s2, s1len);
 }
+
+
+#ifdef _WIN32 // overloads for working with narrow-strings also
+
+bool equalsIgnoreCase(const char* s1start, const char* s1end, const char* s2start, const char* s2end)
+{
+    while (s1start != s1end && s2start != s2end)
+    {
+        if (tolower(*s1start) == tolower(*s2start))
+        {
+            ++s1start;
+            ++s2start;
+        }
+        else 
+            return false;
+    }
+    return (s1start == s1end && s2start == s2end);
+}
+
+bool startsWith(const char* text, ulong_t len, const char* prefix, ulong_t plen)
+{
+    if (ulong_t(-1) == len)
+        len = strlen(text);
+    if (ulong_t(-1) == plen)
+        plen = strlen(prefix);
+    
+    if (plen > len)
+        return false;
+    
+    while (0 != plen)
+    {
+        if (*text++ != *prefix++)
+            return false;
+        --plen;
+    }   
+    return true;
+}
+
+bool equals(const char* s1, ulong_t s1len, const char* s2, ulong_t s2len)
+{
+    if (ulong_t(-1) == s1len)
+        s1len = strlen(s1);
+    if (ulong_t(-1) == s2len)
+        s2len = strlen(s2);
+    if (s1len != s2len)
+        return false;
+    return 0 == strncmp(s1, s2, s1len);
+}
+
+static uint_t charToNumber(const char chr)
+{
+    if ( (chr >= '0') && (chr <= '9') )
+        return (uint_t) (chr - '0');
+
+    if ( (chr >= 'A') && (chr <= 'Z') )
+        return (uint_t) 10 + (chr - 'A');
+
+    if ( (chr >= 'a') && (chr <= 'z') )
+        return (uint_t) 10 + (chr - 'a');
+
+    return uint_t(-1); // not sure if that's the best interface    
+}
+
+#define MAX_BASE 26  // arbitrary but good enough for us
+
+status_t numericValue(const char* begin, const char* end, long& result, uint_t base)
+{
+    status_t error = errNone;
+    bool     negative = false;
+    long     res = 0;
+    uint_t   num;
+
+    if ( (begin >= end) || (base > MAX_BASE) )
+    {    
+        error=sysErrParamErr;
+        goto OnError;           
+    }
+
+    if ('-' == *begin)
+    {
+        negative = true;
+        if (++begin == end)
+        {
+            error = sysErrParamErr;
+            goto OnError;           
+        }
+    }           
+
+    while (begin != end) 
+    {
+        num = charToNumber(*begin++);
+        if (num >= base)
+        {   
+            error = sysErrParamErr;
+            break;
+        }
+        else
+        {
+            res *= base;
+            res += num;
+        }
+    }
+    if (!error)
+       result = res;
+OnError:
+    return error;    
+}
+
+long StrFind(const char* str, long len, char chr)
+{
+    if (NULL == str)
+        return -1;
+    if (-1 == len)
+        len = strlen(str);
+
+    for (long i = 0; i < len; ++i)
+        if (str[i] == chr)
+            return i;    
+    return -1;
+}
+
+long StrFind(const char* str, long len, const char* sub, long slen)
+{
+    if (NULL == str || NULL == sub)
+        return -1;
+    if (-1 == len)
+        len = strlen(str);
+    if (-1 == slen)
+        slen = strlen(sub);
+        
+    if (slen > len)
+        return -1;
+    
+    long checks = (len - slen) + 1;
+    for (long i = 0; i < checks; ++i)
+        if (StrEquals(str + i, slen, sub, slen))
+            return i;
+    return -1;
+}
+
+void strip(const char*& start, ulong_t& length)
+{
+    assert(NULL != start);
+    while (isspace(start[0]) && length > 0)
+    {
+        length--;
+        start++;
+    }
+    while (length > 0)
+    {
+        if (isspace(start[length-1]))
+            length--;
+        else
+            break;
+    }
+}
+
+#endif
+
 
 char_t** StrArrCreate(ulong_t size)
 {
