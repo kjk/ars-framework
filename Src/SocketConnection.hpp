@@ -34,7 +34,7 @@ class SocketConnectionManager: private NonCopyable
     bool manageUnresolvedConnections();
     bool manageUnopenedConnections();
 
-	status_t handleTimeout(long span);
+    status_t handleTimeout(long span);
 
 
 public:
@@ -78,7 +78,7 @@ private:
     long                     transferTimeout_;
     SocketAddress            address_;
     Socket                   socket_;
-	long					currentTimeout_;
+    long					currentTimeout_;
 
 protected:
 
@@ -112,7 +112,7 @@ protected:
 
     SocketConnection(SocketConnectionManager& manager);
 
-	void resetTimeout() {currentTimeout_ = 0;}
+    void resetTimeout() {currentTimeout_ = 0;}
 
 public:
 
@@ -131,10 +131,7 @@ public:
 
     virtual status_t enqueue();
 
-    void setTransferTimeout(long timeout)
-    {
-        transferTimeout_=timeout;
-    }
+    void setTransferTimeout(long timeout) {transferTimeout_=timeout; }
 
     long transferTimeout() const
     {return transferTimeout_;}
