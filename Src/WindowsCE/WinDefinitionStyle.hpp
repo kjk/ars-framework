@@ -2,10 +2,15 @@
 #define __ARSLEXIS_PALM_DEFINITION_STYLE_HPP__
 
 #include <BaseTypes.hpp>
+#include "WinFont.h"
 
 class DefinitionStyle
 {
 public:
+
+	DefinitionStyle();
+
+	~DefinitionStyle();
 
     enum TriState
     {
@@ -14,8 +19,15 @@ public:
         notDefined
     };
 
-    COLORREF        foregroundColor; // {-1,x,x,x} if not defined
-    COLORREF        backgroundColor; // {-1,x,x,x} if not defined
+    COLORREF        foregroundColor; 
+    COLORREF        backgroundColor;
+	static const COLORREF colorNotDefined;
+
+	enum FontSize {
+		fontSizeNotDefined = -1,
+		fontSizeNormal = 10
+	};
+	long fontSize;
 
 	enum FontWeight {
 		fontWeightNotDefined = -1,
@@ -38,18 +50,30 @@ public:
 		fontFamilySansSerif = FF_SWISS | VARIABLE_PITCH,
 		fontFamilyCursive = FF_SCRIPT | VARIABLE_PITCH,
 		fontFamilyFantasy = FF_DECORATIVE | VARIABLE_PITCH,
-		fontFamilyMonospace = FF_MODERN | FIXED_PITCH
+		fontFamilyMonospace = FF_MODERN | FIXED_PITCH,
+		fontFamilyNormal = fontFamilySansSerif
 	};
 
 	FontFamily fontFamily;
-	char_t fontFamilyCustomName[LF_FACESIZE];
+
+//	char_t fontFamilyCustomName[LF_FACESIZE];
 	
-	bool fontFamilyCustom() const;
+//	bool fontFamilyCustom() const;
     
     void reset();
     
     DefinitionStyle& operator|=(const DefinitionStyle& other);
+
+	const WinFont& font() const;
+
+private:
+
+	mutable WinFont cachedFont_;
+
 };
+
+void PrepareStaticStyles();
+void DisposeStaticStyles();
 
 #ifdef DEBUG
 void test_StaticStyleTable();

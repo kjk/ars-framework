@@ -21,6 +21,160 @@ struct StaticStyleEntry
     
 };
 
+const COLORREF DefinitionStyle::colorNotDefined = DWORD(-1); // COLORREF is DWORD of this form: 0x00bbggrr
+
+static void SyncTriState(DefinitionStyle::TriState& self, const DefinitionStyle::TriState& other, bool& useThis, bool& useOther)
+{
+	if (DefinitionStyle::notDefined != other && self != other)
+	{
+		useThis = false;
+		self = other;
+	}
+	else if (DefinitionStyle::notDefined != self)
+		useOther = false;
+}
+
+DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)
+{
+	// TODO: remove this check when styles are finished
+	if (NULL == &other)
+		return *this;
+
+	bool useThisFont = true;
+	bool useOtherFont = true;
+
+	if (colorNotDefined != other.foregroundColor)
+		foregroundColor = other.foregroundColor;
+
+	if (colorNotDefined != other.backgroundColor)
+		backgroundColor = other.backgroundColor;
+
+	if (fontSizeNotDefined != other.fontSize && fontSize != other.fontSize)
+	{
+		useThisFont = false;
+		fontSize = other.fontSize;
+	}
+	else if (fontSizeNotDefined != fontSize)
+		useOtherFont = false;
+
+	if (fontWeightNotDefined != other.fontWeight && fontWeight != other.fontWeight)
+	{
+		useThisFont = false;
+		fontWeight = other.fontWeight;
+	}
+	else if (fontWeightNotDefined != fontWeight)
+		useOtherFont = false;
+
+	SyncTriState(italic, other.italic, useThisFont, useOtherFont);
+
+	// TODO: handle super- and subscript differently (and small)
+	SyncTriState(superscript, other.superscript, useThisFont, useOtherFont);
+	SyncTriState(subscript, other.subscript, useThisFont, useOtherFont);
+	SyncTriState(small, other.small, useThisFont, useOtherFont);
+
+	SyncTriState(strike, other.strike, useThisFont, useOtherFont);
+	SyncTriState(underline, other.underline, useThisFont, useOtherFont);
+
+	if (fontFamilyNotDefined != other.fontFamily && fontFamily != other.fontFamily)
+	{
+		useThisFont = false;
+		fontFamily = other.fontFamily;
+	}
+	else if (fontFamilyNotDefined != fontFamily)
+		useOtherFont = false;
+
+	if (useThisFont)
+		return *this;
+
+	if (useOtherFont)
+	{
+		cachedFont_ = other.cachedFont_;
+		return *this;
+	}
+
+	cachedFont_ = WinFont();
+	return *this;
+}
+
+void DefinitionStyle::reset()
+{
+	backgroundColor = foregroundColor = colorNotDefined;
+	fontSize = fontSizeNotDefined;
+	fontWeight = fontWeightNotDefined;
+	italic = superscript = subscript = small = strike = underline = notDefined;
+	fontFamily = fontFamilyNotDefined;
+	cachedFont_ = WinFont();
+}
+
+DefinitionStyle::DefinitionStyle()
+{
+	reset();
+}
+
+DefinitionStyle::~DefinitionStyle()
+{
+}
+
+const WinFont& DefinitionStyle::font() const
+{
+	if (cachedFont_.valid())
+		return cachedFont_;
+
+	LOGFONT font;
+	ZeroMemory(&font, sizeof(font));
+
+	long height;
+	if (fontSizeNotDefined == fontSize)
+		height = fontSizeNormal;
+	else
+		height	 = fontSize;
+
+	if (yes == superscript || yes == subscript || yes == small)
+		height /= 2;
+	font.lfHeight = height;
+
+	if (fontWeightNotDefined == fontWeight)
+		font.lfWeight = fontWeightNormal;
+	else
+		font.lfWeight = fontWeight;
+
+	if (yes == italic)
+		font.lfItalic = TRUE;
+
+	if (yes == underline)
+		font.lfUnderline = TRUE;
+
+	if (yes == strike)
+		font.lfStrikeOut = TRUE;
+
+	font.lfCharSet = DEFAULT_CHARSET;
+	font.lfOutPrecision = OUT_DEFAULT_PRECIS;
+	font.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+	font.lfQuality = CLEARTYPE_QUALITY;
+
+	if (fontFamilyNotDefined == fontFamily)
+		font.lfPitchAndFamily = fontFamilyNormal;
+	else
+		font.lfPitchAndFamily = fontFamily;
+
+	cachedFont_.createIndirect(font);
+	return cachedFont_;
+}
+
+struct StaticStyleDescriptor {
+	const char* name;
+	const char* definition;
+
+	bool operator < (const StaticStyleDescriptor& des) const {return strcmp(name, des.name) < 0;}
+};
+
+static const StaticStyleDescriptor staticStyleDescriptors[] = {
+	{styleNameDefault, "color: rgb(0, 0, 0); background-color: rgb(100%, 255, 255);"},
+	{styleNameHyperlink, "text-decoration: underline; color: rgb(0, 0, 100%);"}
+};
+
+static DefinitionStyle* staticStyles[ARRAY_SIZE(staticStyleDescriptors)] = {NULL};
+
 
 // keep this array sorted!
 /*
@@ -55,20 +209,19 @@ static const StaticStyleEntry staticStyleTable[] =
 
 uint_t getStaticStyleCount()
 {
-    return 0; // ARRAY_SIZE(staticStyleTable);
+    return ARRAY_SIZE(staticStyles);
 }
 
 const char* getStaticStyleName(uint_t index)
 {
-    // assert(index < ARRAY_SIZE(staticStyleTable));
-    return NULL; // staticStyleTable[index].name;
+    assert(index < ARRAY_SIZE(staticStyleDescriptors));
+    return staticStyleDescriptors[index].name;
 }
 
 const DefinitionStyle* getStaticStyle(uint_t index)
 {
-    // assert(index < ARRAY_SIZE(staticStyleTable));
-    // return &staticStyleTable[index].style;
-	return NULL;
+    assert(index < ARRAY_SIZE(staticStyleDescriptors));
+    return staticStyles[index];
 }
 
 const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
@@ -85,98 +238,65 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
 
 	memcpy(nameBuf, name, length);
 	nameBuf[length] = '\0';
-    
-/*
-    StaticStyleEntry entry = COLOR(nameBuf, COLOR_NOT_DEF);
-    const StaticStyleEntry* end = staticStyleTable + ARRAY_SIZE(staticStyleTable);
-    const StaticStyleEntry* res = std::lower_bound(staticStyleTable, end, entry);
-    
-    // return null if res != entry
-    if (end != res)
-        if (entry != *res)
-        {
-            free(nameBuf);
-            return NULL;
-        }
-*/
-            
-    free(nameBuf);
 
-//    if (end == res)
-        return NULL;
-    //return &res->style; 
+	StaticStyleDescriptor des = {nameBuf, NULL};
+	const StaticStyleDescriptor* end = staticStyleDescriptors + ARRAY_SIZE(staticStyleDescriptors);
+	const StaticStyleDescriptor* res = std::lower_bound(staticStyleDescriptors, end, des);
+	if (end == res || 0 != strcmp(nameBuf, res->name))
+	{
+		free(nameBuf);
+		return NULL;
+	}
+    
+	uint_t index = (res - staticStyleDescriptors);
+	free(nameBuf);
+	return staticStyles[index];
 }
 
-//always return style!
 DefinitionStyle* parseStyle(const char* style, ulong_t length)
 {
     DefinitionStyle* s = new_nt DefinitionStyle();
 	if (NULL == s)
 		return NULL;
 
-    s->reset();
+	// TODO: actually... parse the style ;-)
+	
     return s;
 }
 
-void DefinitionStyle::reset()
+void PrepareStaticStyles()
 {
-/*
-    foregroundColor = 
-    backgroundColor = (RGBColorType) COLOR_NOT_DEF;
-    fontId = FONT_NOT_DEF;
-    bold = NOT_DEF;
-    italic = NOT_DEF;
-    superscript = NOT_DEF;
-    subscript = NOT_DEF;
-    small = NOT_DEF;
-    strike = NOT_DEF;
-    underline = UNDERLINE_NOT_DEF;
- */
+	assert(NULL == staticStyles[0]);
+	for (uint_t i = 0; i < ARRAY_SIZE(staticStyleDescriptors); ++i)
+	{
+		const char* def = staticStyleDescriptors[i].definition;
+		staticStyles[i] = parseStyle(def, strlen(def));
+	}
+
+#ifdef DEBUG
+	test_StaticStyleTable();
+#endif
 }
 
-DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)
+void DisposeStaticStyles()
 {
-    if (&other == NULL)
-        return *this;
-/*    
-	if (NOT_DEF != other.bold)
-        bold = other.bold;
-    if (NOT_DEF != other.italic)
-        italic = other.italic;
-    if (NOT_DEF != other.small)
-        small = other.small;
-    if (NOT_DEF != other.strike)
-        strike = other.strike;
-    if (NOT_DEF != other.subscript)
-        subscript = other.subscript;
-    if (NOT_DEF != other.superscript)
-        superscript = other.superscript;
-    if (UNDERLINE_NOT_DEF != other.underline)
-        underline = other.underline;
-
-    if (FONT_NOT_DEF != other.fontId)
-        fontId = other.fontId;
-    if (isColorDefined(other.foregroundColor))
-        foregroundColor = other.foregroundColor;
-    if (isColorDefined(other.backgroundColor))
-        backgroundColor = other.backgroundColor;
- */
-
-    return *this;
+	for (uint_t i = 0; i < ARRAY_SIZE(staticStyleDescriptors); ++i)
+	{
+		delete staticStyles[i];
+		staticStyles[i] = NULL;
+	}
 }
-
 
 #ifdef DEBUG
 void test_StaticStyleTable()
 {
-/* 
     // Validate that fields_ are sorted.
-    for (uint_t i = 0; i < ARRAY_SIZE(staticStyleTable); ++i)
+    for (uint_t i = 0; i < ARRAY_SIZE(staticStyleDescriptors); ++i)
     {
-        if (i > 0 && staticStyleTable[i] < staticStyleTable[i-1])
+        if (i > 0 && staticStyleDescriptors[i] < staticStyleDescriptors[i-1])
         {
-            const char_t* prevName = staticStyleTable[i-1].name;
-            const char_t* nextName = staticStyleTable[i].name;
+            const char* prevName = staticStyleDescriptors[i-1].name;
+            const char* nextName = staticStyleDescriptors[i].name;
             assert(false);
         }
     }
@@ -185,6 +305,5 @@ void test_StaticStyleTable()
     DefinitionStyle* ptr = NULL;
     DefinitionStyle s = *getStaticStyle(styleIndexDefault);
     s |= *ptr;
- */
 }
 #endif
