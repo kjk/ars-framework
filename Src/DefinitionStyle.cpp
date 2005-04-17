@@ -23,7 +23,7 @@ long StyleParseFontSize(const char* val, ulong_t len)
 {
     long res = -1;
     long pos = StrFind(val, len, "pt", -1);
-    if (-1 != pos && len - 2 == pos)
+    if (-1 != pos && long(len - 2) == pos)
     {
         status_t err = numericValue(val, val + pos, res);
         if (errNone == err && res > 0)
@@ -49,10 +49,11 @@ long StyleParseFontSize(const char* val, ulong_t len)
 }
 
 static bool StyleParseColorHashed(const char* val, ulong_t len, unsigned char& r, unsigned char& g, unsigned char& b)
-{
+{	
     if (6 != len && 3 != len)
         return false;
     
+	typedef unsigned char uchar;
     long step = len / 3;
     long c;
     status_t err;
@@ -73,13 +74,13 @@ static bool StyleParseColorHashed(const char* val, ulong_t len, unsigned char& r
         switch (i)
         {
             case 0:
-                r = c;
+                r = uchar(c);
                 break;
             case 1:
-                g = c;
+                g = uchar(c);
                 break;
             case 2:
-                b = c;
+                b = uchar(c);
                 break;
         }
     }
@@ -112,7 +113,7 @@ static bool StyleParseColorComponent(const char* val, ulong_t len, unsigned char
 
     res = std::min<long>(255, res);
     
-    c = res;
+    c = (unsigned char)res;
     return true;
 }
 
