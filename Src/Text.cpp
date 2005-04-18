@@ -37,7 +37,16 @@ static unsigned char Utf16ToChar(char_t in)
         if (UnicodeToPalm[i][0]==in)
             return (unsigned char)UnicodeToPalm[i][1];
     }
-    assert(false); //we never shall reach this point
+
+#ifdef _WIN32
+#ifdef DEBUG
+	char_t buff[2] = {in, 0};
+    OutputDebugString(_T("Unsupported char in Utf16ToChar(): "));
+	OutputDebugString(buff);
+	OutputDebugString(_T("\n"));
+//	DebugBreak();
+#endif
+#endif
     return 0;
 }
 
@@ -97,7 +106,7 @@ void ByteStreamToText(const NarrowString& inStream, String& outTxt)
     //outTxt.assign(out);
     //delete [] out;
     outTxt.reserve(inStream.length());
-    std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), Utf16ToChar);
+    std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), CharToUtf16);
 #else
     outTxt.assign(inStream);
 #endif

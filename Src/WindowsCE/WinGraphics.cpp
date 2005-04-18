@@ -1,6 +1,7 @@
 #include <Debug.hpp>
 #include <Text.hpp>
 #include "WinGraphics.hpp"
+#include "DefinitionStyle.hpp"
 
 Graphics::Graphics(const NativeGraphicsHandle_t& handle):
     handle_(handle), 
@@ -158,6 +159,7 @@ void Graphics::drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1)
 
 NativeColor_t Graphics::setForegroundColor(NativeColor_t color)
 {
+	// @bug this code below will have to be reworked as it is possible currently to use non-existant pens after restoring draw state
     HGDIOBJ hgdiobj = GetCurrentObject(handle_,OBJ_PEN);
     NativeColor_t old = pen_.lopnColor;
     pen_.lopnColor = color;
@@ -169,12 +171,12 @@ NativeColor_t Graphics::setForegroundColor(NativeColor_t color)
 
 NativeColor_t Graphics::setBackgroundColor(NativeColor_t color)
 {
-    return SetBkColor(handle_,color);
+    return SetBkColor(handle_, color);
 }
 
 NativeColor_t Graphics::setTextColor(NativeColor_t color)
 {
-    return SetTextColor(handle_,color ); 
+    return SetTextColor(handle_, color); 
 }
 
 uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
@@ -236,38 +238,6 @@ void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
     width = size.cx;
 }
 
-/*void Graphics::setEffects(FontEffects::Weight weight, bool italic, bool index, bool isSmall)
-{
-    oldFont_ = GetCurrentObject(handle_,OBJ_FONT);
-    GetObject(oldFont_, sizeof(fontDescr_), &fontDescr_);
-    switch(weight)
-    {
-    case FontEffects::weightPlain:
-        fontDescr_.lfWeight = FW_NORMAL;
-        break;
-    case FontEffects::weightBold: 
-        fontDescr_.lfWeight = FW_BOLD;
-        break;
-    case FontEffects::weightBlack:
-        fontDescr_.lfWeight = FW_EXTRABOLD;
-        break;
-    }    
-    if (italic&&(weight==FontEffects::weightPlain))
-        fontDescr_.lfWeight = FW_BOLD;
-    if (index)
-        fontDescr_.lfHeight = fontDescr_.lfHeight * 3 / 4; // * 0.75;
-    if (isSmall)
-        fontDescr_.lfHeight = fontDescr_.lfHeight * 9 / 10; // * 0.9
-    newFont_ = CreateFontIndirect(&fontDescr_);
-    SelectObject(handle_, newFont_);
-}*/
-
-/*void Graphics::resetEffects()
-{
-    /*SelectObject(handle_, oldFont_);
-    DeleteObject(newFont_);
-}*/
-
 void Graphics::queryFontMetrics()
 {
 	TEXTMETRIC metrics;
@@ -279,8 +249,23 @@ void Graphics::queryFontMetrics()
 	fontBaseline_ = metrics.tmAscent;
 }
 
-
 void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
 {
+	const DefinitionStyle* def = getStaticStyle(styleIndexDefault);
+    DefinitionStyle s = *def;
+
+    if (isHyperlink)
+        s |= *getStaticStyle(styleIndexHyperlink);
+
+    if (NULL != style && def != style)
+        s |= *style;
+
+	WinFont font = s.font();
+    setFont(font);
+
+	assert(DefinitionStyle::colorNotDefined != s.backgroundColor);
+	SetBkColor(handle_, s.backgroundColor);
+	assert(DefinitionStyle::colorNotDefined != s.foregroundColor);
+	SetTextColor(handle_, s.foregroundColor);
 }
 
