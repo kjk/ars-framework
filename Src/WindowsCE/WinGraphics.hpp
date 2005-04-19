@@ -12,11 +12,18 @@ class DefinitionStyle;
 typedef COLORREF NativeColor_t;
 typedef HDC NativeGraphicsHandle_t;    
 
+enum WinFontMetricsFlags {
+	winFontMetricSmall = 1,
+	winFontMetricSuperscript = 2,
+	winFontMetricSubscript = 4
+};
+
 struct GraphicsState
 {
     int state;
     uint_t fontHeight;
     uint_t fontBaseline;
+	uint_t fontMetricsFlags;
 	WinFont font;
 };
 
@@ -27,6 +34,7 @@ class Graphics: private NonCopyable
     NativeGraphicsHandle_t handle_;
     uint_t          fontHeight_;
     uint_t          fontBaseline_;
+	uint_t			fontMetricsFlags_;
     HWND            hwnd_;
     LOGPEN          pen_;
     NativeColor_t   penColor_;

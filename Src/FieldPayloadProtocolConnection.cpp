@@ -51,8 +51,8 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
     bool goOn = false;
     status_t error = errNone;
     ulong_t respLen = response().size();
-    char_t * resp = StrToUtf16(response().c_str(), respLen);
-    char_t * toFree = resp;
+    char_t* resp = StrToUtf16(response().data(), respLen);
+    char_t* toFree = resp;
     if (NULL == resp)
         return memErrNotEnoughSpace;
     // TODO: on Palm avoid TextToByteStream() - it's just a copy of data (I think)
@@ -60,7 +60,7 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
     {
         if (!inPayload_)
         {
-            long toConsume = ::StrFind(resp, -1, lineSeparatorChar);
+            long toConsume = StrFind(resp, -1, lineSeparatorChar);
             if (-1 == toConsume)
                 goOn = false;
             else
@@ -85,7 +85,8 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 char * newResp = Utf16ToStr(resp, respLen);
                 if (NULL == newResp)
                 {
-                    error = 1;  // TODO: better error
+                    error = memErrNotEnoughSpace;  
+
                     goto Exit;
                 }
 

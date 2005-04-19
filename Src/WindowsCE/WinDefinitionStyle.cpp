@@ -3,6 +3,8 @@
 #include <Debug.hpp>
 #include <Text.hpp>
 
+#include <wingdi.h>
+
 struct StaticStyleEntry
 {
     const char* name;
@@ -150,8 +152,9 @@ const WinFont& DefinitionStyle::font() const
 	if (yes == strike)
 		font.lfStrikeOut = TRUE;
 
-	font.lfCharSet = DEFAULT_CHARSET;
+	font.lfCharSet = ANSI_CHARSET;
 	font.lfOutPrecision = OUT_DEFAULT_PRECIS;
+
 	font.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 
 #ifdef _WIN32_WCE
@@ -159,6 +162,7 @@ const WinFont& DefinitionStyle::font() const
 	font.lfQuality = CLEARTYPE_QUALITY;
 #else
 	font.lfQuality = DEFAULT_QUALITY;
+//	font.lfQuality = ANTIALIASED_QUALITY;
 #endif
 #endif
 

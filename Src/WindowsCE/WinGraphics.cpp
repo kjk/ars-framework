@@ -21,6 +21,7 @@ void Graphics::init()
 {
 	fontHeight_ = 0;
 	fontBaseline_ = 0;
+	fontMetricsFlags_ = 0;
 
 	currentFont_.attach((HFONT)GetStockObject(SYSTEM_FONT), true);
 	assert(currentFont_.valid());
@@ -63,6 +64,7 @@ Graphics::State_t Graphics::pushState()
     st.state = SaveDC(handle_);
     st.fontHeight = fontHeight_;
     st.fontBaseline = fontBaseline_;
+	st.fontMetricsFlags = fontMetricsFlags_;
 	st.font = currentFont_;
 
 #ifdef DEBUG
@@ -77,6 +79,7 @@ void Graphics::popState(const Graphics::State_t& state)
     fontHeight_ = state.fontHeight;
     fontBaseline_ = state.fontBaseline;
 	currentFont_ = state.font;
+	fontMetricsFlags_ = state.fontMetricsFlags;
 
 #ifdef DEBUG
     statePushCounter_ -= 1;
@@ -106,7 +109,13 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
     charsInWidth(text, len, width);
 
     uint_t height=fontHeight();
+	uint_t base = fontBaseline();
+
     uint_t top=topLeft.y;
+	if (0 != (winFontMetricSmall &  fontMetricsFlags_))
+		top += base / 2;
+	if (0 != (winFontMetricSubscript & fontMetricsFlags_))
+		top += height / 2;
 
     NativeColor_t back;
     NativeColor_t fore;
@@ -247,6 +256,11 @@ void Graphics::queryFontMetrics()
 
 	fontHeight_ = metrics.tmHeight;
 	fontBaseline_ = metrics.tmAscent;
+	if (0 == fontMetricsFlags_)
+		return;
+
+	fontHeight_ *= 2;
+	fontBaseline_ *= 2;
 }
 
 void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
@@ -261,6 +275,15 @@ void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
         s |= *style;
 
 	WinFont font = s.font();
+
+	fontMetricsFlags_ = 0;
+	if (s.small == s.yes)
+		fontMetricsFlags_ |= winFontMetricSmall;
+	if (s.subscript == s.yes)
+		fontMetricsFlags_ |= winFontMetricSubscript;
+	if (s.superscript == s.yes)
+		fontMetricsFlags_ |= winFontMetricSuperscript;
+
     setFont(font);
 
 	assert(DefinitionStyle::colorNotDefined != s.backgroundColor);
