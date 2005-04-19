@@ -77,7 +77,7 @@ static BOOL CALLBACK RegCodeDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 
     if (WM_COMMAND==msg)
     {
-        assert( (IDM_LATER==wp) || (IDM_REGISTER==wp));
+        // assert( (IDM_LATER==wp) || (IDM_REGISTER==wp));
 
         if (IDM_LATER==wp)
         {
