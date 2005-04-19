@@ -425,13 +425,13 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
     bool lineFinished = false;  
 
     DefinitionElement::Justification justify;
-    if (last!=current)
+    if (last != current)
         justify = (*current)->justification();
     else
         DefinitionElement::justifyLeft;
 
-    if (elements_.end() == begin)
-        renderContext.graphics.erase(ArsRectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+    // if (elements_.end() == begin)
+    renderContext.graphics.erase(ArsRectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
 
     while (!lineFinished && current != last)
     {

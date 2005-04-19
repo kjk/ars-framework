@@ -23,6 +23,8 @@ void Graphics::init()
 	fontBaseline_ = 0;
 	fontMetricsFlags_ = 0;
 
+	SetBkMode(handle_, TRANSPARENT);
+
 	currentFont_.attach((HFONT)GetStockObject(SYSTEM_FONT), true);
 	assert(currentFont_.valid());
 	originalFont_ = (HFONT)SelectObject(handle_, currentFont_.handle());
@@ -102,6 +104,21 @@ Graphics::~Graphics()
         DeleteDC(handle_);
 }
 
+static void InvertRectangle(HDC dc, const Point& topLeft, uint_t width, uint_t height)
+{
+/*	
+	for (uint_t x = 0; x < length; ++x)
+	{
+		for (uint_t y = 0; y < height; ++y)
+		{
+			COLORREF color = GetPixel(dc, topLeft.x + x; topLeft.y + y);
+
+		}
+	}
+*/
+	BitBlt(dc, topLeft.x, topLeft.y, width, height, dc, topLeft.x, topLeft.y, DSTINVERT);	
+}
+
 void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
 {
     uint_t len=length;
@@ -116,7 +133,7 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
 		top += base / 2;
 	if (0 != (winFontMetricSubscript & fontMetricsFlags_))
 		top += height / 2;
-
+/*
     NativeColor_t back;
     NativeColor_t fore;
     if (inverted)
@@ -126,9 +143,10 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
         SetTextColor(handle_,back);
         SetBkColor(handle_,fore);
     }
+*/
 
     ExtTextOut(handle_, topLeft.x, top, 0, NULL, text, length, NULL);
-    
+/*
     if (inverted)
     {
         back = GetBkColor(handle_);
@@ -136,7 +154,9 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
         SetTextColor(handle_,fore);
         SetBkColor(handle_,fore);
     }
-
+*/
+ 	if (inverted)
+		InvertRectangle(handle_, topLeft, width, height);
 }
 
 void Graphics::erase(const ArsRectangle& rect)
