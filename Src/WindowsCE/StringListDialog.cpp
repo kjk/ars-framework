@@ -27,10 +27,30 @@ static bool    fRemoveDups = false;
 #define SELECT_PRESSED  1
 #define CANCEL_PRESSED  2
 
-static CharPtrList_t * g_strList = NULL;
+static CharPtrList_t* g_strList = NULL;
+static CharPtrList_t* g_listLabels = NULL;
+
 static String          selectedWord;
 
 #define HOT_KEY_ACTION 0x32
+
+static void FindMatchForLabel(String& label)
+{
+	assert(NULL != g_strList);
+	assert(NULL != g_listLabels);
+	assert(g_strList != g_listLabels);
+
+	CharPtrList_t::iterator lit = g_listLabels->begin();
+	CharPtrList_t::iterator sit = g_strList->begin();
+	const char_t* p = *lit;
+	while (!(label == p))
+	{
+		++lit;
+		p = *lit;
+		++sit;
+	}
+	label = *sit;
+}
 
 static LRESULT CALLBACK ListWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -76,7 +96,7 @@ static BOOL InitStringList(HWND hDlg)
     g_oldListWndProc = (WNDPROC)SetWindowLong(ctrlList, GWL_WNDPROC, (LONG)ListWndProc);
     RegisterHotKey(ctrlList, HOT_KEY_ACTION, 0, VK_TACTION);
 
-    ListCtrlFillFromList(ctrlList, *g_strList, fRemoveDups);
+    ListCtrlFillFromList(ctrlList, *g_listLabels, fRemoveDups);
 
     SendMessage (ctrlList, LB_SETCURSEL, 0, 0);
     return TRUE;
@@ -133,29 +153,45 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
     return FALSE;
 }
 
-bool FGetStringFromList(HWND hwnd, CharPtrList_t& strList, String& strOut)
+bool FGetStringFromList(HWND hwnd, CharPtrList_t& strList, CharPtrList_t* labels, String& strOut)
 {
     g_strList = &strList;
+	if (NULL == labels)
+		g_listLabels = g_strList;
+	else
+		g_listLabels = labels;
+
     fRemoveDups = false;
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
     if (SELECT_PRESSED==result)
     {
-        strOut.assign(selectedWord);
+        strOut = selectedWord;
+		if (NULL != labels)
+			FindMatchForLabel(strOut);
+
         return true;
     }
 
     return false;
 }
 
-bool FGetStringFromListRemoveDups(HWND hwnd, CharPtrList_t& strList, String& strOut)
+bool FGetStringFromListRemoveDups(HWND hwnd, CharPtrList_t& strList, CharPtrList_t* labels, String& strOut)
 {
     g_strList = &strList;
+	if (NULL == labels)
+		g_listLabels = g_strList;
+	else
+		g_listLabels = labels;
+
     fRemoveDups = true;
     int result = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STRING_LIST), hwnd, StringListDlgProc);
     if (SELECT_PRESSED==result)
     {
-        strOut.assign(selectedWord);
-        return true;
+        strOut = selectedWord;
+		if (NULL != labels)
+			FindMatchForLabel(strOut);
+        
+		return true;
     }
 
     return false;

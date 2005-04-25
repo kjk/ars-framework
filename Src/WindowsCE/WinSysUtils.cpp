@@ -105,7 +105,7 @@ void ListCtrlFillFromList(HWND ctrlList, CharPtrList_t& strList, bool fRemoveDup
         {
             SendMessage(ctrlList, LB_ADDSTRING, 0, (LPARAM)str);
         }
-        iter++;
+        ++iter;
     } while (iter!=iterEnd);
 }
 

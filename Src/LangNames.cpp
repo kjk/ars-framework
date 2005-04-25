@@ -266,6 +266,9 @@ const char_t* GetLangNameByLangCode(const char_t* code, ulong_t length)
     const LangCodeEntry* res = std::lower_bound(langCodes, end, entry);
     if (end == res)
         return NULL;
+
+	if (0 != tstrcmp(codeBuf, res->code))
+		return NULL;
     
     return res->name; 
 }
