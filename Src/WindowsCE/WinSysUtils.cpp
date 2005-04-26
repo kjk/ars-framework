@@ -190,7 +190,7 @@ int GetScrollBarDx()
 }
 
 ///The following Defines are only on Smartphone and Pocket PC Phone Edition
-#if (WIN32_PLATFORM_PSPC>300 || WIN32_PLATFORM_WFSP )
+#if (_WIN32_WCE>300 || WIN32_PLATFORM_WFSP )
 
 // those 3 must be in this sequence in order to get IID_DestNetInternet
 // http://www.smartphonedn.com/forums/viewtopic.php?t=360
