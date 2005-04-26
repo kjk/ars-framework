@@ -4,6 +4,7 @@
 #include <Text.hpp>
 
 #include <wingdi.h>
+#include <shguim.h>
 
 struct StaticStyleEntry
 {
@@ -129,14 +130,25 @@ const WinFont& DefinitionStyle::font() const
 	if (fontSizeNotDefined == fontSize)
 		height = fontSizeNormal;
 	else
-		height	 = fontSize;
+		height = fontSize;
 
 	if (yes == superscript || yes == subscript || yes == small)
-		height /= 2;
+	{
+		height *= 2;
+		height /= 3;
+	}
 
-	HDC dc = GetDC(NULL);
-	font.lfHeight = - (height * GetDeviceCaps(dc, LOGPIXELSY)) / 72;
-	ReleaseDC(NULL, dc);
+	LONG  dwFontSize = 12;
+	if (S_OK == SHGetUIMetrics(SHUIM_FONTSIZE_PIXEL, &dwFontSize, sizeof(dwFontSize),  NULL))
+	{
+		font.lfHeight = - (height * dwFontSize) / fontSizeNormal;
+	}
+	else
+	{
+		HDC dc = GetDC(NULL);
+		font.lfHeight = - (height * GetDeviceCaps(dc, LOGPIXELSY)) / 72;
+		ReleaseDC(NULL, dc);
+	}
 
 	if (fontWeightNotDefined == fontWeight)
 		font.lfWeight = fontWeightNormal;
@@ -159,6 +171,7 @@ const WinFont& DefinitionStyle::font() const
 
 #ifdef _WIN32_WCE
 #if _WIN32_WCE > 400
+	//font.lfQuality = DEFAULT_QUALITY;
 	font.lfQuality = CLEARTYPE_QUALITY;
 #else
 	font.lfQuality = DEFAULT_QUALITY;

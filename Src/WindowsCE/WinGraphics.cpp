@@ -130,9 +130,10 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
 
     uint_t top=topLeft.y;
 	if (0 != (winFontMetricSmall &  fontMetricsFlags_))
-		top += base / 2;
+		top += base / 3;
+
 	if (0 != (winFontMetricSubscript & fontMetricsFlags_))
-		top += height / 2;
+		top += height / 3;
 /*
     NativeColor_t back;
     NativeColor_t fore;
@@ -279,8 +280,11 @@ void Graphics::queryFontMetrics()
 	if (0 == fontMetricsFlags_)
 		return;
 
-	fontHeight_ *= 2;
-	fontBaseline_ *= 2;
+	fontHeight_ *= 3;
+	fontHeight_ /= 2;
+
+	fontBaseline_ *= 3;
+	fontBaseline_ /= 2;
 }
 
 void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
