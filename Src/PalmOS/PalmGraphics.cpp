@@ -236,11 +236,11 @@ uint_t Graphics::wordWrap(const char_t* text, uint_t width)
 
 void Graphics::applyStyle(const DefinitionStyle* style, bool isHyperlink)
 {
-    const DefinitionStyle* def = getStaticStyle(styleIndexDefault);
+    const DefinitionStyle* def = StyleGetStaticStyle(styleIndexDefault);
     DefinitionStyle s = *def;
 
     if (isHyperlink)
-        s |= *getStaticStyle(styleIndexHyperlink);
+        s |= *StyleGetStaticStyle(styleIndexHyperlink);
 
     if (NULL != style && def != style)
         s |= *style;

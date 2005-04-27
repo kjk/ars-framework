@@ -301,7 +301,7 @@ void Definition::scroll(Graphics& graphics, int delta)
         Point pointDelta;
 
         Graphics::State_t state = graphics.pushState();
-        graphics.applyStyle(getStaticStyle(styleIndexDefault), false);
+        graphics.applyStyle(StyleGetStaticStyle(styleIndexDefault), false);
         
 //        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
         
@@ -634,7 +634,7 @@ status_t Definition::render(Graphics& graphics, const ArsRectangle& bounds, bool
 void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end)
 {
     Graphics::State_t state = graphics.pushState();
-    graphics.applyStyle(getStaticStyle(styleIndexDefault), false);
+    graphics.applyStyle(StyleGetStaticStyle(styleIndexDefault), false);
     
 //    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
 

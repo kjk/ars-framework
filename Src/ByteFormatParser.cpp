@@ -237,7 +237,7 @@ bool ByteFormatParser::parseParam()
 
         case paramStyleName:
             {
-                const DefinitionStyle* style = getStaticStyle(&inText_[start_],currentParamLength_);
+                const DefinitionStyle* style = StyleGetStaticStyle(&inText_[start_],currentParamLength_);
                 const DefinitionStyle* serverStyle = NULL;
                 for (int i=0; i<totalStyleCount_;i++)
                 {

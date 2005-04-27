@@ -5,8 +5,8 @@
 
 #if defined(_PALM_OS)
  #include <PalmOS/PalmDefinitionStyle.hpp>
-#else
- #include <WindowsCE\WinDefinitionStyle.hpp>
+#elif defiend(_WIN32)
+ #include <WindowsCE/WinDefinitionStyle.hpp>
 #endif
 
 enum 
@@ -17,38 +17,22 @@ enum
 
 #define styleNameDefault        ".default"
 #define styleNameHyperlink      ".hyperlink"
-
-#define styleNameBold           "bold"
-#define styleNameLarge          "large"
-#define styleNameBlue           "blue"
-#define styleNameGray           "gray"
-#define styleNameRed            "red"
-#define styleNameGreen          "green"
-#define styleNameYellow         "yellow"
-#define styleNameBlack          "black"
-#define styleNameBoldRed        "boldred"
-#define styleNameBoldGreen      "boldgreen"
-#define styleNameBoldBlue       "boldblue"
-#define styleNameLargeBlue      "largeblue"
-#define styleNameSmallGray      "smallgray"
-
 #define styleNameHeader         "header"
-#define styleNameSmallHeader    "smallheader"
-#define styleNamePageTitle      "pagetitle"
-#define styleNameStockPriceUp   "stockpriceup"
-#define styleNameStockPriceDown "stockpricedown"
 
 class DefinitionStyle;
 
-uint_t getStaticStyleCount();
+uint_t StyleGetStaticStyleCount();
 
-const char* getStaticStyleName(uint_t index);
+const char* StyleGetStaticStyleName(uint_t index);
 
-const DefinitionStyle* getStaticStyle(uint_t index);
+const DefinitionStyle* StyleGetStaticStyle(uint_t index);
 
-const DefinitionStyle* getStaticStyle(const char* name, uint_t length = uint_t(-1));
+const DefinitionStyle* StyleGetStaticStyle(const char* name, uint_t length = uint_t(-1));
 
 DefinitionStyle* StyleParse(const char* style, ulong_t length);
+
+void StylePrepareStaticStyles();
+void StyleDisposeStaticStyles();
 
 #define styleAttrNameFontFamily "font-family" // PalmOS: ignored
 #define styleAttrValueFontFamilySerif "serif"
