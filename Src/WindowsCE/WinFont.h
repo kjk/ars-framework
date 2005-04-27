@@ -16,6 +16,10 @@ public:
 
 	bool createIndirect(const LOGFONT& f);
 
+	bool getStockFont(int object);
+
+	void getSystemFont();
+
 	bool valid() const {return NULL != handle_;}
 
 	WinFont(const WinFont& other);

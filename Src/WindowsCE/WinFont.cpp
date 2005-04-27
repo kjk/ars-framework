@@ -154,12 +154,31 @@ void WinFont::attach(HFONT handle, bool nonDestructible)
 	handle_ = handle;
 }
 
-
 bool WinFont::createIndirect(const LOGFONT& f)
 {
 	release();
 	attach(CreateFontIndirect(&f), false);
 	return (NULL != handle_);
+}
+
+bool WinFont::getStockFont(int object)
+{
+	HGDIOBJ obj = GetStockObject(object);
+	if (NULL == obj)
+		return false;
+
+	if (OBJ_FONT != GetObjectType(obj))
+		return false;
+
+	release();
+	attach(HFONT(obj), true);
+	return true;
+}
+
+void WinFont::getSystemFont()
+{
+	bool res = getStockFont(SYSTEM_FONT);
+	assert(res);
 }
 
 WinFont::WinFont(const WinFont& other):
