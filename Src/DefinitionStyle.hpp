@@ -5,7 +5,7 @@
 
 #if defined(_PALM_OS)
  #include <PalmOS/PalmDefinitionStyle.hpp>
-#elif defiend(_WIN32)
+#else
  #include <WindowsCE/WinDefinitionStyle.hpp>
 #endif
 

@@ -6,24 +6,6 @@
 #include <wingdi.h>
 #include <shguim.h>
 
-struct StaticStyleEntry
-{
-    const char* name;
-    const DefinitionStyle style;
-    
-    // For use by binary search (std::lower_bound())
-    bool operator<(const StaticStyleEntry& other) const
-    {
-        return strcmp(name, other.name) < 0;
-    }
-
-    bool operator!=(const StaticStyleEntry& other) const
-    {
-        return strcmp(name, other.name) != 0;
-    }
-    
-};
-
 const COLORREF DefinitionStyle::colorNotDefined = DWORD(-1); // COLORREF is DWORD of this form: 0x00bbggrr
 
 static void SyncTriState(DefinitionStyle::TriState& self, const DefinitionStyle::TriState& other, bool& useThis, bool& useOther)
@@ -70,7 +52,6 @@ DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)
 
 	SyncTriState(italic, other.italic, useThisFont, useOtherFont);
 
-	// TODO: handle super- and subscript differently (and small)
 	SyncTriState(superscript, other.superscript, useThisFont, useOtherFont);
 	SyncTriState(subscript, other.subscript, useThisFont, useOtherFont);
 	SyncTriState(small, other.small, useThisFont, useOtherFont);
@@ -190,78 +171,7 @@ const WinFont& DefinitionStyle::font() const
 	return cachedFont_;
 }
 
-struct StaticStyleDescriptor {
-	const char* name;
-	const char* definition;
-
-	bool operator < (const StaticStyleDescriptor& des) const {return strcmp(name, des.name) < 0;}
-};
-
-static const StaticStyleDescriptor staticStyleDescriptors[] = {
-	{styleNameDefault, "color: rgb(0, 0, 0); background-color: rgb(100%, 255, 255);"},
-	{styleNameHyperlink, "text-decoration: underline; color: rgb(0, 0, 100%);"},
-	{styleNameBlack, "color: rgb(0, 0, 0);"},
-	{styleNameBlue, "color: rgb(0, 0, 100%);"},
-	{styleNameBold, "font-weight: bold;"},
-	{styleNameBoldBlue, "font-weight: bold; color: rgb(0, 0, 100%);"},
-	{styleNameBoldGreen, "font-weight: bold; color: rgb(0, 100%, 0);"},
-	{styleNameBoldRed, "font-weight: bold; color: rgb(100%, 0, 0);"},
-	{styleNameGray, "color: rgb(67%, 67%, 67%);"},
-	{styleNameGreen, "color: rgb(0, 100%, 0);"},
-	{styleNameHeader, "font-size: large; font-weight: bold;"},
-	{styleNameLarge, "font-size: large;"},
-	{styleNameLargeBlue, "font-size: large; color: rgb(0, 0, 100%);"},
-	{styleNamePageTitle, "font-size: x-large; font-weight: bold;"},
-	{styleNameRed, "color: rgb(100%, 0, 0);"},
-	{styleNameSmallHeader, "font-weight: bold;"},
-	{styleNameStockPriceDown, "font-weight: bold; color: rgb(100%, 0, 0);"},
-	{styleNameStockPriceUp, "font-weight: bold; color: rgb(0, 100%, 0);"},
-	{styleNameYellow, "color: rgb(100%, 100%, 0);"},
-};
-
-static DefinitionStyle* staticStyles[ARRAY_SIZE(staticStyleDescriptors)] = {NULL};
-
-/*
-
-    COLOR_BOLD(styleNameBold,COLOR_NOT_DEF),
-    COLOR_BOLD(styleNameBoldBlue,BLUE),
-    COLOR_BOLD(styleNameBoldGreen,GREEN),
-    COLOR_BOLD(styleNameBoldRed,RED),
-    COLOR(styleNameGray,GRAY),
-    COLOR(styleNameGreen,GREEN),
-    COLOR_BOLD(styleNameHeader, COLOR_UI_FORM_FRAME),
-    COLOR_AND_FONT(styleNameLarge, COLOR_NOT_DEF, largeFont),
-    COLOR_AND_FONT(styleNameLargeBlue, BLUE, largeFont),
-    COLOR_AND_FONT_BOLD(styleNamePageTitle, COLOR_UI_MENU_SELECTED_FILL, largeFont),
-    COLOR(styleNameRed,RED),
-    COLOR(styleNameSmallHeader, COLOR_UI_FORM_FRAME),
-    COLOR_BOLD(styleNameStockPriceDown, RED),
-    COLOR_BOLD(styleNameStockPriceUp, GREEN),
-    COLOR(styleNameYellow,YELLOW)
-    //TODO: add more and more:)
-};
- */
-
-
-uint_t getStaticStyleCount()
-{
-    return ARRAY_SIZE(staticStyles);
-}
-
-const char* getStaticStyleName(uint_t index)
-{
-    assert(index < ARRAY_SIZE(staticStyleDescriptors));
-    return staticStyleDescriptors[index].name;
-}
-
-const DefinitionStyle* getStaticStyle(uint_t index)
-{
-    assert(index < ARRAY_SIZE(staticStyleDescriptors));
-	assert(NULL != staticStyles[index]);
-    return staticStyles[index];
-}
-
-const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
+const DefinitionStyle* StyleGetStaticStyleHelper(const StaticStyleDescriptor* array, uint_t arraySize, const char* name, uint_t length)
 {
     if (uint_t(-1) == length)
         length = strlen(name);
@@ -277,17 +187,17 @@ const DefinitionStyle* getStaticStyle(const char* name, uint_t length)
 	nameBuf[length] = '\0';
 
 	StaticStyleDescriptor des = {nameBuf, NULL};
-	const StaticStyleDescriptor* end = staticStyleDescriptors + ARRAY_SIZE(staticStyleDescriptors);
-	const StaticStyleDescriptor* res = std::lower_bound(staticStyleDescriptors, end, des);
+	const StaticStyleDescriptor* end = array + arraySize;
+	const StaticStyleDescriptor* res = std::lower_bound(array, end, des);
 	if (end == res || 0 != strcmp(nameBuf, res->name))
 	{
 		free(nameBuf);
 		return NULL;
 	}
     
-	uint_t index = (res - staticStyleDescriptors);
+	uint_t index = (res - array);
 	free(nameBuf);
-	return staticStyles[index];
+	return StyleGetStaticStyle(index);
 }
 
 static bool StyleParseColor(const char* val, ulong_t valLen, COLORREF& color)
@@ -447,50 +357,3 @@ DefinitionStyle* StyleParse(const char* style, ulong_t length)
     return s;
 }
 
-
-
-void PrepareStaticStyles()
-{
-	assert(NULL == staticStyles[0]);
-	for (uint_t i = 0; i < ARRAY_SIZE(staticStyleDescriptors); ++i)
-	{
-		const char* def = staticStyleDescriptors[i].definition;
-		staticStyles[i] = StyleParse(def, strlen(def));
-		// pre-create default fonts so that they are referenced at least once when used for the 1st time
-		staticStyles[i]->font();
-	}
-
-#ifdef DEBUG
-	test_StaticStyleTable();
-#endif
-}
-
-void DisposeStaticStyles()
-{
-	for (uint_t i = 0; i < ARRAY_SIZE(staticStyleDescriptors); ++i)
-	{
-		delete staticStyles[i];
-		staticStyles[i] = NULL;
-	}
-}
-
-#ifdef DEBUG
-void test_StaticStyleTable()
-{
-    // Validate that fields_ are sorted.
-    for (uint_t i = 0; i < ARRAY_SIZE(staticStyleDescriptors); ++i)
-    {
-        if (i > 0 && staticStyleDescriptors[i] < staticStyleDescriptors[i-1])
-        {
-            const char* prevName = staticStyleDescriptors[i-1].name;
-            const char* nextName = staticStyleDescriptors[i].name;
-            assert(false);
-        }
-    }
-    
-    //test |= operator on NULL style
-    DefinitionStyle* ptr = NULL;
-    DefinitionStyle s = *getStaticStyle(styleIndexDefault);
-    s |= *ptr;
-}
-#endif
