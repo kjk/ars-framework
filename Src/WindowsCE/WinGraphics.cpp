@@ -5,13 +5,15 @@
 
 Graphics::Graphics(const NativeGraphicsHandle_t& handle):
     handle_(handle), 
-	hwnd_(NULL)
+	hwnd_(NULL),
+	originalFont_(NULL),
+	originalPen_(NULL)
 {
 	init();
 }
 
 Graphics::Graphics(HWND hwnd):
-    handle_(::GetDC(hwnd)), 
+    handle_(GetDC(hwnd)), 
 	hwnd_(hwnd)
 {
 	init();
@@ -25,8 +27,7 @@ void Graphics::init()
 
 	SetBkMode(handle_, TRANSPARENT);
 
-	currentFont_.attach((HFONT)GetStockObject(SYSTEM_FONT), true);
-	assert(currentFont_.valid());
+	currentFont_.getSystemFont();
 	originalFont_ = (HFONT)SelectObject(handle_, currentFont_.handle());
 	assert(NULL != originalFont_);
 	queryFontMetrics();
@@ -34,15 +35,12 @@ void Graphics::init()
 #ifdef DEBUG
     statePushCounter_ = 0;
 #endif
-	initPen();
-}
 
-void Graphics::initPen()
-{
-    HGDIOBJ hgdiobj = GetStockObject(BLACK_PEN);
-    GetObject(hgdiobj, sizeof(pen_), &pen_);
-    penColor_=pen_.lopnColor;
-    SelectObject(handle_,hgdiobj);
+	HGDIOBJ blackPen = GetStockObject(BLACK_PEN);
+	assert(NULL != blackPen);
+	GetObject(blackPen, sizeof(pen_), &pen_);
+	penColor_ = pen_.lopnColor;
+	originalPen_ = (HPEN)SelectObject(handle_, blackPen);
 }
 
 void Graphics::setFont(const WinFont& font)
@@ -77,7 +75,7 @@ Graphics::State_t Graphics::pushState()
 
 void Graphics::popState(const Graphics::State_t& state)
 {
-    RestoreDC(handle_,state.state);
+    RestoreDC(handle_, state.state);
     fontHeight_ = state.fontHeight;
     fontBaseline_ = state.fontBaseline;
 	currentFont_ = state.font;
@@ -94,6 +92,9 @@ Graphics::~Graphics()
 	if (NULL != originalFont_)
 		SelectObject(handle_, originalFont_);
 
+	if (NULL != originalPen_)
+		SelectObject(handle_, originalPen_);
+
 #ifdef DEBUG
     assert(0 == statePushCounter_);
 #endif
@@ -106,16 +107,6 @@ Graphics::~Graphics()
 
 static void InvertRectangle(HDC dc, const Point& topLeft, uint_t width, uint_t height)
 {
-/*	
-	for (uint_t x = 0; x < length; ++x)
-	{
-		for (uint_t y = 0; y < height; ++y)
-		{
-			COLORREF color = GetPixel(dc, topLeft.x + x; topLeft.y + y);
-
-		}
-	}
-*/
 	BitBlt(dc, topLeft.x, topLeft.y, width, height, dc, topLeft.x, topLeft.y, DSTINVERT);	
 }
 
@@ -134,35 +125,16 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
 
 	if (0 != (winFontMetricSubscript & fontMetricsFlags_))
 		top += height / 3;
-/*
-    NativeColor_t back;
-    NativeColor_t fore;
-    if (inverted)
-    {
-        back = GetBkColor(handle_);
-        fore = this->setForegroundColor(back);
-        SetTextColor(handle_,back);
-        SetBkColor(handle_,fore);
-    }
-*/
 
     ExtTextOut(handle_, topLeft.x, top, 0, NULL, text, length, NULL);
-/*
-    if (inverted)
-    {
-        back = GetBkColor(handle_);
-        fore = this->setForegroundColor(back);
-        SetTextColor(handle_,fore);
-        SetBkColor(handle_,fore);
-    }
-*/
- 	if (inverted)
+
+	if (inverted)
 		InvertRectangle(handle_, topLeft, width, height);
 }
 
 void Graphics::erase(const ArsRectangle& rect)
 {
-    NativeRectangle_t nr=toNative(rect);
+    NativeRectangle_t nr = toNative(rect);
     HBRUSH hbr = CreateSolidBrush(GetBkColor(handle_));
     FillRect(handle_, &nr, hbr);
     DeleteObject(hbr);
@@ -190,13 +162,11 @@ void Graphics::drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1)
 NativeColor_t Graphics::setForegroundColor(NativeColor_t color)
 {
 	// @bug this code below will have to be reworked as it is possible currently to use non-existant pens after restoring draw state
-    HGDIOBJ hgdiobj = GetCurrentObject(handle_,OBJ_PEN);
-    NativeColor_t old = pen_.lopnColor;
+    COLORREF oldColor = pen_.lopnColor;
     pen_.lopnColor = color;
-    HPEN newPen = CreatePenIndirect(&pen_);
-    SelectObject(handle_,newPen);
-    DeleteObject(hgdiobj);
-    return old;
+    HPEN pen = CreatePenIndirect(&pen_);
+    DeleteObject(SelectObject(handle_, pen));
+    return oldColor;
 }
 
 NativeColor_t Graphics::setBackgroundColor(NativeColor_t color)

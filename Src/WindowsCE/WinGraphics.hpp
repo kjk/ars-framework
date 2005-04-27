@@ -36,17 +36,18 @@ class Graphics: private NonCopyable
     uint_t          fontBaseline_;
 	uint_t			fontMetricsFlags_;
     HWND            hwnd_;
+
     LOGPEN          pen_;
-    NativeColor_t   penColor_;
+    COLORREF   penColor_;
 
 	HFONT	originalFont_;
 	WinFont  currentFont_;
 
+	HPEN originalPen_;
+
 #ifdef DEBUG
     int             statePushCounter_;
 #endif
-
-	void initPen();
 
 	void init();
 

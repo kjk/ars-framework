@@ -10,13 +10,11 @@ TextElement::HyperlinkProperties::HyperlinkProperties(const String& res, Hyperli
 {}
 
 TextElement::TextElement(const String& text):
-    text_(text)//,
-//    style_(styleDefault)
+    text_(text)
 {}
 
 TextElement::TextElement(const char_t* text):
-    text_(text)//,
-//    style_(styleDefault)
+    text_(text)
 {}
 
 TextElement::~TextElement()
