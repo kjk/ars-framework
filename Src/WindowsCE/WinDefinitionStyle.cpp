@@ -171,33 +171,10 @@ const WinFont& DefinitionStyle::font() const
 	return cachedFont_;
 }
 
-const DefinitionStyle* StyleGetStaticStyleHelper(const StaticStyleDescriptor* array, uint_t arraySize, const char* name, uint_t length)
+void DefinitionStyle::invalidateCachedFont() const
 {
-    if (uint_t(-1) == length)
-        length = strlen(name);
-
-    if (NULL == name || 0 == length)
-        return NULL;
-
-    char* nameBuf = (char*)malloc(length + 1);
-    if (NULL == nameBuf)
-        return NULL;
-
-	memcpy(nameBuf, name, length);
-	nameBuf[length] = '\0';
-
-	StaticStyleDescriptor des = {nameBuf, NULL};
-	const StaticStyleDescriptor* end = array + arraySize;
-	const StaticStyleDescriptor* res = std::lower_bound(array, end, des);
-	if (end == res || 0 != strcmp(nameBuf, res->name))
-	{
-		free(nameBuf);
-		return NULL;
-	}
-    
-	uint_t index = (res - array);
-	free(nameBuf);
-	return StyleGetStaticStyle(index);
+	if (cachedFont_.valid())
+		cachedFont_ = WinFont();
 }
 
 static bool StyleParseColor(const char* val, ulong_t valLen, COLORREF& color)
@@ -319,12 +296,10 @@ static bool StyleParseAttribute(const char* attr, ulong_t attrLen, const char* v
     return false;
 }
 
-DefinitionStyle* StyleParse(const char* style, ulong_t length)
+bool StyleParse(DefinitionStyle& out, const char* style, ulong_t length)
 {
-    DefinitionStyle* s = new_nt DefinitionStyle();
-    if (NULL == s)
-        return s;
-        
+	out.reset();
+
     long curLen = length;
     const char* start = style;
     while (curLen > 0)
@@ -341,7 +316,7 @@ DefinitionStyle* StyleParse(const char* style, ulong_t length)
             ulong_t valueLen = nextParam - nameEnd-1;
             strip(value, valueLen);
             strip(name, nameLen);
-            if (!StyleParseAttribute(name, nameLen, value, valueLen, *s))
+            if (!StyleParseAttribute(name, nameLen, value, valueLen, out))
             {
 /*                
 				Log(eLogInfo, "StyleParse(): failed to parse attribute: ", false);
@@ -349,11 +324,13 @@ DefinitionStyle* StyleParse(const char* style, ulong_t length)
                 Log(eLogInfo, "; value: ", false);
                 Log(eLogInfo, value, valueLen, true);
  */
+				return false;
             }
         }
         curLen -= nextParam+1;
         start += nextParam+1;
     }
-    return s;
+	return true;
 }
+
 

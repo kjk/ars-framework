@@ -104,15 +104,9 @@ static bool StyleParseAttribute(const char* attr, ulong_t attrLen, const char* v
     return false;
 }
 
-// you can't return style if new_nt failed.
-// you can't return style if you can't parse it (structural error, not that some attribute name is unknown)
-DefinitionStyle* StyleParse(const char* style, ulong_t length)
+bool StyleParse(DefinitionStyle& out, const char* style, ulong_t length)
 {
-    DefinitionStyle* s = new_nt DefinitionStyle();
-    if (NULL == s)
-        return s;
-        
-    s->reset();
+    out.reset();
 
     long curLen = length;
     const char* start = style;
@@ -130,18 +124,19 @@ DefinitionStyle* StyleParse(const char* style, ulong_t length)
             ulong_t valueLen = nextParam - nameEnd-1;
             strip(value, valueLen);
             strip(name, nameLen);
-            if (!StyleParseAttribute(name, nameLen, value, valueLen, *s))
+            if (!StyleParseAttribute(name, nameLen, value, valueLen, out))
             {
                 Log(eLogInfo, "StyleParse(): failed to parse attribute: ", false);
                 Log(eLogInfo, name, nameLen, false);
                 Log(eLogInfo, "; value: ", false);
                 Log(eLogInfo, value, valueLen, true);
+                return false;
             }
         }
         curLen -= nextParam+1;
         start += nextParam+1;
     }
-    return s;
+    return true;
 }
 
 void DefinitionStyle::reset()
@@ -194,16 +189,25 @@ DefinitionStyle& DefinitionStyle::operator|=(const DefinitionStyle& other)
 
 const DefinitionStyle* StyleGetStaticStyleHelper(const StaticStyleEntry* array, uint_t arraySize, const char* name, uint_t length)
 {
+    bool copy = true;
     if (uint_t(-1) == length)
+    {
         length = strlen(name);
+        copy = false;
+    }
 
     if (NULL == name || 0 == length)
         return NULL;
         
-    char* nameBuf = StringCopy2N(name, length);
-    if (NULL == nameBuf)
-        return NULL;
+    char* nameBuf = (char*)name;
     
+    if (copy)
+    {
+        nameBuf = StringCopy2N(name, length);
+        if (NULL == nameBuf)
+            return NULL;
+    }
+        
     StaticStyleEntry entry = COLOR(nameBuf, COLOR_NOT_DEF);
     const StaticStyleEntry* end = array + arraySize;
     const StaticStyleEntry* res = std::lower_bound(array, end, entry);
@@ -212,11 +216,13 @@ const DefinitionStyle* StyleGetStaticStyleHelper(const StaticStyleEntry* array, 
     if (end != res)
         if (entry != *res)
         {
-            free(nameBuf);
+            if (copy)
+                free(nameBuf);
             return NULL;
         }
-            
-    free(nameBuf);
+    
+    if (copy)        
+        free(nameBuf);
 
     if (end == res)
         return NULL;

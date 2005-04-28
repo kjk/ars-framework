@@ -66,21 +66,13 @@ public:
 
 	const WinFont& font() const;
 
+	void invalidateCachedFont() const;
+
 private:
 
 	mutable WinFont cachedFont_;
 
 };
-
-
-struct StaticStyleDescriptor {
-	const char* name;
-	const char* definition;
-
-	bool operator < (const StaticStyleDescriptor& des) const {return strcmp(name, des.name) < 0;}
-};
-
-const DefinitionStyle* StyleGetStaticStyleHelper(const StaticStyleDescriptor* array, uint_t arraySize, const char* name, uint_t length);
 
 #ifdef DEBUG
 void test_StaticStyleTable();

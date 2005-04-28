@@ -31,6 +31,8 @@ const DefinitionStyle* StyleGetStaticStyle(const char* name, uint_t length = uin
 
 DefinitionStyle* StyleParse(const char* style, ulong_t length);
 
+bool StyleParse(DefinitionStyle& style, const char* styleText, ulong_t textLength);
+
 void StylePrepareStaticStyles();
 void StyleDisposeStaticStyles();
 
@@ -96,6 +98,16 @@ bool StyleParseColor(const char* value, ulong_t length, unsigned char& r, unsign
 #define styleAttrValueVerticalAlignBaseline "baseline"
 #define styleAttrValueVerticalAlignSubscript "sub"
 #define styleAttrValueVerticalAlignSuperscript "superscript"
+
+
+struct StaticStyleDescriptor {
+	const char* name;
+	const char* definition;
+
+	bool operator < (const StaticStyleDescriptor& des) const {using namespace std; return strcmp(name, des.name) < 0;}
+};
+
+const DefinitionStyle* StyleGetStaticStyleHelper(const StaticStyleDescriptor* array, uint_t arraySize, const char* name, uint_t length);
 
 #ifndef NDEBUG
 void test_StyleParse();

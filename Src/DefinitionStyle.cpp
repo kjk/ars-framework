@@ -154,3 +154,62 @@ bool StyleParseColor(const char* val, ulong_t len, unsigned char& r, unsigned ch
     return false;
 }
 
+
+DefinitionStyle* StyleParse(const char* style, ulong_t length)
+{
+    DefinitionStyle* s = new_nt DefinitionStyle();
+    if (NULL == s)
+        return s;
+
+	if (!StyleParse(*s, style, length))
+	{
+		delete s;
+		return NULL;
+	}	
+    return s;
+}
+
+
+
+const DefinitionStyle* StyleGetStaticStyleHelper(const StaticStyleDescriptor* array, uint_t arraySize, const char* name, uint_t length)
+{
+    using namespace std;
+    bool copy = true;
+    if (uint_t(-1) == length)
+    {
+        length = strlen(name);
+        copy = false;
+    }
+
+    if (NULL == name || 0 == length)
+        return NULL;
+
+    char* nameBuf = (char*)name;
+    if (copy)
+    {
+        nameBuf = (char*)malloc(length + 1);
+        if (NULL == nameBuf)
+            return NULL;
+        memcpy(nameBuf, name, length);
+        nameBuf[length] = '\0';
+    }
+
+    StaticStyleDescriptor des = {nameBuf, NULL};
+    const StaticStyleDescriptor* end = array + arraySize;
+    const StaticStyleDescriptor* res = std::lower_bound(array, end, des);
+    if (end == res || 0 != strcmp(nameBuf, res->name))
+    {
+        if (copy)
+            free(nameBuf);
+        return NULL;
+    }
+
+    uint_t index = (res - array);
+    if (copy)
+        free(nameBuf);
+
+    return StyleGetStaticStyle(index);
+}
+
+
+
