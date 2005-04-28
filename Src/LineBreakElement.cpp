@@ -9,7 +9,7 @@ void LineBreakElement::setSize(int mult, int div)
 
 void LineBreakElement::calculateOrRender(LayoutContext& layoutContext, bool render)
 {
-    assert(0==layoutContext.usedWidth);
+    assert(0 == layoutContext.usedWidth);
     if (!render)
     {
         //const RenderingPreferences::StyleFormatting& style=layoutContext.preferences.styleFormatting(styleDefault);

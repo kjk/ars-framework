@@ -5,13 +5,16 @@
 
 class LineBreakElement: public DefinitionElement
 {
-    void calculateOrRender(LayoutContext& layoutContext, bool render=false);
 
     // those scale the dy (height) of the line break element. To obtain final
     // dy we multiply by mult_ and divide by div_ the original dy.
     // i.e. mult_=1 and div_=2 => dyFinal = dyOrig / 2
     int mult_;
     int div_;
+
+protected:
+
+    virtual void calculateOrRender(LayoutContext& layoutContext, bool render = false);
 
 public:
 
@@ -32,7 +35,7 @@ public:
     void render(RenderingContext& rc)
     {calculateOrRender(rc, true);}
 
-    virtual void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
+    void toText(ArsLexis::String& appendTo, uint_t from, uint_t to) const
     {
         if (from!=to)
             appendTo.append(1, _T('\n'));

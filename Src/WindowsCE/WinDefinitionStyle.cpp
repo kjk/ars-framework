@@ -221,9 +221,9 @@ static bool StyleParseAttribute(const char* attr, ulong_t attrLen, const char* v
 	{
 		if (StrEquals(val, valLen, styleAttrValueFontStyleNormal))
 			style.italic = style.no;
-		if (StrEquals(val, valLen, styleAttrValueFontStyleItalic))
+		else if (StrEquals(val, valLen, styleAttrValueFontStyleItalic))
 			style.italic = style.yes;
-		if (StrEquals(val, valLen, styleAttrValueFontStyleObligue))
+		else if (StrEquals(val, valLen, styleAttrValueFontStyleObligue))
 			style.italic = style.yes;
 		else
 			return false;
