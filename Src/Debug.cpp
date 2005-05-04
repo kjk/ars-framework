@@ -111,3 +111,14 @@ void* malloc__(size_t size)
         return NULL;
     return ptr;
 }
+
+#if defined(_MSC_VER) && !defined(NDEBUG) && (_MSC_VER == 1400)
+
+#include <altcecrt.h>
+
+int __cdecl _CrtDbgReportW(int reason, const wchar_t* file, int line, const wchar_t* t2, const wchar_t* message, ...)
+{
+	return 1;
+}
+
+#endif
