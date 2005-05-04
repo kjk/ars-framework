@@ -23,6 +23,11 @@ using std::size_t;
 # include <cassert>
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+#include <cassert>
+#endif
+
+
 #include <BaseTypes.hpp>
 
 

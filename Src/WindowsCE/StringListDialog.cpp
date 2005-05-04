@@ -4,6 +4,8 @@
 #include "resource.h"
 #include "StringListDialog.hpp"
 
+#include <UIHelper.h>
+
 /*
 This is a common dialog to select a string from a list of strings.
 A list shouldn't be too long - otherwise it'll be unusable.
@@ -126,9 +128,9 @@ static BOOL CALLBACK StringListDlgProc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp
         // the idea is that on Pocket PC we have 2 units border on all sides
         // on smartphone we have 2px border only at top and bottom
 #ifdef WIN32_PLATFORM_PSPC
-        MoveWindow(ctrlList, 2, 2, dlgDx-4, dlgDy-2, TRUE);
+        MoveWindow(ctrlList, SCALEX(2), SCALEY(2), dlgDx - SCALEX(4), dlgDy - SCALEY(2), TRUE);
 #else
-        MoveWindow(ctrlList, 0, 2, dlgDx, dlgDy-4, TRUE);
+        MoveWindow(ctrlList, 0, SCALEY(2), dlgDx, dlgDy - SCALEY(4), TRUE);
 #endif
     }
 

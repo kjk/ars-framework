@@ -22,7 +22,7 @@ class FieldPayloadProtocolConnection : public SimpleSocketConnection
 {
 public:
 
-    class PayloadHandler: private NonCopyable
+	class PayloadHandler: private ::NonCopyable
     {
         public:
             virtual ~PayloadHandler();

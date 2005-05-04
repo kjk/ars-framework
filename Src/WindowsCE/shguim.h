@@ -25,6 +25,10 @@ Abstract:
 //
 #define SH_UIMETRIC_CHANGE    TEXT("SH_UIMETRIC_CHANGE")
 
+#if _MSC_VER >= 1400
+#include <aygshell.h>
+#else
+
 //
 // Enumeration of metrics you can ask for.  Note that you will only receive a 
 // notification for SHUIM_FONTSIZE_POINT when any these three values changes.
@@ -90,5 +94,7 @@ __inline HRESULT SHGetUIMetrics(SHUIMETRIC shuim, PVOID pvBuffer, DWORD cbBuffer
     }
     return S_OK;
 }
+
+#endif
 
 #endif
