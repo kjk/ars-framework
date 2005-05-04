@@ -507,7 +507,11 @@ void Definition::renderLineRange(Graphics& graphics, LinePosition_t begin, LineP
             renderLine(renderContext, line, startElem, endElem);
         else
             renderContext.top += line->height;
-        line = nextLine;
+
+		line = nextLine;
+		if (lines_.end() == line)
+			break;
+
         if (line->firstElement > endElem)
             break;
     }
