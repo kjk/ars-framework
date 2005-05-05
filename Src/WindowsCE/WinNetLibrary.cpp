@@ -1,8 +1,5 @@
 #include <NetLibrary.hpp>
 #include <SocketAddress.hpp>
-#include <winsock.h>
-
-//const uint_t NetLibrary::defaultConfig=0;
 
 NetLibrary::NetLibrary():
 closed_(true)

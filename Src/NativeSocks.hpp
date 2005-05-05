@@ -2,7 +2,14 @@
 #define __ARSLEXIS_NATIVESOCKS_HPP__
 
 #if defined(_WIN32_WCE)
+
+#if _WIN32_WCE < 400
 #include <winsock.h>
+#else
+// Include winsock2.h where available to avoid warnings of duplicate macros
+#include <winsock2.h>
+#endif
+
 #elif defined(_PALM_OS)
 #include <Library.hpp>
 #endif
