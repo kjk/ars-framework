@@ -229,6 +229,39 @@ long HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
             
         currentHistoryIndex = cache.entriesCount() - 1;
         cache.setEntryTitle(currentHistoryIndex, entryTitle);
+
+        // Special history flags 'h' and 'H'
+        // TODO: write this better!
+        char_t* url = (char_t*) cache.entryUrl(currentHistoryIndex);
+        bool wasSpecialHistory = false;
+        // TODO: change 'h' to 'H'
+        if (tstrlen(url) > 2)
+            if ('h' == url[0] && 's' == url[1] && '+' == url[2])
+            {
+                url[0] = 'H';
+                wasSpecialHistory = true;
+            }    
+
+        // TODO: remove all other entries with this url
+        if (wasSpecialHistory)
+        {
+            for (int i = cache.entriesCount()-1; i >= 0; i--)
+            {
+                if (i != currentHistoryIndex)
+                    if (0 == tstrcmp(url, cache.entryUrl(i)))
+                    {
+                        if (i > currentHistoryIndex)
+                            cache.removeEntry(i);
+                        else
+                        {
+                            cache.removeEntry(i);
+                            currentHistoryIndex--;
+                            url = (char_t*) cache.entryUrl(currentHistoryIndex);
+                        }
+                    }
+            }        
+        }      
+        // end of special history flags
     }
     lastAction_ = actionNewSearch;
     return currentHistoryIndex;
