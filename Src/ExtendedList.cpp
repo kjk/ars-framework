@@ -45,7 +45,7 @@ static void drawBevel(Graphics& graphics, ArsRectangle& bounds, const RGBColorTy
     uint_t x1=x0+bounds.width()-1;
     uint_t y1=y0+bounds.height();
     UInt16 origCoordinateSystem;
-    if (doubleDensity) 
+    if (doubleDensity)
     {
         x0 *= 2;
         y0 *= 2;
@@ -91,7 +91,7 @@ static void drawBevel(Graphics& graphics, ArsRectangle& bounds, const RGBColorTy
 }
 
 inline static bool rgbEqual(const RGBColorType& c1, const RGBColorType& c2)
-{   
+{
     return c1.r==c2.r && c1.g==c2.g && c1.b==c2.b;
 }
 
@@ -130,12 +130,12 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
     setRgbColor(noFocusItemBackgroundColor, 99, 154, 206);
     setRgbColor(foregroundColor, 0, 0, 0);
     setRgbColor(selectedForegroundColor, 0, 0, 0);
-    
+
 }
 
 ExtendedList::~ExtendedList()
 {}
-    
+
 void ExtendedList::drawItem(Graphics& graphics, const ArsRectangle& bounds, uint_t item, bool selected)
 {
     assert(item<itemsCount());
@@ -171,9 +171,9 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const ArsRectangle& listBou
     }
     Graphics::ClipRectangleSetter setClip(graphics, clipRectangle);
     bool selected = false;
-    
+
     RGBColorType newFore;
-    
+
     if (selection_==item)
     {
         newFore = selectedForegroundColor;
@@ -181,16 +181,16 @@ void ExtendedList::drawItemProxy(Graphics& graphics, const ArsRectangle& listBou
     }
     else
         newFore = foregroundColor;
-        
+
     RGBColorType oldFore, oldText;
     WinSetForeColorRGB(&newFore, &oldFore);
     WinSetTextColorRGB(&newFore, &oldText);
 
-    drawItem(graphics, itemBounds, item, selected);    
-    
+    drawItem(graphics, itemBounds, item, selected);
+
     WinSetTextColorRGB(&oldText, 0);
     WinSetForeColorRGB(&oldFore, 0);
-    
+
 }
 
 void ExtendedList::handleDraw(Graphics& graphics)
@@ -205,7 +205,7 @@ void ExtendedList::handleDraw(Graphics& graphics)
     if (!windowSettingsChecked_)
     {
         windowSettingsChecked_=true;
-/*        
+/*
         WinIndexToRGB(UIColorGetTableEntryIndex(UIFormFill), &listBackgroundColor);
         WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedForeground), &foregroundColor);
         WinIndexToRGB(UIColorGetTableEntryIndex(UIMenuSelectedFill), &itemBackgroundColor);
@@ -216,7 +216,7 @@ void ExtendedList::handleDraw(Graphics& graphics)
             if (rgbEqual(itemBackgroundColor, selectedItemBackgroundColor))
                 saturate(selectedItemBackgroundColor, -64);
         }
-*/        
+*/
         if (hasHighDensityFeatures_)
         {
             UInt32 attr;
@@ -254,7 +254,7 @@ void ExtendedList::handleDraw(Graphics& graphics)
 }
 
 uint_t ExtendedList::height() const
-{   
+{
     RectangleType rect;
     FrmGetObjectBounds(*form(), index(), &rect);
     return rect.extent.y;
@@ -262,7 +262,7 @@ uint_t ExtendedList::height() const
 
 uint_t ExtendedList::visibleItemsCount() const
 {
-    if (noListSelection==topItem_) 
+    if (noListSelection==topItem_)
     {
         assert(0==itemsCount());
         return 0;
@@ -282,7 +282,7 @@ void ExtendedList::setTopItem(uint_t item, RedrawOption ro)
     assert(item<itemsCount());
     topItem_=item;
     if (redraw==ro)
-        drawProxy();        
+        drawProxy();
 }
 
 void ExtendedList::setItemHeight(uint_t h, RedrawOption ro)
@@ -307,11 +307,11 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
         if (oldSelection != item)
         {
             sendEvent(selChangedEvent);
-        }    
-    }    
+        }
+    }
     bool scrolled=false;
     bool showScrollbar=false;
-    if (noListSelection!=(selection_=item)) 
+    if (noListSelection!=(selection_=item))
     {
         uint_t itemsCount=this->itemsCount();
         assert(item<itemsCount);
@@ -321,7 +321,7 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
             topItem_=item;
             scrolled=true;
         }
-        else 
+        else
         {
             uint_t listHeight=height();
             uint_t viewCapacity=listHeight/itemHeight_;
@@ -332,7 +332,7 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
             }
             if (viewCapacity<itemsCount)
                 showScrollbar=true;
-        }     
+        }
     }
     if (redraw == ro)
         drawProxy();
@@ -352,17 +352,17 @@ void ExtendedList::setItemRenderer(ItemRenderer* itemRenderer, RedrawOption ro)
 {
     if (0!=(itemRenderer_=itemRenderer) && 0!=itemRenderer->itemsCount())
         topItem_=0;
-    else 
+    else
         topItem_=noListSelection;
     selection_=noListSelection;
     if (redraw==ro)
         drawProxy();
 }
 
-void ExtendedList::adjustVisibleItems(RedrawOption ro) 
+void ExtendedList::adjustVisibleItems(RedrawOption ro)
 {
     int total=itemsCount();
-    if (0==total) 
+    if (0==total)
         return;
     int visible=height()/itemHeight_;
     if (total-topItem_<visible)
@@ -466,11 +466,11 @@ bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
             case chrPageDown:
                 delta=page;
                 break;
-                
+
             case chrPageUp:
                 delta=-page;
                 break;
-            
+
             case chrDownArrow:
                 delta=1;
                 break;
@@ -478,12 +478,12 @@ bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
             case chrUpArrow:
                 delta=-1;
                 break;
-                
+
             case chrLeftArrow:
                 if (optionScrollPagesWithLeftRight & options)
                     delta=-page;
                 break;
-                
+
             case chrRightArrow:
                 if (optionScrollPagesWithLeftRight & options)
                     delta=page;
@@ -492,7 +492,7 @@ bool ExtendedList::handleKeyDownEvent(const EventType& event, uint_t options)
     }
     const int sel = selection();
     if (noListSelection == sel || (0 > delta && 0 == sel) || (0 < delta && sel == itemsCount() - 1))
-        delta = 0;        
+        delta = 0;
     if (0 != delta)
     {
         setSelectionDelta(delta);
@@ -515,24 +515,24 @@ void ExtendedList::setSelectionDelta(int delta, RedrawOption ro)
 bool ExtendedList::handleEvent(EventType& event)
 {
     bool handled=false;
-    switch (event.eType) 
+    switch (event.eType)
     {
         case penMoveEvent:
             handlePenMove(event);
             handled=true;
             break;
-        
+
         case penUpEvent:
             handlePenUp(event);
             handled=true;
             break;
-        
+
         case nilEvent:
             handleNilEvent();
             break;
-            
+
         default:
-            handled=FormGadget::handleEvent(event);            
+            handled=FormGadget::handleEvent(event);
     }
     return handled;
 }
@@ -549,7 +549,7 @@ bool ExtendedList::handleEnter(const EventType& event)
     itemsBounds.width()-=visibleScrollBarWidth();
     if (itemsBounds && penPos)
         handlePenInItemsList(bounds, penPos, false);
-    else 
+    else
         handlePenInScrollBar(bounds, penPos, false, true);
     return true;
 }
@@ -608,7 +608,7 @@ void ExtendedList::handlePenInScrollBar(const ArsRectangle& bounds, const Point&
     }
     if (!(scrollBar && penPos))
         return;
-    if (height<scrollButtonHeight_ && 0<topItem_) 
+    if (height<scrollButtonHeight_ && 0<topItem_)
     {
         topItem_-=viewCapacity;
         topItem_=std::max(0, topItem_);
@@ -653,7 +653,7 @@ void ExtendedList::handlePenMove(const EventType& event)
     ArsRectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
     if (trackingScrollbar_)
         handlePenInScrollBar(bounds, penPos, false, false);
-    else 
+    else
     {
         ArsRectangle itemsBounds=bounds;
         itemsBounds.width() -= visW;
@@ -690,7 +690,7 @@ void ExtendedList::handlePenMove(const EventType& event)
                 scheduledScrollDirection_ = scheduledScrollAbandoned;
             }
         }
-    }    
+    }
 }
 
 void ExtendedList::handleNilEvent()
@@ -715,7 +715,7 @@ void ExtendedList::handleNilEvent()
     scheduledNilEventTicks_ = time + form()->application().ticksPerSecond()/7;
 //    log().debug()<<"handleNilEvent() scheduling scrolling at time: "<<scheduledNilEventTicks_;
     EvtSetNullEventTick(scheduledNilEventTicks_);
-    scroll(dir, 1);  
+    scroll(dir, 1);
 }
 
 
@@ -729,7 +729,7 @@ void ExtendedList::fireItemSelectEvent()
     event.data.lstSelect.selection=selection_;
     EvtAddEventToQueue(&event);
 }
-        
+
 bool ExtendedList::scrollBarVisible() const
 {
     uint_t itemsCount=0;
@@ -781,11 +781,11 @@ void ExtendedList::notifyItemsChanged()
             topItem_=0;
         if (noListSelection != selection_ && selection_ >= itemsCount)
             selection_ = noListSelection;
-    }            
-    else 
+    }
+    else
     {
         topItem_=noListSelection;
-        selection_=noListSelection;    
+        selection_=noListSelection;
     }
 }
 
@@ -807,7 +807,7 @@ bool ExtendedList::scroll(WinDirectionType direction, uint_t items)
         else
             topItem -= items;
     }
-    else 
+    else
     {
         uint_t visible =height() / itemHeight_;
         if (visible > itemsCount)
