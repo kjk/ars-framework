@@ -236,12 +236,12 @@ void ExtendedList::handleDraw(Graphics& graphics)
     if (noListSelection == topItem_)
         topItem_=0;
     assert(itemsCount > topItem_);
-    uint_t viewCapacity=listBounds.height()/itemHeight_;
-    uint_t itemsToDisplay=viewCapacity;
+    uint_t visibleItems=listBounds.height()/itemHeight_;
+    uint_t itemsToDisplay=visibleItems;
 //    if (0 != listBounds.height() % itemHeight_)
 //        ++itemsToDisplay;
     uint_t itemsBelow=itemsCount-topItem_;
-    bool showScrollbar=(itemsCount>viewCapacity);
+    bool showScrollbar=(itemsCount>visibleItems);
     itemsToDisplay=std::min(itemsToDisplay, itemsBelow);
     for (uint_t i=0; i<itemsToDisplay; ++i)
         drawItemProxy(graphics, listBounds, topItem_+i, showScrollbar);
@@ -324,13 +324,13 @@ void ExtendedList::setSelection(int item, RedrawOption ro)
         else
         {
             uint_t listHeight=height();
-            uint_t viewCapacity=listHeight/itemHeight_;
-            if (item>=topItem_+viewCapacity)
+            uint_t visibleItems=listHeight/itemHeight_;
+            if (item>=topItem_+visibleItems)
             {
-                topItem_=item-viewCapacity+1;
+                topItem_=item-visibleItems+1;
                 scrolled=true;
             }
-            if (viewCapacity<itemsCount)
+            if (visibleItems<itemsCount)
                 showScrollbar=true;
         }
     }
@@ -414,10 +414,10 @@ void ExtendedList::drawScrollBar(Graphics& graphics, const ArsRectangle& bounds)
     buttonBounds.y()=bounds.y()+scrollButtonHeight_;
     buttonBounds.height()=bounds.height()-2*scrollButtonHeight_;
     long totalHeight=buttonBounds.height();
-    long viewCapacity=this->height()/itemHeight_;
+    long visibleItems=this->height()/itemHeight_;
     long itemsCount=this->itemsCount();
-    assert(itemsCount>viewCapacity);
-    long traktorHeight=(viewCapacity*totalHeight)/itemsCount + 1;
+    assert(itemsCount>visibleItems);
+    long traktorHeight=(visibleItems*totalHeight)/itemsCount + 1;
     traktorHeight=std::max(traktorHeight, 5L);
     graphics.erase(buttonBounds);
     WinSetBackColorRGB(&oldBgColor, NULL);
@@ -570,7 +570,7 @@ void ExtendedList::handlePenInItemsList(const ArsRectangle& bounds, const Point&
 
 void ExtendedList::handlePenInScrollBar(const ArsRectangle& bounds, const Point& penPos, bool penUp, bool enter)
 {
-    int viewCapacity=bounds.height()/itemHeight_;
+    int visibleItems=bounds.height()/itemHeight_;
     int itemsCount=this->itemsCount();
     int height=penPos.y-bounds.y();
     ArsRectangle scrollBar(bounds.x()+bounds.width()-scrollBarWidth_, bounds.y(), scrollBarWidth_, bounds.height());
@@ -589,9 +589,9 @@ void ExtendedList::handlePenInScrollBar(const ArsRectangle& bounds, const Point&
         {
             long traktorTrackHeight=bounds.height()-(2*scrollButtonHeight_);
             long traktorPos=height-scrollButtonHeight_;
-            long traktorHeight=(viewCapacity*traktorTrackHeight)/itemsCount;
-            long newTopItem=((traktorPos-traktorHeight/2)*long(itemsCount-viewCapacity))/(traktorTrackHeight-traktorHeight);
-            newTopItem=std::min(std::max(0L, newTopItem), long(itemsCount-viewCapacity));
+            long traktorHeight=(visibleItems*traktorTrackHeight)/itemsCount;
+            long newTopItem=((traktorPos-traktorHeight/2)*long(itemsCount-visibleItems))/(traktorTrackHeight-traktorHeight);
+            newTopItem=std::min(std::max(0L, newTopItem), long(itemsCount-visibleItems));
             topItem_=newTopItem;
         }
         else
@@ -610,14 +610,14 @@ void ExtendedList::handlePenInScrollBar(const ArsRectangle& bounds, const Point&
         return;
     if (height<scrollButtonHeight_ && 0<topItem_)
     {
-        topItem_-=viewCapacity;
+        topItem_-=visibleItems;
         topItem_=std::max(0, topItem_);
         drawProxy();
     }
-    else if (height>bounds.height()-scrollButtonHeight_ && itemsCount>viewCapacity && topItem_<itemsCount-viewCapacity)
+    else if (height>bounds.height()-scrollButtonHeight_ && itemsCount>visibleItems && topItem_<itemsCount-visibleItems)
     {
-        topItem_+=viewCapacity;
-        topItem_=std::min(itemsCount-viewCapacity, topItem_);
+        topItem_+=visibleItems;
+        topItem_=std::min(itemsCount-visibleItems, topItem_);
         drawProxy();
     }
 }
@@ -735,8 +735,8 @@ bool ExtendedList::scrollBarVisible() const
     uint_t itemsCount=0;
     if (0==(itemsCount=this->itemsCount()))
         return false;
-    uint_t viewCapacity=height()/itemHeight_;
-    return itemsCount>viewCapacity;
+    uint_t visibleItems=height()/itemHeight_;
+    return itemsCount>visibleItems;
 }
 
 BasicStringItemRenderer::BasicStringItemRenderer()
@@ -837,12 +837,12 @@ void ExtendedList::handleFocusChange(FocusChange change)
         if (noListSelection == topItem_)
             topItem_=0;
         assert(itemsCount > topItem_);
-        uint_t viewCapacity=listBounds.height()/itemHeight_;
+        uint_t visibleItems=listBounds.height()/itemHeight_;
         if (sel < topItem_)
             return;
-        if (sel >= topItem_ + viewCapacity)
+        if (sel >= topItem_ + visibleItems)
             return;
-        bool showScrollbar = (itemsCount > viewCapacity);
+        bool showScrollbar = (itemsCount > visibleItems);
         Graphics graphics(WinGetDrawWindow()); //form()->windowHandle()
         drawItemProxy(graphics, listBounds, sel, showScrollbar);
     }

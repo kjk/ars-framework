@@ -72,7 +72,7 @@ public:
     void setItemsCount(uint_t itemsCount) {itemsCount_ = itemsCount;}
     uint_t itemsCount() const {return itemsCount_;}
     uint_t itemHeight() const {return rowHeight(0);}
-    uint_t viewCapacity() const;
+    uint_t visibleItems() const;
     uint_t topItem() const {return topItem_;}
     void setTopItem(uint_t topItem, bool updateScrollbar = false);
 

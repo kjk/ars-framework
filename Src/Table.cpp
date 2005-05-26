@@ -29,7 +29,7 @@ void Table::adjustVisibleItems()
     setTopItem(topItem_, true);
 }
 
-uint_t Table::viewCapacity() const
+uint_t Table::visibleItems() const
 {
     ArsRectangle rect;
     bounds(rect);
@@ -38,21 +38,21 @@ uint_t Table::viewCapacity() const
 
 void Table::setTopItem(uint_t topItem, bool updateScrollbar)
 {
-    uint_t viewCapacity = this->viewCapacity();
+    uint_t visibleItems = this->visibleItems();
     uint_t maxRows = rowsCount();
     uint_t visible = itemsCount_;
-    if (itemsCount_ > viewCapacity)
+    if (itemsCount_ > visibleItems)
     {
         topItem_ = topItem;
-        if (topItem_ > itemsCount_ - viewCapacity)
-            topItem_ = itemsCount_ - viewCapacity;
+        if (topItem_ > itemsCount_ - visibleItems)
+            topItem_ = itemsCount_ - visibleItems;
         for (uint_t i = 0; i < topItem_; ++i)
             setRowUsable(i, false);
-        for (uint_t i = topItem_; i < topItem_ + viewCapacity; ++i)
+        for (uint_t i = topItem_; i < topItem_ + visibleItems; ++i)
             setRowUsable(i, true);
-        for (uint_t i = topItem_ + viewCapacity; i < maxRows; ++i)
+        for (uint_t i = topItem_ + visibleItems; i < maxRows; ++i)
             setRowUsable(i, false);
-        visible = viewCapacity;
+        visible = visibleItems;
     }
     else
     {
