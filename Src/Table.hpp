@@ -15,74 +15,75 @@ public:
 
     ~Table();
 
-    void redraw() {TblRedrawTable(object());}
+    void    redraw() {TblRedrawTable(object());}
 
-    void invalidate() {TblMarkTableInvalid(object());}
+    void    invalidate() {TblMarkTableInvalid(object());}
 
-    void invalidateRow(UInt16 row) {TblMarkRowInvalid(object(), row);}
+    void    invalidateRow(UInt16 row) {TblMarkRowInvalid(object(), row);}
 
-    bool isRowInvalid(UInt16 row) const {return TblRowInvalid(object(), row);}
+    bool    isRowInvalid(UInt16 row) const {return TblRowInvalid(object(), row);}
 
-    bool isBeingEdited() const {return TblEditing(object());}
+    bool    isBeingEdited() const {return TblEditing(object());}
 
-    void erase() {TblEraseTable(object());}
+    void    erase() {TblEraseTable(object());}
 
-    Coord columnSpacing(UInt16 column) const {return TblGetColumnSpacing(object(), column);}
+    Coord   columnSpacing(UInt16 column) const {return TblGetColumnSpacing(object(), column);}
 
-    void setColumnSpacing(UInt16 column, Coord spacing) {TblSetColumnSpacing(object(), column, spacing);}
+    void    setColumnSpacing(UInt16 column, Coord spacing) {TblSetColumnSpacing(object(), column, spacing);}
 
-    Coord columnWidth(UInt16 column) const {return TblGetColumnWidth(object(), column);}
+    Coord   columnWidth(UInt16 column) const {return TblGetColumnWidth(object(), column);}
 
-    void setColumnWidth(UInt16 column, Coord width) {TblSetColumnWidth(object(), column, width);}
+    void    setColumnWidth(UInt16 column, Coord width) {TblSetColumnWidth(object(), column, width);}
 
-    UInt16 columnsCount() const {return TblGetNumberOfColumns(object());}
+    UInt16  columnsCount() const {return TblGetNumberOfColumns(object());}
 
-    UInt16 rowsCount() const {return TblGetNumberOfRows(object());}
+    UInt16  rowsCount() const {return TblGetNumberOfRows(object());}
 
-    Coord rowHeight(UInt16 row) const {return TblGetRowHeight(object(), row);}
+    Coord   rowHeight(UInt16 row) const {return TblGetRowHeight(object(), row);}
 
-    void insertRow(UInt16 row) {TblInsertRow(object(), row);}
+    void    insertRow(UInt16 row) {TblInsertRow(object(), row);}
 
-    void removeRow(UInt16 row) {TblRemoveRow(object(), row);}
+    void    removeRow(UInt16 row) {TblRemoveRow(object(), row);}
 
-    void setRowUsable(UInt16 row, bool usable) {TblSetRowUsable(object(), row, usable);}
+    void    setRowUsable(UInt16 row, bool usable) {TblSetRowUsable(object(), row, usable);}
 
-    bool isRowUsable(UInt16 row) const {return TblRowUsable(object(), row);}
+    bool    isRowUsable(UInt16 row) const {return TblRowUsable(object(), row);}
 
-    void setItemStyle(UInt16 row, UInt16 column, TableItemStyleType style) {TblSetItemStyle(object(), row, column, style);}
+    void    setItemStyle(UInt16 row, UInt16 column, TableItemStyleType style) {TblSetItemStyle(object(), row, column, style);}
 
-    void setItemInt(UInt16 row, UInt16 column, Int16 value) {TblSetItemInt(object(), row, column, value);}
+    void    setItemInt(UInt16 row, UInt16 column, Int16 value) {TblSetItemInt(object(), row, column, value);}
 
-    void setItemPtr(UInt16 row, UInt16 column, void* ptr) {TblSetItemPtr(object(), row, column, ptr);}
+    void    setItemPtr(UInt16 row, UInt16 column, void* ptr) {TblSetItemPtr(object(), row, column, ptr);}
 
-    Int16 itemInt(UInt16 row, UInt16 column) const {return TblGetItemInt(object(), row, column);}
+    Int16   itemInt(UInt16 row, UInt16 column) const {return TblGetItemInt(object(), row, column);}
 
-    void* itemPtr(UInt16 row, UInt16 column) const {return TblGetItemPtr(object(), row, column);}
+    void*   itemPtr(UInt16 row, UInt16 column) const {return TblGetItemPtr(object(), row, column);}
 
-    void setColumnUsable(UInt16 column, bool usable) {TblSetColumnUsable(object(), column, usable);}
+    void    setColumnUsable(UInt16 column, bool usable) {TblSetColumnUsable(object(), column, usable);}
 
-    void setCustomDrawFunction(UInt16 column, TableDrawItemFuncType* function) {TblSetCustomDrawProcedure(object(), column, function);}
+    void    setCustomDrawFunction(UInt16 column, TableDrawItemFuncType* function) {TblSetCustomDrawProcedure(object(), column, function);}
 
-    void setRowHeight(UInt16 row, Coord height) {TblSetRowHeight(object(), row, height);}
+    void    setRowHeight(UInt16 row, Coord height) {TblSetRowHeight(object(), row, height);}
 
-    void adjustVisibleItems();
+    void    adjustVisibleItems();
 
-    void setHasScrollbar(bool value) {TblHasScrollBar(object(), value);}
+    void    setHasScrollbar(bool value) {TblHasScrollBar(object(), value);}
 
-    void setItemsCount(uint_t itemsCount) {itemsCount_ = itemsCount;}
-    uint_t itemsCount() const {return itemsCount_;}
-    uint_t itemHeight() const {return rowHeight(0);}
-    uint_t visibleItems() const;
-    uint_t topItem() const {return topItem_;}
-    void setTopItem(uint_t topItem, bool updateScrollbar = false);
+    void    setItemsCount(uint_t itemsCount) {itemsCount_ = itemsCount;}
+    uint_t  itemsCount() const {return itemsCount_;}
+    uint_t  itemHeight() const {return rowHeight(0);}
+    uint_t  visibleItems() const;
+    uint_t  topItem() const {return topItem_;}
+    void    setTopItem(uint_t topItem, bool updateScrollbar = false);
+    void    ensureSelectedItemVisible(void);
 
-    void setSelection(Int16 row, Int16 column) { TblSelectItem(object(), row, column); }
-    void getSelection(Int16 *row, Int16 *column) { TblGetSelection(object(), row, column); }
+    void    setSelection(Int16 row, Int16 column) { TblSelectItem(object(), row, column); }
+    void    getSelection(Int16 *row, Int16 *column) { TblGetSelection(object(), row, column); }
 
-    bool handleEventInForm(EventType& event);
-    bool handleKeyDownEvent(const EventType& event);
+    bool    handleEventInForm(EventType& event);
+    bool    handleKeyDownEvent(const EventType& event);
 
-    void fireItemSelected(Int16 row, Int16 col);
+    void    fireItemSelected(Int16 row, Int16 col);
 };
 
 #endif

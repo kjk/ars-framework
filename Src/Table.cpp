@@ -29,11 +29,36 @@ void Table::adjustVisibleItems()
     setTopItem(topItem_, true);
 }
 
+// makes sure that selected item is visible
+// if selected item is
+void Table::ensureSelectedItemVisible(void)
+{
+    Int16 row, col;
+    getSelection(&row, &col);
+    if (-1 == row)
+        return;
+    assert((row >= 0) && (row < rowsCount()));
+    if (row < topItem())
+    {
+        setTopItem(row, true);
+        redraw();
+        return;
+    }
+
+    if (row - topItem_ > visibleItems()-1)
+    {
+        setTopItem(row - visibleItems(), true);
+        redraw();
+        return;
+    }
+}
+
 uint_t Table::visibleItems() const
 {
     ArsRectangle rect;
     bounds(rect);
-    return rect.height()/itemHeight();
+    uint_t visibleItems = rect.height()/itemHeight();
+    return visibleItems;
 }
 
 void Table::setTopItem(uint_t topItem, bool updateScrollbar)
@@ -103,8 +128,10 @@ bool Table::handleKeyDownEvent(const EventType& event)
     //    return false;
     assert(keyDownEvent==event.eType);
 
-    Int16 curRow, curCol;
-    getSelection(&curRow, &curCol);
+    Int16 origRow, origCol;
+    getSelection(&origRow, &origCol);
+    Int16 curRow = origRow;
+    Int16 curCol = origCol;
     Int16 rowCount = rowsCount();
     Int16 colCount = columnsCount();
     // exit if there is no valid current selection
@@ -129,13 +156,16 @@ bool Table::handleKeyDownEvent(const EventType& event)
         fireItemSelected(curRow, curCol);
         return true;
     }
-    if ( (curRow<0) || (curRow>=rowCount) )
+    if ((curRow == origRow) && (curCol == origCol) )
         return false;
-    if ( (curCol<0) || (curCol>=colCount) )
+    if ( (curRow < 0) || (curRow >= rowCount) )
+        return false;
+    if ( (curCol < 0) || (curCol >= colCount) )
         return false;
     if (NULL == itemPtr(curRow, curCol))
         return false; // there's no item at this position
     setSelection(curRow, curCol);
+    ensureSelectedItemVisible();
     return true;
 }
 
