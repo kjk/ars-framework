@@ -47,7 +47,7 @@ void Table::ensureSelectedItemVisible(void)
 
     if (row - topItem_ > visibleItems()-1)
     {
-        setTopItem(row - visibleItems(), true);
+        setTopItem(row - (visibleItems()-1), true);
         redraw();
         return;
     }
