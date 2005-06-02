@@ -1,11 +1,12 @@
-#include <Application.hpp>
 #include <Table.hpp>
+#include <SysUtils.hpp>
 
 Table::Table(Form& form, ScrollBar* scrollBar):
     FormObjectWrapper(form),
     scrollBar_(scrollBar),
     topItem_(0),
-    itemsCount_(0)
+    itemsCount_(0),
+    notifyChangeSelection_(false)
 {}
 
 Table::~Table() {}
@@ -27,30 +28,6 @@ void Table::adjustVisibleItems()
     invalidate();
 */
     setTopItem(topItem_, true);
-}
-
-// makes sure that selected item is visible
-// if selected item is
-void Table::ensureSelectedItemVisible(void)
-{
-    Int16 row, col;
-    getSelection(&row, &col);
-    if (-1 == row)
-        return;
-    assert((row >= 0) && (row < rowsCount()));
-    if (row < topItem())
-    {
-        setTopItem(row, true);
-        redraw();
-        return;
-    }
-
-    if (row - topItem_ > visibleItems()-1)
-    {
-        setTopItem(row - (visibleItems()-1), true);
-        redraw();
-        return;
-    }
 }
 
 uint_t Table::visibleItems() const
@@ -120,6 +97,31 @@ void Table::fireItemSelected(Int16 row, Int16 col)
     EvtAddEventToQueue(&event);
 }
 
+void Table::setSelection(Int16 row, Int16 column)
+{ 
+    // makes sure that selected item is visible
+    if (-1 != row)
+    {
+        assert((row >= 0) && (row < rowsCount()));
+        if (row < topItem())
+        {
+            setTopItem(row, true);
+            redraw();
+        }
+        else if (row - topItem_ > visibleItems()-1)
+        {
+            setTopItem(row - (visibleItems()-1), true);
+            redraw();
+        }
+    }
+    TblSelectItem(object(), row, column);
+    
+    if (notifyChangeSelection_)
+    {
+        sendEvent(selChangedEvent);
+    }
+}
+
 bool Table::handleKeyDownEvent(const EventType& event)
 {
     Form& form = *this->form();
@@ -165,7 +167,10 @@ bool Table::handleKeyDownEvent(const EventType& event)
     if (NULL == itemPtr(curRow, curCol))
         return false; // there's no item at this position
     setSelection(curRow, curCol);
-    ensureSelectedItemVisible();
     return true;
 }
 
+void Table::setChangeSelectionNotification(bool notify)
+{
+    notifyChangeSelection_ = notify;
+}

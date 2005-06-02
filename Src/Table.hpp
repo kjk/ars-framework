@@ -2,15 +2,21 @@
 #define ARSLEXIS_TABLE_HPP__
 
 #include <FormObject.hpp>
+#include <Application.hpp>
 
 class Table: public FormObjectWrapper<TableType> {
+
+    enum {
+        selChangedEvent = Application::tableSelectionChangedEvent
+    };
 
     uint_t topItem_;
     uint_t itemsCount_;
     ScrollBar* scrollBar_;
+    bool notifyChangeSelection_;
 
 public:
-
+    
     explicit Table(Form& form, ScrollBar* scrollBar = NULL);
 
     ~Table();
@@ -75,15 +81,17 @@ public:
     uint_t  visibleItems() const;
     uint_t  topItem() const {return topItem_;}
     void    setTopItem(uint_t topItem, bool updateScrollbar = false);
-    void    ensureSelectedItemVisible(void);
 
-    void    setSelection(Int16 row, Int16 column) { TblSelectItem(object(), row, column); }
+    void    setSelection(Int16 row, Int16 column);
     void    getSelection(Int16 *row, Int16 *column) { TblGetSelection(object(), row, column); }
 
     bool    handleEventInForm(EventType& event);
     bool    handleKeyDownEvent(const EventType& event);
 
     void    fireItemSelected(Int16 row, Int16 col);
+
+    void    setChangeSelectionNotification(bool notify);
+
 };
 
 #endif

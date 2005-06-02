@@ -307,6 +307,7 @@ public:
     enum Event
     {
         extListSelectionChangedEvent = firstUserEvent,
+        tableSelectionChangedEvent,
         appExtendedEvent,
         appFirstAvailableEvent 
     };
