@@ -51,6 +51,7 @@ public:
     bool isHyperlink() const
     {return NULL != hyperlink_;}
 
+    void setHyperlink(const char_t* str, HyperlinkType type);
     void setHyperlink(const ArsLexis::String& resource, HyperlinkType type);
 
     const HyperlinkProperties* hyperlinkProperties() const

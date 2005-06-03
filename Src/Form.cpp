@@ -312,7 +312,7 @@ bool Form::handleWindowEnter(const struct _WinEnterEventType& data)
     {
         RectangleType newBounds;
         getScreenBounds(newBounds);
-        if (newBounds.extent.x != screenBoundsBeforeWinExit_.extent.x || newBounds.extent.y != screenBoundsBeforeWinExit_.extent.y) 
+//        if (newBounds.extent.x != screenBoundsBeforeWinExit_.extent.x || newBounds.extent.y != screenBoundsBeforeWinExit_.extent.y) 
         {
             EventType event;
             MemSet(&event, sizeof(event), 0);

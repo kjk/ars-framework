@@ -74,6 +74,10 @@ public:
 
     void setBounds(const ArsRectangle& rect);
     
+    void setBounds(uint_t x, uint_t y, uint_t width, uint_t height);
+    
+    void setTopLeft(uint_t x, uint_t y);
+    
     void focus();
     
     bool focusable() const;
@@ -205,14 +209,16 @@ public:
     
     void setInsertionPoint(uint_t pos) 
     {FldSetInsertionPoint(object(), pos);}
-    
+
+/*    
     bool usable() const;
     
     bool readOnly() const;
     
     bool numeric() const;
-    
-    
+ */
+     
+    void setReadOnly(bool val);
     
     ~Field();
     

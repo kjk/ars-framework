@@ -36,7 +36,7 @@ public:
     : disable_(gr.disableFontScaling_)
     {
         if (disable_)
-            oldFlags_ = WinSetScalingMode(kTextScalingOff /* | kTextPaddingOff */);
+            oldFlags_ = WinSetScalingMode(kTextScalingOff  | kTextPaddingOff);
     }
     
     ~ScalingSetter() 
@@ -113,8 +113,9 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
         top+=(height/3);
     if (inverted)
         WinDrawInvertedChars(text, length, topLeft.x, top);
-    else            
+    else         
         WinDrawChars(text, length, topLeft.x, top);
+
     if (fx.strikeOut())
     {
         uint_t baseline = fontBaseline();

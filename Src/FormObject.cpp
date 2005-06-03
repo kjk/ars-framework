@@ -164,6 +164,21 @@ void FormObject::draw()
     }        
 }
 
+void FormObject::setBounds(uint_t x, uint_t y, uint_t width, uint_t height)
+{
+    RectangleType rect = {{x, y}, {width, height}};
+    FrmSetObjectBounds(*form_, index_, &rect);
+}
+
+void FormObject::setTopLeft(uint_t x, uint_t y)
+{
+    RectangleType rect;
+    FrmGetObjectBounds(*form_, index_, &rect);
+    rect.topLeft.x = x;
+    rect.topLeft.y = y;
+    FrmSetObjectBounds(*form_, index_, &rect);
+}
+
 #pragma mark -
 
 ScrollBar::~ScrollBar()
@@ -205,6 +220,14 @@ status_t Field::setEditableText(const char* data, uint_t length)
     MemHandleUnlock(handle);
     setText(handle);
     return errNone;
+}
+
+void Field::setReadOnly(bool val)
+{
+    FieldAttrType attr;
+    FldGetAttributes(object(), &attr);
+    attr.editable = !val;
+    FldSetAttributes(object(), &attr);
 }
 
 #pragma mark -

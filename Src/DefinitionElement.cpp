@@ -73,6 +73,17 @@ void DefinitionElement::setHyperlink(const ArsLexis::String& resource, Hyperlink
     }
 }
 
+void DefinitionElement::setHyperlink(const char_t* str, HyperlinkType type)
+{
+    if (!isHyperlink())
+        hyperlink_ = new HyperlinkProperties(str, type);
+    else
+    {
+        hyperlink_->resource = str;
+        hyperlink_->type = type;
+    }
+}
+
 void DefinitionElement::setStyle(const DefinitionStyle* style, StyleOwnerFlag own)
 {
     if (ownStyle == styleOwner_)
