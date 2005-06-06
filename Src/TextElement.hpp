@@ -19,9 +19,9 @@ protected:
     
 public:
 
-    TextElement(const ArsLexis::String& text=ArsLexis::String());
+    TextElement(const ArsLexis::String& text);
     
-    TextElement(const ArsLexis::char_t* text);
+    TextElement(const ArsLexis::char_t* text = _T(""));
 
     ~TextElement();
     
