@@ -220,6 +220,8 @@ public:
      
     void setReadOnly(bool val);
     
+    bool makeFullyVisible() {return FldMakeFullyVisible(object());}
+    
     ~Field();
     
 };
@@ -375,6 +377,9 @@ public:
      * @return @c true if list recognized event and handled it, @c false otherwise.
      */
     bool handleKeyDownEvent(const EventType& event, uint_t options=0);
+    
+    const char* selectionText() 
+    {return LstGetSelectionText(object(), LstGetSelection(object()));}
     
     void setVisibleItemsCount(UInt16 count)
     {LstSetHeight(object(), count);}
