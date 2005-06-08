@@ -6,7 +6,10 @@ Table::Table(Form& form, ScrollBar* scrollBar):
     scrollBar_(scrollBar),
     topItem_(0),
     itemsCount_(0),
-    notifyChangeSelection_(false)
+    notifyChangeSelection_(false),
+    selRow_(-1),
+    selColumn_(0)
+    
 {}
 
 Table::~Table() {}
@@ -97,10 +100,13 @@ void Table::fireItemSelected(Int16 row, Int16 col)
     EvtAddEventToQueue(&event);
 }
 
-void Table::setSelection(Int16 row, Int16 column)
+void Table::setSelection(Int16 row, Int16 column, bool adjust)
 { 
+    selRow_ = row;
+    selColumn_ = column;
+
     // makes sure that selected item is visible
-    if (-1 != row)
+    if (-1 != row && adjust)
     {
         assert((row >= 0) && (row < rowsCount()));
         if (row < topItem())
@@ -173,4 +179,19 @@ bool Table::handleKeyDownEvent(const EventType& event)
 void Table::setChangeSelectionNotification(bool notify)
 {
     notifyChangeSelection_ = notify;
+}
+
+void Table::updateSelection(bool adjust)
+{
+    Int16 row;
+    Int16 column;
+    getSelection(&row, &column);
+    setSelection(row, column, adjust);
+}
+
+void Table::getSelection(Int16 *row, Int16 *column)
+{ 
+    TblGetSelection(object(), row, column);
+    *row = selRow_;
+    *column = selColumn_;
 }

@@ -14,6 +14,8 @@ class Table: public FormObjectWrapper<TableType> {
     uint_t itemsCount_;
     ScrollBar* scrollBar_;
     bool notifyChangeSelection_;
+    Int16 selRow_;
+    Int16 selColumn_;
 
 public:
     
@@ -21,7 +23,8 @@ public:
 
     ~Table();
 
-    void    redraw() {TblRedrawTable(object());}
+    void    redraw() {TblRedrawTable(object());
+                        updateSelection(false);}
 
     void    invalidate() {TblMarkTableInvalid(object());}
 
@@ -82,8 +85,9 @@ public:
     uint_t  topItem() const {return topItem_;}
     void    setTopItem(uint_t topItem, bool updateScrollbar = false);
 
-    void    setSelection(Int16 row, Int16 column);
-    void    getSelection(Int16 *row, Int16 *column) { TblGetSelection(object(), row, column); }
+    void    setSelection(Int16 row, Int16 column, bool adjust=true);
+    void    getSelection(Int16 *row, Int16 *column);
+    void    updateSelection(bool adjust=true);
 
     bool    handleEventInForm(EventType& event);
     bool    handleKeyDownEvent(const EventType& event);
