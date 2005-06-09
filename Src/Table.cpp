@@ -8,7 +8,7 @@ Table::Table(Form& form, ScrollBar* scrollBar):
     itemsCount_(0),
     notifyChangeSelection_(false),
     selRow_(-1),
-    selColumn_(0)
+    selColumn_(-1)
     
 {}
 
@@ -191,7 +191,13 @@ void Table::updateSelection(bool adjust)
 
 void Table::getSelection(Int16 *row, Int16 *column)
 { 
-    TblGetSelection(object(), row, column);
+    //TblGetSelection(object(), row, column);
     *row = selRow_;
     *column = selColumn_;
+}
+
+void Table::redraw()
+{
+    TblRedrawTable(object());
+    updateSelection(false);
 }

@@ -23,8 +23,7 @@ public:
 
     ~Table();
 
-    void    redraw() {TblRedrawTable(object());
-                        updateSelection(false);}
+    void    redraw();
 
     void    invalidate() {TblMarkTableInvalid(object());}
 
