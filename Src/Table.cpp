@@ -16,20 +16,6 @@ Table::~Table() {}
 
 void Table::adjustVisibleItems()
 {
-/*
-    ArsRectangle rect;
-    bounds(rect);
-    UInt16 lastVisibleRow = rect.height()/rowHeight(0) - 1;
-    UInt16 maxRowsInTable = rowsCount() - 1;
-    if (lastVisibleRow > maxRowsInTable)
-        lastVisibleRow = maxRowsInTable;
-
-    for (UInt16 row = 0; row <= lastVisibleRow; row++)
-    	setRowUsable(row, true);
-    for (UInt16 row = maxRowsInTable; row > lastVisibleRow; row--)
-    	setRowUsable(row, false);
-    invalidate();
-*/
     setTopItem(topItem_, true);
 }
 
@@ -190,8 +176,12 @@ void Table::updateSelection(bool adjust)
 }
 
 void Table::getSelection(Int16 *row, Int16 *column)
-{ 
-    //TblGetSelection(object(), row, column);
+{
+#ifdef DEBUG
+    TblGetSelection(object(), row, column);
+    assert(*row == selRow_);
+    assert(*column == selColumn_);
+#endif
     *row = selRow_;
     *column = selColumn_;
 }
