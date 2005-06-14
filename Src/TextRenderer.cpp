@@ -110,6 +110,14 @@ void TextRenderer::drawProxy()
         renderingErrorListener_->handleRenderingError(*this, lastRenderingError_);
 }
 
+void TextRenderer::calculateLayout()
+{
+    Graphics formWindow(form()->windowHandle()); 
+    ArsRectangle bounds;
+    this->bounds(bounds);
+    definition_.calculateLayout(formWindow, bounds);    
+}
+
 void TextRenderer::drawRendererInBounds(Graphics& graphics, const ArsRectangle& bounds)
 {
     lastRenderingError_ = definition_.render(graphics, bounds, false);

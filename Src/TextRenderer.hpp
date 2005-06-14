@@ -131,6 +131,9 @@ public:
     bool isLastInNavOrder() const {return definition_.isLastInNavOrder(); }
     
     Definition& definition() {return definition_;}
+
+    void calculateLayout();
+   
             
 protected:
 

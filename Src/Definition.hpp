@@ -400,6 +400,8 @@ public:
     
     void highlightHyperlink(Graphics& graphics, uint_t index);
 
+    void calculateLayout(Graphics& graphics, const ArsRectangle& bounds);
+
 private:
 
     void renderSingleElement(Graphics& graphics, ElementPosition_t element);

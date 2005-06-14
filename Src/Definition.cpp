@@ -595,9 +595,26 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
+void Definition::calculateLayout(Graphics& graphics, const ArsRectangle& bounds)
+{
+    ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
+    uint_t renderingProgress=0;
+    if (firstLine_!=0) // If there's actually some first line set, use it - it's position won't change if window width remains the same.
+    {
+        firstElement=lines_[firstLine_].firstElement;  // Store first element and its progress so that we'll restore it as our firstLine_ if we need to recalculate.
+        renderingProgress=lines_[firstLine_].renderingProgress;
+    }
+    clearHotSpots();
+    clearLines();
+    bounds_=bounds;
+    calculateLayout(graphics, firstElement, renderingProgress);
+ }
+
 void Definition::doRender(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate)
 {
     if (bounds.width() != bounds_.width() || forceRecalculate || lines_.empty())
+        calculateLayout(graphics, bounds);
+/*    
     {
         ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
         uint_t renderingProgress=0;
@@ -611,6 +628,7 @@ void Definition::doRender(Graphics& graphics, const ArsRectangle& bounds, bool f
         bounds_=bounds;
         calculateLayout(graphics, firstElement, renderingProgress);
     }
+ */    
     else {
         clearHotSpots();
         bool heightChanged = false;
