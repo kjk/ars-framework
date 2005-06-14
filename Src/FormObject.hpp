@@ -86,6 +86,8 @@ public:
 
     void show();
     
+    void setVisible(bool value);
+    
     void draw();
 
     void anchor(const ArsRectangle& boundingBox, FormObjectAnchorStyle horizAnchor=anchorNot, Coord rightMargin=0, FormObjectAnchorStyle vertAnchor=anchorNot, Coord bottomMargin=0);

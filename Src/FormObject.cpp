@@ -104,6 +104,15 @@ void FormObject::show()
     FrmShowObject(*form_, index_);
 }
 
+void FormObject::setVisible(bool value)
+{
+    if (value)
+        show();
+    else
+        hide();
+}
+
+
 bool FormObject::hasFocus() const
 {
     return index_ == form()->focusedControlIndex_;
