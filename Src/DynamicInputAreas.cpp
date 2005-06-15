@@ -3,7 +3,7 @@
 
 #include <SonyCLIE.h>
 
-bool DIA_Support::tryInitSonySilkLib()  throw()
+bool DIA_Support::tryInitSonySilkLib() 
 {
     Err error=sonySilkLib_.initialize(sonySysLibNameSilk, sonySysFileCSilkLib);
     if (!error) {
@@ -35,7 +35,7 @@ bool DIA_Support::tryInitSonySilkLib()  throw()
     return hasSonySilkLib();
 }
 
-DIA_Support::DIA_Support() throw():
+DIA_Support::DIA_Support():
     hasPenInputMgr_(false),
     hasSonySilkLib_(false),
     sonyLibIsVsk_(false)
@@ -49,7 +49,7 @@ DIA_Support::DIA_Support() throw():
     }
 }
 
-void DIA_Support::sonySilkLibDispose() throw()
+void DIA_Support::sonySilkLibDispose()
 {
     assert(hasSonySilkLib());
     if (sonyLibIsVsk_)
@@ -69,13 +69,13 @@ void DIA_Support::sonySilkLibDispose() throw()
     }
 }
 
-DIA_Support::~DIA_Support() throw()
+DIA_Support::~DIA_Support()
 {
     if (hasSonySilkLib())
         sonySilkLibDispose();
 }
 
-void DIA_Support::handleNotify() const throw()
+void DIA_Support::handleNotify() const
 {
     EventType event;
     MemSet(&event, sizeof(event), 0);
@@ -88,7 +88,19 @@ void DIA_Support::handleNotify() const throw()
     EvtAddUniqueEventToQueue(&event, 0, true);
 }
 
-Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger) const throw()
+static bool FormHasFields(FormType* form)
+{
+    UInt16 count = FrmGetNumberOfObjects(form);
+    for (UInt16 i = 0; i < count; ++i)
+    {
+        FormObjectKind kind = FrmGetObjectType(form, i);
+        if (frmFieldObj == kind)
+            return true;
+    }
+    return false;
+}
+
+Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger) const
 {
     FormType* formPtr=form;
     assert(formPtr);
@@ -100,17 +112,48 @@ Err DIA_Support::configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, 
         error=FrmSetDIAPolicyAttr(formPtr, frmDIAPolicyCustom);
         if (!error)
         {
+            WinHandle wh = FrmGetWindowHandle(formPtr);
+            assert(NULL != wh);
             if (disableTrigger)
+            {
                 PINSetInputTriggerState(pinInputTriggerDisabled);
+                if (FormHasFields(formPtr))
+                    PINSetInputAreaState(pinInputAreaOpen);
+                else
+                    goto SetConstraints;
+            }                
             else
+            {
                 PINSetInputTriggerState(pinInputTriggerEnabled);
-            WinHandle wh=FrmGetWindowHandle(formPtr);
-            assert(wh);
-            WinSetConstraintsSize(wh, minH, prefH, maxH, minW, prefW, maxW);
-            PINSetInputAreaState(pinInputAreaUser);
+SetConstraints:                
+                WinSetConstraintsSize(wh, minH, prefH, maxH, minW, prefW, maxW);
+                PINSetInputAreaState(pinInputAreaUser);
+            }                
         }
     }
     if (pinErrNoSoftInputArea==error) 
         error=errNone;
     return error;
 }
+
+void DIA_Support::restoreUserSelection(UInt16 savedState) const
+{
+    if (hasPenInputManager())
+        PINSetInputAreaState(savedState);
+}
+
+UInt16 DIA_Support::saveUserSelection() const
+{
+    if (hasPenInputManager())
+    {
+        UInt16 state = PINGetInputAreaState();
+        PINSetInputAreaState(pinInputAreaUser);
+        UInt16 res = PINGetInputAreaState();
+        if (pinInputAreaNone != state && state != res)
+            PINSetInputAreaState(state);
+        return res;
+    }        
+    else
+        return pinInputAreaUser;
+}
+

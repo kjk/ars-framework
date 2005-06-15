@@ -30,11 +30,16 @@ Err RichForm::initialize()
 
 RichForm::RichForm(RichApplication& app, uint_t formId, bool disableDiaTrigger):
     Form(app, formId),
-    disableDiaTrigger_(disableDiaTrigger)
-{}
+    disableDiaTrigger_(disableDiaTrigger),
+    savedDiaState_(app.diaSupport().saveUserSelection())
+{
+}
 
 RichForm::~RichForm()
-{}
+{
+    if (disableDiaTrigger_)
+        static_cast<RichApplication&>(application()).diaSupport().restoreUserSelection(savedDiaState_);
+}
 
 void RichForm::resize(const ArsRectangle&)
 {}

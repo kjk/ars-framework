@@ -8,6 +8,7 @@ class RichApplication;
 class RichForm: public Form {
 
     bool disableDiaTrigger_;
+    UInt16 savedDiaState_;
 
 public:    
 

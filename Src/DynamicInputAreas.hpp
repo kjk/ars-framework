@@ -30,35 +30,36 @@ class DIA_Support: private NonCopyable
 
     Library sonySilkLib_;
                     
-    DIA_Support(const DIA_Support&) throw();
-    DIA_Support& operator=(const DIA_Support&) throw();
-    
-    bool tryInitSonySilkLib() throw();
-    void sonySilkLibDispose() throw();
+    bool tryInitSonySilkLib();
+    void sonySilkLibDispose();
     
 public:
     
-    DIA_Support() throw();
-    ~DIA_Support() throw();
+    DIA_Support();
+    ~DIA_Support();
 
-    bool hasPenInputManager() const  throw()
+    bool hasPenInputManager() const 
     {return hasPenInputMgr_;}
     
-    bool hasSonySilkLib() const  throw()
+    bool hasSonySilkLib() const 
     {return hasSonySilkLib_;}
     
-    bool available() const  throw()
+    bool available() const 
     {return hasPenInputManager()||hasSonySilkLib();}
     
     operator bool() const
     {return available();}
 
-    UInt32 notifyType() const  throw()
+    UInt32 notifyType() const 
     {return hasPenInputManager()?sysNotifyDisplayResizedEvent:sysNotifyDisplayChangeEvent;}        
    
-    void handleNotify() const throw();
+    void handleNotify() const;
     
-    Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger=false) const throw();
+    Err configureForm(Form& form, Coord minH, Coord prefH, Coord maxH, Coord minW, Coord prefW, Coord maxW, bool disableTrigger=false) const;
+    
+    void restoreUserSelection(UInt16 savedState) const;
+    
+    UInt16 saveUserSelection() const;
     
 };
 
