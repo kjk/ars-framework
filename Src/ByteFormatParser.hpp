@@ -41,6 +41,8 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
         ulong_t                     inLength_;
         ArsLexis::String::size_type start_;
         bool                        finish_;
+        
+        char*   title_;
 
         ArsLexis::status_t parse();
         
@@ -70,6 +72,8 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
         ArsLexis::status_t parseAll(const ArsLexis::char_t*  inputText, UInt32 inputTextLen);
 
         DefinitionModel* releaseModel();
+        
+        const char* getTitle() const;
 };
 
 #endif

@@ -19,6 +19,8 @@
 #define typeIndentedParagraphElement        'ipar'
 //styles table (params are styles entries)
 #define typeStylesTableElement              'sttb'
+//form title (use getTitle() to get it)
+#define typeTitleElement                    'titl'
 //pop parent element
 #define typePopParentElement                'popp'
 
@@ -55,7 +57,8 @@ ByteFormatParser::ByteFormatParser():
     styleCount_(0),
     totalStyleCount_(0),
     styleNames_(NULL),
-    headerParsed_(false)
+    headerParsed_(false),
+    title_(NULL)
 {
     inText_.clear();
     stack_.clear();
@@ -67,6 +70,8 @@ ByteFormatParser::~ByteFormatParser()
     for (int i=0; i < totalStyleCount_; i++)
         free(styleNames_[i]);
     delete [] styleNames_;
+    if (NULL != title_)
+        free(title_);
 }
 
 DefinitionModel* ByteFormatParser::releaseModel()
@@ -108,6 +113,8 @@ void ByteFormatParser::reset()
     delete [] styleNames_;
     totalStyleCount_ = 0;    
     styleNames_ = NULL;
+    if (NULL != title_)
+        free(title_);
 }
 
 bool ByteFormatParser::parseParam()
@@ -160,6 +167,12 @@ bool ByteFormatParser::parseParam()
                 String str(inText_,start_,currentParamLength_);
                 if (typeTextElement == currentElementType_)
                     ((TextElement*)currentElement_)->setText(str);
+                else if (typeTitleElement == currentElementType_)
+                {
+                    if (title_ != NULL)
+                        free(title_);
+                    title_ = CharCopyN(&inText_[start_], currentParamLength_);
+                }
             }
             break;
             
@@ -339,6 +352,10 @@ void ByteFormatParser::parseElementParams()
             // clear styles table? paramStylesCount will do this
             break;
             
+        case typeTitleElement:
+            // this is first element
+            break;
+            
         default:
             // we don't know what is this - better return
             assert(false);
@@ -358,7 +375,8 @@ void ByteFormatParser::parseElementParams()
     }
     
     // add it to stack
-    stack_.push_back(currentElement_);
+    if (NULL != currentElement_)
+        stack_.push_back(currentElement_);
 }
 
 /**
@@ -516,3 +534,7 @@ void writeUnaligned32(char* addr, ulong_t value)
     addr[3] = (char)((ulong_t)(value));
 }    
 
+const char* ByteFormatParser::getTitle() const
+{
+    return title_;
+}
