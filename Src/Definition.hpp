@@ -59,6 +59,9 @@ private:
     
     DefinitionStyle** styles_;
     ulong_t styleCount_;
+    char* title_;
+    
+    void setTitle(const char* txt, long len = -1);
  
 public:
 
@@ -67,6 +70,8 @@ public:
     DefinitionModel();
     
     ~DefinitionModel();
+    
+    const char* title() const {return title_;}
 
     friend class ByteFormatParser;
 };     

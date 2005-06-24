@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <Text.hpp>
 #include "LineBreakElement.hpp"
+#include <DynStr.hpp>
 
 void DestroyElements(Definition::Elements_t& elems)
 {
@@ -1381,7 +1382,8 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
 
 DefinitionModel::DefinitionModel():
     styles_(NULL),
-    styleCount_(0)
+    styleCount_(0),
+    title_(NULL)
 {
 }
 
@@ -1391,6 +1393,8 @@ DefinitionModel::~DefinitionModel()
     for (ulong_t i = 0; i < styleCount_; ++i)
         delete styles_[i];
     delete [] styles_;
+    if (NULL != title_)
+        FreeCharP(&title_);
 }
 
 void DefinitionModel::swap(DefinitionModel& other)
@@ -1398,6 +1402,11 @@ void DefinitionModel::swap(DefinitionModel& other)
     elements.swap(other.elements);
     std::swap(styles_, other.styles_);
     std::swap(styleCount_, other.styleCount_);
+}
+
+void DefinitionModel::setTitle(const char* txt, long len)
+{
+    ReplaceCharP(&title_, StringCopy2N(txt, len));
 }
 
 

@@ -57,8 +57,7 @@ ByteFormatParser::ByteFormatParser():
     styleCount_(0),
     totalStyleCount_(0),
     styleNames_(NULL),
-    headerParsed_(false),
-    title_(NULL)
+    headerParsed_(false)
 {
     inText_.clear();
     stack_.clear();
@@ -70,8 +69,6 @@ ByteFormatParser::~ByteFormatParser()
     for (int i=0; i < totalStyleCount_; i++)
         free(styleNames_[i]);
     delete [] styleNames_;
-    if (NULL != title_)
-        free(title_);
 }
 
 DefinitionModel* ByteFormatParser::releaseModel()
@@ -113,8 +110,6 @@ void ByteFormatParser::reset()
     delete [] styleNames_;
     totalStyleCount_ = 0;    
     styleNames_ = NULL;
-    if (NULL != title_)
-        free(title_);
 }
 
 bool ByteFormatParser::parseParam()
@@ -169,9 +164,8 @@ bool ByteFormatParser::parseParam()
                     ((TextElement*)currentElement_)->setText(str);
                 else if (typeTitleElement == currentElementType_)
                 {
-                    if (title_ != NULL)
-                        free(title_);
-                    title_ = CharCopyN(&inText_[start_], currentParamLength_);
+                    assert(NULL != model_);
+                    model_->setTitle(&inText_[start_], currentParamLength_);
                 }
             }
             break;
@@ -533,8 +527,3 @@ void writeUnaligned32(char* addr, ulong_t value)
     addr[2] = (char)((ulong_t)(value) >>  8);
     addr[3] = (char)((ulong_t)(value));
 }    
-
-const char* ByteFormatParser::getTitle() const
-{
-    return title_;
-}
