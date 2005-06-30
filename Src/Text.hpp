@@ -256,6 +256,8 @@ void StrStrip(char_t *str);
  */
 long bufferToHexCode(const char* in, long inLength, char* out, long outLength);
 
+char_t* StrUnhexlify(const char_t* in, long inLen = -1);
+
 char_t** StrArrCreate(ulong_t size);
 
 void StrArrFree(char_t**& array, ulong_t size);

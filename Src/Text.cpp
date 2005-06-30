@@ -1111,6 +1111,41 @@ long bufferToHexCode(const char* in, long inLength, char* out, long outLength)
     return inLength*2;
 }
 
+char_t* StrUnhexlify(const char_t* in, long inLen)
+{
+    if (-1 == inLen)
+        inLen = tstrlen(in);
+    if ((inLen % 2) != 0)
+        return NULL;
+    
+    char_t* buffer = (char_t*)malloc(inLen / 2 + 1);
+    if (NULL == buffer)
+        return NULL;
+    
+    char_t* out = buffer;
+    while (inLen != 0)
+    {
+        long val;
+        status_t err = numericValue(in, in + 2, val, 16);
+        if (errNone != err)
+            goto Error;
+        
+        if (val < 0 || val > 255)
+            goto Error;
+        
+        char c = (unsigned char)val;
+        *out++ = c;
+        in += 2;
+        inLen -= 2;
+    }
+    *out = _T('\0');
+    return buffer;
+Error:
+    free(buffer);
+    return NULL;    
+}
+
+
 bool startsWith(const char_t* text, ulong_t len, const char_t* prefix, ulong_t plen)
 {
     if (ulong_t(-1) == len)
