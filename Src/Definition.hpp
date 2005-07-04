@@ -55,13 +55,13 @@ public:
     typedef std::vector<DefinitionElement*> Elements_t;
     Elements_t elements;
 
+    void setTitle(const char* txt, long len = -1);
+
 private:
     
     DefinitionStyle** styles_;
     ulong_t styleCount_;
     char* title_;
-    
-    void setTitle(const char* txt, long len = -1);
  
 public:
 
