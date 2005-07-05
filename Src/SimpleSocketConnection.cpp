@@ -101,7 +101,7 @@ status_t SimpleSocketConnection::notifyReadable()
     //if (chunkSize_ != dataSize)
     if (0 == dataSize)
     {   
-        Log(eLogInfo, _T("notifyReadable(): 0 == dataSize (server shut socket down?)"), true);
+        // Log(eLogInfo, _T("notifyReadable(): 0 == dataSize (server shut socket down?)"), true);
         // TODO: if we use chunkSize_ != dataSize condition, we also need
         // to notifyProgress();
         //error=notifyProgress();
@@ -159,7 +159,7 @@ status_t SimpleSocketConnection::open()
         {
             if (size <= 2048)
             {
-                LogStrUlong(eLogInfo, _T("SimpleSocketConnection::open(): setting chunkSize to "), size);
+                // LogStrUlong(eLogInfo, _T("SimpleSocketConnection::open(): setting chunkSize to "), size);
                 setChunkSize(size);
             }
         }

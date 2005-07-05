@@ -229,8 +229,8 @@ static bool extractLong(const char_t*& data, long& length, long& val)
     for (int i = 0; i < 4; ++i)
     {
         --length;
-        unsigned int chr = *data++;
-        if (255 < chr)
+        unsigned int chr = (unsigned char)*data++;
+        if (chr > 255)
             return false;
 #ifdef _PALM_OS
         b[i] = chr;        
