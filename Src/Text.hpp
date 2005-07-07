@@ -276,6 +276,8 @@ char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, co
 
 long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len = -1);
 
+long StrArrFindPrefix(char_t** array, ulong_t length, char_t nextChar, const char_t* str, long len = -1);
+
 
 #ifdef DEBUG
 void test_TextUnitTestAll();

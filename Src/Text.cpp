@@ -1442,6 +1442,27 @@ char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, co
     return array;
 }
 
+long StrArrFindPrefix(char_t** array, ulong_t length, char_t nextChar, const char_t* str, long len)
+{
+    if (-1 == len)
+        len = tstrlen(str);
+
+    for (ulong_t i = 0; i < length; ++i)
+    {
+        ulong_t l = tstrlen(array[i]);
+        if (l < length)
+            continue;
+            
+        if (!StrStartsWith(array[i], l, str, len))
+            continue;
+            
+        if (array[i][len] == nextChar)
+            return i;
+    }
+    return -1;
+}
+
+/*
 long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len)
 {
     if (-1 == len)
@@ -1452,6 +1473,13 @@ long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len)
             return i;
     return -1;
 }
+ */
+ 
+long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len)
+{
+    return StrArrFindPrefix(array, length, _T('\0'), str, len);
+}    
+
 
 #ifdef DEBUG
 
