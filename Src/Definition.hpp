@@ -55,13 +55,13 @@ public:
     typedef std::vector<DefinitionElement*> Elements_t;
     Elements_t elements;
 
-    void setTitle(const char* txt, long len = -1);
+    void setTitle(const char_t* txt, long len = -1);
 
 private:
     
     DefinitionStyle** styles_;
     ulong_t styleCount_;
-    char* title_;
+    char_t* title_;
  
 public:
 
@@ -71,7 +71,7 @@ public:
     
     ~DefinitionModel();
     
-    const char* title() const {return title_;}
+    const char_t * title() const {return title_;}
 
     friend class ByteFormatParser;
 };     

@@ -1404,7 +1404,7 @@ void DefinitionModel::swap(DefinitionModel& other)
     std::swap(styleCount_, other.styleCount_);
 }
 
-void DefinitionModel::setTitle(const char* txt, long len)
+void DefinitionModel::setTitle(const char_t* txt, long len)
 {
     ReplaceCharP(&title_, StringCopy2N(txt, len));
 }
