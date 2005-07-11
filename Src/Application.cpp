@@ -1,6 +1,5 @@
 #include <Application.hpp>
 #include <Form.hpp>
-#include <memory>
 #include <FormGadget.hpp>
 #include <DeviceInfo.hpp>
 #include <ExtendedEvent.hpp>
@@ -32,22 +31,17 @@ Boolean FormGadget::gadgetHandler(FormGadgetTypeInCallback* g, UInt16 cmd, void*
 
 void Application::registerForm(Form& form)
 {
-#ifndef NDEBUG
-    Forms_t::iterator it=std::find(forms_.begin(), forms_.end(), &form);
-    assert(forms_.end()==it);
-#endif        
-    forms_.push_front(&form);
+    forms_.insert(forms_.begin(), &form);
 }
 
 void Application::unregisterForm(Form& form)
 {
-    Forms_t::iterator it=std::find(forms_.begin(), forms_.end(), &form);
-    assert(it!=forms_.end());
-    forms_.erase(it);
-}
-
-namespace {
-    static const StaticAssert<sizeof(Application*)<=sizeof(UInt32)> may_store_app_pointer_as_feature = {};
+    for (size_t i = 0; i < forms_.size(); ++i)
+        if (&form == forms_[i])
+        {
+            forms_.erase(forms_.begin() + i);
+            break;
+        }
 }
 
 Err Application::setInstance(UInt32 creatorId, Application* app) throw()
@@ -102,8 +96,13 @@ Application::~Application()
 {
     Err error=FtrUnregister(creatorId_, featureInstancePointer);
     assert(!error);
-    std::for_each(forms_.begin(), forms_.end(), ObjectDeleter<Form>());   
-    std::for_each(enqueuedForms_.begin(), enqueuedForms_.end(), ObjectDeleter<Form>());   
+    
+    size_t i, size = forms_.size();
+    for (i = 0; i < size; ++i)
+        delete forms_[i];
+    size = enqueuedForms_.size();
+    for (i = 0; i < size; ++i)
+        delete enqueuedForms_[i];
 }
 
 #define kPalmOS20Version sysMakeROMVersion(2,0,0,sysROMStageDevelopment,0)
@@ -128,58 +127,27 @@ Err Application::checkRomVersion(UInt32 requiredVersion, UInt16 launchFlags, UIn
     return error;
 }
 
-struct FormIdComparator
-{
-    UInt16 id;
-    FormIdComparator(UInt16 anId):
-        id(anId)
-    {}
-    
-    bool operator ()(const Form* form) const
-    {
-        return id==form->id();
-    }
-    
-};
-
-struct WinHandleComparator
-{
-    WinHandle winHandle;
-    WinHandleComparator(WinHandle wh):
-        winHandle(wh)
-    {}
-    
-    bool operator()(const Form* form) const
-    {
-        return form->windowHandle()==winHandle;
-    }
-    
-};
-
 Form* Application::getOpenForm(UInt16 id) const
 {
-    Form* result=0;
-    Forms_t::const_iterator it=std::find_if(forms_.begin(), forms_.end(), FormIdComparator(id));
-    if (it!=forms_.end())
-        result=*it;
-    return result;
+    for (size_t i = 0; i < forms_.size(); ++i)
+        if (forms_[i]->id() == id)
+            return forms_[i];
+    return NULL;
 }
 
 Form* Application::getOpenForm(WinHandle winHandle) const
 {
-    Form* result=0;
-    Forms_t::const_iterator it=std::find_if(forms_.begin(), forms_.end(), WinHandleComparator(winHandle));
-    if (it!=forms_.end())
-        result=*it;
-    return result;
+    for (size_t i = 0; i < forms_.size(); ++i)
+        if (forms_[i]->windowHandle() == winHandle)
+            return forms_[i];
+    return NULL;
 }
 
 Form* Application::getLastForm() const
 {
-    Form* f = NULL;
     if (!forms_.empty())
-        f = forms_.front();
-    return f;
+        return forms_.front();
+    return NULL;
 }
 
 
@@ -195,7 +163,7 @@ void Application::loadForm(UInt16 formId)
     if (!enqueuedForms_.empty() && enqueuedForms_.front()->id() == formId)
     {
         form = enqueuedForms_.front();
-        enqueuedForms_.pop_front();
+        enqueuedForms_.erase(enqueuedForms_.begin());
     }
     else
         form = createForm(formId);

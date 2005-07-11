@@ -15,7 +15,9 @@
 
 void DestroyElements(Definition::Elements_t& elems)
 {
-    std::for_each(elems.begin(), elems.end(), ObjectDeleter<DefinitionElement>());
+    size_t size = elems.size();
+    for (size_t i = 0; i < size; ++i)
+        delete elems[i];
     elems.clear();
 }
 

@@ -1,5 +1,6 @@
 #include <RichApplication.hpp>
 #include <SysUtils.hpp>
+#include <Text.hpp>
 
 #ifndef NDEBUG
 #pragma inline_depth 0
@@ -42,9 +43,9 @@ void RichApplication::sendDisplayAlertEvent(uint_t alertId)
     sendEvent(appDisplayAlertEvent, DisplayAlertEventData(alertId));
 }
 
-void RichApplication::sendDisplayCustomAlertEvent(uint_t alertId, const ArsLexis::String& text1)
+void RichApplication::sendDisplayCustomAlertEvent(uint_t alertId, const char_t* text)
 {
-    customAlerts_.push_back(text1);
+    customAlerts_.push_back(StringCopy2(text));
     sendEvent(appDisplayCustomAlertEvent, DisplayAlertEventData(alertId));
 }
 
@@ -74,17 +75,19 @@ bool RichApplication::handleApplicationEvent(EventType& event)
     {
         assert(!customAlerts_.empty());            
         DisplayAlertEventData& data=reinterpret_cast<DisplayAlertEventData&>(event.data);
+        char_t* text = customAlerts_.front();
         if (showAlerts_)
-            FrmCustomAlert(data.alertId, customAlerts_.front().c_str(), "", "");
+            FrmCustomAlert(data.alertId, text, "", "");
         else
         {
             Log(eLogDebug, _T("Custom alert: "), false);
             LogUlong(eLogDebug, data.alertId, false);
             Log(eLogDebug, _T("["), false);
-            Log(eLogDebug, customAlerts_.front().c_str(), false);                
+            Log(eLogDebug, text, false);                
             Log(eLogDebug, _T("]"), true);
         }
-        customAlerts_.pop_front();
+        free(text);
+        customAlerts_.erase(customAlerts_.begin());
         handled = true;
     }
     else

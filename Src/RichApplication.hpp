@@ -9,7 +9,7 @@ class RichApplication: public Application {
 
     DIA_Support diaSupport_;
     
-    typedef std::list<ArsLexis::String> CustomAlerts_t;
+    typedef std::vector<char_t*> CustomAlerts_t;
     CustomAlerts_t customAlerts_;
 
     bool diaNotifyRegistered_:1;
@@ -46,7 +46,9 @@ public:
 
     static void sendDisplayAlertEvent(uint_t alertId);
     
-    void sendDisplayCustomAlertEvent(uint_t alertId, const ArsLexis::String& text1);
+    void sendDisplayCustomAlertEvent(uint_t alertId, const char_t* text);
+
+//    void sendDisplayCustomAlertEvent(uint_t alertId, const ArsLexis::String& text1) {sendDisplayCustomAlertEvent(alertId, text1.c_str());}
 
     bool hasHighDensityFeatures() const
     {return hasHighDensityFeatures_;}

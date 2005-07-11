@@ -20,7 +20,6 @@ class Form: private NonCopyable
 {
     Application& application_;
     FiveWay fiveWay_;
-    UInt16 id_;
     FormType* form_;
     
     bool deleteOnClose_;
@@ -30,12 +29,20 @@ class Form: private NonCopyable
     bool winEnterReceived_;
     
     char_t * title_;
+
     UInt16 entryFocusControlId_;
     UInt16 focusedControlIndex_;
     UInt16 returnToFormId_;
+    UInt16 id_;
+    uint_t popupMenuEventId_;
+    uint_t popupMenuId_;
+
     RectangleType screenBoundsBeforeWinExit_;
     
     FormGadget* trackingGadget_;
+    PopupMenu* popupMenu_; 
+    HyperlinkHandlerBase* popupMenuHyperlinkHandler_;
+    
     
     static Boolean routeEventToForm(EventType* event);
     
@@ -45,11 +52,6 @@ class Form: private NonCopyable
     
     void handleFocusOnEntry();
 
-    PopupMenu* popupMenu_; 
-    HyperlinkHandlerBase* popupMenuHyperlinkHandler_;
-    
-    uint_t popupMenuEventId_;
-    uint_t popupMenuId_;
     void showPopupMenu(const char_t* txt, long len, const Point& point);
     
 protected:

@@ -17,7 +17,7 @@
 
 #include <Debug.hpp>
 #include <Utility.hpp>
-#include <list>
+#include <vector>
 
 #ifdef __MWERKS__
 #include <CWCallbackThunks.h>
@@ -48,7 +48,7 @@ class Application: private NonCopyable
      * @internal 
      * Type used to store @c Form objects through application's lifetime.
      */
-    typedef std::list<Form*> Forms_t;
+    typedef std::vector<Form*> Forms_t;
     
     /**
      * @internal 

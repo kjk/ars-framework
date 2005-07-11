@@ -245,7 +245,7 @@ long HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
         // TODO: remove all other entries with this url
         if (wasSpecialHistory)
         {
-            for (int i = cache.entriesCount()-1; i >= 0; i--)
+            for (int i = cache.entriesCount() - 1; i >= 0; i--)
             {
                 if (i != currentHistoryIndex)
                     if (0 == tstrcmp(url, cache.entryUrl(i)))
