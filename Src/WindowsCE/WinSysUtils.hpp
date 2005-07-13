@@ -8,6 +8,7 @@
 
 ulong_t random(ulong_t range);
 
+/*
 void sendEvent(uint_t event, short wph, short wpl, int lp);
 struct EventData {LPARAM lParam; WPARAM wParam;};
 
@@ -34,5 +35,6 @@ bool FDesktopIncludesMenuBar(SIPINFO *si);
 void OverrideBackButton(HWND hwndMenuBar);
 
 void DrawFancyRectangle(HDC hdc, RECT *rect);
+ */
 
 #endif

@@ -7,179 +7,117 @@
 #include <list>
 #include <vector>
 
-#if !defined(_WIN32)
+typedef std::list<ArsLexis::String> StringList_t;
+
+#if !defined(_WIN32) || _MSC_VER != 1200
 #include <cctype>
 #endif
 
-using ArsLexis::char_t;
-
-#if defined(_MSC_VER)
-// disable warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
-// TODO: move it to a more centralized place (like BaseTypes.hpp) ?
-# pragma warning( disable : 4800 )
-#endif
-
-typedef std::list<const ArsLexis::char_t *> CharPtrList_t;
-typedef std::list<ArsLexis::String> StringList_t;
-
 # if defined(_PALM_OS)    
-    extern void printDouble(double x, char *s);
-    extern void printDoubleRound(double x, char *s, double roundFactor, int numDigits, int precLimit = -1, bool insertThousandSeparator = false);
+extern void printDouble(double x, char* s);
+extern void printDoubleRound(double x, char* s, double roundFactor, int numDigits, int precLimit = -1, bool insertThousandSeparator = false);
 #endif
 
-inline char_t toLower(char_t chr)
-{
-#if defined(_WIN32)
-    return static_cast<char_t>(_totlower(chr));
-#else
-    return std::tolower(chr);
-#endif        
-}
+inline char toLower(char chr) {using namespace std; return tolower(chr);}
+inline char toUpper(char chr) {using namespace std; return toupper(chr);}
+inline bool isAlpha(char chr) {using namespace std; return 0 != isalpha(chr);}
+inline bool isAlNum(char chr) {using namespace std; return 0 != isalnum(chr);}
+inline bool isDigit(char chr) {using namespace std; return 0 != isdigit(chr);}
+inline bool isSpace(char chr) {using namespace std; return 0 != isspace(chr);}
+inline ulong_t Len(const char* str) {using namespace std; return strlen(str);}
 
-inline char_t toUpper(char_t chr)
-{
-#if defined(_WIN32)
-    return static_cast<char_t>(_totupper(chr));
-#else
-    return std::toupper(chr);
-#endif        
-}
+char* StringCopyN__(const char* curStr, long len, const char* file, int line);
 
-inline bool isAlpha(char_t chr)
-{
-#if defined(_WIN32)
-    return _istalpha(chr);
-#else
-    return std::isalpha(chr);
-#endif
-}
-
-inline bool isAlNum(char_t chr)
-{
-#if defined(_WIN32)
-    return _istalnum(chr);
-#else
-    return std::isalnum(chr);
-#endif
-}
-
-inline bool isDigit(char_t chr)
-{
-#if defined(_WIN32)
-    return _istdigit(chr);
-#else
-    return std::isdigit(chr);
-#endif
-}
-
-inline bool isSpace(char_t chr)
-{
-#if defined(_WIN32)
-    return _istspace(chr);
-#else
-    return std::isspace(chr);
-#endif
-}
-
-void ByteStreamToText(const NarrowString& inStream, String& outTxt);
-
-template<class Ch>
-struct C_StringLess
-{
-    bool operator ()(const Ch* str1, const Ch* str2) const
-    {
-        return StrCompare(str1, str2)<0;
-    }
-};
-
-bool startsWith(const String& text, const char_t* start, uint_t startOffset=0);
-
-bool startsWith(const String& text, const String& start, uint_t startOffset=0);
-
-bool startsWithIgnoreCase(const String& text, const char_t* start, uint_t startOffset=0);
-
-
-
-
-bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end);
-
-bool startsWith(const char_t* text, ulong_t len, const char_t* prefix, ulong_t plen);
-
-bool equals(const char_t* s1, ulong_t s1len, const char_t* s2, ulong_t s2len);
-
-status_t numericValue(const char_t* begin, const char_t* end, long& result, uint_t base=10);
-
-// Find char chr in string str. If len == -1 assume that str is null-terminated and calculate length first.
-// If not found return -1.
-long StrFind(const char_t* str, long len, char_t chr);
-
-// Find string sub in string str. If len == -1  or slen == -1 assume that str is null-terminated and calculate length first.
-// If not found return -1.
-long StrFind(const char_t* str, long len, const char_t* sub, long slen);
-
-/**
- * start becomes new start
- * length becomes new length
- */
-void strip(const char_t*& start, ulong_t& length);
-
-#ifdef _WIN32 // overloads for working with narrow-strings also
-
+bool equals(const char* s1, long s1len, const char* s2, long s2len);
 bool equalsIgnoreCase(const char* s1start, const char* s1end, const char* s2start, const char* s2end);
-
-bool startsWith(const char* text, ulong_t len, const char* prefix, ulong_t plen);
-
-bool equals(const char* s1, ulong_t s1len, const char* s2, ulong_t s2len);
-
-status_t numericValue(const char* begin, const char* end, long& result, uint_t base=10);
-
+bool startsWith(const char* text, long len, const char* prefix, long plen);
+bool startsWithIgnoreCase(const char* text, long len, const char* prefix, long plen);
+status_t numericValue(const char* begin, const char* end, long& result, uint_t base = 10);
 long StrFind(const char* str, long len, char chr);
-
 long StrFind(const char* str, long len, const char* sub, long slen);
-
 void strip(const char*& start, ulong_t& length);
 
-#endif
+void* MemAppend(void* target, ulong_t tlen, const void* source, ulong_t slen, ulong_t termlen);
+void MemErase(void* target, ulong_t tlen, ulong_t efrom, ulong_t elen);
 
-#define StrStartsWith startsWith
+char* StrAppend(char* target, long tlen, const char* source, long slen);
+void StrErase(char* target, long tlen, ulong_t efrom, ulong_t elen);
 
-template<class Ch> inline bool startsWith(const Ch* text, const Ch* prefix) {return startsWith(text, -1, prefix, -1);}
-template<class Ch> inline bool equals(const Ch* s1, const Ch* s2, ulong_t s2len) {return equals(s1, -1, s2, s2len);}
-template<class Ch> inline bool equals(const Ch* s1, ulong_t s1len, const Ch* s2) {return equals(s1, s1len, s2, -1);}
-template<class Ch> inline bool equals(const Ch* s1, const Ch* s2) {return equals(s1, -1, s2, -1);}
 
-#define StrEquals equals
+#ifdef _WIN32_WCE
 
-inline bool equalsIgnoreCase(const String& s1, const char_t* s2)
-{
-    using namespace std;
-    return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2, s2+tstrlen(s2));
-}
+inline wchar_t toLower(wchar_t chr) {using namespace std; return towlower(chr);}
+inline wchar_t toUpper(wchar_t chr) {using namespace std; return towupper(chr);}
+inline bool isAlpha(wchar_t chr) {using namespace std; return 0 != iswalpha(chr);}
+inline bool isAlNum(wchar_t chr) {using namespace std; return 0 != iswalnum(chr);}
+inline bool isDigit(wchar_t chr) {using namespace std; return 0 != iswdigit(chr);}
+inline bool isSpace(wchar_t chr) {using namespace std; return 0 != iswspace(chr);}
+inline ulong_t Len(const wchar_t* str) {using namespace std; return wcslen(str);}
 
-inline bool equalsIgnoreCase(const char_t* s2, const String& s1)
-{
-    using namespace std;
-    return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2, s2+tstrlen(s2));
-}
+wchar_t* StringCopyN__(const wchar_t* curStr, long len, const char* file, int line);
 
-inline bool equalsIgnoreCase(const char_t* s1, const char_t* s2)
-{
-    using namespace std;
-    return equalsIgnoreCase(s1, s1+tstrlen(s1), s2, s2+tstrlen(s2));
-}
+bool equals(const wchar_t* s1, long s1len, const wchar_t* s2, long s2len);
+bool equalsIgnoreCase(const wchar_t* s1start, const wchar_t* s1end, const wchar_t* s2start, const wchar_t* s2end);
+bool startsWith(const wchar_t* text, long len, const wchar_t* prefix, long plen);
+bool startsWithIgnoreCase(const wchar_t* text, long len, const wchar_t* prefix, long plen);
+status_t numericValue(const wchar_t* begin, const wchar_t* end, long& result, uint_t base = 10);
+long StrFind(const wchar_t* str, long len, wchar_t chr);
+long StrFind(const wchar_t* str, long len, const wchar_t* sub, long slen);
+void strip(const wchar_t*& start, ulong_t& length);
 
-inline bool equalsIgnoreCase(const String& s1, const String& s2)
-{return equalsIgnoreCase(s1.data(), s1.data()+s1.length(), s2.data(), s2.data()+s2.length());}
 
-inline status_t numericValue(const String& text, long& result, uint_t base=10)
-{return numericValue(text.data(), text.data()+text.length(), result, base);}
+wchar_t* StrAppend(wchar_t* target, long tlen, const wchar_t* source, long slen);
+void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen);
 
-String hexBinEncode(const String& in);
+#endif // _WIN32_WCE
 
-inline void hexBinEncodeInPlace(String& inOut)
-{inOut=hexBinEncode(inOut);}
+//bool startsWith(const String& text, const char_t* start, uint_t startOffset = 0);
+//bool startsWith(const String& text, const String& start, uint_t startOffset = 0);
+//bool startsWithIgnoreCase(const String& text, const char_t* start, uint_t startOffset = 0);
 
-void urlEncode(const String& in, String& out);
+template<class Ch> inline bool startsWith(const Ch* text, const Ch* prefix) 
+{return startsWith(text, -1, prefix, -1);}
+
+template<class Ch> inline bool startsWith(const std::basic_string<Ch>& text, const Ch* prefix, ulong_t startOffset = 0)
+{return startsWith(text.data() + startOffset, text.length() - startOffset, prefix, -1);}
+
+template<class Ch> inline bool startsWith(const std::basic_string<Ch>& text, const std::basic_string<Ch>& prefix, ulong_t startOffset = 0)
+{return startsWith(text.data() + startOffset, text.length() - startOffset, prefix.data(), prefix.length());}
+
+template<class Ch> inline bool startsWithIgnoreCase(const Ch* text, const Ch* prefix) 
+{return startsWithIgnoreCase(text, -1, prefix, -1);}
+
+template<class Ch> inline bool startsWithIgnoreCase(const std::basic_string<Ch>& text, const Ch* prefix, ulong_t startOffset = 0)
+{return startsWithIgnoreCase(text.data() + startOffset, text.length() - startOffset, prefix, -1);}
+
+template<class Ch> inline bool startsWithIgnoreCase(const std::basic_string<Ch>& text, const std::basic_string<Ch>& prefix, ulong_t startOffset = 0)
+{return startsWithIgnoreCase(text.data() + startOffset, text.length() - startOffset, prefix.data(), prefix.length());}
+
+template<class Ch> inline bool equals(const Ch* s1, const Ch* s2, long s2len) 
+{return equals(s1, -1, s2, s2len);}
+
+template<class Ch> inline bool equals(const Ch* s1, long s1len, const Ch* s2) 
+{return equals(s1, s1len, s2, -1);}
+
+template<class Ch> inline bool equals(const Ch* s1, const Ch* s2) 
+{return equals(s1, -1, s2, -1);}
+
+template<class Ch> inline bool equalsIgnoreCase(const std::basic_string<Ch>& s1, const Ch* s2) 
+{return equalsIgnoreCase(s1.data(), s1.data() + s1.length(), s2, s2 + Len(s2));}
+
+template<class Ch> inline bool equalsIgnoreCase(const Ch* s2, const std::basic_string<Ch>& s1) 
+{return equalsIgnoreCase(s1.data(), s1.data() + s1.length(), s2, s2 + Len(s2));}
+
+template<class Ch> inline bool equalsIgnoreCase(const Ch* s1, const Ch* s2) 
+{return equalsIgnoreCase(s1, s1 + Len(s1), s2, s2 + Len(s2));}
+
+template<class Ch> inline bool equalsIgnoreCase(const std::basic_string<Ch>& s1, const std::basic_string<Ch>& s2)
+{return equalsIgnoreCase(s1.data(), s1.data() + s1.length(), s2.data(), s2.data() + s2.length());}
+
+template<class Ch> inline status_t numericValue(const std::basic_string<Ch>& text, long& result, uint_t base=10)
+{return numericValue(text.data(), text.data() + text.length(), result, base);}
+
+void urlEncode(const NarrowString& in, NarrowString& out);
 
 void removeNonDigitsInPlace(char_t *txt);
 
@@ -193,39 +131,48 @@ inline void removeNonDigits(const char_t* in, String& out)
 
 int formatNumber(long num, char_t *buf, int bufSize);
 
-void HexBinEncodeBlob(unsigned char *blob, int blobSize, String& out);
+void HexBinEncodeBlob(const char* blob, ulong_t blobSize, NarrowString& out);
 
+inline void HexBinEncode(const NarrowString& in, NarrowString& out) {HexBinEncodeBlob(in.data(), in.size(), out);}
+
+/*
 String GetNextLine(const ArsLexis::String& str, String::size_type& curPos, bool& fEnd);
 
-char_t *StringCopy(const char_t *str);
-
-char_t *StringCopy(const String& str);
+char_t* StringCopy(const String& str);
 
 void FreeStringsFromCharPtrList(CharPtrList_t& strList);
 
 int AddLinesToList(const String& txt, CharPtrList_t& strList);
 
+*/
+
 char_t **StringListFromString(const String& str, const String& sep, int& stringCount);
 
 char_t **StringListFromStringList(const StringList_t& strList, int& stringCount);
 
+/*
 char_t** StringVectorToCStrArray(const std::vector<String>& vec);
-
-void strip(String& str);
 
 std::vector<ArsLexis::String> split(const String& str, const char_t* splitter = _T(" "));
 
 String join(const std::vector<ArsLexis::String>& vec, const char_t* joiner = _T(" "));
+*/
+
+void strip(String& str);
+
 
 void replaceCharInString(char_t *str, char_t orig, char_t replacement);
 
 void ReverseStringList(char_t **strList, int strListLen);
 
 void FreeStringList(char_t* strList[], int strListLen);
+/*
 
-void convertFloatStringToUnsignedLong(const ArsLexis::String str, unsigned long& value, unsigned int& digitsAfterComma, ArsLexis::char_t commaSeparator = _T('.'));
+void convertFloatStringToUnsignedLong(const String& str, unsigned long& value, unsigned int& digitsAfterComma, ArsLexis::char_t commaSeparator = _T('.'));
 
 ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsigned int comma = 0, ArsLexis::char_t commaSymbol = _T('.'), ArsLexis::char_t kSeparator = _T(','));
+*/
+
 
 uint_t fuzzyTimeInterval(ulong_t seconds, char_t* buffer);
 
@@ -233,28 +180,21 @@ bool strToDouble(const char* str, double *dbl);
 
 int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo);    
 
+/*
 char *Utf16ToStr(const char_t *txt, long txtLen);
 
 char_t *StrToUtf16(const char *txt, long txtLen = -1);
+*/
 
-char_t *StringCopy2__(const char_t *curStr, int len, const char* file, int line);
+// bool StrEmpty(const char_t *str);
 
-#define StringCopy2(str) StringCopy2__(str, -1, __FILE__, __LINE__)
-#define StringCopy2N(str, len) StringCopy2__(str, len, __FILE__, __LINE__)
-
-char_t *StringCopyN(const char_t *str, int strLen);
-
-char* CharCopyN__(const char* curStr, int len, const char* file, int line);
-#define CharCopyN(str, len) CharCopyN__(str, len, __FILE__, __LINE__)
-
-bool StrEmpty(const char_t *str);
-void StrStrip(char_t *str);
+// void StrStrip(char_t *str);
 
 /**
  * outLength must be inLength*2 ("?text?"->"3f746578743f")
  * return used length of out buffer (2*inLength)
  */
-long bufferToHexCode(const char* in, long inLength, char* out, long outLength);
+ulong_t StrHexlify(const char* in, long inLength, char* out, ulong_t outLength);
 
 char_t* StrUnhexlify(const char_t* in, long inLen = -1);
 
@@ -277,6 +217,20 @@ char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, co
 long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len = -1);
 
 long StrArrFindPrefix(char_t** array, ulong_t length, char_t nextChar, const char_t* str, long len = -1);
+
+
+
+
+
+#define StringCopy2(str) StringCopyN__(str, -1, __FILE__, __LINE__)
+#define StringCopy2N(str, len) StringCopyN__(str, len, __FILE__, __LINE__)
+
+#define StringCopy(str) StringCopyN__(str, -1, __FILE__, __LINE__)
+#define StringCopyN(str, len) StringCopyN__(str, len, __FILE__, __LINE__)
+
+#define StrStartsWith startsWith
+#define StrEquals equals
+
 
 
 #ifdef DEBUG

@@ -11,20 +11,22 @@
     
 class SimpleSocketConnection: public SocketConnection
 {
-    // yes, this is always a ascii 8-bit string, not char_t since 
-    char *       request_;
-    uint_t       requestLenLeft_;
-    uint_t       requestSent_;
+    char*       request_;
+    ulong_t       requestLenLeft_;
+    ulong_t       requestSent_;
 
-    NarrowString response_;
-    uint_t       maxResponseSize_;
-    uint_t       chunkSize_;
+    ulong_t       maxResponseSize_;
+    ulong_t       chunkSize_;
     ulong_t      totalReceived_;
     
     bool         sending_;
-    
-    status_t     resizeResponse(ulong_t size);
+	char*		chunk_;
 
+protected:
+
+    char*		response_;
+	ulong_t		responseLen_;
+    
 protected:
 
     status_t open();
@@ -38,7 +40,7 @@ protected:
     virtual status_t notifyProgress();
 
     // set request to send to a copy of request
-    status_t setRequestCopy(const char* request, ulong_t requestSize);
+    status_t setRequest(const char* request, ulong_t requestSize);
 
 	/*
     status_t setRequest(const NarrowString& request)
@@ -48,10 +50,10 @@ protected:
     
     void setResponse(const NarrowString& response)
     {response_ = response;}
-	*/
 
     NarrowString& response()
     {return response_;}
+	*/
     
 public:
 
@@ -65,10 +67,10 @@ public:
         requestLenLeft_ = requestSize;
     }
     
-    void setMaxResponseSize(uint_t size)
+    void setMaxResponseSize(ulong_t size)
     {maxResponseSize_=size;}
     
-    void setChunkSize(uint_t size)
+    void setChunkSize(ulong_t size)
     {chunkSize_=size;}
     
     bool sending() const

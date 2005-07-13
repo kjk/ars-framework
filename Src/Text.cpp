@@ -4,140 +4,379 @@
 # pragma pcrelconstdata on
 #endif
 
-#if defined(_WIN32)    
-char_t PalmToUnicode[160-128] = 
+// note: caller needs to free memory with free
+char* StringCopyN__(const char* curStr, long len, const char* file, int line)
 {
- 8364, 129 , 8218,  131, 8222, 8230, 8224, 8225,  710, 8240, 
-  352, 8249,  338, 9674,  142,  143,  144, 8216, 8217, 8220, 
- 8221, 8226, 8211, 8212, 8776, 8482,  353, 8250,  339,  157, 
-  158,  159
-};
+    using namespace std;
+    if (-1 == len)
+        len = Len(curStr);
+    char* newStr = (char*)malloc__(sizeof(*curStr) * (len + 1), file, line);
+    if (NULL == newStr)
+        return NULL;
 
-char_t UnicodeToPalm[24][2] = 
-{
-  338, 140,  339, 156,  352, 138,  353, 154,  710, 136, 
- 8211, 150, 8212, 151, 8216, 145, 8217, 146, 8218, 130, 
- 8220, 147, 8221, 148, 8222, 132, 8224, 134, 8225, 135,
- 8226, 149, 8230, 133, 8240, 137, 8249, 139, 8250, 155,
- 8364, 128, 8482, 153, 8776, 152, 9674, 141
-};
-
-static unsigned char Utf16ToChar(char_t in)
-{
-    if (in <= 255)
-    {
-        // is it common code ?
-        return (unsigned char)in;
-    }
-
-    // Maybe binary search - MS doesn't support 
-    // as always standard and bsearch
-    for (int i=0; i<24; i++)
-    {
-        if (UnicodeToPalm[i][0]==in)
-            return (unsigned char)UnicodeToPalm[i][1];
-    }
-
-#ifdef _WIN32
-#ifdef DEBUG
-	char_t buff[2] = {in, 0};
-    OutputDebugString(_T("Unsupported char in Utf16ToChar(): "));
-	OutputDebugString(buff);
-	OutputDebugString(_T("\n"));
-//	DebugBreak();
-#endif
-#endif
-    return 0;
+    memcpy(newStr, curStr, sizeof(*curStr) * len);
+    newStr[len] = 0;
+    return newStr;
 }
+
+#ifdef _WIN32_WCE
+
+wchar_t* StringCopyN__(const wchar_t* curStr, long len, const char* file, int line)
+{
+    using namespace std;
+    if (-1 == len)
+        len = Len(curStr);
+    wchar_t* newStr = (wchar_t*)malloc__(sizeof(*curStr) * (len + 1), file, line);
+    if (NULL == newStr)
+        return NULL;
+
+    memcpy(newStr, curStr, sizeof(*curStr) * len);
+    newStr[len] = 0;
+    return newStr;
+}
+#endif
+
+bool equals(const char* s1, long s1len, const char* s2, long s2len)
+{
+    using namespace std;
+    if (-1 == s1len) s1len = Len(s1);
+    if (-1 == s2len) s2len = Len(s2);
+    if (s1len != s2len)
+        return false;
+    return 0 == strncmp(s1, s2, s1len);
+}
+
+#ifdef _WIN32_WCE
+bool equals(const wchar_t* s1, long s1len, const wchar_t* s2, long s2len)
+{
+    if (-1 == s1len) s1len = Len(s1);
+    if (-1 == s2len) s2len = Len(s2);
+
+    if (s1len != s2len)
+        return false;
+
+    return 0 == wcsncmp(s1, s2, s1len);
+}
+#endif
+
+bool equalsIgnoreCase(const char* s1start, const char* s1end, const char* s2start, const char* s2end)
+{
+    while (s1start != s1end && s2start != s2end)
+    {
+        if (toLower(*s1start) == toLower(*s2start))
+        {
+            ++s1start;
+            ++s2start;
+        }
+        else 
+            return false;
+    }
+    return (s1start == s1end && s2start == s2end);
+}
+
+#ifdef _WIN32_WCE
+bool equalsIgnoreCase(const wchar_t* s1start, const wchar_t* s1end, const wchar_t* s2start, const wchar_t* s2end)
+{
+    while (s1start != s1end && s2start != s2end)
+    {
+        if (toLower(*s1start)==toLower(*s2start))
+        {
+            ++s1start;
+            ++s2start;
+        }
+        else 
+            return false;
+    }
+    return (s1start==s1end && s2start==s2end);
+}
+#endif
+
+bool startsWith(const char* text, long len, const char* prefix, long plen)
+{
+    if (-1 == len) len = Len(text);
+    if (-1 == plen) plen = Len(prefix);
+    
+    if (plen > len)
+        return false;
+    
+    while (0 != plen)
+    {
+        if (*text++ != *prefix++)
+            return false;
+        --plen;
+    }   
+    return true;
+}
+
+#ifdef _WIN32_WCE
+bool startsWith(const wchar_t* text, long len, const wchar_t* prefix, long plen)
+{
+    if (-1 == len) len =Len(text);
+    if (-1 == plen) plen = Len(prefix);
+    
+    if (plen > len)
+        return false;
+    
+    while (0 != plen)
+    {
+        if (*text++ != *prefix++)
+            return false;
+        --plen;
+    }   
+    return true;
+}
+#endif
+
+bool startsWithIgnoreCase(const char* text, long len, const char* prefix, long plen)
+{
+    if (-1 == len) len = Len(text);
+    if (-1 == plen) plen = Len(prefix);
+    
+    if (plen > len)
+        return false;
+    
+    while (0 != plen)
+    {
+        if (toLower(*text++) != toLower(*prefix++))
+            return false;
+        --plen;
+    }   
+    return true;
+}
+
+#ifdef _WIN32_WCE
+bool startsWithIgnoreCase(const wchar_t* text, long len, const wchar_t* prefix, long plen)
+{
+    if (-1 == len) len =Len(text);
+    if (-1 == plen) plen = Len(prefix);
+    
+    if (plen > len)
+        return false;
+    
+    while (0 != plen)
+    {
+        if (toLower(*text++) != toLower(*prefix++))
+            return false;
+        --plen;
+    }   
+    return true;
+}
+#endif
+
+#define MAX_BASE 26  // arbitrary but good enough for us
+
+static uint_t charToNumber(uint_t chr)
+{
+    if ( (chr >= '0') && (chr <= '9') )
+        return uint_t(chr - '0');
+
+    if ( (chr >= 'A') && (chr <= 'Z') )
+        return uint_t(10 + (chr - 'A'));
+
+    if ( (chr >= 'a') && (chr <= 'z') )
+        return uint_t(10 + (chr - 'a'));
+
+    return uint_t(-1);
+}
+
+status_t numericValue(const char* begin, const char* end, long& result, uint_t base)
+{
+    status_t error = errNone;
+    bool     negative = false;
+    long     res = 0;
+    uint_t   num;
+
+    if ( (begin >= end) || (base > MAX_BASE) )
+    {    
+        error=sysErrParamErr;
+        goto OnError;           
+    }
+
+    if ('-' == *begin)
+    {
+        negative = true;
+        if (++begin == end)
+        {
+            error = sysErrParamErr;
+            goto OnError;           
+        }
+    }           
+
+    while (begin != end) 
+    {
+        num = charToNumber(*begin++);
+        if (num >= base)
+        {   
+            error = sysErrParamErr;
+            break;
+        }
+        else
+        {
+            res *= base;
+            res += num;
+        }
+    }
+    if (!error)
+       result = res;
+OnError:
+    return error;    
+}
+
+#ifdef _WIN32_WCE
+status_t numericValue(const wchar_t* begin, const wchar_t* end, long& result, uint_t base)
+{
+    status_t error = errNone;
+    bool     negative = false;
+    long     res = 0;
+    uint_t   num;
+
+    if ( (begin >= end) || (base >  MAX_BASE) )
+    {    
+        error=sysErrParamErr;
+        goto OnError;           
+    }
+
+    if (L'-' == *begin)
+    {
+        negative = true;
+        if (++begin == end)
+        {
+            error = sysErrParamErr;
+            goto OnError;           
+        }
+    }           
+
+    while (begin != end) 
+    {
+        num = charToNumber(*begin++);
+        if (num >= base)
+        {   
+            error = sysErrParamErr;
+            break;
+        }
+        else
+        {
+            res *= base;
+            res += num;
+        }
+    }
+    if (!error)
+       result = res;
+OnError:
+    return error;    
+}
+#endif
+
+
+
+long StrFind(const char* str, long len, char chr)
+{
+    if (NULL == str)
+        return -1;
+    if (-1 == len) len = Len(str);
+
+    for (long i = 0; i < len; ++i)
+        if (str[i] == chr)
+            return i;    
+    return -1;
+}
+
+#ifdef _WIN32_WCE
+long StrFind(const wchar_t* str, long len, wchar_t chr)
+{
+    if (NULL == str)
+        return -1;
+    if (-1 == len) len = Len(str);
+
+    for (long i = 0; i < len; ++i)
+        if (str[i] == chr)
+            return i;    
+    return -1;
+}
+#endif
+
+long StrFind(const char* str, long len, const char* sub, long slen)
+{
+    if (NULL == str || NULL == sub)
+        return -1;
+    if (-1 == len)
+        len = Len(str);
+    if (-1 == slen)
+        slen = Len(sub);
+        
+    if (slen > len)
+        return -1;
+    
+    long checks = (len - slen) + 1;
+    for (long i = 0; i < checks; ++i)
+        if (StrEquals(str + i, slen, sub, slen))
+            return i;
+    return -1;
+}
+
+#ifdef _WIN32_WCE
+long StrFind(const wchar_t* str, long len, const wchar_t* sub, long slen)
+{
+    if (NULL == str || NULL == sub)
+        return -1;
+    if (-1 == len)
+        len = Len(str);
+    if (-1 == slen)
+        slen = Len(sub);
+        
+    if (slen > len)
+        return -1;
+    
+    long checks = (len - slen) + 1;
+    for (long i = 0; i < checks; ++i)
+        if (StrEquals(str + i, slen, sub, slen))
+            return i;
+    return -1;
+}
+#endif
+
+void strip(const char*& start, ulong_t& length)
+{
+    assert(NULL != start);
+    while (isSpace(start[0]) && length > 0)
+    {
+        length--;
+        start++;
+    }
+    while (length > 0)
+    {
+        if (isSpace(start[length-1]))
+            length--;
+        else
+            break;
+    }
+}
+
+#ifdef _WIN32_WCE
+void strip(const wchar_t*& start, ulong_t& length)
+{
+    assert(NULL != start);
+    while (isSpace(start[0]) && length > 0)
+    {
+        length--;
+        start++;
+    }
+    while (length > 0)
+    {
+        if (isSpace(start[length-1]))
+            length--;
+        else
+            break;
+    }
+}
+#endif
 
 /*
-struct CharToByte
-{ 
-    unsigned char operator()(char_t in) 
-    {   
-        return Utf16ToChar(in);
-    }
-};
-*/
-
-static char_t CharToUtf16(unsigned char in)
-{
-    if ((in >= 128) && (in <= 159))
-        return PalmToUnicode[in-128];
-
-    if ('\t' == in)
-    {
-        // special case for tab - Palm ignores it, wince displays
-        // as a rectangle
-        return char_t(' ');
-    }
-    return char_t(in);
-}
-#endif
-
-
-char* Utf16ToStr(const char_t *txt, long txtLen)
-{
-#ifdef _PALM_OS
-    return StringCopy2N(txt, txtLen);
-#else
-    if (-1 == txtLen)
-        txtLen = tstrlen(txt);    
-    char* res = (char*)malloc(txtLen+1);
-    if (NULL == res)
-        return NULL;
-
-    for (long i=0; i<txtLen; i++)
-    {
-        res[i] = Utf16ToChar(txt[i]);
-    }
-    res[txtLen] = '\0';
-    return res;
-#endif
-}
-
-void ByteStreamToText(const NarrowString& inStream, String& outTxt)
-{
-#if defined(_WIN32)
-    //char_t *out=NULL;
-    //int size = MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, 0);
-    //out=new char_t[size];
-    //MultiByteToWideChar(CP_OEMCP, MB_COMPOSITE, inStream.c_str(), -1, out, size);
-    //outTxt.assign(out);
-    //delete [] out;
-    outTxt.reserve(inStream.length());
-    std::transform(inStream.begin(), inStream.end(), std::back_inserter(outTxt), CharToUtf16);
-#else
-    outTxt.assign(inStream);
-#endif
-}
-
-// do a primitive conversion of txt in Palm charset to utf-16
-char_t *StrToUtf16(const char *txt, long txtLen)
-{
-#ifdef _PALM_OS
-    return StringCopy2N(txt, txtLen);
-#else
-    if (-1 == txtLen)
-        txtLen = strlen(txt);
-    char_t * res = (char_t*)malloc((txtLen+1)*sizeof(char_t));
-    if (NULL == res)
-        return NULL;
-
-    for (long i=0; i<txtLen; i++)
-    {
-        res[i] = CharToUtf16(txt[i]);
-    }
-    res[txtLen] = _T('\0');    
-    return res;
-#endif
-}
-
 bool startsWith(const String& text, const char_t* start, uint_t startOffset)
 {
-    while (startOffset<text.length() && *start)
+    while (startOffset < text.length() && *start)
     {
-        if (*start==text[startOffset])
+        if (*start == text[startOffset])
         {
             ++start;
             ++startOffset;
@@ -145,7 +384,7 @@ bool startsWith(const String& text, const char_t* start, uint_t startOffset)
         else
             return false;
     }
-    return 0==*start;
+    return 0 == *start;
 }
 
 bool startsWith(const String& text, const String& start, uint_t startOffset)
@@ -178,179 +417,84 @@ bool startsWithIgnoreCase(const String& text, const char_t* start, uint_t startO
     }
     return 0==*start;
 }
+*/
 
-bool equalsIgnoreCase(const char_t* s1start, const char_t* s1end, const char_t* s2start, const char_t* s2end)
+static char numToHex(unsigned char num)
 {
-    while (s1start!=s1end && s2start!=s2end)
-    {
-        if (toLower(*s1start)==toLower(*s2start))
-        {
-            ++s1start;
-            ++s2start;
-        }
-        else 
-            return false;
-    }
-    return (s1start==s1end && s2start==s2end);
-}
-
-static uint_t charToNumber(const char_t chr)
-{
-    if ( (chr >= _T('0')) && (chr <= _T('9')) )
-        return (uint_t) (chr - _T('0'));
-
-    if ( (chr >= _T('A')) && (chr <= _T('Z')) )
-        return (uint_t) 10 + (chr - _T('A'));
-
-    if ( (chr >= _T('a')) && (chr <= _T('z')) )
-        return (uint_t) 10 + (chr - _T('a'));
-
-    return 0xffff; // not sure if that's the best interface    
-}
-
-#define MAX_BASE 26  // arbitrary but good enough for us
-
-status_t numericValue(const char_t* begin, const char_t* end, long& result, uint_t base)
-{
-    status_t error = errNone;
-    bool     negative = false;
-    long     res = 0;
-    uint_t   num;
-
-    if ( (begin >= end) || (base >  MAX_BASE) )
-    {    
-        error=sysErrParamErr;
-        goto OnError;           
-    }
-
-    if (_T('-') == *begin)
-    {
-        negative = true;
-        if (++begin == end)
-        {
-            error = sysErrParamErr;
-            goto OnError;           
-        }
-    }           
-
-    while (begin != end) 
-    {
-        num = charToNumber(*begin++);
-        if (num >= base)
-        {   
-            error = sysErrParamErr;
-            break;
-        }
-        else
-        {
-            res *= base;
-            res += num;
-        }
-    }
-    if (!error)
-       result = res;
-OnError:
-    return error;    
-}
-
-static ArsLexis::char_t numToHex(int num)
-{
-    char_t  c;
-    assert( (num>=0) && (num<16) );
-    if (num<=9)
-        c = _T('0') + num;
+    char c;
+    assert(num < 16);
+    if (num <= 9)
+        c = '0' + num;
     else
-        c = _T('A') + (num-10);
+        c = 'A' + (num - 10);
     return c;
 }
 
-static ArsLexis::char_t numToHexSmall(int num)
+static char numToHexSmall(unsigned char num)
 {
-    char_t  c;
-    assert( (num>=0) && (num<16) );
-    if (num<=9)
-        c = _T('0') + num;
+    char  c;
+    assert(num < 16);
+    if (num <= 9)
+        c = '0' + num;
     else
-        c = _T('a') + (num-10);
+        c = 'a' + (num-10);
     return c;
 }
 
 // encode binary blob of blobSize size and put the result in the out string
-void HexBinEncodeBlob(unsigned char *blob, int blobSize, ArsLexis::String& out)
+void HexBinEncodeBlob(const char* blob, ulong_t blobSize, NarrowString& out)
 {
     out.clear();
-    out.reserve(blobSize*2); // 2 chars per each byte
+    out.reserve(blobSize * 2); // 2 chars per each byte
 
     unsigned char b;
-    char_t        hexChar;
-    for (int i=0; i<blobSize; i++)
+    char        hexChar;
+    for (ulong_t i = 0; i < blobSize; i++)
     {
         b = blob[i];
         hexChar = numToHex(b / 16);
-        out.append(1,hexChar);
+        out.append(1, hexChar);
         hexChar = numToHex(b % 16);
-        out.append(1,hexChar);
+        out.append(1, hexChar);
     }
 }
 
-ArsLexis::String hexBinEncode(const String& in)
-{
-    String out;
-    out.reserve(2*in.length());
-    String::const_iterator it=in.begin();
-    String::const_iterator end=in.end();
-    char_t hexChar;
-    while (it!=end)
-    {
-        // at some point this was char_t (i.e. signed char on Palm)
-        // and it caused bugs due to b being promoted to unsigned int, which
-        // was negative for b values > 127
-        unsigned char b = (unsigned char)(*(it++));
-        hexChar = numToHex(b / 16);
-        out.append(1,hexChar);
-        hexChar = numToHex(b % 16);
-        out.append(1,hexChar);
-    }
-    return out;
-}
-
-inline static void CharToHexString(ArsLexis::char_t* buffer, ArsLexis::char_t chr)
+inline static void CharToHexString(char* buffer, char chr)
 {
     buffer[0] = numToHex(chr / 16);
     buffer[1] = numToHex(chr % 16);
 }
 
-void urlEncode(const ArsLexis::String& in, ArsLexis::String& out)
+void urlEncode(const NarrowString& in, NarrowString& out)
 {
-    char_t *hexNum = _T("%  ");
+	char hexNum[4] = {'%', '\0', '\0', '\0'};
 
-    const char_t* begin=in.data();
-    const char_t* end=begin+in.length();
+    const char* begin = in.data();
+    const char* end = begin + in.length();
     out.resize(0);
     out.reserve(in.length());
 
-    while (begin!=end)
+    while (begin != end)
     {        
-        char_t chr=*begin++;
-        if ((chr>=_T('a') && chr<=_T('z')) || 
-            (chr>=_T('A') && chr<=_T('Z')) || 
-            (chr>=_T('0') && chr<=_T('9')) || 
-            _T('-')==chr || _T('_')==chr || _T('.')==chr || _T('!')==chr || 
-            _T('~')==chr || _T('*')==chr || _T('\'')==chr || _T('(')==chr || _T(')')==chr)
-            out.append(chr, 1);
+        char chr=*begin++;
+        if ((chr >= 'a' && chr <= 'z') || 
+            (chr >= 'A' && chr <= 'Z') || 
+            (chr >= '0' && chr <= '9') || 
+		-1 != StrFind("-_.!~*\'()", -1,  chr))
+            out.append(1, chr);
         else
         {
-            CharToHexString(hexNum+1, chr);
+            CharToHexString(hexNum + 1, chr);
             out.append(hexNum, 3);
         }
     }
 }
 
 // remove non-digit characters in-place.
-void removeNonDigitsInPlace(char_t *txt)
+void removeNonDigitsInPlace(char_t* txt)
 {
-    char_t * curReadPos = txt;
-    char_t * curWritePos = txt;
+    char_t* curReadPos = txt;
+    char_t* curWritePos = txt;
     while (*curReadPos)
     {
         if (isDigit(*curReadPos))
@@ -378,7 +522,7 @@ void removeNonDigitsInPlace(char_t *txt)
     }
 }
 
-void removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& out)
+void removeNonDigits(const char_t* in, uint_t len, String& out)
 {
     out.resize(0);
     out.reserve(len);
@@ -386,7 +530,7 @@ void removeNonDigits(const char_t* in, uint_t len, ArsLexis::String& out)
     while (len>0)
     {
         if (isDigit(*in))
-            out.append(1, *in);
+            out.append(*in, 1);
         ++in;
         --len;
     }
@@ -439,6 +583,7 @@ int formatNumber(long num, char_t* buf, int bufSize)
 // from the string. Updates curPos so that it can be called in sequence.
 // Sets fEnd to true if there are no more lines.
 // Handles the following kinds of new lines: "\n", "\r", "\n\r", "\r\n"
+/*
 String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
 {
     fEnd = false;
@@ -543,6 +688,7 @@ void strip(String& str)
     else
         str.assign(str, left, right-left);
 }
+*/
 
 /*
 std::vector<ArsLexis::String> split(const String& str, const String& spliter)
@@ -565,7 +711,6 @@ std::vector<ArsLexis::String> split(const String& str, const String& spliter)
     }
     return vec;
 }
-*/
 
 std::vector<ArsLexis::String> split(const String& str, const char_t* splitter)
 {
@@ -588,7 +733,7 @@ std::vector<ArsLexis::String> split(const String& str, const char_t* splitter)
     }
     return vec;
 }
-
+*/
 
 // ok, the name sucks
 char_t **StringListFromStringList(const StringList_t& strList, int& stringCount)
@@ -607,7 +752,7 @@ char_t **StringListFromStringList(const StringList_t& strList, int& stringCount)
     StringList_t::const_iterator end(strList.end());
     for (StringList_t::const_iterator it(strList.begin()); it!=end; ++it)
     {
-        result[curPos] = StringCopy(*it);
+        result[curPos] = StringCopyN(it->data(), it->length());
         ++curPos;
     }
     return result;
@@ -665,6 +810,7 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
     return strList;
 }
 
+/*
 char_t** StringVectorToCStrArray(const std::vector<String>& vec)
 {
     ulong_t len = vec.size();
@@ -683,16 +829,16 @@ NoMemory:
     FreeStringList(arr, len);
     return NULL;        
 }
-
+*/
 
 void FreeStringList(char_t* strList[], int strListLen)
 {
     for (int i = 0; i < strListLen; ++i)
-        delete [] strList[i];
+        free(strList[i]);
     delete [] strList;
 }
 
-   
+/*   
 String join(const std::vector<ArsLexis::String>& vec, const char_t* joiner)
 {
     String str;
@@ -704,7 +850,7 @@ String join(const std::vector<ArsLexis::String>& vec, const char_t* joiner)
     }
     return str;
 }
-
+*/
 void replaceCharInString(char_t* str, char_t orig, char_t replacement)
 {
     while (_T('\0')!=*str)
@@ -726,7 +872,7 @@ void ReverseStringList(char_t **strList, int strListLen)
         strList[strListLen-i-1] = tmp;
     }
 }
-
+/*
 void convertFloatStringToUnsignedLong(const ArsLexis::String str, unsigned long& value, unsigned int& digitsAfterComma, ArsLexis::char_t commaSeparator)
 {
     digitsAfterComma = 0;
@@ -774,6 +920,7 @@ ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsig
     }
     return str;
 }
+*/
 
 
 uint_t fuzzyTimeInterval(ulong_t interval, char_t* buffer)
@@ -866,7 +1013,7 @@ Done:
 }
 
 /***********************************************************************
- strtod.c - Defines a function to turn a numeric string into a double.
+ Defines a function to turn a numeric string into a double.
 
  Obtained from http://cold.40-below.com/palm/strtod.html
 
@@ -889,8 +1036,6 @@ Done:
 //
 // Return true if conversion was successful, false otherwise
 
-#define PalmIsDigit(c) ((c) >= _T('0') && (c) <= _T('9'))
-
 bool strToDouble(const char_t* str, double *dbl)
 {
     int i, start, length, punctPos;
@@ -909,7 +1054,7 @@ bool strToDouble(const char_t* str, double *dbl)
     for (i = start; i < length; i++)    // parse the string from left to right converting the integer part
     {
         if (str[i] != _T('.')) {
-            if (PalmIsDigit(str[i]))
+            if (isDigit(str[i]))
                 result = result * 10.0 + (str[i] - _T('0'));
             else if (_T(',') != str[i]) 
                 return false;
@@ -923,7 +1068,7 @@ bool strToDouble(const char_t* str, double *dbl)
     if (str[punctPos] == _T('.'))   // parse the string from the end to the '.' converting the fractional part
     {
         for (i = length - 1; i > punctPos; i--) {
-            if (PalmIsDigit(str[i]))
+            if (isDigit(str[i]))
                 fractPart = fractPart / 10.0 + (str[i] - _T('0'));
             else {
                 return false;
@@ -948,28 +1093,16 @@ int versionNumberCmp(const char_t *verNumOne, const char_t *verNumTwo)
     strToDouble(verNumOne, &verNumOneDbl);
     strToDouble(verNumTwo, &verNumTwoDbl);
 
-    if (verNumOneDbl==verNumTwoDbl)
+    if (verNumOneDbl == verNumTwoDbl)
         return 0;
+
     if (verNumOneDbl > verNumTwoDbl)
         return 1;
     return -1;
 }
 
-// note: caller needs to free memory with free
-char_t* StringCopy2__(const char_t *curStr, int len, const char* file, int line)
-{
-    using namespace std;
-    if (-1 == len)
-        len = tstrlen(curStr);
-    char_t *newStr = (char_t*)malloc__(sizeof(char_t) * (len + 1), file, line);
-    if (NULL == newStr)
-        return NULL;
 
-    memcpy(newStr, curStr, sizeof(char_t) * len);
-    newStr[len] = chrNull;
-    return newStr;
-}
-
+/*
 // note: caller needs to free memory with delete[]
 char_t* StringCopyN(const char_t* str, int strLen)
 {
@@ -996,8 +1129,9 @@ char* CharCopyN__(const char* curStr, int len, const char* file, int line)
     newStr[len] = '\0';
     return newStr;
 }
+ */
 
-
+/*
 // strip (i.e. remove whitespace from the beginning and the end of the string)
 // str in place.
 void StrStrip(char_t *str)
@@ -1030,24 +1164,9 @@ void StrStrip(char_t *str)
     memmove(str, strStart, finalLen+1);
     return;
 }
+ */
 
-void strip(const char_t*& start, ulong_t& length)
-{
-    assert(NULL != start);
-    while (isSpace(start[0]) && length > 0)
-    {
-        length--;
-        start++;
-    }
-    while (length > 0)
-    {
-        if (isSpace(start[length-1]))
-            length--;
-        else
-            break;
-    }
-}
-
+/*
 // return true if this is an empty string (NULL or consits of white-space
 // characters only
 bool StrEmpty(const char_t *str)
@@ -1062,53 +1181,22 @@ bool StrEmpty(const char_t *str)
     }
     return true;
 }
+ */
 
-long StrFind(const char_t* str, long len, char_t chr)
+ulong_t StrHexlify(const char* in, long inLength, char* out, ulong_t outLength)
 {
-    if (NULL == str)
-        return -1;
-    if (-1 == len)
-        len = tstrlen(str);
+	if (-1 == inLength) inLength = Len(in);
+    assert(ulong_t(inLength * 2) <= outLength);
 
-    for (long i = 0; i < len; ++i)
-        if (str[i] == chr)
-            return i;    
-    return -1;
-}
-
-long StrFind(const char_t* str, long len, const char_t* sub, long slen)
-{
-    if (NULL == str || NULL == sub)
-        return -1;
-    if (-1 == len)
-        len = tstrlen(str);
-    if (-1 == slen)
-        slen = tstrlen(sub);
-        
-    if (slen > len)
-        return -1;
-    
-    long checks = (len - slen) + 1;
-    for (long i = 0; i < checks; ++i)
-        if (StrEquals(str + i, slen, sub, slen))
-            return i;
-    return -1;
-}
-
-
-long bufferToHexCode(const char* in, long inLength, char* out, long outLength)
-{
-    assert(inLength*2 <= outLength);
-    long pos = 0;
-    for (pos = 0; pos < inLength; pos++)
+    for (long pos = 0; pos < inLength; pos++)
     {
-        out[2*pos+1] = (char)numToHexSmall(in[pos] & 0x0f);
-        out[2*pos]   = (char)numToHexSmall((in[pos] & 0xf0) >> 4);
+        out[2 * pos + 1] = numToHexSmall(in[pos] & 0x0f);
+        out[2 * pos]   = numToHexSmall((in[pos] & 0xf0) >> 4);
     }
     //if given outLength is greater than needed - terminate with zero
-    if (outLength > inLength*2)
-        out[inLength*2] = '\0';
-    return inLength*2;
+    if (outLength > ulong_t(inLength * 2))
+        out[inLength * 2] = '\0';
+    return inLength * 2;
 }
 
 char_t* StrUnhexlify(const char_t* in, long inLen)
@@ -1146,191 +1234,15 @@ Error:
 }
 
 
-bool startsWith(const char_t* text, ulong_t len, const char_t* prefix, ulong_t plen)
-{
-    if (ulong_t(-1) == len)
-        len =tstrlen(text);
-    if (ulong_t(-1) == plen)
-        plen = tstrlen(prefix);
-    
-    if (plen > len)
-        return false;
-    
-    while (0 != plen)
-    {
-        if (*text++ != *prefix++)
-            return false;
-        --plen;
-    }   
-    return true;
-}
-
-bool equals(const char_t* s1, ulong_t s1len, const char_t* s2, ulong_t s2len)
-{
-    if (ulong_t(-1) == s1len)
-        s1len = tstrlen(s1);
-    if (ulong_t(-1) == s2len)
-        s2len = tstrlen(s2);
-    if (s1len != s2len)
-        return false;
-    return 0 == tstrncmp(s1, s2, s1len);
-}
 
 
 #ifdef _WIN32 // overloads for working with narrow-strings also
 
-bool equalsIgnoreCase(const char* s1start, const char* s1end, const char* s2start, const char* s2end)
-{
-    while (s1start != s1end && s2start != s2end)
-    {
-        if (tolower(*s1start) == tolower(*s2start))
-        {
-            ++s1start;
-            ++s2start;
-        }
-        else 
-            return false;
-    }
-    return (s1start == s1end && s2start == s2end);
-}
 
-bool startsWith(const char* text, ulong_t len, const char* prefix, ulong_t plen)
-{
-    if (ulong_t(-1) == len)
-        len = strlen(text);
-    if (ulong_t(-1) == plen)
-        plen = strlen(prefix);
-    
-    if (plen > len)
-        return false;
-    
-    while (0 != plen)
-    {
-        if (*text++ != *prefix++)
-            return false;
-        --plen;
-    }   
-    return true;
-}
 
-bool equals(const char* s1, ulong_t s1len, const char* s2, ulong_t s2len)
-{
-    if (ulong_t(-1) == s1len)
-        s1len = strlen(s1);
-    if (ulong_t(-1) == s2len)
-        s2len = strlen(s2);
-    if (s1len != s2len)
-        return false;
-    return 0 == strncmp(s1, s2, s1len);
-}
 
-static uint_t charToNumber(const char chr)
-{
-    if ( (chr >= '0') && (chr <= '9') )
-        return (uint_t) (chr - '0');
 
-    if ( (chr >= 'A') && (chr <= 'Z') )
-        return (uint_t) 10 + (chr - 'A');
 
-    if ( (chr >= 'a') && (chr <= 'z') )
-        return (uint_t) 10 + (chr - 'a');
-
-    return uint_t(-1); // not sure if that's the best interface    
-}
-
-#define MAX_BASE 26  // arbitrary but good enough for us
-
-status_t numericValue(const char* begin, const char* end, long& result, uint_t base)
-{
-    status_t error = errNone;
-    bool     negative = false;
-    long     res = 0;
-    uint_t   num;
-
-    if ( (begin >= end) || (base > MAX_BASE) )
-    {    
-        error=sysErrParamErr;
-        goto OnError;           
-    }
-
-    if ('-' == *begin)
-    {
-        negative = true;
-        if (++begin == end)
-        {
-            error = sysErrParamErr;
-            goto OnError;           
-        }
-    }           
-
-    while (begin != end) 
-    {
-        num = charToNumber(*begin++);
-        if (num >= base)
-        {   
-            error = sysErrParamErr;
-            break;
-        }
-        else
-        {
-            res *= base;
-            res += num;
-        }
-    }
-    if (!error)
-       result = res;
-OnError:
-    return error;    
-}
-
-long StrFind(const char* str, long len, char chr)
-{
-    if (NULL == str)
-        return -1;
-    if (-1 == len)
-        len = strlen(str);
-
-    for (long i = 0; i < len; ++i)
-        if (str[i] == chr)
-            return i;    
-    return -1;
-}
-
-long StrFind(const char* str, long len, const char* sub, long slen)
-{
-    if (NULL == str || NULL == sub)
-        return -1;
-    if (-1 == len)
-        len = strlen(str);
-    if (-1 == slen)
-        slen = strlen(sub);
-        
-    if (slen > len)
-        return -1;
-    
-    long checks = (len - slen) + 1;
-    for (long i = 0; i < checks; ++i)
-        if (StrEquals(str + i, slen, sub, slen))
-            return i;
-    return -1;
-}
-
-void strip(const char*& start, ulong_t& length)
-{
-    assert(NULL != start);
-    while (isspace(start[0]) && length > 0)
-    {
-        length--;
-        start++;
-    }
-    while (length > 0)
-    {
-        if (isspace(start[length-1]))
-            length--;
-        else
-            break;
-    }
-}
 
 #endif
 
@@ -1481,6 +1393,70 @@ long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len)
 }    
 
 
+void* MemAppend(void* target, ulong_t tlen, const void* source, ulong_t slen, ulong_t termlen)
+{
+	using namespace std;
+	void* newLoc = realloc(target, tlen + slen + termlen);
+	if (NULL == newLoc)
+	{
+		free(target);
+		return NULL;
+	}
+	void* t = ((char*)newLoc) + tlen;
+	memmove(t, source, slen);
+	return newLoc;
+}
+
+void MemErase(void* target, ulong_t tlen, ulong_t efrom, ulong_t elen)
+{
+	assert(efrom + elen <= tlen);
+	void* t = ((char*)target) + efrom;
+	const void* s = ((const char*)target) + efrom + elen;
+	ulong_t len = tlen - efrom - elen;
+	memmove(t, s, len);
+}
+
+char* StrAppend(char* target, long tlen, const char* source, long slen)
+{
+	if (-1 == tlen) tlen = Len(target);
+	if (-1 == slen) slen = Len(source);
+	target = (char*)MemAppend(target, tlen, source, slen, sizeof(*target));
+	if (NULL == target)
+		return NULL;
+	target[tlen + slen] = '\0';
+	return target;
+}
+
+void StrErase(char* target, long tlen, ulong_t efrom, ulong_t elen)
+{
+	if (-1 == tlen) tlen = Len(target);
+	MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
+	if (efrom + elen < ulong_t(tlen))
+		target[tlen - efrom - elen] = '\0';
+}
+
+#ifdef _WIN32_WCE
+wchar_t* StrAppend(wchar_t* target, long tlen, const wchar_t* source, long slen)
+{
+	if (-1 == tlen) tlen = Len(target);
+	if (-1 == slen) slen = Len(source);
+	target = (wchar_t*)MemAppend(target, sizeof(*target) * tlen, source, sizeof(*target) * slen, sizeof(*target));
+	if (NULL == target)
+		return NULL;
+	target[tlen + slen] = L'\0';
+	return target;
+
+}
+void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen)
+{
+	if (-1 == tlen) tlen = Len(target);
+	MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
+	if (efrom + elen < ulong_t(tlen))
+		target[tlen - efrom - elen] = L'\0';
+}
+#endif
+
+
 #ifdef DEBUG
 
 static void test_startsWith()
@@ -1517,11 +1493,13 @@ static void test_removeNonDigitsInPlace()
 
 static void test_StrEmpty()
 {
+	/*
     assert(true == StrEmpty(NULL));
     assert(true == StrEmpty(_T("")));
     assert(true == StrEmpty(_T(" ")));
     assert(true == StrEmpty(_T("          ")));
     assert(false == StrEmpty(_T(" a")));
+	*/
 }
 
 static void test_StrFind()
@@ -1538,8 +1516,8 @@ static void test_HexCode()
 {
     using namespace std;
     char buffer[20];
-    assert(12 == bufferToHexCode("?text?",6,buffer,20));
-    buffer[12] = '\0';
+    assert(12 == StrHexlify("?text?", 6, buffer, 20));
+    assert(buffer[12] == '\0');
     assert(0 == strcmp(buffer,"3f746578743f"));
 }
 
@@ -1548,7 +1526,6 @@ void test_TextUnitTestAll()
     test_removeNonDigitsInPlace();
     test_StrFind();
     test_StrEmpty();
-    test_StrFind();
     test_HexCode();
     test_startsWith();
 }

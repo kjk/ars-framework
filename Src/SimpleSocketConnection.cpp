@@ -10,25 +10,16 @@ SimpleSocketConnection::SimpleSocketConnection(SocketConnectionManager& manager)
     request_(NULL),
     requestLenLeft_(0),
     requestSent_(0),
-    totalReceived_(0)
+	response_(NULL),
+	responseLen_(0),
+    totalReceived_(0),
+	chunk_(NULL)
 {}
-
-status_t SimpleSocketConnection::resizeResponse(ulong_t size)
-{
-    volatile status_t error = errNone;
-    ErrTry {
-        response_.resize(size);
-    }
-    ErrCatch(ex) {
-        error=ex;
-    } ErrEndCatch
-    return error;
-}
 
 status_t SimpleSocketConnection::notifyWritable()
 {
     assert(sending_);
-    uint_t toSend = requestLenLeft_;
+    ulong_t toSend = requestLenLeft_;
     if (requestLenLeft_ > chunkSize_)
         toSend = chunkSize_;
     uint_t dataSize = 0;
@@ -59,8 +50,7 @@ status_t SimpleSocketConnection::notifyWritable()
 status_t SimpleSocketConnection::notifyReadable()
 {
     uint_t dataSize = 0;
-    char* newDataBuf;
-    uint_t  curResponseSize;
+    ulong_t  curResponseSize;
 
     if (sending_) 
         Log(eLogDebug, _T("notifyReadable(): called while sending data, probably some connection error occured"), true);
@@ -74,31 +64,40 @@ status_t SimpleSocketConnection::notifyReadable()
         LogStrUlong(eLogInfo, _T("notifyReadable(): getSocketErrorStatus() returned error (ignored): "), error);
         error = errNone;
     }
-    if (errNone!=error)
+    if (errNone != error)
         goto Exit;
 
-    curResponseSize = response_.size();
-    if (curResponseSize >= maxResponseSize_-chunkSize_)
+    curResponseSize = responseLen_;
+    if (curResponseSize >= maxResponseSize_ - chunkSize_)
     {
         error = errResponseTooLong;
         goto Exit;
     }
 
-    error = resizeResponse(curResponseSize+chunkSize_);
-    if (errNone!=error)
-        goto Exit;
+	if (NULL == chunk_)
+		chunk_ = (char*)malloc(chunkSize_);
+	if (NULL == chunk_)
+	{
+		error = memErrNotEnoughSpace;
+		goto Exit;
+	}
 
-    newDataBuf = (char*)&response_[curResponseSize];
     dataSize = 0;
-    error = socket().receive(dataSize, newDataBuf, chunkSize_, transferTimeout());
-    if (errNone!=error)
+    error = socket().receive(dataSize, chunk_, chunkSize_, transferTimeout());
+    if (errNone != error)
         goto Exit;
 
     totalReceived_ += dataSize;
-    assert(dataSize<=chunkSize_);
-    
-    resizeResponse(curResponseSize+dataSize);
-    //if (chunkSize_ != dataSize)
+    assert(dataSize <= chunkSize_);
+
+	response_ = StrAppend(response_, responseLen_, chunk_, dataSize);
+	if (NULL == response_)
+	{
+		error = memErrNotEnoughSpace;
+		goto Exit;
+	}
+    responseLen_ += dataSize;
+
     if (0 == dataSize)
     {   
         // Log(eLogInfo, _T("notifyReadable(): 0 == dataSize (server shut socket down?)"), true);
@@ -135,9 +134,13 @@ status_t SimpleSocketConnection::notifyProgress()
 SimpleSocketConnection::~SimpleSocketConnection()
 {
     if (NULL != request_)
-    {
         free(request_);
-    }
+
+	if (NULL != response_)
+		free(response_);
+
+	if (NULL != chunk_)
+		free(chunk_);
 }
 
 status_t SimpleSocketConnection::open()
@@ -169,10 +172,10 @@ status_t SimpleSocketConnection::open()
     return error;
 }
 
-status_t SimpleSocketConnection::setRequestCopy(const char* request, ulong_t requestSize)
+status_t SimpleSocketConnection::setRequest(const char* request, ulong_t requestSize)
 {
     assert( NULL == request_ );
-    char *newRequest = (char*)malloc(requestSize);
+    char* newRequest = (char*)malloc(requestSize);
     if (NULL == newRequest)
         return memErrNotEnoughSpace;
 

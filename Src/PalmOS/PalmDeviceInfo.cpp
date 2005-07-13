@@ -211,9 +211,11 @@ static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGe
 
     if (!out.empty())
         out+=':';
+        
     out.append(prefix);
-    String tokenEncoded = hexBinEncode(token);
-    out.append(hexBinEncode(token));
+    String tokenEncoded;
+    HexBinEncode(token, tokenEncoded);
+    out.append(tokenEncoded);
 }
 
 ArsLexis::String deviceInfoToken()

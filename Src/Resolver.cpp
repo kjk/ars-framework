@@ -10,10 +10,10 @@
 static status_t validateAddress(const NarrowString& origAddress, NarrowString& validAddress, ushort_t& port)
 {
     NarrowString::size_type pos = origAddress.find(':', 1);
-    if (origAddress.npos==pos)
+    if (origAddress.npos == pos)
         return netErrParamErr;
     
-    ushort_t portLength = origAddress.length()-pos-1;
+    ushort_t portLength = origAddress.length() - pos - 1;
     if (portLength>0)
     {
         long value=0;
@@ -24,7 +24,7 @@ static status_t validateAddress(const NarrowString& origAddress, NarrowString& v
         port = ushort_t(value);
     }
 
-    if (0==port)
+    if (0 == port)
         return netErrParamErr;        
 
     validAddress.assign(origAddress, 0, pos);
@@ -50,10 +50,10 @@ static status_t blockingResolve(SocketAddress& out, NetLibrary& netLib, const Na
 status_t resolve(SocketAddress& out, NetLibrary& netLib, const char* address, ushort_t port, ulong_t timeout)
 {
     NarrowString validAddress;
-    NarrowString addressStr(address);
-    status_t error=validateAddress(address, validAddress, port);
+    status_t error = validateAddress(address, validAddress, port);
     if (error)
         return error;
+        
     INetSocketAddress addr;
     // TODO: the assumption that the ip address is numeric if the first
     // letter is a digit is incorrect. A symbolic name can also start

@@ -1,7 +1,6 @@
 #include <UTF8_Processor.hpp>
-#include <windows.h>
-
-#ifdef _WIN32_WCE
+#include <Text.hpp>
+#include <Utility.hpp>
 
 // Code in namespace Unicode is published by the unicode.org
 namespace Unicode {
@@ -280,7 +279,12 @@ ConversionResult ConvertUTF8toUTF16 (
 
 }
 
-status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, tchar*& nativeText, ulong_t& nativeLen)
+#ifdef _WIN32_WCE
+
+static const StaticAssert<sizeof(char_t) == sizeof(Unicode::UTF16)> assert_char_t_is_utf16;
+static const StaticAssert<long(char_t(-1)) == long(Unicode::UTF16(-1))> assert_char_t_has_same_singularity_as_utf16;
+
+status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char_t*& nativeText, ulong_t& nativeLen)
 {
 	using namespace Unicode;
 	nativeText = NULL;
@@ -289,12 +293,12 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, tchar*& nativeText
 		return errNone;
 
 	ulong_t bufLen = utfLen;
-	nativeText = (tchar*)malloc(bufLen * sizeof(tchar));
+	nativeText = (char_t*)malloc(bufLen * sizeof(char_t) + 1);
 	if (NULL == nativeText)
 		return memErrNotEnoughSpace;
 
 	status_t err = errNone;
-	tchar* target = nativeText;
+	char_t* target = nativeText;
 	const char* source = utfText;
 	ConversionResult res = ConvertUTF8toUTF16((const UTF8**)&utfText, (const UTF8*)(source + utfLen), (UTF16**)&target, (UTF16*)(target + bufLen), lenientConversion);
 	if (sourceIllegal == res)
@@ -311,8 +315,53 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, tchar*& nativeText
 	return err;
 }
 
+#elif defined(_PALM_OS)
 
-#else // _WIN32_WCE
+status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char*& nativeText, ulong_t& nativeLen)
+{
+	using namespace Unicode;
+	nativeText = NULL;
+	nativeLen = 0;
+	if (0 == utfLen)
+		return errNone;
+
+	ulong_t bufLen = utfLen;
+	UTF16* buffer = (UTF16*)malloc(bufLen * sizeof(UTF16));
+	if (NULL == buffer)
+		return memErrNotEnoughSpace;
+
+	status_t err = errNone;
+	UTF16* target = buffer;
+	const char* source = utfText;
+	ConversionResult res = ConvertUTF8toUTF16((const UTF8**)&utfText, (const UTF8*)(source + utfLen), &target, target + bufLen, lenientConversion);
+	if (sourceIllegal == res)
+	{
+		free(buffer);
+		return sysErrParamErr;
+	}
+	utfLen -= (utfText - source);
+	bufLen = (target - buffer);
+	nativeText = (char*)malloc(bufLen + 1);
+	if (NULL == nativeText)
+	{
+		free(buffer);
+		return memErrNotEnoughSpace;
+	}
+	for (ulong_t i = 0; i < bufLen; ++i)
+	{
+		if (buffer[i] < 256)
+			nativeText[i] = char((unsigned char)buffer[i]);
+		else
+			nativeText[i] = char(1);
+	}
+	free(buffer);
+	nativeText[bufLen] = '\0';
+	nativeLen = bufLen;
+	return errNone;
+}
+
+
+#else
 
 #error "define UTF8_ToNative() for yer platform!"
 
@@ -320,6 +369,7 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, tchar*& nativeText
 
 #ifndef NDEBUG
 
+#ifdef _WIN32_WCE
 #pragma setlocale("plk")
 
 void test_UTF8_ToNative()
@@ -344,13 +394,40 @@ void test_UTF8_ToNative()
 	assert(0 == wcsncmp(L"Za¿ó³æ gêœl¹ jaŸñ!", nstr, nlen));
 	free(nstr);
 }
+#else
+void test_UTF8_ToNative()
+{
+	const char* test = "test test test";
+	ulong_t len = strlen(test);
+	char* nstr;
+	ulong_t nlen;
+	status_t res = UTF8_ToNative(test, len, nstr, nlen);
+	assert(errNone == res);
+	assert(NULL != nstr);
+	assert(0 == len);
+	assert(equals(test, nstr));
+	free(nstr);
+
+	test = "ZaÅ¼Ã³Å‚Ä‡ gÄ™Å›lÄ… jaÅºÅ„!";
+	len = strlen(test);
+	res = UTF8_ToNative(test, len, nstr, nlen);
+	assert(errNone == res);
+	assert(NULL != nstr);
+	assert(0 == len);
+	free(nstr);
+}
+#endif
 
 #endif
 
 
 UTF8_Processor::UTF8_Processor(TextIncrementalProcessor* chainedTextProcessor, bool textProcessorOwner):
 	textProcessor_(chainedTextProcessor),
-	textProcessorOwner_(textProcessorOwner)
+	textProcessorOwner_(textProcessorOwner),
+	input_(NULL),
+	inputLen_(0),
+	output_(NULL),
+	outputLen_(0)
 {}
 
 UTF8_Processor::~UTF8_Processor()
@@ -361,7 +438,47 @@ UTF8_Processor::~UTF8_Processor()
 
 status_t UTF8_Processor::handleIncrement(const char* payload, ulong_t& length, bool finish)
 {
-	// TODO: implement 
+	input_ = StrAppend(input_, inputLen_, payload, length);
+	if (NULL == input_)
+		return memErrNotEnoughSpace;
+
+	const char* input = input_;
+	ulong_t inputLen = inputLen_;
+	char_t* output = NULL;
+	ulong_t outputLen = 0;
+
+	status_t err = UTF8_ToNative(input, inputLen, output, outputLen);
+	if (errNone != err)
+		return err;
+
+	StrErase(input_, inputLen_, 0, inputLen_ - inputLen);
+	inputLen_ = inputLen;
+
+	output_ = StrAppend(output_, outputLen_, output, outputLen);
+	free(output);
+	if (NULL == output_)
+	{
+		outputLen_ = 0;
+		return memErrNotEnoughSpace;
+	}
+	outputLen_ += outputLen;
+	if (NULL == textProcessor_)
+		return errNone;
+
+	outputLen = outputLen_;
+	err = textProcessor_->handleIncrement(output_, outputLen, finish);
+	if (errNone != err)
+		return err;
+
+	StrErase(output_, outputLen_, 0, outputLen);
+	outputLen_ = outputLen;
 	return errNone;
 }
 
+TextIncrementalProcessor* UTF8_Processor::releaseChainedProcessor()
+{
+    TextIncrementalProcessor* p = textProcessor_;
+    textProcessor_ = NULL;
+    textProcessorOwner_ = false;
+    return p;
+}

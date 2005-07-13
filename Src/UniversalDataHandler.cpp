@@ -1,4 +1,5 @@
 #include <UniversalDataHandler.hpp>
+#include <SocketConnection.hpp>
 #include <Text.hpp>
 #include <Reader.hpp>
 #include <DataStore.hpp>

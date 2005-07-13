@@ -35,7 +35,7 @@ void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler
 status_t FieldPayloadProtocolConnection::notifyProgress()
 {
     status_t error = errNone;
-    if (!(sending() || response().empty()))
+    if (!(sending() || 0 == responseLen_))
         error = processResponseIncrement();
 #ifdef DEBUG
     if (errNone != error)
@@ -54,12 +54,11 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
 {
     bool goOn = false;
     status_t error = errNone;
-    ulong_t respLen = response().size();
-    const char* resp = response().data();
+    ulong_t respLen = responseLen_;
+    const char* resp = response_;
 
     do 
     {
-        const char* orig = resp;
         if (!inPayload_) 
         {
             long toConsume = StrFind(resp, respLen, lineSeparatorChar);
@@ -77,7 +76,8 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                     resp += toConsume + 1; // swallow also lineSeparator
                     assert( respLen >= ulong_t(toConsume + 1));
                     respLen -= (toConsume+1);
-                    response().erase(0, toConsume + 1);
+                    StrErase(response_, responseLen_, 0, toConsume + 1);
+                    responseLen_ -= toConsume + 1;
                 }
                 else
                 {
@@ -85,7 +85,9 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                     error = processLine(toConsume);
                     resp += toConsume;
                     assert('\0' == resp[0]);
-                    response().clear();
+					free(response_);
+					response_ = NULL;
+                    responseLen_ = 0;
                 }
             }
         }
@@ -108,7 +110,8 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 assert( respLen >= payloadLengthLeft_ + lineSeparatorLength);
                 respLen -= (payloadLengthLeft_ + lineSeparatorLength);
                 
-                response().erase(0, payloadLengthLeft_ + lineSeparatorLength);         
+                StrErase(response_, responseLen_, 0, payloadLengthLeft_ + lineSeparatorLength);
+                responseLen_ -= payloadLengthLeft_ + lineSeparatorLength;
                 goOn = true;
             }
             else
@@ -128,7 +131,8 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 assert( respLen >= length);
                 respLen -= length;
                 
-                response().erase(0, length);         
+                StrErase(response_, responseLen_, 0, length);
+                responseLen_ -= length;
                 payloadLengthLeft_ -= length;
                 goOn = false;
             }
@@ -149,7 +153,7 @@ status_t FieldPayloadProtocolConnection::processLine(ulong_t lineEnd)
     if (0 == lineEnd)
         return errNone;
 
-    const char* resp = response().data();
+    const char* resp = response_;
     long separatorPos = StrFind(resp, lineEnd, fieldSeparatorChar);
 
     assert(-1 != separatorPos);
