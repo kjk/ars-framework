@@ -122,3 +122,16 @@ int __cdecl _CrtDbgReportW(int reason, const wchar_t* file, int line, const wcha
 }
 
 #endif
+
+#if defined(_MSC_VER)
+
+void ArsLexis::handleBadAlloc()
+{
+#if _MSC_VER == 1200
+    RaiseException(memErrNotEnoughSpace, 0, 0, NULL); 
+#else
+	throw long(memErrNotEnoughSpace);
+#endif
+}
+
+#endif

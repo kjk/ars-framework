@@ -6,13 +6,11 @@
 #include <vector>
 #include <Utility.hpp>
 
-struct UniversalDataFormat //: private ArsLexis::NonCopyable
+struct UniversalDataFormat: private NonCopyable
 {
     typedef ulong_t VectorRange;
     typedef std::vector<VectorRange> Vector_t;
     typedef std::vector<Vector_t> VectorOfVectors_t;
-
-private:
 
     int                 headerSize_;
     bool                fNormalized_;

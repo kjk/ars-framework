@@ -116,14 +116,14 @@ protected:
 
 public:
 
-    const char_t*  serverAddress;
+    const char* serverAddress;
 
     State state() const
     {return state_;}
 
     enum SockError
     {
-        errResponseTooLong=sockConnErrorClass,  // 0x8200
+        errResponseTooLong = sockConnErrorClass,  // 0x8200
         errResponseMalformed,  // 0x8201
         errNetLibUnavailable,  // 0x8202
         errFirstAvailable      // 0x8203

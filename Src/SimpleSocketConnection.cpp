@@ -13,9 +13,9 @@ SimpleSocketConnection::SimpleSocketConnection(SocketConnectionManager& manager)
     totalReceived_(0)
 {}
 
-status_t SimpleSocketConnection::resizeResponse(NarrowString::size_type size)
+status_t SimpleSocketConnection::resizeResponse(ulong_t size)
 {
-    status_t error=errNone;
+    volatile status_t error = errNone;
     ErrTry {
         response_.resize(size);
     }
@@ -167,5 +167,17 @@ status_t SimpleSocketConnection::open()
             LogStrUlong(eLogInfo, _T("SimpleSocketConnection::open(): error (ignored) while querying maxTcpSegmentSize: "), ignore);
     }
     return error;
+}
+
+status_t SimpleSocketConnection::setRequestCopy(const char* request, ulong_t requestSize)
+{
+    assert( NULL == request_ );
+    char *newRequest = (char*)malloc(requestSize);
+    if (NULL == newRequest)
+        return memErrNotEnoughSpace;
+
+    memmove(newRequest, request, requestSize);
+    setRequestOwn(newRequest, requestSize);
+    return errNone;
 }
 

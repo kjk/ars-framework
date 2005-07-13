@@ -1,8 +1,6 @@
 #include <Debug.hpp>
 #include "DynStr.hpp"
 
-using ArsLexis::char_t;
-
 // for interop, get C-compatible string. You can write into this string
 // up to its termination 0 - this is guaranteed to belong to the DynStr
 // object. However:

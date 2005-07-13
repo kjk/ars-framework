@@ -351,8 +351,10 @@ void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* file
 }
 
 #else // _PALM_OS
+
 // TODO: implement Win CE version
 void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* fileName, int line)
 {
 }
+
 #endif // _PALMOS

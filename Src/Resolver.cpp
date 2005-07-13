@@ -7,21 +7,21 @@
 # pragma far_code
 #endif
 
-static status_t validateAddress(const String& origAddress, String& validAddress, ushort_t& port)
+static status_t validateAddress(const NarrowString& origAddress, NarrowString& validAddress, ushort_t& port)
 {
-    String::size_type pos=origAddress.find(_T(':'), 1);
+    NarrowString::size_type pos = origAddress.find(':', 1);
     if (origAddress.npos==pos)
         return netErrParamErr;
     
-    ushort_t portLength=origAddress.length()-pos-1;
+    ushort_t portLength = origAddress.length()-pos-1;
     if (portLength>0)
     {
         long value=0;
-        status_t error=numericValue(origAddress.c_str()+pos+1, origAddress.c_str()+pos+1+portLength, value);
-        if ((errNone!=error) || (value>(ushort_t)-1))
+        status_t error = numericValue(origAddress.data()+pos+1, origAddress.data()+pos+1+portLength, value);
+        if ((errNone != error) || (value > ushort_t(-1)))
             return netErrParamErr;
 
-        port = (ushort_t)value;
+        port = ushort_t(value);
     }
 
     if (0==port)
@@ -31,7 +31,7 @@ static status_t validateAddress(const String& origAddress, String& validAddress,
     return errNone;
 }
 
-static status_t blockingResolve(SocketAddress& out, NetLibrary& netLib, const String& name, ushort_t port, ulong_t timeout)
+static status_t blockingResolve(SocketAddress& out, NetLibrary& netLib, const NarrowString& name, ushort_t port, ulong_t timeout)
 {
     std::auto_ptr<HostInfoBuffer> buffer(new  HostInfoBuffer);
     memzero(buffer.get(), sizeof(HostInfoBuffer));
@@ -41,16 +41,16 @@ static status_t blockingResolve(SocketAddress& out, NetLibrary& netLib, const St
         return error;
 
     IPAddr  resAddr=buffer->getAddress();
-    assert(resAddr.ip!=0);
+    assert(resAddr.ip != 0);
     INetSocketAddress addr(resAddr, port);
     out=addr;
     return errNone;
 }
 
-status_t resolve(SocketAddress& out, NetLibrary& netLib, const char_t* address, ushort_t port, ulong_t timeout)
+status_t resolve(SocketAddress& out, NetLibrary& netLib, const char* address, ushort_t port, ulong_t timeout)
 {
-    String validAddress;
-    String addressStr(address);
+    NarrowString validAddress;
+    NarrowString addressStr(address);
     status_t error=validateAddress(address, validAddress, port);
     if (error)
         return error;

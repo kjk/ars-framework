@@ -4,57 +4,45 @@
 #include <BaseTypes.hpp>
 #include <Reader.hpp>
 #include <SimpleSocketConnection.hpp>
+#include <IncrementalProcessor.hpp>
 
-using ArsLexis::status_t;
-
-#define transactionIdField      _T("Transaction-ID")
-#define protocolVersionField    _T("Protocol-Version")
-#define clientInfoField         _T("Client-Info")
-#define getCookieField          _T("Get-Cookie")
-#define cookieField             _T("Cookie")
-#define regCodeField            _T("Registration-Code")
-#define formatVersionField      _T("Format-Version")
-#define errorField              _T("Error")
-
+#define transactionIdField      "Transaction-ID"
+#define protocolVersionField    "Protocol-Version"
+#define clientInfoField         "Client-Info"
+#define getCookieField          "Get-Cookie"
+#define cookieField             "Cookie"
+#define regCodeField            "Registration-Code"
+#define formatVersionField      "Format-Version"
+#define errorField              "Error"
 
 
 class FieldPayloadProtocolConnection : public SimpleSocketConnection
 {
-public:
 
-	class PayloadHandler: private ::NonCopyable
-    {
-        public:
-            virtual ~PayloadHandler();
-            virtual status_t handleIncrement(const char_t * payload, ulong_t& length, bool finish)=0;
-    };
-
-private:
-
-    typedef std::auto_ptr<PayloadHandler> PayloadHandlerPtr;
-    PayloadHandlerPtr payloadHandler_;
+    BinaryIncrementalProcessor* payloadHandler_;
     ulong_t payloadLengthLeft_;
     ulong_t payloadLength_;
     
-    status_t processResponseIncrement(bool finish=false);
+    status_t processResponseIncrement(bool finish = false);
     
-    status_t processLine(uint_t lineEnd);
+    status_t processLine(ulong_t lineEnd);
     
 protected:
 
-    virtual status_t handlePayloadIncrement(const char_t* payload, ulong_t& length, bool finish);
+	typedef BinaryIncrementalProcessor PayloadHandler;
+
+    virtual status_t handlePayloadIncrement(const char* payload, ulong_t& length, bool finish);
     
-    virtual status_t handleField(const char_t *name, const char_t *value)
+    virtual status_t handleField(const char* name, ulong_t nameLen, const char* value, ulong_t valueLen)
     {
         assert(false);
         return errResponseMalformed;
     }
     
-    PayloadHandler* releasePayloadHandler()
-    {return payloadHandler_.release();}
+    PayloadHandler* releasePayloadHandler();
     
     PayloadHandler* payloadHandler() const
-    {return payloadHandler_.get();}
+    {return payloadHandler_;}
     
     virtual status_t notifyPayloadFinished()
     {
@@ -83,6 +71,6 @@ public:
     bool inPayload_;
 };
 
-status_t FeedHandlerFromReader(FieldPayloadProtocolConnection::PayloadHandler& handler, Reader& reader);
+status_t FeedHandlerFromReader(BinaryIncrementalProcessor& handler, Reader& reader);
 
 #endif

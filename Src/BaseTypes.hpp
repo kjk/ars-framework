@@ -44,9 +44,21 @@ typedef unsigned long ulong_t;
 #undef small
 #endif
 
+#if _MSC_VER == 1200
+
+#pragma warning(disable: 4530)
+
 # define ErrTry __try
 # define ErrCatch(theErr) __except (EXCEPTION_EXECUTE_HANDLER) { DWORD theErr=GetExceptionCode();
 # define ErrEndCatch }
+
+#else
+
+# define ErrTry try
+# define ErrCatch(theErr) catch (long theErr) 
+# define ErrEndCatch 
+
+#endif
 
 namespace ArsLexis
 {
@@ -134,6 +146,8 @@ namespace ArsLexis
 #endif
 
 #define ARRAY_SIZE(arr) sizeof(arr)/sizeof(*arr)
+
+typedef ArsLexis::char_t tchar;
 
 #endif // ARSLEXIS_BASE_TYPES_HPP__
 

@@ -15,7 +15,7 @@ status_t NetLibrary::initialize(uint_t& ifError, uint_t configIndex, ulong_t ope
     status_t error = WSAStartup(wVersionRequested , &wsaData);
     ifError = errNone;    
     if (!error)
-        closed_=false;
+        closed_ = false;
     return error;      
 }
 
@@ -35,37 +35,31 @@ NetLibrary::~NetLibrary()
         close();
 }
 
-status_t NetLibrary::getHostByName(const char_t* name, HostInfoBuffer& buffer, long timeout)
+status_t NetLibrary::getHostByName(const char* name, HostInfoBuffer& buffer, long timeout)
 {
-    status_t error=0;
-    char* sbcsname = new char[tstrlen(name)+1];
-    sprintf( sbcsname , "%ls", name);
-    struct hostent * hinfo = gethostbyname(sbcsname);
-    delete [] sbcsname;
-    //NetHostInfoType* info=NetLibGetHostByName(refNum(), name, buffer, timeout, &error);
-    if(!hinfo)
+    struct hostent * hinfo = gethostbyname(name);
+
+	//NetHostInfoType* info=NetLibGetHostByName(refNum(), name, buffer, timeout, &error);
+
+	if(!hinfo)
         return WSAGetLastError();
+
     buffer.setHostInfo(hinfo);
-    return 0;
+    return errNone;
 }
 
-status_t NetLibrary::addrAToIN(const char_t* addr, INetSocketAddress& out)
+status_t NetLibrary::addrAToIN(const char* addr, INetSocketAddress& out)
 {
-    status_t error=0;
     IPAddr ip;
-    
-    char* sbcsaddr = new char[tstrlen(addr)+1];
-    sprintf( sbcsaddr, "%ls", addr);
-    ip.ip= inet_addr(sbcsaddr);
-    delete [] sbcsaddr;
-    //NetIPAddr ip=NetLibAddrAToIN(refNum(), addr);
+    ip.ip= inet_addr(addr);
+
+	//NetIPAddr ip=NetLibAddrAToIN(refNum(), addr);
     
     if (INADDR_NONE==ip.ip)
-        error=-1;
-    else
-        out.setIpAddress(ip);
-    
-    return error;
+        return E_INVALIDARG;
+
+	out.setIpAddress(ip);
+    return errNone;
 }
 
 /*NetLibrary::operator ushort_t() const

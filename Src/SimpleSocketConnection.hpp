@@ -23,7 +23,7 @@ class SimpleSocketConnection: public SocketConnection
     
     bool         sending_;
     
-    status_t     resizeResponse(NarrowString::size_type size);
+    status_t     resizeResponse(ulong_t size);
 
 protected:
 
@@ -38,26 +38,17 @@ protected:
     virtual status_t notifyProgress();
 
     // set request to send to a copy of request
-    void setRequestCopy(const char *request, uint_t requestSize)
-    {
-        assert( NULL == request_ );
-        char *newRequest = (char*)malloc(requestSize);
-        if (NULL == newRequest)
-        {
-            // TODO: need to signal an error to the caller
-            return;
-        }
-        memmove(newRequest, request, requestSize);
-        setRequestOwn(newRequest, requestSize);
-    }
+    status_t setRequestCopy(const char* request, ulong_t requestSize);
 
-    void setRequest(const NarrowString& request)
+	/*
+    status_t setRequest(const NarrowString& request)
     {
-        setRequestCopy(request.c_str(), request.size());
+        return setRequestCopy(request.data(), request.size());
     }
     
     void setResponse(const NarrowString& response)
-    {response_=response;}
+    {response_ = response;}
+	*/
 
     NarrowString& response()
     {return response_;}

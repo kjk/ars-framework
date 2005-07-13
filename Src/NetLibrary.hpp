@@ -6,9 +6,6 @@
 
 class INetSocketAddress;
 
-using ArsLexis::char_t;
-using ArsLexis::status_t;
-
 class NetLibrary
 #if defined(_PALM_OS)    
     :private Library
@@ -34,9 +31,9 @@ public:
     //status_t getSetting(ushort_t setting, void* value, ushort_t& valueLength) const;
     //status_t setSetting(ushort_t setting, const void* value, ushort_t valueLength);
 
-    status_t getHostByName(const char_t* name, HostInfoBuffer& buffer, long timeout=evtWaitForever);
+    status_t getHostByName(const char* name, HostInfoBuffer& buffer, long timeout=evtWaitForever);
 
-    status_t addrAToIN(const char_t* addr, INetSocketAddress& out);
+    status_t addrAToIN(const char* addr, INetSocketAddress& out);
     
     NativeSocket_t socketOpen(NativeSockAddrFamily_t  domain,  NativeSocketType_t type, int protocol, long timeout, status_t& error);
             

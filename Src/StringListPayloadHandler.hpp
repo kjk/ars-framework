@@ -22,7 +22,7 @@ public:
     
 protected:
     
-    status_t handleLine(const String& line);
+    status_t handleLine(const char_t* line, ulong_t length);
     
 };
 

@@ -1,8 +1,5 @@
 #include <StringListPayloadHandler.hpp>
 
-using ArsLexis::char_t;
-using ArsLexis::String;
-
 StringListPayloadHandler::~StringListPayloadHandler()
 {}
 
@@ -14,14 +11,14 @@ status_t StringListPayloadHandler::handleIncrement(const char_t* payload, ulong_
     return error;
 }
 
-status_t StringListPayloadHandler::handleLine(const String& line)
+status_t StringListPayloadHandler::handleLine(const char_t* line, ulong_t length)
 {
     volatile status_t error=errNone;
     ErrTry {
-        strings.push_back(line);
+        strings.push_back(String(line, length));
     }
     ErrCatch (ex) {
-        error=ex;
+        error = ex;
     } ErrEndCatch
     return error;
 }
