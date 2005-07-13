@@ -434,6 +434,8 @@ UTF8_Processor::~UTF8_Processor()
 {
 	if (textProcessorOwner_)
 		delete textProcessor_;
+	free(input_);
+	free(output_);
 }
 
 status_t UTF8_Processor::handleIncrement(const char* payload, ulong_t& length, bool finish)
@@ -441,7 +443,8 @@ status_t UTF8_Processor::handleIncrement(const char* payload, ulong_t& length, b
 	input_ = StrAppend(input_, inputLen_, payload, length);
 	if (NULL == input_)
 		return memErrNotEnoughSpace;
-
+        
+    inputLen_ += length;
 	const char* input = input_;
 	ulong_t inputLen = inputLen_;
 	char_t* output = NULL;
@@ -471,7 +474,7 @@ status_t UTF8_Processor::handleIncrement(const char* payload, ulong_t& length, b
 		return err;
 
 	StrErase(output_, outputLen_, 0, outputLen);
-	outputLen_ = outputLen;
+	outputLen_ -= outputLen;
 	return errNone;
 }
 

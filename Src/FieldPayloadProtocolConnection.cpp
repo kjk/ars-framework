@@ -54,14 +54,12 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
 {
     bool goOn = false;
     status_t error = errNone;
-    ulong_t respLen = responseLen_;
-    const char* resp = response_;
 
     do 
     {
         if (!inPayload_) 
         {
-            long toConsume = StrFind(resp, respLen, lineSeparatorChar);
+            long toConsume = StrFind(response_, responseLen_, lineSeparatorChar);
                 
             if (-1 == toConsume)
                 goOn = false;
@@ -73,43 +71,37 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 if (goOn)
                 {
                     error = processLine(toConsume);
-                    resp += toConsume + 1; // swallow also lineSeparator
-                    assert( respLen >= ulong_t(toConsume + 1));
-                    respLen -= (toConsume+1);
+                    assert(responseLen_ >= ulong_t(toConsume + 1));
                     StrErase(response_, responseLen_, 0, toConsume + 1);
                     responseLen_ -= toConsume + 1;
                 }
                 else
                 {
-                    toConsume = respLen;
+                    toConsume = responseLen_;
                     error = processLine(toConsume);
-                    resp += toConsume;
-                    assert('\0' == resp[0]);
-					free(response_);
-					response_ = NULL;
+                    assert('\0' == response_[toConsume]);
+                    free(response_);
+                    response_ = NULL;
                     responseLen_ = 0;
                 }
             }
         }
         else
         {
-            ulong_t length = respLen;
+            ulong_t length = responseLen_;
             if (length > payloadLengthLeft_)    // this may happen when there are other fields after payload
                 length = payloadLengthLeft_;
 
-            if (respLen >= payloadLengthLeft_ + lineSeparatorLength)
+            if (responseLen_ >= payloadLengthLeft_ + lineSeparatorLength)
             {
                 if (length > 0)
-                    error = handlePayloadIncrement(resp, length, true);
+                    error = handlePayloadIncrement(response_, length, true);
                 if (errNone != error)
                     goto Exit;
                     
                 error = notifyPayloadFinished();
 
-                resp += payloadLengthLeft_ + lineSeparatorLength;
-                assert( respLen >= payloadLengthLeft_ + lineSeparatorLength);
-                respLen -= (payloadLengthLeft_ + lineSeparatorLength);
-                
+                assert(responseLen_ >= payloadLengthLeft_ + lineSeparatorLength);
                 StrErase(response_, responseLen_, 0, payloadLengthLeft_ + lineSeparatorLength);
                 responseLen_ -= payloadLengthLeft_ + lineSeparatorLength;
                 goOn = true;
@@ -117,20 +109,17 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
             else
             {
                 bool finishPayload = false;
-                if (respLen >= payloadLengthLeft_)
+                if (responseLen_ >= payloadLengthLeft_)
                     finishPayload = true;
                     
-                error = handlePayloadIncrement(resp, length, finishPayload);
+                error = handlePayloadIncrement(response_, length, finishPayload);
                 if (errNone != error)
                     goto Exit;
 
                 if (finishPayload)
                     error = notifyPayloadFinished();
 
-                resp += length;
-                assert( respLen >= length);
-                respLen -= length;
-                
+                assert(responseLen_ >= length);
                 StrErase(response_, responseLen_, 0, length);
                 responseLen_ -= length;
                 payloadLengthLeft_ -= length;
@@ -174,7 +163,7 @@ status_t FieldPayloadProtocolConnection::processLine(ulong_t lineEnd)
     if (separatorPos + 1 == lineEnd)
         return handleField(name, nameLen, NULL, 0);
 
-    ulong_t valueStartPos = separatorPos + 2;
+    ulong_t valueStartPos = separatorPos + 1;
     assert(valueStartPos <= lineEnd);
     const char* value = resp + valueStartPos;
     ulong_t valueLen = lineEnd - valueStartPos;
