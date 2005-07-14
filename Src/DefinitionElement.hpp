@@ -29,11 +29,19 @@ public:
 
     struct HyperlinkProperties
     {
-        ArsLexis::String resource;
+        char* resource;
+		ulong_t resourceLength;
+
         Definition::HotSpot* hotSpot;
         HyperlinkType type;
 
-        HyperlinkProperties(const ArsLexis::String& res, HyperlinkType t);
+	private:
+
+        HyperlinkProperties(char* res, ulong_t resourceLen, HyperlinkType t);
+
+		~HyperlinkProperties();
+
+		friend class DefinitionElement;
 
     };
 
@@ -51,8 +59,10 @@ public:
     bool isHyperlink() const
     {return NULL != hyperlink_;}
 
-    void setHyperlink(const char_t* str, HyperlinkType type);
-    void setHyperlink(const ArsLexis::String& resource, HyperlinkType type);
+    status_t setHyperlink(const char* str, long resourceLen, HyperlinkType type);
+
+    status_t setHyperlink(const char* str, HyperlinkType type)
+	{return setHyperlink(str, -1, type);}
 
     const HyperlinkProperties* hyperlinkProperties() const
     {return hyperlink_;}

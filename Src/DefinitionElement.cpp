@@ -1,4 +1,5 @@
-#include "DefinitionElement.hpp"
+#include <DefinitionElement.hpp>
+#include <Text.hpp>
 
 DefinitionElement::DefinitionElement():
     parent_(0),
@@ -46,11 +47,10 @@ void DefinitionElement::performAction(Definition& definition, const Point* point
 
 }
     
-    
 void DefinitionElement::invalidateHotSpot()
 {
     assert(isHyperlink());
-    hyperlink_->hotSpot=0;
+    hyperlink_->hotSpot = NULL;
 }
 
 void DefinitionElement::defineHotSpot(Definition& definition, const ArsRectangle& bounds)
@@ -62,26 +62,30 @@ void DefinitionElement::defineHotSpot(Definition& definition, const ArsRectangle
         hyperlink_->hotSpot->addRectangle(bounds);
 }       
 
-void DefinitionElement::setHyperlink(const ArsLexis::String& resource, HyperlinkType type)
+status_t DefinitionElement::setHyperlink(const char* str, long len, HyperlinkType type)
 {
-    if (!isHyperlink())
-        hyperlink_=new HyperlinkProperties(resource, type);
-    else
-    {
-        hyperlink_->resource=resource;
-        hyperlink_->type=type;
-    }
-}
+	if (-1 == len) len = Len(str);
+	char* s = StringCopyN(str, len);
+	if (NULL == s)
+		return memErrNotEnoughSpace;
 
-void DefinitionElement::setHyperlink(const char_t* str, HyperlinkType type)
-{
     if (!isHyperlink())
-        hyperlink_ = new HyperlinkProperties(str, type);
+	{
+        hyperlink_ = new_nt HyperlinkProperties(s, len, type);
+		if (NULL == hyperlink_)
+		{
+			free(s);
+			return memErrNotEnoughSpace;
+		}
+	}
     else
     {
-        hyperlink_->resource = str;
+		free(hyperlink_->resource);
+        hyperlink_->resource = s;
+		hyperlink_->resourceLength = len;
         hyperlink_->type = type;
     }
+	return errNone;
 }
 
 void DefinitionElement::setStyle(const DefinitionStyle* style, StyleOwnerFlag own)
@@ -96,3 +100,17 @@ const DefinitionStyle* DefinitionElement::getStyle() const
 {
     return definitionStyle_;
 }    
+
+
+DefinitionElement::HyperlinkProperties::HyperlinkProperties(char* str, ulong_t len, HyperlinkType t):
+	resource(str),
+	resourceLength(len),
+	hotSpot(NULL),
+	type(t)
+{}
+
+DefinitionElement::HyperlinkProperties::~HyperlinkProperties()
+{
+	free(resource);
+	delete hotSpot;
+}

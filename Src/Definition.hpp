@@ -39,10 +39,10 @@ public:
 
     virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const Point* point);
     
-    void handleHyperlink(const ArsLexis::String& hyperlink, const Point* point)
-    {handleHyperlink(hyperlink.data(), hyperlink.length(), point);}
+ //   void handleHyperlink(const ArsLexis::String& hyperlink, const Point* point)
+ //  {handleHyperlink(hyperlink.data(), hyperlink.length(), point);}
     
-    virtual void handleHyperlink(const char_t* link, ulong_t len, const Point* point);
+    virtual void handleHyperlink(const char* link, ulong_t len, const Point* point);
 
     virtual ~HyperlinkHandlerBase();
     

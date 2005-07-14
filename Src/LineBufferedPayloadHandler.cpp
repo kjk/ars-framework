@@ -1,31 +1,41 @@
 #include <LineBufferedPayloadHandler.hpp>
+#include <Text.hpp>
 
 LineBufferedPayloadHandler::LineBufferedPayloadHandler():
+	buffer_(NULL),
+	bufferLen_(0),
     delimiter_(_T('\n'))
 {}
 
 LineBufferedPayloadHandler::~LineBufferedPayloadHandler()
-{}
-
-status_t LineBufferedPayloadHandler::handleIncrement(const char_t * payload, ulong_t& length, bool finish)
 {
-    lineBuffer_.append(payload, length);
-    String::size_type pos = lineBuffer_.find(delimiter_);
+	free(buffer_);
+}
+
+status_t LineBufferedPayloadHandler::handleIncrement(const char_t* payload, ulong_t& length, bool finish)
+{
+	buffer_ = StrAppend(buffer_, bufferLen_, payload, length);
+	if (NULL == buffer_)
+		return memErrNotEnoughSpace;
+
+	bufferLen_ += length;
+	long pos = StrFind(buffer_, bufferLen_, delimiter_);
     while (true) 
     {
-        if (lineBuffer_.npos == pos && !finish)
+        if (-1 == pos && !finish)
             break;
 		
-		const char_t* line = lineBuffer_.data();
+		const char_t* line = buffer_;
         status_t error=handleLine(line, pos);
         if (errNone != error)
             return error;
 
-        if (lineBuffer_.npos == pos)
+        if (-1 == pos)
             break;
 
-        lineBuffer_.erase(0, pos + 1);
-        pos = lineBuffer_.find(delimiter_);
+		StrErase(buffer_, bufferLen_, 0, pos + 1);
+		bufferLen_ -= pos + 1;
+        pos = StrFind(buffer_, bufferLen_, delimiter_);
     }
     return errNone;
 }

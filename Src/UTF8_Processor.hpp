@@ -4,6 +4,10 @@
 #include <IncrementalProcessor.hpp>
 
 status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char_t*& nativeText, ulong_t& nativeLen);
+char_t* UTF8_ToNative(const char* utfText, long len = -1, ulong_t* outLen = NULL);
+
+status_t UTF8_FromNative(const char_t*& nativeText, ulong_t& nativeLen, char*& utfText, ulong_t& utfLen);
+char*	UTF8_FromNative(const char_t* nativeText, long len = -1, ulong_t* outLen = NULL);
 
 class UTF8_Processor: public BinaryIncrementalProcessor
 {
@@ -29,6 +33,7 @@ public:
 
 #ifndef NDEBUG
 void test_UTF8_ToNative();
+void test_UTF8_FromNative();
 #endif
 
 #endif // ARSLEXIS_UTF8_PROCESSOR_HPP__

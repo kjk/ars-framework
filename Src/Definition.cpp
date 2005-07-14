@@ -4,13 +4,13 @@
  *
  * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
  */
-#include "Definition.hpp"
-#include "DefinitionElement.hpp"
+#include <Definition.hpp>
+#include <DefinitionElement.hpp>
 #include <Utility.hpp>
-#include "TextElement.hpp"
+#include <TextElement.hpp>
 #include <algorithm>
 #include <Text.hpp>
-#include "LineBreakElement.hpp"
+#include <LineBreakElement.hpp>
 #include <DynStr.hpp>
 
 void DestroyElements(Definition::Elements_t& elems)
@@ -29,7 +29,11 @@ Definition::HotSpot::HotSpot(const ArsRectangle& rect, DefinitionElement& elemen
 
 bool Definition::HotSpot::hitTest(const Point& point) const
 {
-    return rectangles_.end()!=std::find_if(rectangles_.begin(), rectangles_.end(), ArsRectangle::HitTest(point));
+	Rectangles_t::const_iterator end = rectangles_.end();
+	for (Rectangles_t::const_iterator it = rectangles_.begin(); it != end; ++it)
+		if (it->hitTest(point))
+			return true;
+	return false;
 }
 
 Definition::HotSpot::~HotSpot()
@@ -39,17 +43,17 @@ Definition::HotSpot::~HotSpot()
 
 void Definition::HotSpot::move(const Point& delta, const ArsRectangle& validArea)
 {
-    Rectangles_t::iterator end=rectangles_.end();
-    Rectangles_t::iterator it=rectangles_.begin();
-    while (it!=end)
+    Rectangles_t::iterator end = rectangles_.end();
+    Rectangles_t::iterator it = rectangles_.begin();
+    while (it != end)
     {
         ArsRectangle& rect=*it;
-        rect+=delta;
-        Rectangles_t::iterator next=it;
+        rect += delta;
+        Rectangles_t::iterator next = it;
         ++next;
         if (!(validArea && rect))
             rectangles_.erase(it);
-        it=next;
+        it = next;
     }
 }
 
@@ -1368,7 +1372,7 @@ void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& 
                 href += _T(':');
             }
             href.append(text, start, next-pos);
-            gText->setHyperlink(href, hyperlinkUrl);
+            gText->setHyperlink(href.data(), href.length(), hyperlinkUrl);
             start=pos=next+tstrlen(aTagEnd);
         }
         else
@@ -1472,12 +1476,12 @@ void HyperlinkHandlerBase::handleHyperlink(Definition& definition, DefinitionEle
 {
     assert(hyperlinkElement.isHyperlink());
     const DefinitionElement::HyperlinkProperties& props = *hyperlinkElement.hyperlinkProperties();
-    const String& hyperlink = props.resource;
-    handleHyperlink(hyperlink.data(), hyperlink.length(), point);
+	if (NULL != props.resource && 0 != props.resourceLength)  
+		handleHyperlink(props.resource, props.resourceLength, point);
 }
 
 
-void Definition::HyperlinkHandler::handleHyperlink(const char_t* link, ulong_t len, const Point*)
+void Definition::HyperlinkHandler::handleHyperlink(const char* link, ulong_t len, const Point*)
 {
 }
 

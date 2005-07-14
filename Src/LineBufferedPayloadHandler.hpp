@@ -5,7 +5,8 @@
 
 class LineBufferedPayloadHandler: public TextIncrementalProcessor {
     
-    String lineBuffer_;
+    char_t* buffer_;
+	ulong_t bufferLen_;
     char_t delimiter_;
     
 protected:

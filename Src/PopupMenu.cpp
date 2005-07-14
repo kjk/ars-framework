@@ -107,7 +107,7 @@ Int16 PopupMenu::popup(UInt16 id, const Point& point)
     {
         Point p;
         rect.center(p);
-        hyperlinkHandler->handleHyperlink(hyperlink, &p);
+        hyperlinkHandler->handleHyperlink(hyperlink, Len(hyperlink), &p);
     }
            
     return sel;

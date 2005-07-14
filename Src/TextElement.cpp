@@ -1,13 +1,5 @@
-#include "TextElement.hpp"
-#include <BaseTypes.hpp>
+#include <TextElement.hpp>
 #include <Text.hpp>
-#include <memory>
-
-TextElement::HyperlinkProperties::HyperlinkProperties(const String& res, HyperlinkType t):
-    resource(res),
-    hotSpot(0),
-    type(t)
-{}
 
 TextElement::TextElement(const String& text):
     text_(text)
@@ -32,8 +24,14 @@ static uint_t findNextWhitespace(const String& text, uint_t fromPos)
 
 static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
 {
-    String::const_reverse_iterator it(text.rend()-start-length);
-    return (text.rend()-std::find_if(it, it+length, isSpace))-start;
+#if _MSC_VER == 1400
+	// TODO: rewrite w/o reverse iterators
+	return 0;
+#else
+    String::const_reverse_iterator it = text.rend() - start - length;
+	String::const_reverse_iterator end = it + length;
+    return (text.rend() - std::find_if(it, end, isSpace)) - start;
+#endif
 }
 
 void TextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsRectangle& area, bool hyperlink)
@@ -47,7 +45,7 @@ void TextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t
     {
         if (start<intersectStart)
         {
-            graphics.drawText(text=(text_.c_str()+start), length=(intersectStart-start), point);
+            graphics.drawText(text=(text_.c_str() + start), length=(intersectStart-start), point);
             point.x+=graphics.textWidth(text, length);
         }
 #ifdef _PALM_OS

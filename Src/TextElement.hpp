@@ -1,12 +1,13 @@
 #ifndef __GENERICTEXTELEMENT_HPP__
 #define __GENERICTEXTELEMENT_HPP__
 
-#include "DefinitionElement.hpp"
+#include <DefinitionElement.hpp>
 
 class TextElement: public DefinitionElement
 {
 
-    ArsLexis::String text_;
+	// TODO: convert to char_t*
+    String text_;
 
     void drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsRectangle& area, bool hyperlink);
 
@@ -38,12 +39,6 @@ public:
     void swapText(ArsLexis::String& text)
     {text_.swap(text);}
 
-//    void setStyle(ElementStyle style)
-//    {style_=style;}
-    
-//    ElementStyle style() const
-//    {return style_;}
-    
     bool isTextElement() const
     {return true;}
 
@@ -54,7 +49,5 @@ public:
     void wordAtIndex(LayoutContext& lc, uint_t index, uint_t& wordStart, uint_t& wordEnd);
 
 };
-
-typedef TextElement TextElement;
 
 #endif

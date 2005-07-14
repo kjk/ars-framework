@@ -302,7 +302,7 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char_t*& nativeTex
 	const char* source = utfText;
 	ConversionResult res = ConvertUTF8toUTF16((const UTF8**)&utfText, (const UTF8*)(source + utfLen), (UTF16**)&target, (UTF16*)(target + bufLen), lenientConversion);
 	if (sourceIllegal == res)
-		err = E_INVALIDARG;
+		err = sysErrParamErr;
 	else
 	{
 		utfLen -= (utfText - source);
@@ -311,7 +311,44 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char_t*& nativeTex
 			*target = L'\0';
 	}
 	if (errNone != err && NULL != nativeText)
+	{
 		free(nativeText);
+		nativeText = NULL;
+	}
+	return err;
+}
+
+status_t UTF8_FromNative(const char_t*& nativeText, ulong_t& nativeLen, char*& utfText, ulong_t& utfLen)
+{
+	using namespace Unicode;
+	utfText = NULL;
+	utfLen = 0;
+	if (0 == nativeLen)
+		return errNone;
+
+	ulong_t bufLen = nativeLen;
+	utfText = (char*)malloc(bufLen * sizeof(char) + 1);
+	if (NULL == utfText)
+		return memErrNotEnoughSpace;
+
+	status_t err = errNone;
+	char* target = utfText;
+	const char_t* source = nativeText;
+	ConversionResult res = ConvertUTF16toUTF8((const UTF16**)&nativeText, (const UTF16*)(source + nativeLen), (UTF8**)&target, (UTF8*)(target + bufLen), lenientConversion);
+	if (sourceIllegal == res)
+		err = sysErrParamErr;
+	else
+	{
+		nativeLen -= (nativeText - source);
+		utfLen = (target - utfText);
+		if (0 != utfLen)
+			*target = '\0';
+	}
+	if (errNone != err && NULL != utfText)
+	{
+		free(utfText);
+		utfText = NULL;
+	}
 	return err;
 }
 
@@ -358,6 +395,60 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char*& nativeText,
 	nativeText[bufLen] = '\0';
 	nativeLen = bufLen;
 	return errNone;
+}
+
+status_t UTF8_FromNative(const char_t*& nativeText, ulong_t& nativeLen, char*& utfText, ulong_t& utfLen)
+{
+	using namespace Unicode;
+	utfText = NULL;
+	utfLen = 0;
+	if (0 == nativeLen)
+		return errNone;
+
+    UTF16* buffer = (UTF16*)malloc(sizeof(UTF16) * nativeLen);
+    if (NULL == buffer)
+        return memErrNotEnoughSpace;
+        
+    ulong_t targetLen = 0;
+    for (ulong_t i = 0; i < nativeLen; ++i)
+    {
+        ++targetLen;
+        UTF16 c = UTF16((unsigned char)nativeText[i]);
+        if (c > 0x7f)
+            ++targetLen;
+        
+        buffer[i] = c;
+    }
+        
+    utfText = (char*)malloc(targetLen + 1);
+    if (NULL == utfText)
+    {
+        free(buffer);
+        return memErrNotEnoughSpace;
+    }
+    
+    const UTF16* source = buffer;
+    char* target = utfText;
+    
+    ConversionResult res = ConvertUTF16toUTF8(&source, source + nativeLen, (UTF8**)&target, (UTF8*)(target + targetLen), lenientConversion);
+    if (sourceIllegal != res)
+    {
+        nativeText += (source - buffer);
+        nativeLen -= (source - buffer);
+        assert(0 == nativeLen);
+        utfLen = (target - utfText);
+        assert(targetLen == utfLen);
+        *target = '\0';
+    }
+    else 
+    {
+        free(utfText);
+        utfText = NULL;
+    }
+    free(buffer);
+    if (sourceIllegal == res)
+        return sysErrParamErr;
+    return errNone;
 }
 
 
@@ -416,9 +507,53 @@ void test_UTF8_ToNative()
 	assert(0 == len);
 	free(nstr);
 }
+
+void test_UTF8_FromNative()
+{
+    const char* test = "testój";
+    ulong_t len = strlen(test);
+    ulong_t olen;
+    char* out = UTF8_FromNative(test, len, &olen);
+    assert(NULL != out);
+    assert(olen == len + 1);
+    free(out);
+}
+
 #endif
 
 #endif
+
+char_t* UTF8_ToNative(const char* utfText, long len, ulong_t* olen)
+{
+	if (-1 == len) len = Len(utfText);
+	char_t* out;
+	ulong_t outLen;
+	ulong_t inLen = len;
+	status_t err = UTF8_ToNative(utfText, inLen, out, outLen);
+	if (errNone != err)
+		return NULL;
+	
+	if (NULL != olen)
+		*olen = outLen;
+	
+	return out;
+}
+
+char* UTF8_FromNative(const char_t* nativeText, long len, ulong_t* olen)
+{
+	if (-1 == len) len = Len(nativeText);
+	char* out;
+	ulong_t outLen;
+	ulong_t inLen = len;
+	status_t err = UTF8_FromNative(nativeText, inLen, out, outLen);
+	if (errNone != err)
+		return NULL;
+	
+	if (NULL != olen)
+		*olen = outLen;
+	
+	return out;
+}
 
 
 UTF8_Processor::UTF8_Processor(TextIncrementalProcessor* chainedTextProcessor, bool textProcessorOwner):
