@@ -43,8 +43,6 @@ namespace ArsLexis
     
     void cleanAllocationLogging();
     
-    void* allocate(size_t size);
-    
 }
 
 enum NewDontThrowTag {newDontThrow};
@@ -68,52 +66,29 @@ void operator delete[](void *ptr);
 
 void* malloc__(size_t size, const char* file, int line);
 
+void* realloc__(void* p, size_t size, const char* file, int line);
+
 void* malloc__(size_t size);
 
-inline void free__(void* p)
-{
-    ::operator delete(p);
-}
+void* realloc__(void* p, size_t size);
 
-inline void* operator new(size_t size, NewDontThrowTag)
-{
-    return malloc__(size);
-}
+inline void free__(void* p) {::operator delete(p);}
 
-inline void* operator new(size_t size, NewDontThrowTag, const char* file, int line)
-{
-    return malloc__(size, file, line);
-}
+inline void* operator new(size_t size, NewDontThrowTag) {return malloc__(size);}
 
-inline void* operator new[](size_t size, NewDontThrowTag)
-{
-    return malloc__(size);
-}
+inline void* operator new(size_t size, NewDontThrowTag, const char* file, int line) {return malloc__(size, file, line);}
 
-inline void* operator new[](size_t size, NewDontThrowTag, const char* file, int line)
-{
-    return malloc__(size, file, line);
-}
+inline void* operator new[](size_t size, NewDontThrowTag) {return malloc__(size);}
 
-inline void operator delete(void* p, NewDontThrowTag)
-{
-    ::operator delete(p);
-}
+inline void* operator new[](size_t size, NewDontThrowTag, const char* file, int line) {return malloc__(size, file, line);}
 
-inline void operator delete[](void* p, NewDontThrowTag)
-{
-    ::operator delete(p);
-}
+inline void operator delete(void* p, NewDontThrowTag) {::operator delete(p);}
 
-inline void operator delete(void* p, NewDontThrowTag, const char*, int)
-{
-    ::operator delete(p);
-}
+inline void operator delete[](void* p, NewDontThrowTag) {::operator delete(p);}
 
-inline void operator delete[](void* p, NewDontThrowTag, const char*, int)
-{
-    ::operator delete(p);
-}
+inline void operator delete(void* p, NewDontThrowTag, const char*, int) {::operator delete(p);}
+
+inline void operator delete[](void* p, NewDontThrowTag, const char*, int) {::operator delete(p);}
 
 #ifdef malloc
 # undef malloc
@@ -121,17 +96,28 @@ inline void operator delete[](void* p, NewDontThrowTag, const char*, int)
 #ifdef free
 # undef free
 #endif
+#ifdef realloc
+# undef realloc
+#endif
 
 #define free(a) free__(a)
 
+#ifndef NDEBUG
+# define realloc(p, s) realloc__((p), (s), __FILE__, __LINE__)
+# define malloc(a) malloc__((a), __FILE__, __LINE__)
+#else
+# define malloc(a) malloc__(a)
+# define realloc(p, s) realloc__((p), (s))
+#endif
+
 #if !defined(NDEBUG) && !defined(_MSC_VER)
 // MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
-# define malloc(a) malloc__((a), __FILE__, __LINE__)
-# define new new (__FILE__, __LINE__)
-# define new_nt new //(newDontThrow, __FILE__, __LINE__)
+// # define new new (__FILE__, __LINE__)
+# define new_nt new (newDontThrow, __FILE__, __LINE__)
+// # define malloc(a) malloc__((a), __FILE__, __LINE__)
 #else
 # define new_nt new (newDontThrow)
-# define malloc(a) malloc__(a)
+// # define malloc(a) malloc__(a)
 #endif
 
 using namespace ArsLexis;
