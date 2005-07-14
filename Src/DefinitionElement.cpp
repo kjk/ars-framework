@@ -24,6 +24,9 @@ DefinitionElement::Justification DefinitionElement::justification() const
 
 DefinitionElement::~DefinitionElement()
 {
+    if (isHyperlink() && NULL != hyperlink_->hotSpot)
+        hyperlink_->hotSpot->element_ = NULL;
+
     delete hyperlink_;
     if (ownStyle == styleOwner_)
         delete definitionStyle_;
@@ -112,5 +115,4 @@ DefinitionElement::HyperlinkProperties::HyperlinkProperties(char* str, ulong_t l
 DefinitionElement::HyperlinkProperties::~HyperlinkProperties()
 {
 	free(resource);
-	delete hotSpot;
 }

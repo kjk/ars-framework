@@ -212,7 +212,9 @@ public:
          * @internal
          * @c DefinitionElement associated with this @c HotSpot.
          */
-        DefinitionElement& element_;
+        DefinitionElement* element_;
+        
+        friend class DefinitionElement;
      
      public:
      
@@ -222,7 +224,7 @@ public:
         
         bool hitTest(const Point& point) const;
         
-        DefinitionElement& element()
+        DefinitionElement* element()
         {return element_;}
         
         /**

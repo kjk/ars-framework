@@ -22,7 +22,7 @@ void DestroyElements(Definition::Elements_t& elems)
 }
 
 Definition::HotSpot::HotSpot(const ArsRectangle& rect, DefinitionElement& element):
-    element_(element)
+    element_(&element)
 {
     rectangles_.push_back(rect);
 }
@@ -38,7 +38,8 @@ bool Definition::HotSpot::hitTest(const Point& point) const
 
 Definition::HotSpot::~HotSpot()
 {
-    element_.invalidateHotSpot();
+    if (NULL != element_)
+        element_->invalidateHotSpot();
 }
 
 void Definition::HotSpot::move(const Point& delta, const ArsRectangle& validArea)
@@ -862,7 +863,7 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const Point& point,
             selectionIsHyperlink_ = true;
             selectionStartProgress_ = 0;
             selectionEndProgress_ = LayoutContext::progressCompleted;
-            selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), &hotSpot->element());
+            selectionStartElement_ = selectionEndElement_ = std::find(elements_.begin(), elements_.end(), hotSpot->element());
             extendSelectionToFullHyperlink();
             renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
             return true;
