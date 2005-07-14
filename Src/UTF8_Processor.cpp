@@ -490,21 +490,17 @@ void test_UTF8_ToNative()
 {
 	const char* test = "test test test";
 	ulong_t len = strlen(test);
-	char* nstr;
 	ulong_t nlen;
-	status_t res = UTF8_ToNative(test, len, nstr, nlen);
-	assert(errNone == res);
+	char* nstr = UTF8_ToNative(test, len, &nlen);
 	assert(NULL != nstr);
-	assert(0 == len);
+	assert(nlen == len);
 	assert(equals(test, nstr));
 	free(nstr);
 
 	test = "Zażółć gęślą jaźń!";
 	len = strlen(test);
-	res = UTF8_ToNative(test, len, nstr, nlen);
-	assert(errNone == res);
+	nstr = UTF8_ToNative(test, len, &nlen);
 	assert(NULL != nstr);
-	assert(0 == len);
 	free(nstr);
 }
 
@@ -516,6 +512,12 @@ void test_UTF8_FromNative()
     char* out = UTF8_FromNative(test, len, &olen);
     assert(NULL != out);
     assert(olen == len + 1);
+    
+    ulong_t nlen;
+    char* nout = UTF8_ToNative(out, olen, &nlen);
+    assert(NULL != nout);
+    assert(equals(nout, test));
+    free(nout);
     free(out);
 }
 
