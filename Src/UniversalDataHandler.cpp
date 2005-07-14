@@ -1,14 +1,17 @@
 #include <UniversalDataHandler.hpp>
 #include <SocketConnection.hpp>
 #include <Text.hpp>
+
+/*
 #include <Reader.hpp>
 #include <DataStore.hpp>
 #include <BufferedReader.hpp>
-
+ */
+ 
 #if defined(__MWERKS__)
 # pragma far_code
 #endif
-
+ /*
 static status_t openDataStoreReader(const char_t* name, DataStoreReaderPtr& reader)
 {
     DataStore* ds=DataStore::instance();
@@ -50,44 +53,40 @@ OnError:
     writer.reset();
     //! @todo remove stream from data store?
 }
-
+ */
+ 
 UniversalDataHandler::UniversalDataHandler():
     lineNo_(0), 
     controlDataLength_(0)
 {}
 
-status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, ulong_t& controlDataLength)
+status_t parseUniversalDataFormatTextLine(const char* line, ulong_t len, UniversalDataFormat& out, ulong_t& lineNo, ulong_t& controlDataLength)
 {
-    using namespace std;
     long resultLong;
-    const char_t* data = line.data();
-    const String::size_type len = line.length();
+    const char* data = line; 
     volatile status_t error=errNone;
     ErrTry {
         if (lineNo == 0)
         {
             if (errNone != numericValue(data, data + len, resultLong))
-            {
-                assert(false);
                 return SocketConnection::errResponseMalformed;
-            }
+
             out.setHeaderSize(resultLong);
         }
         else if (lineNo <= out.headerSize_)
         {
             UniversalDataFormat::Vector_t vec;
             //read values from vector
-            const char_t* dataOffset = data;
+            const char* dataOffset = data;
             while (data + len > dataOffset)
             {
-                const char_t* dataOffsetEnd = dataOffset;
-                while (dataOffsetEnd < data + len && dataOffsetEnd[0] != _T(' '))
+                const char* dataOffsetEnd = dataOffset;
+                while (dataOffsetEnd < data + len && dataOffsetEnd[0] != ' ')
                     dataOffsetEnd++;
+                    
                 if (errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
-                {
-                    assert(false);
                     return SocketConnection::errResponseMalformed;
-                }
+
                 vec.push_back(resultLong);
                 controlDataLength += resultLong + 1;
                 dataOffset = dataOffsetEnd + 1;
@@ -97,12 +96,27 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
         else
         {
             if (lineNo == out.headerSize_ + 1)
-                out.data_.assign(line);
+            {
+                free(out.data_);
+                out.dataLen_ = 0; 
+                out.data_ = StringCopyN(line, len);
+                if (NULL == out.data_)
+					return memErrNotEnoughSpace;
+				
+				out.dataLen_ = len; 
+            } 
             else
             {
-                //because enters can be part of udf data do this
-                out.data_.append(1,_T('\n'));
-                out.data_.append(line);
+				out.data_ = StrAppend(out.data_, out.dataLen_, "\n", 1);
+				if (NULL == out.data_)
+					return memErrNotEnoughSpace;
+				
+				++out.dataLen_;
+				out.data_ = StrAppend(out.data_, out.dataLen_, line, len);
+				if (NULL == out.data_)
+					return memErrNotEnoughSpace;
+					
+				out.dataLen_ += len;
             }
         }
         lineNo++;
@@ -113,17 +127,13 @@ status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, Universa
     return error;
 }
 
-status_t UniversalDataHandler::handleLine(const ArsLexis::String& line)
+status_t UniversalDataHandler::handleLine(const char* line, ulong_t len)
 {
 //    writeLineToDataStore(writer_, line);
-    return parseUniversalDataFormatTextLine(line, universalData, lineNo_, controlDataLength_);
+    return parseUniversalDataFormatTextLine(line, len, universalData, lineNo_, controlDataLength_);
 }
 
-#ifdef DEBUG
 status_t UniversalDataHandler::handlePayloadFinish()
-#else
-inline status_t UniversalDataHandler::handlePayloadFinish()
-#endif
 {
     ulong_t realDataLen = universalData.dataLength();
     assert(controlDataLength_ == realDataLen);
@@ -132,16 +142,17 @@ inline status_t UniversalDataHandler::handlePayloadFinish()
     return errNone;
 }
 
-status_t UniversalDataHandler::handleIncrement(const char_t * payload, ulong_t& length, bool finish)
+status_t UniversalDataHandler::handleIncrement(const char* payload, ulong_t& length, bool finish)
 {
-    status_t error = LineBufferedPayloadHandler::handleIncrement(payload, length, finish);
-    if (errNone==error && finish)
+    status_t error = LineBufferedNarrowProcessor::handleIncrement(payload, length, finish);
+    if (errNone == error && finish)
         return handlePayloadFinish();
     return error;
 }
 
 UniversalDataHandler::~UniversalDataHandler() {}
 
+/*
 status_t readUniversalDataFromReader(Reader& origReader, UniversalDataFormat& out)
 {
     BufferedReader reader(origReader, 1024);
@@ -176,3 +187,5 @@ void readUniversalDataFromStream(const char_t* streamName, UniversalDataFormat& 
     if (errNone != readUniversalDataFromReader(*reader, out))
         out.reset(); //any errors - return empty UDF
 }
+ */
+ 

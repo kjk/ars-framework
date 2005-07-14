@@ -1,4 +1,5 @@
 #include <BufferedReader.hpp>
+#include <algorithm>
 
 BufferedReader::BufferedReader(Reader& reader, uint_t chunkSize):
     reader_(reader),
@@ -29,24 +30,25 @@ status_t  BufferedReader::seek(SeekOffset offset, SeekType type)
 {
     assert(isMarked_);
     if (!isMarked_) 
-        return sysErrNotAllowed;
+        return sysErrParamErr; 
+        
     Buffer_t::size_type size = buffer_.size();
     switch (type)
     {
         case seekFromBeginning:
-            if (size < offset)
+            if (long(size) < offset)
                 return sysErrParamErr;
             position_ = offset;
             break;
             
         case seekFromEnd:
-            if (0 < offset || size < -offset)
+            if (0 < offset || size < ulong_t(-offset))
                 return sysErrParamErr;
             position_ = SeekOffset(size) + offset;
             break;
             
         case seekFromCurrentPosition:
-            if ((0 < offset && position_ < -offset) || offset > size - position_)
+            if ((0 < offset && long(position_) < -offset) || offset > long(size - position_))
                 return sysErrParamErr;
             position_ += offset;
             break;
@@ -58,7 +60,7 @@ status_t  BufferedReader::seek(SeekOffset offset, SeekType type)
     return errNone;
 }
 
-status_t BufferedReader::readRaw(void* buffer, uint_t& length) 
+status_t BufferedReader::readRaw(void* buffer, ulong_t& length) 
 {
     if (isMarked_)
         return readMarked(buffer, length);
@@ -66,7 +68,7 @@ status_t BufferedReader::readRaw(void* buffer, uint_t& length)
     return readNonMarked(buffer, length);
 }
 
-status_t BufferedReader::readNonMarked(void* buffer, uint_t& length)
+status_t BufferedReader::readNonMarked(void* buffer, ulong_t& length)
 {
     Buffer_t::size_type size = buffer_.size();
     assert(size >= position_);
@@ -80,7 +82,7 @@ status_t BufferedReader::readNonMarked(void* buffer, uint_t& length)
     buffer = static_cast<char*>(buffer) + length;
 
     uint_t overBuffer = lengthLeft % chunkSize_;
-    uint_t directReadLength = lengthLeft - overBuffer;
+    ulong_t directReadLength = lengthLeft - overBuffer;
     status_t error = reader_.readRaw(buffer, directReadLength);
     if (errNone != error)
         return error;
@@ -95,7 +97,7 @@ status_t BufferedReader::readNonMarked(void* buffer, uint_t& length)
     assert(size == position_);
     position_ = 0;
     buffer_.resize(chunkSize_);
-    uint_t lastPartLength = chunkSize_;
+    ulong_t lastPartLength = chunkSize_;
     error = reader_.readRaw(&buffer_[position_], lastPartLength);
     if (errNone != error)
     {
@@ -103,14 +105,14 @@ status_t BufferedReader::readNonMarked(void* buffer, uint_t& length)
         return error;
     }
     buffer_.resize(lastPartLength);
-    overBuffer = std::min(overBuffer, lastPartLength);
+    overBuffer = std::min<uint_t>(overBuffer, lastPartLength);
     std::memcpy(buffer, &buffer_[position_], overBuffer);
     position_ += overBuffer;
     length += overBuffer;
     return errNone;
 }
 
-status_t BufferedReader::readMarked(void* buffer, uint_t& length)
+status_t BufferedReader::readMarked(void* buffer, ulong_t& length)
 {
     Buffer_t::size_type size = buffer_.size();
     assert(size >= position_);
@@ -124,7 +126,7 @@ status_t BufferedReader::readMarked(void* buffer, uint_t& length)
     buffer = static_cast<char*>(buffer) + length;
     
     buffer_.resize(size + lengthLeft);
-    uint_t tail = lengthLeft;
+    ulong_t tail = lengthLeft;
     status_t error = reader_.readRaw(&buffer_[position_], tail);
     if (errNone != error)
     {
@@ -138,23 +140,23 @@ status_t BufferedReader::readMarked(void* buffer, uint_t& length)
     return errNone;
 }
 
-status_t BufferedReader::readLine(bool& eof, String& out, char_t delimiter)
+status_t BufferedReader::readLine(bool& eof, NarrowString& out, char_t delimiter)
 {
-    String line;
+    NarrowString line;
     while (true) 
     {
-        const char_t* begin = (const char_t*)&buffer_[position_];
-        uint_t length = (buffer_.size() - position_)/sizeof(char_t);
+        const char* begin = &buffer_[position_];
+        ulong_t length = buffer_.size() - position_;
         if (0 != length)
         {
-            const char_t* end = begin + length;
-            const char_t* pos = std::find(begin, end, delimiter);
-            uint_t readLength = pos - begin;
+            const char* end = begin + length;
+            const char* pos = std::find(begin, end, delimiter);
+            ulong_t readLength = pos - begin;
             line.append(begin, readLength);
-            position_ += readLength * sizeof(char_t);
+            position_ += readLength;
             if (pos != end) // We've found delimiter
             {
-                position_ += sizeof(char_t); // Skip delimiter
+                ++position_; // Skip delimiter
                 break;
             }
         }
@@ -175,7 +177,7 @@ status_t BufferedReader::readLine(bool& eof, String& out, char_t delimiter)
             break;
         }
     }
-    out = line;
+    out.swap(line);
     return errNone;
 }
 

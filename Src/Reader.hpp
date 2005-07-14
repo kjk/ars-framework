@@ -23,12 +23,12 @@ public:
      * @param num on successful return contains actual number of read characters or @c Reader::npos if you trying to read past end of stream.
      * @return status code, @c errNone on success.
      */
-    status_t read(char_t* buffer, uint_t& length);
+    status_t read(char* buffer, ulong_t& length);
 
     // return 0 in length if this is the end of stream
-    virtual status_t readRaw(void* buffer, uint_t& length)=0;
+    virtual status_t readRaw(void* buffer, ulong_t& length)=0;
     
-    virtual status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
+    virtual status_t readLine(bool& eof, NarrowString& out, char delimiter='\n');
     
     virtual ~Reader();
     

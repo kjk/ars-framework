@@ -35,8 +35,8 @@ public:
     typedef ulong_t Position;
     typedef long SeekOffset;
 #elif defined(_WIN32)
-    typedef unsigned __int64 Position;
-    typedef __int64 SeekOffset;
+    typedef ulong_t Position;
+    typedef long SeekOffset;
 #endif
     
     typedef Position Size;
@@ -51,7 +51,7 @@ public:
         anyCard = uint_t(-1)
     };
 
-    status_t open(const char_t* name, ulong_t openMode, uint_t cardNo = anyCard, ulong_t type=0, ulong_t creator=0);
+    status_t open(const char_t* name, ulong_t openMode, uint_t cardNo = anyCard, ulong_t type = 0, ulong_t creator = 0);
     
     DmOpenRef databaseHandle();
     
@@ -60,18 +60,18 @@ public:
     //! @note If all the parameters except fileName will have sensible default values then it'll be possible to use the same call to open() on both platforms.
     status_t open(const char_t* fileName, 
         ulong_t access,
-        ulong_t shareMode=FILE_SHARE_READ,
-        LPSECURITY_ATTRIBUTES securityAttributes=NULL,
-        ulong_t creationDisposition=OPEN_EXISTING,
-        ulong_t flagsAndAttributes=FILE_FLAG_SEQUENTIAL_SCAN,
-        HANDLE templateFile=NULL);
+        ulong_t shareMode = FILE_SHARE_READ,
+        LPSECURITY_ATTRIBUTES securityAttributes = NULL,
+        ulong_t creationDisposition = OPEN_EXISTING,
+        ulong_t flagsAndAttributes = FILE_FLAG_SEQUENTIAL_SCAN,
+        HANDLE templateFile = NULL);
         
 #else
 # error "Declare FileReader::open() for your system."
 #endif
     
     bool isOpen() const
-    {return reinterpret_cast<FileHandle_t>(invalidFileHandle)!=handle_;}
+    {return reinterpret_cast<FileHandle_t>(invalidFileHandle) != handle_;}
 
     status_t close();
 

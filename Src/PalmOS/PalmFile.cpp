@@ -1,16 +1,6 @@
 #include <File.hpp>
 #include <Application.hpp>
 
-File::File():
-    handle_(reinterpret_cast<FileHandle_t>(invalidFileHandle))
-{}
-
-File::~File()
-{
-    if (isOpen())
-        close();
-}
-
 status_t File::close()
 {
     if (!isOpen())

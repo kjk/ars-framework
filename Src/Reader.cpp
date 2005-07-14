@@ -3,8 +3,8 @@
 
 status_t Reader::read(int& chr)
 {
-    char_t c;
-    uint_t length=sizeof(c);
+    char c;
+    ulong_t length = 1;
     status_t error = readRaw(&c, length);
     if (errNone != error)
         return error;
@@ -15,34 +15,27 @@ status_t Reader::read(int& chr)
     return errNone;
 }
 
-status_t Reader::read(char_t* buffer, uint_t& length)
+status_t Reader::read(char* buffer, ulong_t& length)
 {
-    uint_t toRead = sizeof(char_t) * length;
-    status_t error = readRaw(buffer, toRead);
-    if (errNone != error)
-        return error;
-//        if (toRead % sizeof(char_t) != 0)
-//            return DataStore::errStoreCorrupted;
-    length = toRead / sizeof(char_t);
-    return errNone;    
+    return readRaw(buffer, length);
 }
 
-status_t Reader::readLine(bool& eof, String& out, char_t delimiter)
+status_t Reader::readLine(bool& eof, NarrowString& out, char delimiter)
 {
     volatile status_t error=errNone;
     ErrTry {
         while (true)
         {
             int chr;
-            status_t error=read(chr);
-            if (errNone!=error)
+            status_t error = read(chr);
+            if (errNone != error)
                 return error;
-            if (npos!=chr && delimiter!=chr)
-                out.append(1, char_t(chr));
+            if (npos != chr && delimiter != chr)
+                out.append(1, char(chr));
             else 
             {
-                if (npos==chr)
-                    eof=true;
+                if (npos == chr)
+                    eof = true;
                 break;
             }
         }

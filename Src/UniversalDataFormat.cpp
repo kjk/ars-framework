@@ -8,9 +8,12 @@
 # pragma far_code
 #endif
 
-UniversalDataFormat::UniversalDataFormat(): headerSize_(0), fNormalized_(false) {}
+UniversalDataFormat::UniversalDataFormat(): headerSize_(0), fNormalized_(false), data_(NULL), dataLen_(0) {}
 
-UniversalDataFormat::~UniversalDataFormat() {}
+UniversalDataFormat::~UniversalDataFormat() 
+{
+	free(data_);
+}
 
 /**
  *  Replaces elements lengths by offsets of items
@@ -30,46 +33,44 @@ void UniversalDataFormat::normalize()
             VectorRange len = header_[i][j];
             header_[i][j] = offset;
             offset += len;
-            data_[offset] = _T('\0');
+            data_[offset] = '\0';
             offset++;
         }
     }    
 }
 
-int UniversalDataFormat::getItemsCount() const
+ulong_t UniversalDataFormat::getItemsCount() const
 {
     assert(headerSize_ == header_.size());
-
     return headerSize_;
 }
    
-int UniversalDataFormat::getItemElementsCount(int itemNo) const
+ulong_t UniversalDataFormat::getItemElementsCount(ulong_t itemNo) const
 {
-    assert(0 <= itemNo && itemNo < header_.size());
-
+    assert(itemNo < header_.size());
     return header_[itemNo].size();
 }
    
-const ArsLexis::char_t* UniversalDataFormat::getItemText(int itemNo, int elemNo) const
+const char* UniversalDataFormat::getItemText(ulong_t itemNo, ulong_t elemNo) const
 {
-    assert(0 <= itemNo && itemNo < header_.size());
-    assert(0 <= elemNo && elemNo < header_[itemNo].size());
+    assert(itemNo < header_.size());
+    assert(elemNo < header_[itemNo].size());
 
     if (!fNormalized_)
         const_cast<UniversalDataFormat*>(this)->normalize();
+        
     VectorRange offset = header_[itemNo][elemNo];
-    const ArsLexis::char_t *txt = data_.data();
-    txt += offset;
-    return txt;
+    return data_ + offset;
 }
 
-const ArsLexis::char_t* UniversalDataFormat::getItemTextAndLen(int itemNo, int elemNo, ulong_t *lenOut) const
+const char* UniversalDataFormat::getItemTextAndLen(ulong_t itemNo, ulong_t elemNo, ulong_t *lenOut) const
 {
-    assert(0 <= itemNo && itemNo < header_.size());
-    assert(0 <= elemNo && elemNo < header_[itemNo].size());
+    assert(itemNo < header_.size());
+    assert(elemNo < header_[itemNo].size());
 
     if (!fNormalized_)
         const_cast<UniversalDataFormat*>(this)->normalize();
+        
     VectorRange offset = header_[itemNo][elemNo];
     VectorRange nextOffset = 0;
     if (header_[itemNo].size() > elemNo+1)
@@ -77,26 +78,28 @@ const ArsLexis::char_t* UniversalDataFormat::getItemTextAndLen(int itemNo, int e
     else if (header_.size() > itemNo+1)
         nextOffset = header_[itemNo+1][0] - 1;
     else
-        nextOffset = data_.length()-1;
-    const ArsLexis::char_t *txt = data_.data();
-    txt += offset;
-    if (NULL!=lenOut)
-    {
+        nextOffset = dataLen_ - 1;
+        
+    const char* txt = data_ + offset;
+    if (NULL != lenOut)
         *lenOut = nextOffset - offset;
-    }
     return txt;
 }
-    
+
+/*    
 ArsLexis::String UniversalDataFormat::getItemTextAsString(int itemNo, int elemNo) const
 {
     return getItemText(itemNo, elemNo);
 }
-
-long UniversalDataFormat::getItemTextAsLong(int itemNo, int elemNo) const
+ */
+ 
+long UniversalDataFormat::getItemTextAsLong(ulong_t itemNo, ulong_t elemNo) const
 {
-    const ArsLexis::char_t* text = getItemText(itemNo, elemNo);
+	ulong_t len;
+	const char* text = getItemTextAndLen(itemNo, elemNo, &len);
+
     long result;
-    ArsLexis::status_t error = numericValue(text, text+tstrlen(text), result);
+    status_t error = numericValue(text, text + len, result);
     if (errNone != error)
         return 0;
     return result;
@@ -107,7 +110,7 @@ void UniversalDataFormat::swap(UniversalDataFormat& udf)
     std::swap(headerSize_, udf.headerSize_);
     std::swap(fNormalized_, udf.fNormalized_);
     header_.swap(udf.header_);
-    data_.swap(udf.data_);
+    std::swap(data_, udf.data_); 
 }
 
 void UniversalDataFormat::reset()
@@ -115,5 +118,7 @@ void UniversalDataFormat::reset()
     headerSize_ = 0;
     fNormalized_ = false;
     header_.clear();
-    data_.clear();
+	free(data_);
+	data_ = NULL;
+	dataLen_ = 0; 
 }

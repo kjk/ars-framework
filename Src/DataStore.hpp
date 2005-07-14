@@ -34,7 +34,7 @@ public:
     
     status_t create(const char_t* fileName);
     
-    status_t removeStream(const char_t* name);
+    status_t removeStream(const char* name);
     
     enum {
         errStoreCorrupted=dsErrorClass,
@@ -64,17 +64,17 @@ private:
     File file_;
     
     struct StreamHeader {
-        String name;
+        NarrowString name;
         uint_t index;
         File::Position firstFragment;
         
-        StreamHeader(const char_t* name, ulong_t nameLength, uint_t index, File::Position firstFragment);
+        StreamHeader(const char* name, ulong_t nameLength, uint_t index, File::Position firstFragment);
         
     };
     
     struct StreamHeaderLess {
         bool operator()(const StreamHeader* h1, const StreamHeader* h2) const
-        {return h1->name<h2->name;}
+        {return h1->name < h2->name;}
     };
     
     typedef std::set<StreamHeader*, StreamHeaderLess> StreamHeaders_t;
@@ -96,15 +96,15 @@ private:
     
     struct FragmentHeaderLess {
         bool operator()(const FragmentHeader* h1, const FragmentHeader* h2) const
-        {return h1->start<h2->start;}
+        {return h1->start < h2->start;}
     };
     
     typedef std::set<FragmentHeader*, FragmentHeaderLess> FragmentHeaders_t;
     FragmentHeaders_t fragmentHeaders_;
     
-    status_t findStream(const char_t* name, StreamHeader*& header);
+    status_t findStream(const char* name, StreamHeader*& header);
     
-    status_t createStream(const char_t* name, StreamHeader*& header);
+    status_t createStream(const char* name, StreamHeader*& header);
     
     enum { minFragmentLength = sizeof(FragmentHeader) + 128};
     
@@ -114,7 +114,7 @@ private:
     
     status_t writeStreamHeader(const StreamHeader& header);
     
-    uint_t maxAllowedFragmentLength(FragmentHeader& header) const;
+    ulong_t maxAllowedFragmentLength(FragmentHeader& header) const;
     
     File::Position nextAvailableFragmentStart() const;
     
@@ -158,7 +158,7 @@ public:
     
     ~DataStoreReader();
     
-    status_t open(const char_t* name);
+    status_t open(const char* name);
     
     status_t readRaw(void* buffer, uint_t& length);
     
@@ -175,7 +175,7 @@ public:
     
     ~DataStoreWriter();
     
-    status_t open(const char_t* name, bool dontCreate = false);
+    status_t open(const char* name, bool dontCreate = false);
     
     status_t writeRaw(const void* buffer, uint_t length);
     

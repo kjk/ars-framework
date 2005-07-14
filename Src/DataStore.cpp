@@ -9,7 +9,7 @@
 
 struct StreamIndexEntry {
     bool used;
-    char_t name[DataStore::maxStreamNameLength];
+    char name[DataStore::maxStreamNameLength];
     File::Position firstFragment;
     
     StreamIndexEntry();
@@ -22,7 +22,7 @@ StreamIndexEntry::StreamIndexEntry():
     used(false),
     firstFragment(invalidFragmentStart)
 {
-    MemSet(name, sizeof(name), 0);
+    memset(name, 0, sizeof(name));
 }
 
 
@@ -40,7 +40,7 @@ FragmentHeaderEntry::FragmentHeaderEntry():
     nextFragment(invalidFragmentStart)
 {}
     
-DataStore::StreamHeader::StreamHeader(const char_t* n, ulong_t nlen, uint_t i, File::Position f):
+DataStore::StreamHeader::StreamHeader(const char* n, ulong_t nlen, uint_t i, File::Position f):
     name(n, nlen),
     index(i),
     firstFragment(f)
@@ -62,6 +62,7 @@ DataStore::~DataStore()
 {
     std::for_each(streamHeaders_.begin(), streamHeaders_.end(), ObjectDeleter<StreamHeader>());
     std::for_each(fragmentHeaders_.begin(), fragmentHeaders_.end(), ObjectDeleter<FragmentHeader>());
+    
 #ifdef _PALM_OS
     if (file_.isOpen()) 
         file_.close();
@@ -94,8 +95,8 @@ DataStore::~DataStore()
     assert(found);
     attribs |= dmHdrAttrBackup;
     error = DmSetDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-#endif
 Finish:
+#endif
     free(fileName_);
 }
 
@@ -140,7 +141,7 @@ status_t DataStore::readIndex()
             return errStoreCorrupted;
         if (entry.used)
         {
-            ulong_t nameLength = std::find(entry.name, entry.name + maxStreamNameLength, _T('\0')) - entry.name;
+            ulong_t nameLength = std::find(entry.name, entry.name + maxStreamNameLength, '\0') - entry.name;
             streamHeaders_.insert(new StreamHeader(entry.name, nameLength, i, entry.firstFragment));
         }
     }
@@ -154,38 +155,22 @@ status_t DataStore::open(const char_t* fileName)
     if (NULL == fileName_)
         return memErrNotEnoughSpace;
         
+#ifdef _WIN32
+    status_t error = file_.open(fileName_, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_RANDOM_ACCESS);
+#elif defined(_PALM_OS)
     status_t error = file_.open(fileName_, fileModeUpdate);
+#endif  
     if (errNone != error)
         goto OnError;
-/*        
-#ifdef _PALM_OS 
-    DmOpenRef ref = file_.databaseHandle();
-    if (0 != ref) 
-    {   
-        LocalID localId;
-        UInt16 cardNo;
-        UInt16 attribs;
-        error = DmOpenDatabaseInfo(ref, &localId, NULL, NULL, &cardNo, NULL);
-        if (errNone != error)
-            goto Continue;
-        error = DmDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-        if (errNone != error)
-            goto Continue;
-        if (0 != attribs & dmHdrAttrBackup)
-            goto Continue;
-        attribs |= dmHdrAttrBackup;
-        error = DmSetDatabaseInfo(cardNo, localId, NULL, &attribs, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-Continue:
-        error = errNone;
-    }
-#endif    
- */
+
     error = readIndex();
     if (errNone != error)
         goto OnError;
+        
     error = readHeaders();
     if (errNone != error)
         goto OnError;
+        
     return errNone;
 OnError:    
     file_.close();
@@ -212,7 +197,11 @@ status_t DataStore::create(const char_t* fileName)
     if (NULL == fileName_)
         return memErrNotEnoughSpace;
 
+#ifdef _WIN32
+    status_t error = file_.open(fileName_, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_RANDOM_ACCESS);
+#elif defined(_PALM_OS)
     status_t error = file_.open(fileName_, fileModeUpdate);
+#endif  
     if (errNone != error)
         return error;
     error = createIndex();
@@ -256,9 +245,9 @@ status_t DataStore::readHeadersForOwner(const DataStore::StreamHeader& streamHea
     return errNone;
 }
 
-status_t DataStore::removeStream(const char_t* name)
+status_t DataStore::removeStream(const char* name)
 {  
-    StreamHeader sh(name, tstrlen(name), 0, 0);
+    StreamHeader sh(name, Len(name), 0, 0);
     StreamHeaders_t::iterator it = streamHeaders_.find(&sh);
     if (streamHeaders_.end() == it)
         return errNotFound;
@@ -276,9 +265,9 @@ status_t DataStore::removeStream(const char_t* name)
     return errNone;
 }
 
-status_t DataStore::createStream(const char_t* name, StreamHeader*& header)
+status_t DataStore::createStream(const char* name, StreamHeader*& header)
 {
-    ulong_t nlen = tstrlen(name);
+    ulong_t nlen = Len(name);
     if (maxStreamNameLength < nlen)
         return errNameTooLong;
     if (maxStreamsCount == streamHeaders_.size())
@@ -354,7 +343,7 @@ File::Position DataStore::nextAvailableFragmentStart() const
     return start;
 }
 
-uint_t DataStore::maxAllowedFragmentLength(FragmentHeader& header) const
+ulong_t DataStore::maxAllowedFragmentLength(FragmentHeader& header) const
 {
     FragmentHeaders_t::const_iterator it = fragmentHeaders_.find(&header);
     assert(fragmentHeaders_.end() != it);
@@ -533,9 +522,9 @@ status_t DataStore::writeStream(StreamPosition& position, const void* buffer, ui
     return errNone;        
 }
 
-status_t DataStore::findStream(const char_t* name, StreamHeader*& header)
+status_t DataStore::findStream(const char* name, StreamHeader*& header)
 {
-    StreamHeader sh(name, tstrlen(name), 0, 0);
+    StreamHeader sh(name, Len(name), 0, 0);
     StreamHeaders_t::iterator it = streamHeaders_.find(&sh);
     if (streamHeaders_.end() == it)
         return errNotFound;
@@ -565,7 +554,7 @@ DataStoreReader::DataStoreReader(DataStore& store): store_(store) {}
 
 DataStoreReader::~DataStoreReader() {}
 
-status_t DataStoreReader::open(const char_t* name)
+status_t DataStoreReader::open(const char* name)
 {
     DataStore::StreamHeader* header = NULL;
     status_t error = store_.findStream(name, header);
@@ -589,7 +578,7 @@ DataStoreWriter::~DataStoreWriter()
     store_.findEof();
 }
 
-status_t DataStoreWriter::open(const char_t* name, bool dontCreate)
+status_t DataStoreWriter::open(const char* name, bool dontCreate)
 {
     DataStore::StreamHeader* header = NULL;
     status_t error = store_.findStream(name, header);

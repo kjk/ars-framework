@@ -25,6 +25,7 @@ static uint_t findNextWhitespace(const String& text, uint_t fromPos)
 static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t length)
 {
 #if _MSC_VER == 1400
+	
 	// TODO: rewrite w/o reverse iterators
 	return 0;
 #else

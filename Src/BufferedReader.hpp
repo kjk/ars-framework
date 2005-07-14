@@ -10,7 +10,7 @@
 //! and @c rewind(). Call @c mark() in place where you want to start reading again. 
 //! When you call @c rewind() reader's read pointer will go back to marked position.
 class BufferedReader: public ::Reader {
-    typedef std::string Buffer_t;
+    typedef NarrowString Buffer_t;
     Buffer_t buffer_;
     Reader& reader_;
     
@@ -35,16 +35,16 @@ public:
     typedef long SeekOffset;
     
     //! Seek is relative to marked position. If there's no marked position it fails.        
-    status_t  seek(SeekOffset offset, SeekType type=seekFromCurrentPosition);
+    status_t  seek(SeekOffset offset, SeekType type = seekFromCurrentPosition);
     
     status_t rewind() { return seek(0, seekFromBeginning);}
     
-    status_t readRaw(void* buffer, uint_t& length);
+    status_t readRaw(void* buffer, ulong_t& length);
     
     ulong_t position() const {return position_;}
 
     //! Provides accelerated readLine thanks to the use of buffering.        
-    virtual status_t readLine(bool& eof, String& out, char_t delimiter=_T('\n'));
+    virtual status_t readLine(bool& eof, NarrowString& out, char_t delimiter = '\n');
     
 private:
 
@@ -52,9 +52,9 @@ private:
     Buffer_t::size_type position_;
     uint_t chunkSize_;
     
-    status_t readNonMarked(void* buffer, uint_t& length);
+    status_t readNonMarked(void* buffer, ulong_t& length);
     
-    status_t readMarked(void* buffer, uint_t& length);
+    status_t readMarked(void* buffer, ulong_t& length);
 
 };
 

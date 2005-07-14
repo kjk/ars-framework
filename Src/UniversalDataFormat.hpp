@@ -12,10 +12,11 @@ struct UniversalDataFormat: private NonCopyable
     typedef std::vector<VectorRange> Vector_t;
     typedef std::vector<Vector_t> VectorOfVectors_t;
 
-    int                 headerSize_;
+    ulong_t                 headerSize_;
     bool                fNormalized_;
     VectorOfVectors_t   header_;
-    ArsLexis::String    data_;
+    char*		data_;
+	ulong_t		dataLen_; 
 
     void normalize();
 
@@ -31,34 +32,33 @@ public:
     
     ~UniversalDataFormat();
     
-    int getItemsCount() const ;
+    ulong_t getItemsCount() const ;
     
-    int getItemElementsCount(int itemNo) const;
+    ulong_t getItemElementsCount(ulong_t itemNo) const;
     
-    const ArsLexis::char_t *getItemText(int itemNo, int elemNo) const;
+    const char* getItemText(ulong_t itemNo, ulong_t elemNo) const;
 
-    const ArsLexis::char_t *getItemTextAndLen(int itemNo, int elemNo, ulong_t* lenOut) const;
+    const char* getItemTextAndLen(ulong_t itemNo, ulong_t elemNo, ulong_t* lenOut) const;
     
-    ArsLexis::String getItemTextAsString(int intemNo, int elemNo) const;
-  
+     
     /**
      * without error check
      * @return 0 if element doesn't represent valid number.
      * @return 0 if element is equal 0 too
      */
-    long getItemTextAsLong(int itemNo, int elemNo) const;
+    long getItemTextAsLong(ulong_t itemNo, ulong_t elemNo) const;
     
     void swap(UniversalDataFormat& udf);
     
     void reset();
     
-    friend ArsLexis::status_t parseUniversalDataFormatTextLine(const ArsLexis::String& line, UniversalDataFormat& out, int& lineNo, ulong_t& controlDataLength);
+    friend status_t parseUniversalDataFormatTextLine(const NarrowString& line, UniversalDataFormat& out, int& lineNo, ulong_t& controlDataLength);
 
     friend class UniversalDataHandler;
     
     bool empty() const {return header_.empty();}
     
-    ulong_t dataLength() {return data_.length();}
+    ulong_t dataLength() {return dataLen_;}
     
 };
 
