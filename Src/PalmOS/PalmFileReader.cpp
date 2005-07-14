@@ -4,7 +4,7 @@ FileReader::FileReader() {}
 
 FileReader::~FileReader() {}
 
-status_t FileReader::readRaw(void* buffer, uint_t& length)
+status_t FileReader::readRaw(void* buffer, ulong_t& length)
 {
     assert(isOpen());
     File::Size read;

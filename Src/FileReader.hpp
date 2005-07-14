@@ -38,7 +38,7 @@ public:
     bool isOpen() const
     {return file_.isOpen();}
 
-    status_t readRaw(void* buffer, uint_t& length);
+    status_t readRaw(void* buffer, ulong_t& length);
 };
 
 #endif

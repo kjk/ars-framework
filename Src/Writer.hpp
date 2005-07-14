@@ -5,37 +5,34 @@
 #include <BaseTypes.hpp>
 #include <Utility.hpp>
 
-using ArsLexis::String;
-using ArsLexis::char_t;
-
 class Writer: private NonCopyable
 {
 public:
 
-    status_t write(char_t chr)
+    status_t write(char chr)
     {
         return writeRaw(&chr, sizeof(chr));
     }
 
-    status_t write(const char_t* buffer, uint_t length)
+    status_t write(const char* buffer, ulong_t length)
     {
         return writeRaw(buffer, sizeof(*buffer)*length);
     }
 
-    status_t write(const char_t* text)
+    status_t write(const char* text)
     {
         using namespace std; 
-        return write(text, tstrlen(text));
+        return write(text, strlen(text));
     }
     
-    status_t write(const String& text)
+    status_t write(const NarrowString& text)
     {
         return write(text.data(), text.length());
     }
     
     virtual status_t flush()=0;
     
-    virtual status_t writeRaw(const void* buffer, uint_t length)=0;
+    virtual status_t writeRaw(const void* buffer, ulong_t length)=0;
     
     virtual ~Writer();
 

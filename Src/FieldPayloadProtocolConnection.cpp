@@ -202,12 +202,12 @@ status_t FeedHandlerFromReader(FieldPayloadProtocolConnection::PayloadHandler& h
     CDynStr str;
     
     status_t err;
-    const uint_t chunk = 8192;
+    const ulong_t chunk = 8192;
     char_t* buffer = (char_t*)malloc(sizeof(char_t) * chunk);
     if (NULL == buffer)
         return memErrNotEnoughSpace;
         
-    uint_t length = chunk;
+    ulong_t length = chunk;
     while (true)
     {
         if (errNone != (err = reader.read(buffer, length)))

@@ -1,4 +1,4 @@
-#include "ByteFormatParser.hpp"
+#include <ByteFormatParser.hpp>
 
 #include <Text.hpp>
 
@@ -8,6 +8,7 @@
 #include <ParagraphElement.hpp>
 #include <ListNumberElement.hpp>
 #include <BulletElement.hpp>
+#include <UTF8_Processor.hpp>
 
 //elements
 #define typeLineBreakElement                'lbrk'
@@ -57,25 +58,25 @@ ByteFormatParser::ByteFormatParser():
     styleCount_(0),
     totalStyleCount_(0),
     styleNames_(NULL),
-    headerParsed_(false)
+    headerParsed_(false),
+	inText_(NULL)
 {
-    inText_.clear();
-    stack_.clear();
 }
 
 ByteFormatParser::~ByteFormatParser()
 {
     delete model_;
-    for (int i=0; i < totalStyleCount_; i++)
+    for (ulong_t i = 0; i < totalStyleCount_; i++)
         free(styleNames_[i]);
     delete [] styleNames_;
+	free(inText_); 
 }
 
 DefinitionModel* ByteFormatParser::releaseModel()
 {
     DefinitionModel* model = model_;
     model_ = NULL;
-    for (int i=0; i < totalStyleCount_; i++)
+    for (ulong_t i = 0; i < totalStyleCount_; i++)
         free(styleNames_[i]);
     delete [] styleNames_;
     totalStyleCount_ = 0;    
@@ -90,7 +91,8 @@ void ByteFormatParser::reset()
     start_ = 0;
     inLength_ = 0;
     finish_ = false;
-    inText_.clear();
+	free(inText_);
+	inText_ = NULL; 
     currentElementType_= 0;
     currentElementParamsLength_ = 0;
     currentParamType_ = 0;
@@ -105,7 +107,7 @@ void ByteFormatParser::reset()
 
     delete model_;
     model_ = NULL;
-    for (int i=0; i < totalStyleCount_; i++)
+    for (ulong_t i = 0; i < totalStyleCount_; i++)
         free(styleNames_[i]);
     delete [] styleNames_;
     totalStyleCount_ = 0;    
@@ -116,7 +118,8 @@ bool ByteFormatParser::parseParam()
 {
     if (currentElementParamsLength_ == 0)
         return false;
-    currentParamType_ = readUnaligned32(&inText_[start_]);
+        
+    currentParamType_ = readUnaligned32(inText_ + start_);
     start_ += typeLength;
     currentElementParamsLength_ -= typeLength;
     currentParamLength_ = 0;
@@ -124,29 +127,29 @@ bool ByteFormatParser::parseParam()
     currentElementParamsLength_ -= 1;
     switch(inText_[start_])
     {
-        case _T('1'):
+        case '1':
             start_++;
             currentParamLength_ = 1;
             break;
-        case _T('2'):
+        case '2':
             start_++;
             currentParamLength_ = 2;
             break;
-        case _T('4'):
+        case '4':
             start_++;
             currentParamLength_ = 4;
             break;
-        case _T('8'):
+        case '8':
             start_++;
             currentParamLength_ = 8;
             break;
-        case _T('c'):
+        case 'c':
             start_++;
             currentParamLength_ = 12;
             break;
 
         default:
-            assert(inText_[start_] == _T('L'));
+            assert(inText_[start_] == 'L');
             start_++;
             currentElementParamsLength_ -= sizeLength;
             currentParamLength_ = readUnaligned32(&inText_[start_]);
@@ -159,42 +162,48 @@ bool ByteFormatParser::parseParam()
     {
         case paramTextValue:
             {
-                String str(inText_,start_,currentParamLength_);
-                if (typeTextElement == currentElementType_)
-                    ((TextElement*)currentElement_)->setText(str);
-                else if (typeTitleElement == currentElementType_)
-                {
-                    assert(NULL != model_);
-                    model_->setTitle(&inText_[start_], currentParamLength_);
-                }
+				ulong_t len;
+				char_t* str = UTF8_ToNative(inText_ + start_, currentParamLength_, &len);
+				// TODO: change interface to return error code!
+				if (NULL != str)
+				{
+					if (typeTextElement == currentElementType_)
+						((TextElement*)currentElement_)->setText(String(str, len));
+					else if (typeTitleElement == currentElementType_)
+					{
+						assert(NULL != model_);
+						model_->setTitle(str, len);
+					}
+					free(str);
+				}
             }
             break;
             
         case paramListNumber:
             if (typeListNumberElement == currentElementType_)
-                ((ListNumberElement*)currentElement_)->setNumber(readUnaligned32(&inText_[start_]));
+                ((ListNumberElement*)currentElement_)->setNumber(readUnaligned32(inText_ + start_));
             break;
     
         case paramJustification:
             switch(inText_[start_])
             {
-                case _T('l'):
+                case 'l':
                     currentElement_->setJustification(DefinitionElement::justifyLeft);
                     break;
 
-                case _T('i'):
+                case 'i':
                     currentElement_->setJustification(DefinitionElement::justifyInherit);
                     break;
 
-                case _T('c'):
+                case 'c':
                     currentElement_->setJustification(DefinitionElement::justifyCenter);
                     break;
 
-                case _T('r'):
+                case 'r':
                     currentElement_->setJustification(DefinitionElement::justifyRight);
                     break;
 
-                case _T('x'):
+                case 'x':
                     currentElement_->setJustification(DefinitionElement::justifyRightLastElementInLine);
                     break;
                 
@@ -205,19 +214,19 @@ bool ByteFormatParser::parseParam()
             break;
 
         case paramHyperlink:
-            currentElement_->setHyperlink(String(inText_, start_, currentParamLength_), hyperlinkUrl);
+            currentElement_->setHyperlink(inText_ + start_, currentParamLength_, hyperlinkUrl);
             break;
             
         case paramListTotalCount:
             if (typeListNumberElement == currentElementType_)
-                ((ListNumberElement*)currentElement_)->setTotalCount(readUnaligned32(&inText_[start_]));
+                ((ListNumberElement*)currentElement_)->setTotalCount(readUnaligned32(inText_ + start_));
             break;
 
         case paramLineBreakSize:
             if (typeLineBreakElement == currentElementType_)
             {
-                ulong_t mul = readUnaligned32(&inText_[start_]);
-                ulong_t div = readUnaligned32(&inText_[start_+4]);
+                ulong_t mul = readUnaligned32(inText_ + start_);
+                ulong_t div = readUnaligned32(inText_ + start_ + 4);
                 ((LineBreakElement*)currentElement_)->setSize(mul,div);
             }
             break;
@@ -229,27 +238,27 @@ bool ByteFormatParser::parseParam()
                 if (styleCount_ < totalStyleCount_)
                 {
                     // <nameLength><name><value>
-                    ulong_t nameLength = readUnaligned32(&inText_[start_]);
-                    styleNames_[styleCount_] = CharCopyN(&inText_[start_+sizeLength], nameLength);
-                    DefinitionStyle* style = StyleParse(&inText_[start_+sizeLength+nameLength],currentParamLength_-(sizeLength+nameLength));
+                    ulong_t nameLength = readUnaligned32(inText_ + start_);
+                    styleNames_[styleCount_] = StringCopyN(inText_ + start_ + sizeLength, nameLength);
+                    DefinitionStyle* style = StyleParse(inText_ + start_ + sizeLength + nameLength, currentParamLength_ - sizeLength - nameLength);
                     model_->styles_[styleCount_] = style;
                     styleCount_++;
                 }            
             }
             else
             {
-                currentElement_->setStyle(StyleParse(&inText_[start_],currentParamLength_), DefinitionElement::ownStyle);
+                currentElement_->setStyle(StyleParse(inText_ + start_, currentParamLength_), DefinitionElement::ownStyle);
             }    
             break;
 
         case paramStyleName:
             {
-                const DefinitionStyle* style = StyleGetStaticStyle(&inText_[start_],currentParamLength_);
+                const DefinitionStyle* style = StyleGetStaticStyle(inText_ + start_, currentParamLength_);
                 const DefinitionStyle* serverStyle = NULL;
-                for (int i=0; i<totalStyleCount_;i++)
+                for (ulong_t i = 0; i < totalStyleCount_; i++)
                 {
                     //TODO: this is ugly (but not broken - styles are sorted!)
-                    if (0 == StrNCompare(styleNames_[i],&inText_[start_],currentParamLength_))
+                    if (StrEquals(styleNames_[i], inText_ + start_, currentParamLength_))
                     {
                         serverStyle = model_->styles_[i];
                         i = totalStyleCount_;
@@ -266,7 +275,7 @@ bool ByteFormatParser::parseParam()
         case paramStylesCount:
             {
                 //  free old styles
-                for (int i=0; i < totalStyleCount_; i++)
+                for (ulong_t i = 0; i < totalStyleCount_; i++)
                     free(styleNames_[i]);
                 delete [] styleNames_;
                 styleNames_ = NULL;
@@ -274,7 +283,7 @@ bool ByteFormatParser::parseParam()
                 model_->styles_ = NULL;
                 model_->styleCount_ = 0;
                 styleCount_ = 0;
-                totalStyleCount_ = readUnaligned32(&inText_[start_]);
+                totalStyleCount_ = readUnaligned32(inText_ + start_);
                 assert(totalStyleCount_ > 0);
                 // alloc memory for new styles
                 
@@ -381,7 +390,7 @@ bool ByteFormatParser::parseElement()
     // can read type?
     if (inLength_ - start_ < typeLength)
         return false;
-    currentElementType_ = readUnaligned32(&inText_[start_]);
+    currentElementType_ = readUnaligned32(inText_ + start_);
     if (typePopParentElement == currentElementType_)
     {
         //no length, just pop from stack_...
@@ -404,7 +413,7 @@ bool ByteFormatParser::parseElement()
             return false;
         // so now we can read params and create element...
         start_ += typeLength + sizeLength;
-        ArsLexis::String::size_type nextElementPos = start_ + currentElementParamsLength_;
+        ulong_t nextElementPos = start_ + currentElementParamsLength_;
         parseElementParams();
         assert(start_ == nextElementPos);
         // just to be sure!
@@ -417,38 +426,38 @@ bool ByteFormatParser::parseElement()
 
 status_t ByteFormatParser::parse()
 {
-    while(parseElement())
-    {
-        //do nothing - just parsing
-    }
+    while(parseElement()) ;
     // remove parsed text from memory
-    inText_.erase(0, start_);
+	StrErase(inText_, inLength_, 0, start_); 
     inLength_ -= start_;
     totalSize_ -= start_;
     start_ = 0;
     return errNone;
 }
 
-bool ByteFormatParser::parseHeader(const char_t* inText)
+bool ByteFormatParser::parseHeader(const char* inText)
 {
     if (headerParsed_)
         return true;
     
-    totalSize_ = readUnaligned32(&inText[start_]);
+    totalSize_ = readUnaligned32(inText + start_);
     start_ += sizeLength;
-    totalElementsCount_ = readUnaligned32(&inText[start_]);
+    totalElementsCount_ = readUnaligned32(inText + start_);
     elementsCount_ = 0;
     start_ += sizeLength;
-    version_ = readUnaligned32(&inText[start_]);
+    version_ = readUnaligned32(inText + start_);
     start_ += sizeLength;
     headerParsed_ = true;
     
     return true;
 }
        
-status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inputLength, bool finish)
-{
-    inText_.append(inputText, inputLength);
+status_t ByteFormatParser::handleIncrement(const char* inputText, ulong_t& inputLength, bool finish)
+{	
+	inText_ = StrAppend(inText_, inLength_, inputText, inputLength);
+	if (NULL == inText_)
+		return memErrNotEnoughSpace;
+		
     inLength_ += inputLength;
     start_ = 0;
     finish_ = finish;
@@ -464,11 +473,12 @@ status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inp
     {
         if (inLength_ < headerLength)
             return errNone;
-        parseHeader(inText_.c_str());    
+        parseHeader(inText_);    
     }
     
     if (inLength_ == 0)
         return errNone;
+        
     status_t error = parse();
     if (inLength_ > 0 && finish_)
     {
@@ -482,7 +492,7 @@ status_t ByteFormatParser::handleIncrement(const char_t* inputText, ulong_t& inp
     return error;
 }
 
-status_t ByteFormatParser::parseAll(const char_t* inputText, UInt32 inputTextLen)
+status_t ByteFormatParser::parseAll(const char* inputText, long inputTextLen)
 {
     start_ = 0;
 
@@ -494,13 +504,19 @@ status_t ByteFormatParser::parseAll(const char_t* inputText, UInt32 inputTextLen
     }           
 
     parseHeader(inputText);
-    assert(totalSize_ == inputTextLen || (UInt32)(-1) == inputTextLen);
-    inText_.assign(inputText, totalSize_);
+    assert(totalSize_ == inputTextLen || -1 == inputTextLen);
+	
+	free(inText_);
+	inText_ = StringCopyN(inputText, totalSize_);
+	if (NULL == inText_)
+		return memErrNotEnoughSpace;
+		 
     inLength_ = totalSize_;
     finish_ = true;
     
     if (inLength_ == 0)
         return errNone;
+        
     status_t error = parse();
     if (inLength_ > 0 && finish_)
     {

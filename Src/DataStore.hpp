@@ -136,11 +136,11 @@ private:
     
     status_t readFragment(const FragmentHeader& fragment, uint_t& startOffset, void*& buffer, uint_t& length);
     
-    status_t readStream(StreamPosition& position, void* buffer, uint_t& length);
+    status_t readStream(StreamPosition& position, void* buffer, ulong_t& length);
     
     status_t writeFragment(FragmentHeader& fragment, uint_t& startOffset, const void*& buffer, uint_t& length);
     
-    status_t writeStream(StreamPosition& position, const void* buffer, uint_t length);
+    status_t writeStream(StreamPosition& position, const void* buffer, ulong_t length);
     
     status_t findEof();
     
@@ -160,7 +160,7 @@ public:
     
     status_t open(const char* name);
     
-    status_t readRaw(void* buffer, uint_t& length);
+    status_t readRaw(void* buffer, ulong_t& length);
     
 };
 
@@ -177,7 +177,7 @@ public:
     
     status_t open(const char* name, bool dontCreate = false);
     
-    status_t writeRaw(const void* buffer, uint_t length);
+    status_t writeRaw(const void* buffer, ulong_t length);
     
     status_t flush();
     

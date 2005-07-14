@@ -22,6 +22,7 @@ StreamIndexEntry::StreamIndexEntry():
     used(false),
     firstFragment(invalidFragmentStart)
 {
+    using namespace std;
     memset(name, 0, sizeof(name));
 }
 
@@ -442,7 +443,7 @@ status_t DataStore::writeFragment(FragmentHeader& fragment, uint_t& startOffset,
 }
 
 
-status_t DataStore::readStream(StreamPosition& position, void* buffer, uint_t& length)
+status_t DataStore::readStream(StreamPosition& position, void* buffer, ulong_t& length)
 {
     if (0 == length)
         return errNone;
@@ -481,7 +482,7 @@ status_t DataStore::readStream(StreamPosition& position, void* buffer, uint_t& l
     return errNone;
 }
 
-status_t DataStore::writeStream(StreamPosition& position, const void* buffer, uint_t length)
+status_t DataStore::writeStream(StreamPosition& position, const void* buffer, ulong_t length)
 {
     if (0 == length)
         return errNone;
@@ -565,7 +566,7 @@ status_t DataStoreReader::open(const char* name)
     return errNone;
 }
 
-status_t DataStoreReader::readRaw(void* buffer, uint_t& length)
+status_t DataStoreReader::readRaw(void* buffer, ulong_t& length)
 {
     assert(NULL != position_.get());
     return store_.readStream(*position_, buffer, length);
@@ -591,7 +592,7 @@ status_t DataStoreWriter::open(const char* name, bool dontCreate)
     return errNone;
 }
 
-status_t DataStoreWriter::writeRaw(const void* buffer, uint_t length)
+status_t DataStoreWriter::writeRaw(const void* buffer, ulong_t length)
 {
     assert(NULL != position_.get());
     return store_.writeStream(*position_, buffer, length);

@@ -39,13 +39,13 @@ Serializer::~Serializer()
     delete reader_;
 }
 
-void Serializer::serializeChunk(void* buffer, uint_t length)
+void Serializer::serializeChunk(void* buffer, ulong_t length)
 {
     status_t error;
     if (directionInput == direction_)
     {   
         assert(NULL != reader_);
-        uint_t read = length;
+        ulong_t read = length;
         error = reader_->readRaw(buffer, read);
         if (read != length)
             ErrThrow(errCorrupted);
@@ -61,7 +61,7 @@ void Serializer::serializeChunk(void* buffer, uint_t length)
 bool Serializer::indexNextRecord()
 {
     Record record;
-    uint_t length = sizeof(record);
+    ulong_t length = sizeof(record);
     status_t error = reader_->readRaw(&record, length);
     if (errNone != error)
         ErrThrow(error);
@@ -71,15 +71,20 @@ bool Serializer::indexNextRecord()
         ErrThrow(errCorrupted);
     if (unusedId != record.id)
         recordIndex_[record.id] = reader_->position() - length;
+        
     if (dtString == record.type) // String is currently only data type that writes something after Record. We have to skip its data...
     { 
         length = record.stringLength;
-        String buffer(length, _T('\0'));
-        error = reader_->readRaw(&buffer[0], length);
+        void* buffer = malloc(length);
+        if (NULL == buffer)
+            ErrThrow(memErrNotEnoughSpace);
+            
+        error = reader_->readRaw(buffer, length);
+        free(buffer);
+        
         if (errNone != error)
             ErrThrow(errCorrupted);
-        if (buffer.size() != length)
-            ErrThrow(errCorrupted);
+
     }
     return true;
 }

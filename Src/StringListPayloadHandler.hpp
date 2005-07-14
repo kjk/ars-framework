@@ -4,7 +4,7 @@
 #include <LineBufferedPayloadHandler.hpp>
 #include <vector>
 
-class StringListPayloadHandler: public LineBufferedPayloadHandler 
+class StringListPayloadHandler: public LineBufferedTextProcessor 
 {
 public:
 

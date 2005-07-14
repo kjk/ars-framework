@@ -2,7 +2,7 @@
 #define __ByTE_FORMAT_PARSER__
 
 #include <DefinitionElement.hpp>
-#include <FieldPayloadProtocolConnection.hpp>
+#include <IncrementalProcessor.hpp>
 
 ulong_t readUnaligned32(const char* addr);
 void    writeUnaligned32(char* addr, ulong_t value);
@@ -11,7 +11,7 @@ void    writeUnaligned32(char* addr, ulong_t value);
  Used to change byteData to DefinitnionElements
 
  */
-class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
+class ByteFormatParser: public BinaryIncrementalProcessor
 {
     private:
         typedef std::vector<DefinitionElement*> ElementsPointers_t;
@@ -37,12 +37,12 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
         
         DefinitionElement* currentElement_;
         
-        ArsLexis::String            inText_;
-        ulong_t                     inLength_;
-        ArsLexis::String::size_type start_;
+        char*			inText_;
+        ulong_t         inLength_;
+        ulong_t			start_;
         bool                        finish_;
         
-        ArsLexis::status_t parse();
+        status_t parse();
         
         bool parseElement();
         
@@ -50,7 +50,7 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
 
         bool parseParam();
         
-        bool parseHeader(const ArsLexis::char_t* inText);
+        bool parseHeader(const char* inText);
         
         DefinitionModel* model_;
 
@@ -62,12 +62,12 @@ class ByteFormatParser: public FieldPayloadProtocolConnection::PayloadHandler
 
         void reset();
        
-        status_t handleIncrement(const char_t* payload, ulong_t& length, bool finish);
+        status_t handleIncrement(const char* payload, ulong_t& length, bool finish);
 
         /**
          * ignore length if inputTextLen = (UInt32)(-1)
          */
-        ArsLexis::status_t parseAll(const ArsLexis::char_t*  inputText, UInt32 inputTextLen);
+        status_t parseAll(const char* inputText, long inputTextLen);
 
         DefinitionModel* releaseModel();
         

@@ -136,7 +136,7 @@ private:
 
     };
     
-    void serializeChunk(void* buffer, uint_t length);
+    void serializeChunk(void* buffer, ulong_t length);
     
     void serializeRecord(Record& record);
     

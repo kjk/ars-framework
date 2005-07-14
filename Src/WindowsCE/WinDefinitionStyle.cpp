@@ -4,7 +4,7 @@
 #include <Text.hpp>
 
 #include <wingdi.h>
-#include <shguim.h>
+#include <WindowsCE/shguim.h>
 
 const COLORREF DefinitionStyle::colorNotDefined = DWORD(-1); // COLORREF is DWORD of this form: 0x00bbggrr
 
