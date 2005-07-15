@@ -16,13 +16,13 @@ class Serializable {
 
 public:
 
-    enum {unusedId = uint_t(-1)};
+    enum {unusedIdVer0 = ulong_t(0xffff), unusedId = ulong_t(-1)};
 
     virtual void serialize(Serializer& ser) = 0;
     
-    virtual uint_t schemaVersion() const;
+    virtual ulong_t schemaVersion() const;
 
-    virtual bool serializeInFromVersion(Serializer& ser, uint_t version);
+    virtual bool serializeInFromVersion(Serializer& ser, ulong_t version);
     
     virtual ~Serializable();
 
@@ -30,12 +30,14 @@ public:
 
 class Serializer {
 
+	ulong_t version_;
+	
     BufferedReader* reader_;
     Writer* writer_;
     bool isIndexed_;
     bool skipLastRecord_;
     
-    typedef std::map<std::uint32_t, uint_t> RecordIndex_t;
+    typedef std::map<std::uint32_t, ulong_t> RecordIndex_t;
     RecordIndex_t recordIndex_;
     
     bool indexNextRecord();
@@ -43,8 +45,16 @@ class Serializer {
     void loadIndex();
     
     void assureIndexed() { if (!isIndexed_) loadIndex();}
+   
+   void readVersion();
+   
+   bool oldVersion() const {return 0 == version_;} 
+   
+   enum {unusedIdVer0 = Serializable::unusedIdVer0};
 
 public:
+
+	enum {currentVersion = 1}; // version 0 is what is used in PalmOS InfoMan up to 1.3
 
     enum Direction {
         directionInput,
@@ -61,7 +71,7 @@ public:
 
     Direction direction() const {return direction_;}
     
-    void setDirection(Direction dir) {direction_ = dir;}        
+    void setDirection(Direction dir) {direction_ = dir;} 
 
     enum Error {
         errClass = serializerErrorClass,
@@ -72,23 +82,35 @@ public:
     
     enum {unusedId = Serializable::unusedId};
     
-    Serializer& operator()(bool& value, uint_t id = unusedId);
+    Serializer& operator()(bool& value, ulong_t id = unusedId);
 
-    Serializer& operator()(signed char& value, uint_t id = unusedId);
+    Serializer& operator()(signed char& value, ulong_t id = unusedId);
 
-    Serializer& operator()(unsigned char& value, uint_t id = unusedId);
+    Serializer& operator()(unsigned char& value, ulong_t id = unusedId);
 
-    Serializer& operator()(signed short& value, uint_t id = unusedId);
+    Serializer& operator()(signed short& value, ulong_t id = unusedId);
 
-    Serializer& operator()(unsigned short& value, uint_t id = unusedId);
+    Serializer& operator()(unsigned short& value, ulong_t id = unusedId);
 
-    Serializer& operator()(signed int& value, uint_t id = unusedId);
+    Serializer& operator()(signed int& value, ulong_t id = unusedId);
 
-    Serializer& operator()(unsigned int& value, uint_t id = unusedId);
+    Serializer& operator()(unsigned int& value, ulong_t id = unusedId);
 
-    Serializer& operator()(signed long& value, uint_t id = unusedId);
+    Serializer& operator()(signed long& value, ulong_t id = unusedId);
 
-    Serializer& operator()(unsigned long& value, uint_t id = unusedId);
+    Serializer& operator()(unsigned long& value, ulong_t id = unusedId);
+   
+    
+/*    
+   
+	Serializer& operator()(NarrowString& value, uint_t id = unusedId);
+    
+    Serializer& operator()(char array[], uint_t arraySize, uint_t id = unusedId);
+   
+    
+    Serializer& operator()(DynStrTag& value, uint_t id = unusedId);
+    
+  
     
     Serializer& operator()(String& value, uint_t id = unusedId);
     
@@ -96,7 +118,17 @@ public:
     
     Serializer& operator()(DynStrTag& value, uint_t id = unusedId);
     
-    Serializer& operator()(Serializable& value, uint_t id = unusedId);
+ */    
+
+	// Serializes passed data as a blob, without any transformation
+	Serializer& binary(NarrowString& value, ulong_t id = unusedId);
+	Serializer& binary(void* array, ulong_t size, ulong_t = unusedId);
+	
+	// Converts passed text to UTF-8 encoding prior to serialization
+	Serializer& text(String& value, ulong_t id = unusedId);
+	Serializer& text(char_t* array, ulong_t size, ulong_t = unusedId); 
+    
+    Serializer& operator()(Serializable& value, ulong_t id = unusedId);
     
 private:
 
@@ -110,9 +142,10 @@ private:
         dtUInt,
         dtLong,
         dtULong,
-        dtString,
+        dtStringVer0,
         dtSerializable,
-        dtIsSequence = 0x8000
+        dtBlob,
+        dtText
     };
     
     struct Record {
@@ -132,7 +165,7 @@ private:
         
         Record() {}
         
-        Record(DataType dt, uint_t i): type(dt), id(i) {}
+        Record(DataType dt, ulong_t i): type(dt), id(i) {}
 
     };
     
@@ -145,7 +178,7 @@ private:
     void serializeRecordOut(Record& record);
     
     template<class T, DataType dt>
-    Serializer& serializeSimpleType(T& value, uint_t id)
+    Serializer& serializeSimpleType(T& value, ulong_t id)
     {
         Record record(dt, id);
         record.value = value;

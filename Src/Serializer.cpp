@@ -1,13 +1,15 @@
 #include <Serializer.hpp>
 #include <Writer.hpp>
 #include <BufferedReader.hpp>
-#include <DynStr.hpp>
+// #include <DynStr.hpp>
+
+#define SERIALIZER_MAGIC 'serl'
 
 using namespace std;
 
-bool Serializable::serializeInFromVersion(Serializer& ser, uint_t version) {return false;}
+bool Serializable::serializeInFromVersion(Serializer& ser, ulong_t version) {return false;}
 
-uint_t Serializable::schemaVersion() const {return 1;}
+ulong_t Serializable::schemaVersion() const {return 1;}
 
 Serializable::~Serializable() {}
 
@@ -17,7 +19,8 @@ Serializer::Serializer(Reader& reader):
     writer_(NULL), 
     direction_(directionInput),
     isIndexed_(false),
-    skipLastRecord_(false) 
+    skipLastRecord_(false),
+	version_(0)
 {
     reader_->mark();
 }
@@ -29,7 +32,8 @@ Serializer::Serializer(Reader& reader, Writer& writer, Direction dir):
     writer_(&writer), 
     direction_(dir),
     isIndexed_(false),
-    skipLastRecord_(false) 
+    skipLastRecord_(false) ,
+	version_(currentVersion)
 {
     reader_->mark();
 }
@@ -69,6 +73,10 @@ bool Serializer::indexNextRecord()
         return false;
     if (sizeof(record) != length)
         ErrThrow(errCorrupted);
+    
+	if (oldVersion() && unusedIdVer0 == record.id)
+		record.id = unusedId;     
+    
     if (unusedId != record.id)
         recordIndex_[record.id] = reader_->position() - length;
         
@@ -89,11 +97,29 @@ bool Serializer::indexNextRecord()
     return true;
 }
 
+void Serializer::readVersion()
+{
+	uint32_t magic = 0;
+	serializeChunk(&magic, sizeof(magic));
+	if (SERIALIZER_MAGIC != magic)
+	{
+		version_ = 0;
+		reader_->rewind();
+	}
+	else
+	{
+		uint32_t version = 0;
+		serializeChunk(&version, sizeof(version));
+		version_ = version;
+	}
+}
+
 void Serializer::loadIndex() 
 {
     assert(!isIndexed_);
     isIndexed_ = true;
     bool goOn = true;
+	readVersion(); 
     while (goOn)
         goOn = indexNextRecord();
 }
@@ -118,6 +144,9 @@ void Serializer::serializeRecordIn(Record& record)
         }
     }
     serializeChunk(&buffer, sizeof(buffer));
+	if (oldVersion() && unusedIdVer0 == buffer.id)
+		buffer.id = unusedId;
+		 
     if (buffer.type != record.type || buffer.id != record.id)
         ErrThrow(errCorrupted);
     record = buffer;
@@ -136,52 +165,53 @@ void Serializer::serializeRecord(Record& record)
         serializeRecordOut(record);
 }
 
-Serializer& Serializer::operator()(bool& value, uint_t id)
+Serializer& Serializer::operator()(bool& value, ulong_t id)
 {
     return serializeSimpleType<bool, dtBool>(value, id);    
 }
 
-Serializer& Serializer::operator()(signed char& value, uint_t id)
+Serializer& Serializer::operator()(signed char& value, ulong_t id)
 {
     return serializeSimpleType<signed char, dtChar>(value, id);    
 }
 
-Serializer& Serializer::operator()(unsigned char& value, uint_t id)
+Serializer& Serializer::operator()(unsigned char& value, ulong_t id)
 {
     return serializeSimpleType<unsigned char, dtUChar>(value, id);    
 }
 
-Serializer& Serializer::operator()(signed short& value, uint_t id)
+Serializer& Serializer::operator()(signed short& value, ulong_t id)
 {
     return serializeSimpleType<signed short, dtShort>(value, id);    
 }
 
-Serializer& Serializer::operator()(unsigned short& value, uint_t id)
+Serializer& Serializer::operator()(unsigned short& value, ulong_t id)
 {
     return serializeSimpleType<unsigned short, dtUShort>(value, id);    
 }
 
-Serializer& Serializer::operator()(signed int& value, uint_t id)
+Serializer& Serializer::operator()(signed int& value, ulong_t id)
 {
     return serializeSimpleType<signed int, dtInt>(value, id);    
 }
 
-Serializer& Serializer::operator()(unsigned int& value, uint_t id)
+Serializer& Serializer::operator()(unsigned int& value, ulong_t id)
 {
     return serializeSimpleType<unsigned int, dtUInt>(value, id);    
 }
 
-Serializer& Serializer::operator()(signed long& value, uint_t id)
+Serializer& Serializer::operator()(signed long& value, ulong_t id)
 {
     return serializeSimpleType<signed long, dtLong>(value, id);    
 }
 
-Serializer& Serializer::operator()(unsigned long& value, uint_t id)
+Serializer& Serializer::operator()(unsigned long& value, ulong_t id)
 {
     return serializeSimpleType<unsigned long, dtULong>(value, id);    
 }
 
-Serializer& Serializer::operator()(String& value, uint_t id)
+/*
+Serializer& Serializer::operator()(String& value, ulong_t id)
 {
     String::size_type length = value.length();
     serializeSimpleType<String::size_type, dtString>(length, id);
@@ -245,15 +275,16 @@ Serializer& Serializer::operator()(char_t array[], uint_t arraySize, uint_t id)
     }
     return *this;
 }
-
-Serializer& Serializer::operator()(Serializable& object, uint_t id)
+ */
+ 
+Serializer& Serializer::operator()(Serializable& object, ulong_t id)
 {
     
-    uint_t schemaVersion = object.schemaVersion();
+    ulong_t schemaVersion = object.schemaVersion();
     if (directionInput == direction_)
     {
-        uint_t storedSchemaVersion = schemaVersion;
-        serializeSimpleType<uint_t, dtSerializable>(storedSchemaVersion, id);
+        ulong_t storedSchemaVersion = schemaVersion;
+        serializeSimpleType<ulong_t, dtSerializable>(storedSchemaVersion, id);
         if (skipLastRecord_)
             return *this;
         if (storedSchemaVersion == schemaVersion)
@@ -263,7 +294,7 @@ Serializer& Serializer::operator()(Serializable& object, uint_t id)
     }
     else
     {
-        serializeSimpleType<uint_t, dtSerializable>(schemaVersion, id);
+        serializeSimpleType<ulong_t, dtSerializable>(schemaVersion, id);
         object.serialize(*this);
     }
     return *this;

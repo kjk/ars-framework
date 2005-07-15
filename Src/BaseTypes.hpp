@@ -51,12 +51,14 @@ typedef unsigned long ulong_t;
 # define ErrTry __try
 # define ErrCatch(theErr) __except (EXCEPTION_EXECUTE_HANDLER) { DWORD theErr=GetExceptionCode();
 # define ErrEndCatch }
+# define ErrThrow(err) RaiseException((err), 0, 0, NULL); 
 
 #else
 
 # define ErrTry try
 # define ErrCatch(theErr) catch (long theErr) 
 # define ErrEndCatch 
+# define ErrThrow(err) throw(long(err))
 
 #endif
 

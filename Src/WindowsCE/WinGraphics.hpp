@@ -5,7 +5,7 @@
 #include <BaseTypes.hpp>
 #include <Geometry.hpp>
 #include <Utility.hpp>
-#include "WinFont.h"
+#include <WindowsCE/WinFont.h>
 
 class DefinitionStyle;
 

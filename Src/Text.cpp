@@ -1456,6 +1456,15 @@ void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen)
 }
 #endif
 
+void strip(String& str)
+{
+	const wchar_t* d = str.data();
+	ulong_t l = str.length();
+	strip(d, l);
+	str.erase(0, d - str.data());
+	str.resize(l);
+}
+
 
 #ifdef DEBUG
 

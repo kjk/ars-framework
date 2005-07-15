@@ -1,7 +1,7 @@
 #include <Debug.hpp>
 #include <Text.hpp>
-#include "WinGraphics.hpp"
-#include "DefinitionStyle.hpp"
+#include <WindowsCE/WinGraphics.hpp>
+#include <DefinitionStyle.hpp>
 
 Graphics::Graphics(const NativeGraphicsHandle_t& handle):
     handle_(handle), 
@@ -183,7 +183,7 @@ uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx
 {
     int     lenThatFits;
     SIZE    size;
-    int     textLen = tstrlen(text);
+    int     textLen = Len(text);
 
 DoItAgain:
     GetTextExtentExPoint(handle_, text, textLen, availableDx, &lenThatFits, NULL, &size);

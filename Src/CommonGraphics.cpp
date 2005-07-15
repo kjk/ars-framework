@@ -5,9 +5,6 @@
 #pragma pcrelconstdata on
 #endif
 
-using ArsLexis::char_t;
-using ArsLexis::String;
-
 typedef Graphics::Color_t (Graphics::* ColorSetterMethod_t)(Graphics::Color_t);
 static ColorSetterMethod_t colorSetters[]={&Graphics::setTextColor, &Graphics::setForegroundColor, &Graphics::setBackgroundColor};
 
@@ -28,7 +25,7 @@ void Graphics::drawCenteredText(const char_t* str, const Point& topLeft, uint_t 
     drawText(str, len, point);
 }
 
-void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t& lengthOut, uint_t& widthInOut, bool fFullWords)
+void Graphics::stripToWidthWithEllipsis(char_t* textInOut, uint_t& lengthOut, uint_t& widthInOut, bool fFullWords)
 {
     uint_t width = widthInOut;
     uint_t origLen = tstrlen(textInOut);
@@ -44,10 +41,17 @@ void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t& lengthOut, ui
 
     assert( newLen < origLen );
 
+
     // we need to add "..." (remember, that you can't add more than origLen!)
-    uint_t ellipsisWidth = 100;
-    uint_t ellipsisLength = 3;
-    charsInWidth(_T("..."), ellipsisLength, ellipsisWidth);
+#if defined(_PALM_OS)
+    const char ellipsis[] = {chrEllipsis, chrNull};
+    uint_t ellipsisLength = 1;
+#elif defined(_WIN32_WCE)
+    const char_t ellipsis[] = {0x2026, 0};
+    uint_t ellipsisLength = 1;
+#endif 
+    
+    uint_t ellipsisWidth = textWidth(ellipsis, ellipsisLength);
     width = widthInOut - ellipsisWidth;
 
     if (!fFullWords)
@@ -56,11 +60,9 @@ void Graphics::stripToWidthWithEllipsis(char_t *textInOut, uint_t& lengthOut, ui
         newLen = wordWrap(textInOut, width, width);
 
     if (origLen < newLen + ellipsisLength)
-        newLen = origLen - ellipsisLength;
-    textInOut[newLen-1] = _T('.');
-    textInOut[newLen+0] = _T('.');
-    textInOut[newLen+1] = _T('.');
-    textInOut[newLen+2] = chrNull;
+        newLen = origLen - 1;
+        
+    memmove(textInOut + newLen - 1, ellipsis, ellipsisLength + 1);
     charsInWidth(textInOut, lengthOut, widthInOut);
 }
 
@@ -76,10 +78,17 @@ void Graphics::stripToWidthWithEllipsis(String& textInOut, uint_t& lengthInOut, 
         lengthInOut = length;
         return;
     }
+    
     // we need to add "..."
-    uint_t ellipsisWidth = 100;
-    uint_t ellipsisLength = 3;
-    charsInWidth(_T("..."), ellipsisLength, ellipsisWidth);
+#if defined(_PALM_OS)
+    const char ellipsis[] = {chrEllipsis, chrNull};
+    uint_t ellipsisLength = 1;
+#elif defined(_WIN32_WCE)
+    const char_t ellipsis[] = {0x2026, 0};
+    uint_t ellipsisLength = 1;
+#endif 
+    
+    uint_t ellipsisWidth = textWidth(ellipsis, ellipsisLength);
     width = widthInOut - ellipsisWidth;
     length = lengthInOut;
     if (!fFullWords)
@@ -87,7 +96,7 @@ void Graphics::stripToWidthWithEllipsis(String& textInOut, uint_t& lengthInOut, 
         // just wrap
         charsInWidth(textInOut.c_str(), length, width);
         textInOut.erase(length);
-        textInOut.append(_T("..."));
+        textInOut.append(ellipsis, ellipsisLength);
         lengthInOut = textInOut.length();
         charsInWidth(textInOut.c_str(), lengthInOut, widthInOut);
         return;
@@ -97,7 +106,7 @@ void Graphics::stripToWidthWithEllipsis(String& textInOut, uint_t& lengthInOut, 
         // wrap word
         length = wordWrap(textInOut.c_str(), width, width);
         textInOut.erase(length);
-        textInOut.append(_T("..."));
+        textInOut.append(ellipsis, ellipsisLength);
         lengthInOut = length + ellipsisLength;
         widthInOut = width + ellipsisWidth;
         return;    

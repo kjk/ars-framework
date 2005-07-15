@@ -188,8 +188,6 @@ char_t *StrToUtf16(const char *txt, long txtLen = -1);
 
 // bool StrEmpty(const char_t *str);
 
-// void StrStrip(char_t *str);
-
 /**
  * outLength must be inLength*2 ("?text?"->"3f746578743f")
  * return used length of out buffer (2*inLength)
