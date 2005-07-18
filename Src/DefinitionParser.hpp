@@ -25,7 +25,7 @@ class ListNumberElement;
  * When all data is received @c parseIncrement(true) should be called to parse all the
  * remeining lines.
  */
-class DefinitionParser: public TextIncrementalProcessor
+class DefinitionParser: public BinaryIncrementalProcessor
 {
     void clear();
     

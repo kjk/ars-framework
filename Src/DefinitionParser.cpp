@@ -457,7 +457,7 @@ status_t DefinitionParser::detectHyperlink(ulong_t end, bool& result)
         insideHyperlink_ = false;
         result = true;
     }
-    return result;
+    return errNone;
 }
 
 namespace {
@@ -546,7 +546,7 @@ status_t DefinitionParser::createTextElement(const char* text, long length, Text
     bool hyperlinkIsTerm = false;
     
 #ifdef INFOMAN
-    ulong_t schemaLen = tstrlen(urlSchemaEncyclopediaTerm) + 1;
+    ulong_t schemaLen = Len(urlSchemaEncyclopediaTerm) + 1;
     if (insideHyperlink_ && 0 == hyperlinkTarget_.find(urlSchemaEncyclopediaTerm urlSeparatorSchemaStr))
         hyperlinkIsTerm = true;
 #else
@@ -564,13 +564,13 @@ status_t DefinitionParser::createTextElement(const char* text, long length, Text
 #else
         ulong_t startPos = 0;
 #endif
-        if (startPos == hyperlinkTarget_.find(copy, startPos))
+        if (startPos == hyperlinkTarget_.find(text, startPos))
         {
-            long colonPos = StrFind(copy, length, ':');
+            long colonPos = StrFind(text, length, ':');
             // This is to remove possible lang: part from hyperlink caption.
             if (-1 != colonPos)
             {
-                langName = GetLangNameByLangCode(copy, colonPos); 
+                langName = GetLangNameByLangCode(text, colonPos); 
                 if (NULL != langName)
                 {
 					length -= colonPos + 1; 
