@@ -651,14 +651,14 @@ void Definition::doRender(Graphics& graphics, const ArsRectangle& bounds, bool f
 
 status_t Definition::render(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate)
 {
-    volatile status_t error=errNone;
+    status_t err = errNone;
     ErrTry {
         doRender(graphics, bounds, forceRecalculate);
     }
     ErrCatch(ex) {
-        error=ex;
+        err = ex;
     } ErrEndCatch
-    return error;
+    return err;
 }
  
 void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end)

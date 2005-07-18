@@ -246,14 +246,15 @@ status_t StringAppend(std::basic_string<Ch>& out, const Str& app)
 template<class Ch>
 status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len = -1)
 {
+    status_t err = errNone;
 	if (-1 == len) len = Len(str);
 	ErrTry {
 		out.append(str, len);
 	} 
 	ErrCatch(ex) {
-		return ex;
+		err = ex;
 	} ErrEndCatch
-	return errNone;
+	return err;
 }
 
 #ifdef DEBUG

@@ -69,7 +69,7 @@ DefinitionElement* DefinitionParser::currentParent()
 
 status_t DefinitionParser::pushParent(DefinitionElement* parent)
 {
-	volatile status_t err = errNone;
+    status_t err = errNone;
 	ErrTry {
 		parentsStack_.push_back(parent);
 	}
@@ -810,8 +810,8 @@ status_t DefinitionParser::appendElement(DefinitionElement* element)
 	if (NULL == element)
 		return memErrNotEnoughSpace;
 		
-	volatile status_t err = errNone;
     element->setParent(currentParent());
+       status_t err = errNone;
 	ErrTry {
 		elements_.push_back(element);
 	}
@@ -831,7 +831,7 @@ status_t DefinitionParser::appendListNumber(ListNumberElement* element)
 	if (NULL == element)
 		return memErrNotEnoughSpace;
 		
-	volatile status_t err = errNone;
+	status_t err = errNone;
 	ErrTry {
 		currentNumberedList_.push_back(element);
 	}
@@ -941,8 +941,8 @@ status_t DefinitionParser::parseTextLine()
 
 status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bool finish)
 {
-    volatile status_t err = errNone;
-    ErrTry {
+     volatile status_t err = errNone;
+     ErrTry {
 		NarrowString strText(text, length);
         text_ = &strText;
         parsePosition_ = 0;
@@ -963,7 +963,7 @@ status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bo
 				{ 
                     err = manageListNesting("");
                     if (errNone != err)
-						return err;
+                        goto Finish;
                 }
 
                 switch (lineType_)
@@ -996,7 +996,7 @@ status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bo
                         assert(false);        
                 }
 				if (errNone != err)
-					return err;
+                    goto Finish;
 					 
                 parsePosition_ = lineEnd_ + 1;
             }
@@ -1010,20 +1010,22 @@ status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bo
             {
                 err = manageListNesting("");
 				if (errNone != err)
-					return err;
+                            goto Finish;
 			} 
             
             assert(numListsStack_.empty());
             assert(currentNumberedList_.empty());            
         }
+Finish:
         if (!finish)
             length = parsePosition_;
     }
-    ErrCatch (ex) {
-        clear();
+     ErrCatch (ex) {
         err = ex;
     } ErrEndCatch
-	return err;
+    if (errNone != err)
+        clear();
+    return err;
 }
 
 //! @todo Add header indexing

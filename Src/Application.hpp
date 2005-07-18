@@ -326,10 +326,10 @@ private:
 template<class AppClass> 
 Err Application::main(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags)
 {
-    Err error=Application::checkRomVersion(AppClass::requiredRomVersion, launchFlags, AppClass::romIncompatibleAlertId);
+    volatile Err error=Application::checkRomVersion(AppClass::requiredRomVersion, launchFlags, AppClass::romIncompatibleAlertId);
     if (error)
         return error;
-    AppClass* volatile app=static_cast<AppClass*>(getInstance(AppClass::creatorId));
+    AppClass* app=static_cast<AppClass*>(getInstance(AppClass::creatorId));
     if (app)
         error=app->handleLaunchCode(cmd, cmdPBP, launchFlags);
     else
