@@ -1455,14 +1455,37 @@ void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen)
 		target[tlen - efrom - elen] = L'\0';
 }
 
-void strip(String& str)
+template<class Ch>
+void strip(std::basic_string<Ch>& str)
 {
-	const wchar_t* d = str.data();
+	const Ch* d = str.data();
 	ulong_t l = str.length();
 	strip(d, l);
 	str.erase(0, d - str.data());
 	str.resize(l);
 }
+
+template<class Ch>
+status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len)
+{
+    status_t err = errNone;
+	if (-1 == len) len = Len(str);
+	ErrTry {
+		out.append(str, len);
+	} 
+	ErrCatch(ex) {
+		err = ex;
+	} ErrEndCatch
+	return err;
+}
+
+template status_t StringAppend<char>(std::string& out, const char* str, long len);
+template void strip<char>(std::string& str);
+
+#ifdef _WIN32_WCE
+template status_t StringAppend<wchar_t>(std::wstring& out, const wchar_t* str, long len);
+template void strip<wchar_t>(std::wstring& str);
+#endif
 
 #endif
 

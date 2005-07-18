@@ -62,6 +62,8 @@ typedef unsigned long ulong_t;
 
 #endif
 
+# define ErrReturn(val) return (val)
+
 namespace ArsLexis
 {
     struct EventType
@@ -124,6 +126,9 @@ namespace ArsLexis
 #  define memmove  MemMove
 // yes, MemSet has different order than memset
 #  define memzero(data,size)  MemSet((data), (size), 0)
+
+#define ErrReturn(val) *ErrExceptionList() = (MemPtr)_TryObject.nextP; return (val)
+
 # else
 
 #  define tprintf sprintf

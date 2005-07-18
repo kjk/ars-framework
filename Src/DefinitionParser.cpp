@@ -943,11 +943,16 @@ status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bo
 {
      volatile status_t err = errNone;
      ErrTry {
-		NarrowString strText(text, length);
+        bool goOn = false;
+        
+		NarrowString strText;
+		err = StringAppend(strText, text, length);
+		if (errNone != err)
+			goto Finish;
+			
         text_ = &strText;
         parsePosition_ = 0;
         lineEnd_ = 0;
-        bool goOn = false;
         do 
         {
 #ifndef NDEBUG    
@@ -1010,7 +1015,7 @@ status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bo
             {
                 err = manageListNesting("");
 				if (errNone != err)
-                            goto Finish;
+					goto Finish;
 			} 
             
             assert(numListsStack_.empty());

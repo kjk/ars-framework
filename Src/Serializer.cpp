@@ -1,7 +1,8 @@
 #include <Serializer.hpp>
 #include <Writer.hpp>
 #include <BufferedReader.hpp>
-// #include <DynStr.hpp>
+#include <Text.hpp>
+#include <UTF8_Processor.hpp>
 
 #define SERIALIZER_MAGIC 'serl'
 
@@ -20,12 +21,13 @@ Serializer::Serializer(Reader& reader):
     direction_(directionInput),
     isIndexed_(false),
     skipLastRecord_(false),
-	version_(0)
+	version_(0),
+	buffer_(NULL)
 {
     reader_->mark();
 }
 
-Serializer::Serializer(Writer& writer): reader_(NULL), writer_(&writer), direction_(directionOutput), isIndexed_(false), skipLastRecord_(false), version_(currentVersion) 
+Serializer::Serializer(Writer& writer): reader_(NULL), writer_(&writer), direction_(directionOutput), isIndexed_(false), skipLastRecord_(false), version_(currentVersion), buffer_(NULL) 
 {
 	writeVersion(); 
 }
@@ -36,7 +38,8 @@ Serializer::Serializer(Reader& reader, Writer& writer, Direction dir):
     direction_(dir),
     isIndexed_(false),
     skipLastRecord_(false) ,
-	version_(currentVersion)
+	version_(currentVersion),
+	buffer_(NULL)
 {
     reader_->mark();
 	if (directionOutput == direction_)
@@ -46,6 +49,7 @@ Serializer::Serializer(Reader& reader, Writer& writer, Direction dir):
 Serializer::~Serializer() 
 {
     delete reader_;
+	free(buffer_); 
 }
 
 void Serializer::serializeChunk(void* buffer, ulong_t length)
@@ -164,8 +168,10 @@ void Serializer::serializeRecordIn(Record& record)
     if (buffer.id != record.id)
         ErrThrow(errCorrupted);
 
-	// TODO: work out how to read dtStringVer0
-    
+	if (buffer.type != buffer.type)
+		if (!(dtStringVer0 == buffer.type && (dtBlob == record.type || dtText == record.type)))
+			ErrThrow(errCorrupted);
+
     record = buffer;
 }
 
@@ -227,73 +233,164 @@ Serializer& Serializer::operator()(unsigned long& value, ulong_t id)
     return serializeSimpleType<unsigned long, dtULong>(value, id);    
 }
 
+Serializer& Serializer::narrow(NarrowString& value, ulong_t id)
+{
+	ulong_t length = value.length();
+    serializeSimpleType<ulong_t, dtBlob>(length, id);
+    if (directionOutput == direction_)
+        serializeChunk((char*)value.data(), length);
+    else if (!skipLastRecord_)
+    {
+		value.resize(length); 
+        serializeChunk(&value[0], length);
+    }
+    return *this;
+}
+
+Serializer& Serializer::binary(void* array, ulong_t size, ulong_t id)
+{
+	ulong_t length = size;
+    serializeSimpleType<ulong_t, dtBlob>(length, id);
+    if (directionOutput == direction_)
+        serializeChunk(array, length);
+    else if (!skipLastRecord_)
+	{
+		if (size < length)
+			ErrThrow(errBufferTooSmall);
+		serializeChunk(array, length);
+		if (length < size)
+			((char*)array)[length] = '\0';
+	} 
+	return *this;
+}
+
+Serializer& Serializer::narrowOut(const char* str, long len, ulong_t id)
+{
+	if (directionOutput != direction_)
+		return *this;
+		
+	if (-1 == len) len = Len(str);
+	ulong_t length = len;
+    serializeSimpleType<ulong_t, dtBlob>(length, id);
+    serializeChunk((char*)str, length);
+	return *this; 
+}
+
+Serializer& Serializer::narrowIn(char*& str, ulong_t* len, ulong_t id)
+{
+	if (directionInput != direction_)
+		return *this;
+		
+	ulong_t length;
+	serializeSimpleType<ulong_t, dtBlob>(length, id);
+	if (skipLastRecord_)
+		return *this;
+	
+	free(buffer_);
+	buffer_ = NULL;
+	
+	char* p = (char*)malloc(length + 1);
+	if (NULL == p)
+		ErrThrow(memErrNotEnoughSpace);
+	
+	buffer_ = p;
+	serializeChunk(p, length);
+	p[length] = '\0';
+
+	if (NULL != len)
+		*len = length;
+	
+	free(str);
+	str = p;
+	buffer_ = NULL;	
+	return *this;
+}
+
+Serializer& Serializer::narrow(char*& str, ulong_t* len, ulong_t id)
+{
+	if (directionOutput == direction_)
+	{
+		long length = -1;
+		if (NULL != len) length = *len;
+		return narrowOut(str, length, id); 
+	}
+	else
+		return narrowIn(str, len, id);
+}
+
 /*
-Serializer& Serializer::operator()(String& value, ulong_t id)
-{
-    String::size_type length = value.length();
-    serializeSimpleType<String::size_type, dtString>(length, id);
-    if (directionOutput == direction_)
-        serializeChunk(&value[0], sizeof(char_t) * length);
-    else if (!skipLastRecord_)
-    {
-        value.resize(length);
-        serializeChunk(&value[0], sizeof(char_t) * length);
-    }
-    return *this;
-}
+Serializer& Serializer::text(String& value, ulong_t id = unusedId);
 
-Serializer& Serializer::operator()(DynStr& value, uint_t id)
-{
-    ulong_t len = DynStrLen(&value);
-    serializeSimpleType<ulong_t, dtString>(len, id);
-    char_t* data;
-    if (directionOutput == direction_)
-    {
-        data = DynStrGetData(&value);
-        serializeChunk(data, sizeof(char_t) * len);
-    }
-    else if (!skipLastRecord_)
-    {
-        if (0 == len)
-        {
-            data = DynStrReleaseStr(&value);
-            if (NULL != data)
-                free(data);
-        }
-        else
-        {
-            data = (char_t*)malloc((len + 1) * sizeof(char_t));
-            if (NULL == data)
-                ErrThrow(memErrNotEnoughSpace);
-            
-            memzero(data, (len + 1) * sizeof(char_t));
-            serializeChunk(data, len * sizeof(char_t));
-            
-            DynStrAttachCharPBuf(&value, data, len, len + 1);
-        }
-    }
-    return *this;
-}
-
-Serializer& Serializer::operator()(char_t array[], uint_t arraySize, uint_t id)
-{
-    String::size_type length;
-    if (directionOutput == direction_)
-        length = tstrlen(array);
-    serializeSimpleType<String::size_type, dtString>(length, id);
-    if (directionOutput == direction_)
-        serializeChunk(array, length * sizeof(*array));
-    else if (!skipLastRecord_)
-    {
-        if (arraySize < length + 1)
-            ErrThrow(errBufferTooSmall);
-        serializeChunk(array, length * sizeof(*array));
-        array[length] = _T('\0');
-    }
-    return *this;
-}
+Serializer& Serializer::text(char_t* array, ulong_t size, ulong_t = unusedId); 
  */
  
+Serializer& Serializer::textOut(const char_t* str, long len, ulong_t id)
+{
+	if (directionOutput != direction_)
+		return *this;
+	
+	ulong_t length;
+	free(buffer_);
+	buffer_ = UTF8_FromNative(str, len, &length);
+	if (NULL == buffer_)
+		ErrThrow(memErrNotEnoughSpace);
+		
+	serializeSimpleType<ulong_t, dtText>(length, id);
+	serializeChunk(buffer_, length);
+	
+	free(buffer_);
+	buffer_ = NULL;
+	return *this;
+}
+
+Serializer& Serializer::textIn(char_t*& str, ulong_t* len, ulong_t id)
+{
+	if (directionInput != direction_)
+		return *this;
+		
+	ulong_t length;
+	serializeSimpleType<ulong_t, dtText>(length, id);
+	if (skipLastRecord_)
+		return *this;
+	
+	free(buffer_);
+	buffer_ = NULL;
+	
+	char* p = (char*)malloc(length);
+	if (NULL == p)
+		ErrThrow(memErrNotEnoughSpace);
+	
+	buffer_ = p;
+	serializeChunk(buffer_, length);
+	
+	ulong_t slen;
+	char_t* s = UTF8_ToNative(p, length, &slen);
+	
+	free(buffer_);
+	buffer_ = NULL;
+	
+	if (NULL == s)
+		ErrThrow(memErrNotEnoughSpace);
+	
+	free(str);
+	str = s;
+	if (NULL != len)
+		*len = slen;
+	return *this;
+}
+
+Serializer& Serializer::text(char_t*& str, ulong_t* len, ulong_t id)
+{
+	if (directionOutput == direction_)
+	{
+		long length = -1;
+		if (NULL != len) length = *len;
+		return textOut(str, length, id); 
+	}
+	else
+		return textIn(str, len, id);
+}
+
 Serializer& Serializer::operator()(Serializable& object, ulong_t id)
 {
     
@@ -318,16 +415,3 @@ Serializer& Serializer::operator()(Serializable& object, ulong_t id)
 }
 
 
-Serializer& Serializer::binary(NarrowString& value, ulong_t id)
-{
-    String::size_type length = value.length();
-    serializeSimpleType<String::size_type, dtBlob>(length, id);
-    if (directionOutput == direction_)
-        serializeChunk(&value[0], sizeof(char_t) * length);
-    else if (!skipLastRecord_)
-    {
-        value.resize(length);
-        serializeChunk(&value[0], sizeof(char_t) * length);
-    }
-    return *this;
-}

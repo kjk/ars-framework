@@ -158,8 +158,6 @@ std::vector<ArsLexis::String> split(const String& str, const char_t* splitter = 
 String join(const std::vector<ArsLexis::String>& vec, const char_t* joiner = _T(" "));
 */
 
-void strip(String& str);
-
 
 void replaceCharInString(char_t *str, char_t orig, char_t replacement);
 
@@ -244,18 +242,10 @@ status_t StringAppend(std::basic_string<Ch>& out, const Str& app)
  */
 
 template<class Ch>
-status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len = -1)
-{
-    status_t err = errNone;
-	if (-1 == len) len = Len(str);
-	ErrTry {
-		out.append(str, len);
-	} 
-	ErrCatch(ex) {
-		err = ex;
-	} ErrEndCatch
-	return err;
-}
+status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len = -1);
+
+template<class Ch>
+void strip(std::basic_string<Ch>& str);
 
 #ifdef DEBUG
 void test_TextUnitTestAll();

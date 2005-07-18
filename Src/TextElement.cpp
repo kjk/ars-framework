@@ -322,7 +322,4 @@ status_t TextElement::setText(const char_t* text, long len)
 {
 	text_.clear();
 	return StringAppend(text_, text, len);
- 
-//    text_.assign(text, len);
-//    return errNone;
 }

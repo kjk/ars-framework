@@ -10,8 +10,6 @@ class Writer;
 class Serializer;
 class BufferedReader;
 
-struct DynStrTag;
-
 class Serializable {
 
 public:
@@ -36,6 +34,7 @@ class Serializer {
     Writer* writer_;
     bool isIndexed_;
     bool skipLastRecord_;
+	void* buffer_; 
     
     typedef std::map<std::uint32_t, ulong_t> RecordIndex_t;
     RecordIndex_t recordIndex_;
@@ -123,12 +122,19 @@ public:
  */    
 
 	// Serializes passed data as a blob, without any transformation
-	Serializer& binary(NarrowString& value, ulong_t id = unusedId);
-	Serializer& binary(void* array, ulong_t size, ulong_t = unusedId);
+	Serializer& binary(void* array, ulong_t size, ulong_t id = unusedId);
+	
+	Serializer& narrow(NarrowString& value, ulong_t id = unusedId);
+	Serializer& narrowOut(const char* str, long len = -1, ulong_t id = unusedId);
+	Serializer& narrowIn(char*& str, ulong_t* len = NULL, ulong_t id = unusedId);
+	Serializer& narrow(char*& str, ulong_t* len = NULL, ulong_t id = unusedId);
 	
 	// Converts passed text to UTF-8 encoding prior to serialization
 	Serializer& text(String& value, ulong_t id = unusedId);
 	Serializer& text(char_t* array, ulong_t size, ulong_t = unusedId); 
+	Serializer& textOut(const char_t* str, long len = -1, ulong_t id = unusedId);
+	Serializer& textIn(char_t*& str, ulong_t* len = NULL, ulong_t id = unusedId);
+	Serializer& text(char_t*& str, ulong_t* len = NULL, ulong_t id = unusedId);
     
     Serializer& operator()(Serializable& value, ulong_t id = unusedId);
     
@@ -186,7 +192,18 @@ private:
         record.value = value;
         serializeRecord(record);
         if (directionInput == direction_)
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4800)
+#endif
+
             value = record.value;
+   
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif 
+
         return *this;
     }
     
