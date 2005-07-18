@@ -14,9 +14,6 @@
 #include <Text.hpp>
 #include <LangNames.hpp>
 
-typedef std::auto_ptr<ParagraphElement> ParagraphPtr;
-typedef std::auto_ptr<TextElement> TextPtr;
-typedef std::auto_ptr<DefinitionElement> ElementPtr;
 
 DefinitionParser::DefinitionParser():
     openEmphasize_(false),
@@ -39,7 +36,7 @@ DefinitionParser::DefinitionParser():
     lineType_(emptyLine),
     previousLineType_(emptyLine),
     textPosition_(0),
-    defaultLanguage(_T(""))
+    defaultLanguage("")
 {
 }    
 
@@ -65,15 +62,21 @@ DefinitionParser::~DefinitionParser()
 
 DefinitionElement* DefinitionParser::currentParent()
 {
-    DefinitionElement* result = 0;
     if (!parentsStack_.empty())
-        result = parentsStack_.back();
-    return result;
+        return parentsStack_.back();
+    return NULL;
 }
 
-void DefinitionParser::pushParent(DefinitionElement* parent)
+status_t DefinitionParser::pushParent(DefinitionElement* parent)
 {
-    parentsStack_.push_back(parent);
+	volatile status_t err = errNone;
+	ErrTry {
+		parentsStack_.push_back(parent);
+	}
+	ErrCatch(ex) {
+		err = ex;
+	} ErrEndCatch
+	return err;
 }
 
 void DefinitionParser::popParent()
@@ -82,24 +85,18 @@ void DefinitionParser::popParent()
     parentsStack_.pop_back();
 }
 
-void DefinitionParser::popAvailableParent()
-{
-    if (!parentsStack_.empty())
-        parentsStack_.pop_back();
-}
-
 inline bool DefinitionParser::isPlainText() const
 {
     return !(openEmphasize_ || openStrong_ || openVeryStrong_ || openTypewriter_ ||
         openSmall_ || openStrikeout_ || openUnderline_ || openSubscript_ || openSuperscript_);
 }
 
-void DefinitionParser::applyCurrentFormatting(TextElement* element)
+status_t DefinitionParser::applyCurrentFormatting(TextElement* element)
 {
     assert(NULL != element);
     DefinitionStyle* style = new_nt DefinitionStyle();
     if (NULL == style)
-        return;
+        return memErrNotEnoughSpace;
 
 #ifdef _PALM_OS
     style->reset();
@@ -151,8 +148,10 @@ void DefinitionParser::applyCurrentFormatting(TextElement* element)
 
 #endif
 
+	return errNone;
 }
 
+/*
 #define entityReferenceStart _T('&')
 #define entityReferenceEnd   _T(';')
 
@@ -202,79 +201,84 @@ void DefinitionParser::decodeHTMLCharacterEntityRefs(String& text) const
         ++index;
     }
 }
+ */
 
 namespace {
 
-    static const char_t indentLineChar=':';
-    static const char_t bulletChar='*';
-    static const char_t numberedListChar='#';
-    static const char_t headerChar='=';
-    static const char_t strongChar='\'';
-    static const char_t htmlTagStart='<';
-    static const char_t htmlTagEnd='>';
-    static const char_t htmlClosingTagChar='/';
-    static const char_t horizontalLineChar='-';
-    static const char_t definitionListChar=';';
-    static const char_t linkOpenChar='[';
-    static const char_t linkCloseChar=']';
+    static const char indentLineChar=':';
+    static const char bulletChar='*';
+    static const char numberedListChar='#';
+    static const char headerChar='=';
+    static const char strongChar='\'';
+    static const char htmlTagStart='<';
+    static const char htmlTagEnd='>';
+    static const char htmlClosingTagChar='/';
+    static const char horizontalLineChar='-';
+    static const char definitionListChar=';';
+    static const char linkOpenChar='[';
+    static const char linkCloseChar=']';
 
 }
 
-#define horizontalLineString _T("----")
-#define sectionString _T("==")
-#define subSectionString _T("===")
-#define subSubSectionString _T("====")
-#define listCharacters _T("*#:")
+#define horizontalLineString "----"
+#define sectionString "=="
+#define subSectionString "==="
+#define subSubSectionString "===="
+#define listCharacters "*#:"
 
-#define emphasizeText _T("''")
-#define strongText _T("'''")
-#define veryStrongText _T("''''")
+#define emphasizeText "''"
+#define strongText "'''"
+#define veryStrongText "''''"
 
-bool DefinitionParser::detectStrongTag(uint_t end)
+status_t DefinitionParser::detectStrongTag(ulong_t  end, bool& isStrongTag)
 {
-    bool isStrongTag = false;
+	status_t err = errNone;
+    isStrongTag = false;
     if (startsWith(textLine_, emphasizeText, textPosition_))
     {
-        createTextElement();
+        err = createTextElement();
+        if (errNone != err)
+			return err;
+			
         if (startsWith(textLine_, strongText, textPosition_))
         {
             isStrongTag = true;
             if (startsWith(textLine_, veryStrongText, textPosition_))
             {
-                textPosition_ += tstrlen(veryStrongText);
-                openVeryStrong_=!openVeryStrong_;
+                textPosition_ += Len(veryStrongText);
+                openVeryStrong_ = !openVeryStrong_;
             }
             else
             {
-                textPosition_ += tstrlen(strongText);
-                openStrong_=!openStrong_;
+                textPosition_ += Len(strongText);
+                openStrong_ = !openStrong_;
             }
         }
         else
         {
             isStrongTag = true;
-            textPosition_ += tstrlen(emphasizeText);
-            openEmphasize_=!openEmphasize_;
+            textPosition_ += Len(emphasizeText);
+            openEmphasize_ = !openEmphasize_;
         }
     }
-    return isStrongTag;
+    return errNone;
 }
 
-#define nowikiText _T("nowiki")
-#define teleTypeText _T("tt")
-#define lineBreakText _T("br")
-#define smallText _T("small")
-#define strikeOutText _T("strike")
-#define underlineText _T("u")
-#define subscriptText _T("sub")
-#define superscriptText _T("sup")
+#define nowikiText "nowiki"
+#define teleTypeText "tt"
+#define lineBreakText "br"
+#define smallText "small"
+#define strikeOutText "strike"
+#define underlineText "u"
+#define subscriptText "sub"
+#define superscriptText "sup"
 
-bool DefinitionParser::detectHTMLTag(uint_t end)
+status_t DefinitionParser::detectHTMLTag(ulong_t end, bool& result)
 {
-    bool result = false;
-    uint_t tagStart = textPosition_ + 1;
+    result = false;
+    ulong_t tagStart = textPosition_ + 1;
     bool isClosing = false;
-    if (tagStart<end && htmlClosingTagChar == textLine_[tagStart])
+    if (tagStart < end && htmlClosingTagChar == textLine_[tagStart])
     {
         ++tagStart;
         isClosing = true;
@@ -282,78 +286,77 @@ bool DefinitionParser::detectHTMLTag(uint_t end)
     if (tagStart<end)
     {
         String::size_type tagEndPos = textLine_.find(htmlTagEnd, tagStart);
-        uint_t tagEnd=(tagEndPos == textLine_.npos)?end:tagEndPos;
+        ulong_t tagEnd = (tagEndPos == textLine_.npos)?end:tagEndPos;
         if (tagEnd<end)
         {
             if (startsWithIgnoreCase(textLine_, nowikiText, tagStart))
             {
-                createTextElement();
-                openNowiki_+=(isClosing?-1:1);
+                openNowiki_ += (isClosing?-1:1);
                 result = true;
             }
             else if (0 == openNowiki_)
             {
                 if (startsWithIgnoreCase(textLine_, teleTypeText, tagStart))
                 {
-                    createTextElement();
-                    openTypewriter_+=(isClosing?-1:1);
+                    openTypewriter_ += (isClosing?-1:1);
                     result = true;
                 }
                 else if (startsWithIgnoreCase(textLine_, lineBreakText, tagStart))
                 {
-                    createTextElement();
-                    std::auto_ptr<LineBreakElement> p(new LineBreakElement());
-                    appendElement(p.get());
-                    p.release();
+                    appendElement(new_nt LineBreakElement());
                     result = true;
                 }
                 else if (startsWithIgnoreCase(textLine_, smallText, tagStart))
                 {
-                    createTextElement();
-                    openSmall_+=(isClosing?-1:1);
+                    openSmall_ += (isClosing?-1:1);
                     result = true;
                 }
                 else if (startsWithIgnoreCase(textLine_, strikeOutText, tagStart))
                 {
-                    createTextElement();
-                    openStrikeout_+=(isClosing?-1:1);
+                    openStrikeout_ += (isClosing?-1:1);
                     result = true;
                 }
                 else if (startsWithIgnoreCase(textLine_, underlineText, tagStart))
                 {
-                    createTextElement();
-                    openUnderline_+=(isClosing?-1:1);
+                    openUnderline_ += (isClosing?-1:1);
                     result = true;
                 }
                 else if (startsWithIgnoreCase(textLine_, superscriptText, tagStart))
                 {
-                    createTextElement();
-                    openSuperscript_+=(isClosing?-1:1);
+                    openSuperscript_ += (isClosing?-1:1);
                     result = true;
                 }
                 else if (startsWithIgnoreCase(textLine_, subscriptText, tagStart))
                 {
-                    createTextElement();
-                    openSubscript_+=(isClosing?-1:1);
+                    openSubscript_+= (isClosing?-1:1);
                     result = true;
                 }
             }
             if (result)
+            {
+				if (NULL == createTextElement())
+					return memErrNotEnoughSpace;
+				
                 textPosition_ = tagEnd + 1;
+            } 
         }
     }
-    return result;
+    return errNone;
 }
 
-bool DefinitionParser::detectHyperlink(uint_t end)
+status_t DefinitionParser::detectHyperlink(ulong_t end, bool& result)
 {
-    bool result = false;
+    result = false;
     bool hyperlinkIsTerm = false;
-        
+    status_t err = errNone;
+    
     assert(linkOpenChar == textLine_[textPosition_] || linkCloseChar == textLine_[textPosition_]);
     if (!insideHyperlink_ && linkOpenChar == textLine_[textPosition_++])
     {
-        createTextElement();
+        err = createTextElement();
+        if (errNone != err)
+			return err;
+			
         insideHyperlink_ = true;
         String::size_type separatorPos;
         if (linkOpenChar == textLine_[textPosition_])
@@ -365,7 +368,7 @@ bool DefinitionParser::detectHyperlink(uint_t end)
             hyperlinkType_ = hyperlinkTerm;
 #endif            
             ++textPosition_;
-            separatorPos = textLine_.find_first_of(_T("|]"), textPosition_);
+            separatorPos = textLine_.find_first_of("|]", textPosition_);
         }
         else
         {
@@ -374,7 +377,7 @@ bool DefinitionParser::detectHyperlink(uint_t end)
 #else 
             hyperlinkType_ = hyperlinkExternal;
 #endif            
-            separatorPos = textLine_.find_first_of(_T(" ]"), textPosition_);
+            separatorPos = textLine_.find_first_of(" ]", textPosition_);
         }
         bool hasSeparator = true;
         if (textLine_.npos == separatorPos)
@@ -411,18 +414,23 @@ bool DefinitionParser::detectHyperlink(uint_t end)
             {
                 textPosition_ = separatorPos;
                 ++unnamedLinksCount_;
-                char_t buffer[8];
-                //TODO
-                tprintf(buffer, _T("[%hu]"), unnamedLinksCount_);
-                String hyperlinkTitle = buffer;
-                createTextElement(hyperlinkTitle, 0, hyperlinkTitle.length());
-            }
+                char buffer[8];
+
+#if defined(_PALM_OS)
+				StrPrintF(buffer, "[%lu]", unnamedLinksCount_);
+#else
+				sprintf(buffer, "[%lu]", unnamedLinksCount_);
+#endif                
+                err = createTextElement(buffer);
+				if (errNone != err)
+					return err;
+           }
         }
         result = true;
     }
     else if (insideHyperlink_ && linkCloseChar == textLine_[textPosition_])
     {
-        const uint_t linkEndPos = textPosition_;
+        const ulong_t linkEndPos = textPosition_;
         while (textPosition_<end && linkCloseChar == textLine_[textPosition_])
             ++textPosition_;
         const uint_t pastLinkEnd = textPosition_;
@@ -433,13 +441,18 @@ bool DefinitionParser::detectHyperlink(uint_t end)
             lastElementEnd_ = linkEndPos;
             while (lastElementEnd_>lastElementStart_ && isSpace(textLine_[lastElementEnd_-1]))
                 --lastElementEnd_;
-            createTextElement();
+                
+            err = createTextElement();
+			if (errNone != err)
+				return err;
         }
         else 
         {
-            String text(textLine_, lastElementStart_, lastElementEnd_-lastElementStart_);
-            text.append(textLine_, pastLinkEnd, textPosition_-pastLinkEnd);
-            createTextElement(text, 0, text.length());
+            NarrowString text(textLine_, lastElementStart_, lastElementEnd_ - lastElementStart_);
+            text.append(textLine_, pastLinkEnd, textPosition_ - pastLinkEnd);
+            err = createTextElement(text, 0, text.length());
+			if (errNone != err)
+				return err;
         }
         insideHyperlink_ = false;
         result = true;
@@ -449,15 +462,17 @@ bool DefinitionParser::detectHyperlink(uint_t end)
 
 namespace {
 
-    inline static bool isNewline(char_t chr)
+    inline static bool isNewline(char chr)
     {
-        return chr == _T('\n');
+        return chr == '\n';
     }
 
 }
 
-void DefinitionParser::parseText(uint_t end, const DefinitionStyle* style)
+status_t  DefinitionParser::parseText(ulong_t end, const DefinitionStyle* style)
 {
+	status_t err = errNone;
+	
     openEmphasize_ = false;
     openStrong_ = false;
     openVeryStrong_ = false;
@@ -472,9 +487,9 @@ void DefinitionParser::parseText(uint_t end, const DefinitionStyle* style)
     insideHyperlink_ = false;
 
     if (end < parsePosition_)
-        return;
+        return errNone;
 
-    uint_t length = end - parsePosition_;
+    ulong_t length = end - parsePosition_;
     while (length && isSpace((*text_)[parsePosition_ + length-1]))
         --length;
     textLine_.assign(*text_, parsePosition_, length);
@@ -483,38 +498,53 @@ void DefinitionParser::parseText(uint_t end, const DefinitionStyle* style)
     lastElementStart_ = textPosition_ = 0;
     while (textPosition_ < length)
     {
-        //TODO
-        
         assert(textPosition_ < textLine_.length());
-        char_t chr = textLine_[textPosition_];
+        char chr = textLine_[textPosition_];
         if (isNewline(chr))
         {
-            chr = _T(' ');
-            textLine_[textPosition_] = _T(' ');
+            chr = ' ';
+            textLine_[textPosition_] = ' ';
         }
             
         bool specialChar = false;
         lastElementEnd_ = textPosition_;
-        if ((htmlTagStart == chr && detectHTMLTag(length)) ||
-            (0 == openNowiki_ && 
-                ((strongChar == chr && detectStrongTag(length)) ||
-                ((linkOpenChar == chr || linkCloseChar == chr) && detectHyperlink(length)))))
+        if (htmlTagStart == chr)
+        	err = detectHTMLTag(length, specialChar);
+        if (0 == openNowiki_)
         {
-            lastElementStart_ = textPosition_;
-            specialChar = true;
+			if (strongChar == chr)
+				err = detectStrongTag(length, specialChar);
+			else if (linkOpenChar == chr || linkCloseChar == chr)
+				err = detectHyperlink(length, specialChar);
         }
-                
-        if (!specialChar)
+        if (errNone != err)
+			return err;
+		
+		if (specialChar)
+			lastElementStart_ = textPosition_;
+		else
             ++textPosition_;
     }
     lastElementEnd_ = textPosition_;
-    createTextElement();
+    return createTextElement();
 }
 
-TextElement* DefinitionParser::createTextElement(const String& text, String::size_type start, String::size_type length)
+status_t DefinitionParser::createTextElement(const char* text, long length, TextElement** elem)
 {
-    String copy(text, start, length);
+	if (NULL != elem)
+		*elem = NULL;
+		
+	if (-1 == length) 
+		length = Len(text);
+		
+	if (0 == length)
+		return errNone;
+	
+	status_t err = errNone;
+	char* copy = NULL;
+	
     bool hyperlinkIsTerm = false;
+    
 #ifdef INFOMAN
     ulong_t schemaLen = tstrlen(urlSchemaEncyclopediaTerm) + 1;
     if (insideHyperlink_ && 0 == hyperlinkTarget_.find(urlSchemaEncyclopediaTerm urlSeparatorSchemaStr))
@@ -523,12 +553,12 @@ TextElement* DefinitionParser::createTextElement(const String& text, String::siz
     if (hyperlinkTerm == hyperlinkType_)
         hyperlinkIsTerm = true;
 #endif    
+
+    const char_t* langName = NULL;
+    const char* langCode = NULL;
+    ulong_t langCodeLen = 0;
     if (insideHyperlink_ && hyperlinkIsTerm)
     {
-        String::size_type colonPos;
-        const char_t* langName = NULL;
-        const char_t* langCode = NULL;
-        ulong_t langCodeLen = 0;
 #ifdef INFOMAN        
         ulong_t startPos = schemaLen;
 #else
@@ -536,78 +566,134 @@ TextElement* DefinitionParser::createTextElement(const String& text, String::siz
 #endif
         if (startPos == hyperlinkTarget_.find(copy, startPos))
         {
-            colonPos = copy.find(_T(':'));
+            long colonPos = StrFind(copy, length, ':');
             // This is to remove possible lang: part from hyperlink caption.
-            if (String::npos != colonPos)
+            if (-1 != colonPos)
             {
-                langName = GetLangNameByLangCode(copy.c_str(), colonPos); 
+                langName = GetLangNameByLangCode(copy, colonPos); 
                 if (NULL != langName)
                 {
-                    copy.erase(0, colonPos + 1);
-                    langCode = hyperlinkTarget_.c_str() + startPos;
+					length -= colonPos + 1; 
+					copy = StringCopy2N(text + colonPos + 1, length);
+					if (NULL == copy)
+						return memErrNotEnoughSpace;
+
+					text = copy;						
+                    langCode = hyperlinkTarget_.data() + startPos;
                     langCodeLen = colonPos;
                 }
             }
         }
         if (NULL == langName)
         {
-            colonPos = hyperlinkTarget_.find(_T(':'), startPos);
-            if (String::npos != colonPos)
+            ulong_t colonPos = hyperlinkTarget_.find(':', startPos);
+            if (NarrowString::npos != colonPos)
             {
-                langName = GetLangNameByLangCode(hyperlinkTarget_.c_str() + startPos, colonPos - startPos);
+                langName = GetLangNameByLangCode(hyperlinkTarget_.data() + startPos, colonPos - startPos);
                 if (NULL != langName)
                 {
-                    langCode = hyperlinkTarget_.c_str() + startPos;
+                    langCode = hyperlinkTarget_.data() + startPos;
                     langCodeLen = colonPos - startPos;
                 }
             }
         }
-        if (NULL != langCode && 0 != tstrncmp(langCode, defaultLanguage, langCodeLen))
-            copy.append(_T(" (")).append(langName).append(1, _T(')'));
     }
-    // andrzej: We no longer send HTML entity refs
-    // kjk: we do, see e.g. "Chinese language" in English database
-    decodeHTMLCharacterEntityRefs(copy);
-    TextPtr textElement(new TextElement(copy));
+	
+	ulong_t encLen = 0;
+	char_t* enc;
+	ulong_t len = length;
+	
+	err = UTF8_ToNative(text, len, enc, encLen);
+	free(copy);
+	if (errNone != err)
+		return err;
+			
+    if (NULL != langCode && !StrEquals(langCode, langCodeLen, defaultLanguage))
+	{
+		enc = StrAppend(enc, encLen, _T(" ("), -1);
+		if (NULL == enc)
+			return memErrNotEnoughSpace;
+		enc = StrAppend(enc, -1, langName, -1);
+		if (NULL == enc)
+			return memErrNotEnoughSpace;
+		enc = StrAppend(enc, -1, _T(")"), -1);
+		if (NULL == enc)
+			return memErrNotEnoughSpace;		
+	} 
+    err = appendElement(new_nt TextElement());
+	if (errNone != err)
+	{	
+		free(enc);
+		return err;
+	}
+	TextElement* te = (TextElement*)elements_.back();
+	err = te->setText(enc);
+	free(enc);
+	if (errNone != err)
+		return err;
+		 
     if (!isPlainText())
-        applyCurrentFormatting(textElement.get());
+	{ 
+		err = applyCurrentFormatting(te);
+		if (errNone != err)
+			return err;
+	}
     else
-        textElement->setStyle(currentStyle_);
+        te->setStyle(currentStyle_);
     
-    appendElement(textElement.get());
     if (insideHyperlink_)
 	{
-		ulong_t len;
-		char* link = UTF8_FromNative(hyperlinkTarget_.data(), hyperlinkTarget_.length(), &len);
-		if (NULL != link)
-		{
-			textElement->setHyperlink(link, len, hyperlinkType_);
-			free(link);
-		}
-    }
-    return textElement.release();
+		err = te->setHyperlink(hyperlinkTarget_.data(), hyperlinkTarget_.length(), hyperlinkType_);
+		if (errNone != err)
+			return err;
+	}
+
+    if (NULL != elem)
+		*elem = te;
+	
+	return errNone; 
 }
 
 
-TextElement* DefinitionParser::createTextElement()
+status_t DefinitionParser::createTextElement(TextElement** elem)
 {
-    TextElement* textElement = 0;
-    if (lastElementStart_<lastElementEnd_)
-        textElement = createTextElement(textLine_, lastElementStart_, lastElementEnd_-lastElementStart_);
-    return textElement;
+	if (NULL != elem)
+		*elem = NULL;
+		
+    if (lastElementStart_ < lastElementEnd_)
+        return createTextElement(textLine_, lastElementStart_, lastElementEnd_ - lastElementStart_, elem);
+        
+    return errNone;
 }
 
-void DefinitionParser::startNewNumberedList(ListNumberElement* firstElement)
+status_t DefinitionParser::createTextElement(const NarrowString& text, ulong_t start, ulong_t len, TextElement** elem)
+{
+	if (NULL != elem)
+		*elem = NULL;
+	
+	if (NarrowString::npos == len || len > text.length() - start)
+		len = text.length() - start;
+	
+	if (0 != len)	
+		return createTextElement(text.data() + start, long(len), elem);
+	
+	return errNone;
+}
+
+
+status_t DefinitionParser::startNewNumberedList(ListNumberElement* firstElement)
 {
     if (currentNumberedList_.empty())
     {
         assert(numListsStack_.empty());
-        currentNumberedList_.push_back(firstElement);
+        return appendListNumber(firstElement);
     }
     else 
     {
+		// TODO: redesign to catch errors 
         numListsStack_.push_back(NumberedList_t(1, firstElement));
         currentNumberedList_.swap(numListsStack_.back());
+        return errNone;
     }
 }
 
@@ -628,23 +714,23 @@ void DefinitionParser::finishCurrentNumberedList()
 
 #define maxNestingDepth 8
 
-void DefinitionParser::manageListNesting(const char_t* requestedNesting)
+status_t DefinitionParser::manageListNesting(const char* requestedNesting)
 {
-    uint_t newNestingDepth = tstrlen(requestedNesting);
+    uint_t newNestingDepth = Len(requestedNesting);
 
     if (newNestingDepth > maxNestingDepth)
         newNestingDepth = maxNestingDepth;
 
     uint_t lastNestingDepth = 0;
     if (NULL != lastListNesting_)
-        lastNestingDepth = tstrlen(lastListNesting_);
+        lastNestingDepth = Len(lastListNesting_);
 
     if ( (0 == lastNestingDepth) && (0 == newNestingDepth) )
-        return;
+        return errNone;
 
-    char_t * newNesting = StringCopy2N(requestedNesting, newNestingDepth);
+    char* newNesting = StringCopy2N(requestedNesting, newNestingDepth);
     if (NULL == newNesting)
-        return;
+        return memErrNotEnoughSpace;
 
     uint_t firstDiff = 0;  // This will be index of first character that makes previous and current nesting descr. differ.
     while (firstDiff < std::min(lastNestingDepth, newNestingDepth) && 
@@ -657,8 +743,7 @@ void DefinitionParser::manageListNesting(const char_t* requestedNesting)
     {
         for (uint_t i = lastNestingDepth; i>firstDiff; --i)
         {
-            //TODO check
-            char_t listType = lastListNesting_[i-1];
+            char listType = lastListNesting_[i-1];
             if (numberedListChar == listType)
                 finishCurrentNumberedList();
             popParent();
@@ -670,38 +755,46 @@ void DefinitionParser::manageListNesting(const char_t* requestedNesting)
         bool continueList = false;
         if (firstDiff == newNestingDepth) // Means we have just finished a sublist and next element will be another point in current list, not a sublist
         {
-            assert(firstDiff>0); 
+            assert(firstDiff > 0); 
             popParent();  
             --firstDiff;                
             continueList = true;    // Mark that next created element should be continuation of existing list, not start of new one
         }
-        for (uint_t i = firstDiff; i<newNestingDepth; ++i)
+        for (uint_t i = firstDiff; i < newNestingDepth; ++i)
         {
-            //TODO: check
-            char_t elementType = newNesting[i];
-            ElementPtr element;
+            char elementType = newNesting[i];
+            status_t err = errNone;
             if (numberedListChar == elementType)
             {
+				uint_t index = 1;
                 if (continueList)
                 {
                     assert(!currentNumberedList_.empty());
-                    std::auto_ptr<ListNumberElement> listElement(new ListNumberElement(currentNumberedList_.back()->number()+1));
-                    currentNumberedList_.push_back(listElement.get());
-                    element = ElementPtr(listElement.release());
+                    index = currentNumberedList_.back()->number() + 1;
                 }
+                err = appendElement(new_nt ListNumberElement(index));
+				if (errNone != err)
+				{
+					free(newNesting);
+					return err;
+				}
+				
+				if (continueList)
+					err = appendListNumber((ListNumberElement*)elements_.back()); // currentNumberedList_.push_back((ListNumberElement*)elements_.back());
                 else
-                {
-                    std::auto_ptr<ListNumberElement> listElement(new ListNumberElement(1));
-                    startNewNumberedList(listElement.get());
-                    element = ElementPtr(listElement.release());
-                }                    
+                    err = startNewNumberedList((ListNumberElement*)elements_.back());
             }
             else if (bulletChar == elementType)
-                element.reset(new BulletElement());
+                err = appendElement(new_nt BulletElement());
             else 
-                element.reset(new ParagraphElement(true));
-            appendElement(element.get());
-            pushParent(element.release());
+                err = appendElement(new_nt ParagraphElement(true));
+                
+            if (errNone != err)
+			{
+				free(newNesting);
+				return err;
+			}
+            pushParent(elements_.back());
             continueList = false;
         }
     }
@@ -709,20 +802,57 @@ void DefinitionParser::manageListNesting(const char_t* requestedNesting)
     if (NULL != lastListNesting_)
         free(lastListNesting_);
     lastListNesting_ = newNesting;
+	return errNone;
 }
 
-void DefinitionParser::appendElement(DefinitionElement* element)
+status_t DefinitionParser::appendElement(DefinitionElement* element)
 {
+	if (NULL == element)
+		return memErrNotEnoughSpace;
+		
+	volatile status_t err = errNone;
     element->setParent(currentParent());
-    elements_.push_back(element);
+	ErrTry {
+		elements_.push_back(element);
+	}
+	ErrCatch(ex) {
+		err = ex;
+	} ErrEndCatch
+	if (errNone != err)
+	{
+		delete element;
+		return err;
+	}
+	return errNone;
 }
 
-DefinitionParser::LineType DefinitionParser::detectLineType(uint_t start, uint_t end) const
+status_t DefinitionParser::appendListNumber(ListNumberElement* element)
+{
+	if (NULL == element)
+		return memErrNotEnoughSpace;
+		
+	volatile status_t err = errNone;
+	ErrTry {
+		currentNumberedList_.push_back(element);
+	}
+	ErrCatch(ex) {
+		err = ex;
+	} ErrEndCatch
+	if (errNone != err)
+	{
+		delete element;
+		return err;
+	}
+	return errNone;
+}
+
+
+DefinitionParser::LineType DefinitionParser::detectLineType(ulong_t start, ulong_t end) const
 {
     LineType lineType = textLine;
     if (0 == openNowiki_)
     {
-        if (end == start || (end-start == 1 && (*text_)[start]==_T('\r')))
+        if (end == start || (end - start == 1 && (*text_)[start]== '\r'))
             lineType = emptyLine;
         else {
             switch ((*text_)[start])
@@ -752,26 +882,26 @@ DefinitionParser::LineType DefinitionParser::detectLineType(uint_t start, uint_t
     return lineType;
 }
 
-bool DefinitionParser::detectNextLine(uint_t textEnd, bool finish)
+bool DefinitionParser::detectNextLine(ulong_t textEnd, bool finish)
 {
-    String::size_type end = text_->find(_T('\n'), parsePosition_);
-    bool goOn=(text_->npos != end && end<textEnd);
+    String::size_type end = text_->find('\n', parsePosition_);
+    bool goOn=(text_->npos != end && end < textEnd);
     if (finish || goOn)
     {
         LineType previousLineType = lineType_;
-        uint_t lineEnd=((text_->npos == end || end>=textEnd)?textEnd:end);
+        ulong_t lineEnd=((text_->npos == end || end>=textEnd)?textEnd:end);
         LineType lineType = detectLineType(parsePosition_, lineEnd);
         if (textLine == lineType)
         {
             goOn = false;
-            while (lineEnd + 1<textEnd || finish)
+            while (lineEnd + 1 < textEnd || finish)
             {
-                end = text_->find(_T('\n'), lineEnd + 1);
-                if (!finish && (text_->npos == end || end>=textEnd))
+                end = text_->find('\n', lineEnd + 1);
+                if (!finish && (text_->npos == end || end >= textEnd))
                     break;
                 if (finish && lineEnd == textEnd)
                     goto LineFinished;
-                uint_t nextLineEnd=((text_->npos == end || end>=textEnd)?textEnd:end);
+                ulong_t nextLineEnd=((text_->npos == end || end >= textEnd)?textEnd:end);
                 if (textLine == detectLineType(lineEnd + 1, nextLineEnd))
                     lineEnd = nextLineEnd;
                 else
@@ -793,24 +923,27 @@ LineFinished:
 }
 
 
-void DefinitionParser::parseTextLine()
+status_t DefinitionParser::parseTextLine()
 {
+	status_t err = errNone;
     if (!lineAllowsContinuation(previousLineType_) )
     {
-        ParagraphPtr para(new ParagraphElement());
-        appendElement(para.get());
-        pushParent(para.release());
+        err = appendElement(new_nt ParagraphElement());
+        if (errNone != err)
+			return err;
+			
+        err = pushParent(elements_.back());
+        if (errNone != err)
+			return err;
     }
-    parseText(lineEnd_, StyleGetStaticStyle(styleIndexDefault));                
+    return parseText(lineEnd_, StyleGetStaticStyle(styleIndexDefault));                
 }
 
-status_t DefinitionParser::handleIncrement(const char_t * text, ulong_t& length, bool finish)
+status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bool finish)
 {
-    status_t error = errNone;
-#if !defined(_MSC_VER) || (_MSC_VER < 1400)
+    volatile status_t err = errNone;
     ErrTry {
-#endif
-		String strText(text);
+		NarrowString strText(text, length);
         text_ = &strText;
         parsePosition_ = 0;
         lineEnd_ = 0;
@@ -818,7 +951,7 @@ status_t DefinitionParser::handleIncrement(const char_t * text, ulong_t& length,
         do 
         {
 #ifndef NDEBUG    
-            const char_t* text = text_->data()+parsePosition_;
+            const char* text = text_->data() + parsePosition_;
 #endif        
             goOn = detectNextLine(length, finish);
             if (goOn || finish)
@@ -827,41 +960,44 @@ status_t DefinitionParser::handleIncrement(const char_t * text, ulong_t& length,
                     popParent(); 
                     
                 if (listElementLine == previousLineType_ && listElementLine != lineType_)
-                    manageListNesting(_T(""));
+				{ 
+                    err = manageListNesting("");
+                    if (errNone != err)
+						return err;
+                }
 
-                ElementPtr ptr;  
                 switch (lineType_)
                 {
                     case headerLine:
-                        parseHeaderLine();
+                        err = parseHeaderLine();
                         break;
                         
                     case textLine:
-                        parseTextLine();
+                        err = parseTextLine();
                         break;                    
                     
                     case horizontalBreakLine:
-                        ptr.reset(new HorizontalLineElement());
-                        appendElement(ptr.get());
+                        err = appendElement(new_nt HorizontalLineElement());
                         break;
                         
                     case emptyLine:
-                        ptr.reset(new LineBreakElement());
-                        appendElement(ptr.get());
+                        err = appendElement(new_nt LineBreakElement());
                         break;
                         
                     case listElementLine:
-                        parseListElementLine();
+                        err = parseListElementLine();
                         break;
                         
                     case definitionListLine:
-                        parseDefinitionListLine();
+                        err = parseDefinitionListLine();
                         break;
                         
                     default:
                         assert(false);        
                 }
-                ptr.release();
+				if (errNone != err)
+					return err;
+					 
                 parsePosition_ = lineEnd_ + 1;
             }
         } while (goOn);
@@ -871,72 +1007,102 @@ status_t DefinitionParser::handleIncrement(const char_t * text, ulong_t& length,
                 popParent(); 
                 
             if (listElementLine == previousLineType_)
-                manageListNesting(_T(""));
+            {
+                err = manageListNesting("");
+				if (errNone != err)
+					return err;
+			} 
             
             assert(numListsStack_.empty());
             assert(currentNumberedList_.empty());            
         }
         if (!finish)
             length = parsePosition_;
-#if !defined(_MSC_VER) || (_MSC_VER < 1400)
     }
     ErrCatch (ex) {
         clear();
-        error = ex;
+        err = ex;
     } ErrEndCatch
-#endif
-	return error;
+	return err;
 }
 
 //! @todo Add header indexing
-void DefinitionParser::parseHeaderLine()
+status_t DefinitionParser::parseHeaderLine()
 {
     while (parsePosition_<lineEnd_ && (headerChar==(*text_)[parsePosition_] || isSpace((*text_)[parsePosition_])))
         ++parsePosition_;
-    uint_t lineEnd = lineEnd_;
+        
+    ulong_t lineEnd = lineEnd_;
     while (lineEnd>parsePosition_ && (headerChar==(*text_)[lineEnd-1] || isSpace((*text_)[lineEnd-1])))
         --lineEnd;
-    ParagraphPtr para(new ParagraphElement());
-    appendElement(para.get());
-    pushParent(para.release());
-    parseText(lineEnd, StyleGetStaticStyle(styleNameHeader));
+        
+    status_t err = appendElement(new_nt ParagraphElement());
+	if (errNone != err)
+		return err;
+		
+    err = pushParent(elements_.back());
+	if (errNone != err)
+		return err;
+		 
+    err = parseText(lineEnd, StyleGetStaticStyle(styleNameHeader));
+	if (errNone != err)
+		return err;
+
     if (!lineAllowsContinuation(headerLine))
         popParent();
+        
+    return errNone;
 }
 
-void DefinitionParser::parseListElementLine()
+status_t DefinitionParser::parseListElementLine()
 {
     String::size_type startLong = text_->find_first_not_of(listCharacters, parsePosition_);
-    uint_t start = lineEnd_;
+    ulong_t start = lineEnd_;
     if (text_->npos != startLong && startLong < lineEnd_)
         start = startLong;
 
-    uint_t elementDescLen = start - parsePosition_;
-    char_t *elementDesc = StringCopy2N(text_->c_str() + parsePosition_, elementDescLen);
-    if (NULL != elementDesc)
-    {
-        manageListNesting(elementDesc);
-        free(elementDesc);
-    }
+    ulong_t elementDescLen = start - parsePosition_;
+    char* elementDesc = StringCopy2N(text_->data() + parsePosition_, elementDescLen);
+    if (NULL == elementDesc)
+		return memErrNotEnoughSpace;
+		 
+    status_t err = manageListNesting(elementDesc);
+    free(elementDesc);
+	if (errNone != err)
+		return err; 
+
     parsePosition_ = start;
     while (parsePosition_ < lineEnd_ && isSpace((*text_)[parsePosition_]))
         ++parsePosition_;
-    parseText(lineEnd_, StyleGetStaticStyle(styleIndexDefault));
+        
+    return parseText(lineEnd_, StyleGetStaticStyle(styleIndexDefault));
 }
 
-void DefinitionParser::parseDefinitionListLine()
+status_t DefinitionParser::parseDefinitionListLine()
 {
-    while (parsePosition_<lineEnd_ && (definitionListChar==(*text_)[parsePosition_] || isSpace((*text_)[parsePosition_])))
+    while (parsePosition_ < lineEnd_ && (definitionListChar==(*text_)[parsePosition_] || isSpace((*text_)[parsePosition_])))
         ++parsePosition_;
-    uint_t lineEnd = lineEnd_;
-    while (lineEnd>parsePosition_ && isSpace((*text_)[lineEnd-1]))
+        
+    ulong_t lineEnd = lineEnd_;
+    while (lineEnd > parsePosition_ && isSpace((*text_)[lineEnd - 1]))
         --lineEnd;
-    ParagraphPtr para(new ParagraphElement());
-    appendElement(para.get());
-    pushParent(para.release());
-    parseText(lineEnd, StyleGetStaticStyle(styleIndexDefault));
+        
+    status_t err = appendElement(new_nt ParagraphElement());
+	if (errNone != err)
+		return err;
+		 
+    err = pushParent(elements_.back());
+	if (errNone != err)
+		return err;
+
+    err = parseText(lineEnd, StyleGetStaticStyle(styleIndexDefault));
+	if (errNone != err)
+		return err;
+
     if (!lineAllowsContinuation(definitionListLine))
         popParent();
+	
+	return errNone;
 }
 
 DefinitionModel* DefinitionParser::createModel()

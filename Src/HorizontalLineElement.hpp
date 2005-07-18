@@ -29,9 +29,6 @@ public:
 
     ~HorizontalLineElement();
     
-//    void setStyle(ElementStyle style)
-//    {}
-    
 };
 
 #endif

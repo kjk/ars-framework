@@ -20,9 +20,11 @@ protected:
     
 public:
 
-    TextElement(const ArsLexis::String& text);
+    TextElement(const String& text);
     
-    TextElement(const ArsLexis::char_t* text = _T(""));
+    TextElement(const char_t* text);
+   
+	TextElement(); 
 
     ~TextElement();
     
@@ -30,10 +32,12 @@ public:
     
     void render(RenderingContext& rc);
     
-    void setText(const ArsLexis::String& text)
+    void setText(const String& text)
     {text_=text;}
+   
+	status_t setText(const char_t* text, long len = -1); 
     
-    const ArsLexis::String& text() const
+    const String& text() const
     {return text_;}
     
     void swapText(ArsLexis::String& text)

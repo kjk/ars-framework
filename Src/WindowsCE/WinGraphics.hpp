@@ -140,21 +140,21 @@ public:
     
     uint_t fontBaseline() const {return fontBaseline_;}
     
-    void drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted=false);
+    void drawText(const char_t* text, ulong_t length, const Point& topLeft, bool inverted=false);
     
     void drawCenteredText(const char_t* str, const Point& topLeft, uint_t width);
     
-    uint_t wordWrap(const char_t* text, uint_t width);
+    ulong_t wordWrap(const char_t* text, uint_t width);
 
-    uint_t wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx);
+    ulong_t wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx);
     
-    uint_t textWidth(const char_t* text, uint_t length);
+    uint_t textWidth(const char_t* text, ulong_t length);
     
-    void charsInWidth(const char_t* text, uint_t& length, uint_t& width);
+    void charsInWidth(const char_t* text, ulong_t& length, uint_t& width);
 
-    void stripToWidthWithEllipsis(ArsLexis::String& textInOut, uint_t &lengthInOut, uint_t& widthInOut, bool fFullWords = true);
+    void stripToWidthWithEllipsis(ArsLexis::String& textInOut, ulong_t &lengthInOut, uint_t& widthInOut, bool fFullWords = true);
 
-    void stripToWidthWithEllipsis(char_t* textInOut, uint_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
+    void stripToWidthWithEllipsis(char_t* textInOut, ulong_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
 
     void drawTextInBounds(const ArsLexis::String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter = true);
 

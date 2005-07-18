@@ -46,11 +46,13 @@ class Serializer {
     
     void assureIndexed() { if (!isIndexed_) loadIndex();}
    
-   void readVersion();
-   
-   bool oldVersion() const {return 0 == version_;} 
-   
-   enum {unusedIdVer0 = Serializable::unusedIdVer0};
+	void readVersion();
+	   
+	void writeVersion();	   
+	   
+	bool oldVersion() const {return 0 == version_;} 
+	   
+	enum {unusedIdVer0 = Serializable::unusedIdVer0};
 
 public:
 

@@ -35,18 +35,18 @@ class DefinitionParser: public TextIncrementalProcessor
      * @internal
      * Transforms current settings in open* variables into settings of @c TextElement.
      */
-    void applyCurrentFormatting(TextElement* element);
+    status_t applyCurrentFormatting(TextElement* element);
     
     typedef std::list<DefinitionElement*> ParentsStack_t;
     ParentsStack_t parentsStack_;
     
     DefinitionElement* currentParent();
     
-    void pushParent(DefinitionElement* parent);
+    status_t pushParent(DefinitionElement* parent);
     
     void popParent();
     
-    void popAvailableParent();
+    // void popAvailableParent();
 
     /**
      * @internal
@@ -55,7 +55,7 @@ class DefinitionParser: public TextIncrementalProcessor
      * parsed list element is continuation of previous list or start of a new one.
      * Therefore this variable should be cleared when we get outside of any list.
      */
-    char_t* lastListNesting_;
+    char* lastListNesting_;
 
     /**
      * @internal
@@ -77,7 +77,7 @@ class DefinitionParser: public TextIncrementalProcessor
      * Pushes on stack current numbered list (if there is one) and starts a new one 
      * with @c firstElement.
      */
-    void startNewNumberedList(ListNumberElement* firstElement);
+    status_t startNewNumberedList(ListNumberElement* firstElement);
     
     /**
      * @internal 
@@ -95,10 +95,10 @@ class DefinitionParser: public TextIncrementalProcessor
      * (if newNesting isn't empty, which means that we want simply to finish all currently
      * opened lists and parse non-list element.
      */
-    void manageListNesting(const char_t* newNesting);
+    status_t manageListNesting(const char* newNesting);
     
     Definition::Elements_t elements_;
-    const String* text_;
+    const NarrowString* text_;
  
     bool openEmphasize_:1;
     bool openStrong_:1;
@@ -130,62 +130,64 @@ class DefinitionParser: public TextIncrementalProcessor
     uint_t openSuperscript_;
     uint_t openSubscript_;
    
-    uint_t parsePosition_;
-    uint_t lineEnd_;
-    uint_t lastElementStart_;
-    uint_t lastElementEnd_;
-    uint_t unnamedLinksCount_;
+    ulong_t parsePosition_;
+    ulong_t lineEnd_;
+    ulong_t lastElementStart_;
+    ulong_t lastElementEnd_;
+    ulong_t unnamedLinksCount_;
     
-    String textLine_;
-    uint_t textPosition_;
+    NarrowString textLine_;
+    ulong_t textPosition_;
     
-    String hyperlinkTarget_;
+    NarrowString hyperlinkTarget_;
     
-    void parseText(uint_t end, const DefinitionStyle* style);
+    status_t parseText(ulong_t end, const DefinitionStyle* style);
     
     void parse();
 
-    void decodeHTMLCharacterEntityRefs(ArsLexis::String& text) const;
+    // void decodeHTMLCharacterEntityRefs(String& text) const;
     
-    void appendElement(DefinitionElement* element);
+    status_t appendElement(DefinitionElement* element);
+	status_t appendListNumber(ListNumberElement* ln); 
     
     static bool lineAllowsContinuation(LineType lineType)
     {
         return textLine == lineType;
     }
 
-    void parseHeaderLine();
+    status_t parseHeaderLine();
     
-    void parseDefinitionListLine();
+    status_t parseDefinitionListLine();
     
-    void parseTextLine();
+    status_t parseTextLine();
     
-    void parseListElementLine();
+    status_t parseListElementLine();
     
-    LineType detectLineType(uint_t start, uint_t end) const;
+    LineType detectLineType(ulong_t start, ulong_t end) const;
     
-    bool detectNextLine(uint_t end, bool finish);
+    bool detectNextLine(ulong_t end, bool finish);
     
-    bool detectHTMLTag(uint_t textEnd);
+    status_t detectHTMLTag(ulong_t textEnd, bool& res);
     
-    bool detectStrongTag(uint_t textEnd);
+    status_t detectStrongTag(ulong_t textEnd, bool& res);
     
-    bool detectHyperlink(uint_t textEnd);
+    status_t detectHyperlink(ulong_t textEnd, bool& res);
     
-    TextElement* createTextElement();
-    TextElement* createTextElement(const String& text, String::size_type start = 0, String::size_type length = String::npos);
+    status_t createTextElement(TextElement** elem = NULL);
+    status_t createTextElement(const NarrowString& text, ulong_t start = 0, ulong_t length = String::npos, TextElement** elem = NULL);
+	status_t createTextElement(const char* text, long length = -1, TextElement** elem = NULL); 
     
 public:
 
     DefinitionParser();
     
-    ArsLexis::status_t handleIncrement(const char_t* text, ulong_t& length, bool finish = 0);
+    status_t handleIncrement(const char* text, ulong_t& length, bool finish = 0);
 
     DefinitionModel* createModel();
     
     ~DefinitionParser();
     
-    const char_t* defaultLanguage;
+    const char* defaultLanguage;
 
 };
 

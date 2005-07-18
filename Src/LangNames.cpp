@@ -15,7 +15,11 @@ struct LangCodeEntry
     
 };
 
+#ifdef _WIN32_WCE
+#define ALL_LANGS 1
+#else
 #define ALL_LANGS 0
+#endif
 
 // taken from: http://meta.wikimedia.org/wiki/Complete_list_of_language_Wikipedias_available
 static const LangCodeEntry langCodes[] =
@@ -246,8 +250,45 @@ static const LangCodeEntry langCodes[] =
 #endif
 };
 
+static const char_t* GetLangNameProper(const char_t* code)
+{
+    LangCodeEntry entry = {code, NULL};
+    
+    const LangCodeEntry* end = langCodes + ARRAY_SIZE(langCodes);
+    const LangCodeEntry* res = std::lower_bound(langCodes, end, entry);
+    if (end == res)
+        return NULL;
 
-const char_t* GetLangNameByLangCode(const char_t* code, long length)
+	if (StrEquals(code, res->code))
+		return NULL;
+    
+    return res->name; 
+}
+
+const char_t* GetLangNameByLangCode(const char* code, long length)
+{
+    if (NULL == code) 
+		return NULL;
+        
+    if (-1 == length) length = Len(code);
+    if (0 == length || length > 10)
+        return NULL;
+
+    char_t codeBuf[11];
+    long i;
+    for (i = 0; i < length; ++i)
+	{
+		char_t chr = char_t((unsigned char)code[i]);
+		assert(chr < 128); 
+        codeBuf[i] = toLower(chr);
+	}
+    codeBuf[i] = _T('\0');
+   
+   return GetLangNameProper(codeBuf); 
+}
+
+#ifdef _WIN32_WCE
+const wchar_t* GetLangNameByLangCode(const wchar_t* code, long length)
 {
     if (NULL == code)
         return NULL;
@@ -260,17 +301,8 @@ const char_t* GetLangNameByLangCode(const char_t* code, long length)
     long i;
     for (i = 0; i < length; ++i)
         codeBuf[i] = toLower(code[i]);
-    codeBuf[i] = _T('\0');
-    
-    LangCodeEntry entry = {codeBuf, NULL};
-    
-    const LangCodeEntry* end = langCodes + ARRAY_SIZE(langCodes);
-    const LangCodeEntry* res = std::lower_bound(langCodes, end, entry);
-    if (end == res)
-        return NULL;
-
-	if (StrEquals(codeBuf, res->code))
-		return NULL;
-    
-    return res->name; 
+    codeBuf[i] = L'\0';
+   
+   return GetLangNameProper(codeBuf); 
 }
+#endif

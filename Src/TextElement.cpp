@@ -9,6 +9,8 @@ TextElement::TextElement(const char_t* text):
     text_(text)
 {}
 
+TextElement::TextElement() {}
+
 TextElement::~TextElement()
 {
 }
@@ -42,12 +44,12 @@ void TextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t
     Point point(area.topLeft);
     uint_t length;
     const char_t* text;
-    if (intersectStart<intersectEnd)
+    if (intersectStart < intersectEnd)
     {
-        if (start<intersectStart)
+        if (start < intersectStart)
         {
-            graphics.drawText(text=(text_.c_str() + start), length=(intersectStart-start), point);
-            point.x+=graphics.textWidth(text, length);
+            graphics.drawText(text = (text_.c_str() + start), length = (intersectStart-start), point);
+            point.x += graphics.textWidth(text, length);
         }
 #ifdef _PALM_OS
         if (!hyperlink) 
@@ -126,8 +128,8 @@ void TextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
         if (0==copy.renderingProgress && !layoutContext.isFirstInLine()) 
         {
             uint_t rangeLength=whitespaceRangeLength(text_, layoutContext.renderingProgress, length);
-            length=rangeLength;
-            txtDx=graphics.textWidth(text, length);
+            length = rangeLength;
+            txtDx = graphics.textWidth(text, length);
         }
     }
 
@@ -222,7 +224,7 @@ uint_t TextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
     lc.usedWidth=std::max(lc.usedWidth, indent);
     if (offset < lc.usedWidth)
         return lc.renderingProgress;
-    const char_t* text=text_.c_str()+lc.renderingProgress;
+    const char_t* text = text_.c_str()+lc.renderingProgress;
     uint_t left = lc.usedWidth;
     if (lc.isFirstInLine())
     {
@@ -275,7 +277,7 @@ uint_t TextElement::charIndexAtOffset(LayoutContext& lc, uint_t offset)
         return lc.renderingProgress;
     
     offset -= left;
-    uint_t charIndex = charsToDraw;
+    ulong_t charIndex = charsToDraw;
     graphics.charsInWidth(text, charIndex, offset);
     
     text += length;
@@ -311,8 +313,13 @@ void TextElement::applyFormatting(Graphics& graphics)
 
 void TextElement::toText(String& appendTo, uint_t from, uint_t to) const
 {
-    if (LayoutContext::progressCompleted==to)
+    if (LayoutContext::progressCompleted == to)
         to = String::npos;
     appendTo.append(text(), from, to - from);
 }
 
+status_t TextElement::setText(const char_t* text, long len)
+{
+	text_.clear();
+	return StringAppend(text_, text, len);
+}

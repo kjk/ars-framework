@@ -13,18 +13,21 @@ struct UniversalDataFormat: private NonCopyable
     typedef std::vector<Vector_t> VectorOfVectors_t;
 
     ulong_t                 headerSize_;
-    bool                fNormalized_;
-    VectorOfVectors_t   header_;
-    char*		data_;
+    mutable bool         fNormalized_;
+    mutable VectorOfVectors_t   header_;
+    mutable char*		data_;
 	ulong_t		dataLen_; 
 
-    void normalize();
+    void normalize() const;
 
     void setHeaderSize(int size)
     {
         headerSize_ = size;
         fNormalized_ = false;    
     }
+   
+   mutable char_t* text_;
+   mutable ulong_t textLen_; 
   
 public:
 
@@ -36,9 +39,12 @@ public:
     
     ulong_t getItemElementsCount(ulong_t itemNo) const;
     
-    const char* getItemText(ulong_t itemNo, ulong_t elemNo) const;
+    const char* getItemData(ulong_t itemNo, ulong_t elemNo) const;
 
-    const char* getItemTextAndLen(ulong_t itemNo, ulong_t elemNo, ulong_t* lenOut) const;
+    const char* getItemData(ulong_t itemNo, ulong_t elemNo, ulong_t& lenOut) const;
+   
+	const char_t* getItemText(ulong_t itemNo, ulong_t elemNo) const;
+	const char_t* getItemText(ulong_t itemNo, ulong_t elemNo, ulong_t& lenOut) const;
     
      
     /**
@@ -46,7 +52,7 @@ public:
      * @return 0 if element doesn't represent valid number.
      * @return 0 if element is equal 0 too
      */
-    long getItemTextAsLong(ulong_t itemNo, ulong_t elemNo) const;
+    long getItemNumericValue(ulong_t itemNo, ulong_t elemNo) const;
     
     void swap(UniversalDataFormat& udf);
     

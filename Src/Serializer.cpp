@@ -25,7 +25,10 @@ Serializer::Serializer(Reader& reader):
     reader_->mark();
 }
 
-Serializer::Serializer(Writer& writer): reader_(NULL), writer_(&writer), direction_(directionOutput), isIndexed_(false), skipLastRecord_(false) {}
+Serializer::Serializer(Writer& writer): reader_(NULL), writer_(&writer), direction_(directionOutput), isIndexed_(false), skipLastRecord_(false), version_(currentVersion) 
+{
+	writeVersion(); 
+}
 
 Serializer::Serializer(Reader& reader, Writer& writer, Direction dir): 
     reader_(new BufferedReader(reader)), 
@@ -36,6 +39,8 @@ Serializer::Serializer(Reader& reader, Writer& writer, Direction dir):
 	version_(currentVersion)
 {
     reader_->mark();
+	if (directionOutput == direction_)
+		writeVersion(); 
 }
 
 Serializer::~Serializer() 
@@ -80,7 +85,7 @@ bool Serializer::indexNextRecord()
     if (unusedId != record.id)
         recordIndex_[record.id] = reader_->position() - length;
         
-    if (dtString == record.type) // String is currently only data type that writes something after Record. We have to skip its data...
+    if (dtStringVer0 == record.type || dtBlob == record.type || dtText == record.type)
     { 
         length = record.stringLength;
         void* buffer = malloc(length);
@@ -113,6 +118,15 @@ void Serializer::readVersion()
 		version_ = version;
 	}
 }
+
+void Serializer::writeVersion()
+{
+	uint32_t magic = SERIALIZER_MAGIC;
+	uint32_t version = currentVersion;
+	serializeChunk(&magic, sizeof(magic));
+	serializeChunk(&version, sizeof(version));
+}
+
 
 void Serializer::loadIndex() 
 {
@@ -147,8 +161,11 @@ void Serializer::serializeRecordIn(Record& record)
 	if (oldVersion() && unusedIdVer0 == buffer.id)
 		buffer.id = unusedId;
 		 
-    if (buffer.type != record.type || buffer.id != record.id)
+    if (buffer.id != record.id)
         ErrThrow(errCorrupted);
+
+	// TODO: work out how to read dtStringVer0
+    
     record = buffer;
 }
 
@@ -301,3 +318,16 @@ Serializer& Serializer::operator()(Serializable& object, ulong_t id)
 }
 
 
+Serializer& Serializer::binary(NarrowString& value, ulong_t id)
+{
+    String::size_type length = value.length();
+    serializeSimpleType<String::size_type, dtBlob>(length, id);
+    if (directionOutput == direction_)
+        serializeChunk(&value[0], sizeof(char_t) * length);
+    else if (!skipLastRecord_)
+    {
+        value.resize(length);
+        serializeChunk(&value[0], sizeof(char_t) * length);
+    }
+    return *this;
+}

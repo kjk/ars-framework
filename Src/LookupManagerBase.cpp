@@ -2,6 +2,7 @@
 #include <Graphics.hpp>
 #include <BaseTypes.hpp>
 #include <SysUtils.hpp>
+#include <Text.hpp>
 
 LookupProgressReporter::~LookupProgressReporter()
 {}
@@ -24,7 +25,7 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
     Graphics::ColorSetter colorTxt(graphics, Graphics::colorText, RGB(0,0,0));
 #endif
     const char_t* text = support.statusText;
-    uint_t length = tstrlen(text);
+    ulong_t length = Len(text);
     uint_t width = rect.width();
     graphics.charsInWidth(text, length, width);
     uint_t fontDy = graphics.fontHeight();

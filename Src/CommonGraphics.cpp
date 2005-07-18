@@ -25,11 +25,11 @@ void Graphics::drawCenteredText(const char_t* str, const Point& topLeft, uint_t 
     drawText(str, len, point);
 }
 
-void Graphics::stripToWidthWithEllipsis(char_t* textInOut, uint_t& lengthOut, uint_t& widthInOut, bool fFullWords)
+void Graphics::stripToWidthWithEllipsis(char_t* textInOut, ulong_t& lengthOut, uint_t& widthInOut, bool fFullWords)
 {
     uint_t width = widthInOut;
-    uint_t origLen = tstrlen(textInOut);
-    uint_t newLen = origLen;
+    ulong_t origLen = tstrlen(textInOut);
+    ulong_t newLen = origLen;
     charsInWidth(textInOut, newLen, width);
     if (newLen == origLen)
     {
@@ -48,7 +48,7 @@ void Graphics::stripToWidthWithEllipsis(char_t* textInOut, uint_t& lengthOut, ui
     uint_t ellipsisLength = 1;
 #elif defined(_WIN32_WCE)
     const char_t ellipsis[] = {0x2026, 0};
-    uint_t ellipsisLength = 1;
+    ulong_t ellipsisLength = 1;
 #endif 
     
     uint_t ellipsisWidth = textWidth(ellipsis, ellipsisLength);
@@ -66,10 +66,10 @@ void Graphics::stripToWidthWithEllipsis(char_t* textInOut, uint_t& lengthOut, ui
     charsInWidth(textInOut, lengthOut, widthInOut);
 }
 
-void Graphics::stripToWidthWithEllipsis(String& textInOut, uint_t& lengthInOut, uint_t& widthInOut, bool fFullWords)
+void Graphics::stripToWidthWithEllipsis(String& textInOut, ulong_t& lengthInOut, uint_t& widthInOut, bool fFullWords)
 {
     uint_t width = widthInOut;
-    uint_t length = lengthInOut;
+    ulong_t length = lengthInOut;
     charsInWidth(textInOut.c_str(), length, width);
     if (length == textInOut.length())
     {
@@ -82,10 +82,10 @@ void Graphics::stripToWidthWithEllipsis(String& textInOut, uint_t& lengthInOut, 
     // we need to add "..."
 #if defined(_PALM_OS)
     const char ellipsis[] = {chrEllipsis, chrNull};
-    uint_t ellipsisLength = 1;
+    ulong_t ellipsisLength = 1;
 #elif defined(_WIN32_WCE)
     const char_t ellipsis[] = {0x2026, 0};
-    uint_t ellipsisLength = 1;
+    ulong_t ellipsisLength = 1;
 #endif 
     
     uint_t ellipsisWidth = textWidth(ellipsis, ellipsisLength);
@@ -128,14 +128,14 @@ void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& 
     if (1 == lines)
     {
         uint_t width=itemBounds.width();
-        uint_t length=text.length();
+        ulong_t length=text.length();
         charsInWidth(text.c_str(), length, width);
         drawText(text.c_str(), length, itemBounds.topLeft);
     }
     else
     {
         //draw what we can
-        uint_t length = -1;
+        ulong_t length = -1;
         uint_t tempLength = 0;
         bool widthFull = false;
         while (!widthFull && length!=tempLength)
@@ -147,7 +147,7 @@ void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& 
                 tempLength++;
             
             uint_t width = itemBounds.width();
-            uint_t len = tempLength;
+            ulong_t len = tempLength;
             charsInWidth(text.c_str(), len, width);
             if (len < tempLength || width > (uint_t)itemBounds.width())
                 widthFull = true;
@@ -158,11 +158,8 @@ void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& 
         {
             //all text in first line - center ?
             if (allowCenter)
-            {
-                // TODO: FntLineHeight() is Palm-only, hence breaks wince build
-                // newBounds.topLeft.y += itemBounds.height()/2 - FntLineHeight()/2 -1;
                 newBounds.topLeft.y += itemBounds.height()/2 - fontHeight()/2 -1;
-            }
+
             drawText(text.c_str(), length, newBounds.topLeft);
             return;
         }

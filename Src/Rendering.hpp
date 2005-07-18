@@ -39,8 +39,8 @@ struct LayoutContext
     
     void markElementCompleted(uint_t width)
     {
-        renderingProgress=progressCompleted;
-        usedWidth+=width;
+        renderingProgress = progressCompleted;
+        usedWidth += width;
     }
     
     bool isElementCompleted() const
@@ -51,9 +51,9 @@ struct LayoutContext
     
     void startNewLine()
     {
-        usedWidth=0;
-        usedHeight=0;
-        baseLine=0;
+        usedWidth = 0;
+        usedHeight = 0;
+        baseLine = 0;
     }
     
     uint_t availableWidth() const

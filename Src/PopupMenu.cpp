@@ -198,7 +198,7 @@ void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, cons
     Point p = itemBounds.topLeft;
 //    ++p.x;
     uint_t width = itemBounds.width(); // - 2;
-    uint_t length = StrLen(text);
+    ulong_t length = Len(text);
     graphics.charsInWidth(text, length, width);
     
     RGBColorType oldColor;

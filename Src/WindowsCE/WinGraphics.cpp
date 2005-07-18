@@ -110,9 +110,9 @@ static void InvertRectangle(HDC dc, const Point& topLeft, uint_t width, uint_t h
 	BitBlt(dc, topLeft.x, topLeft.y, width, height, dc, topLeft.x, topLeft.y, DSTINVERT);	
 }
 
-void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
+void Graphics::drawText(const char_t* text, ulong_t length, const Point& topLeft, bool inverted)
 {
-    uint_t len=length;
+    ulong_t len=length;
     uint_t width=0x7fffffff;
     charsInWidth(text, len, width);
 
@@ -179,7 +179,7 @@ NativeColor_t Graphics::setTextColor(NativeColor_t color)
     return SetTextColor(handle_, color); 
 }
 
-uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
+ulong_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
 {
     int     lenThatFits;
     SIZE    size;
@@ -215,21 +215,21 @@ DoItAgain:
 // be displayed in a given width. If text is bigger than width, a line
 // break will be on newline, tab or a space.
 // Mimics Palm OS function FntWordWrap()
-uint_t Graphics::wordWrap(const char_t* text, uint_t width)
+ulong_t Graphics::wordWrap(const char_t* text, uint_t width)
 {
     uint_t textDx;
-    uint_t lenThatFits = wordWrap(text, width, textDx);
+    ulong_t lenThatFits = wordWrap(text, width, textDx);
     return lenThatFits;
 }
 
-uint_t Graphics::textWidth(const char_t* text, uint_t length)
+uint_t Graphics::textWidth(const char_t* text, ulong_t length)
 {
     SIZE size;
     GetTextExtentPoint(handle_, text, length, &size);
     return size.cx;
 }
 
-void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
+void Graphics::charsInWidth(const char_t* text, ulong_t& length, uint_t& width)
 {
     int   len;
     SIZE  size;

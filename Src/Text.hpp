@@ -229,7 +229,32 @@ long StrArrFindPrefix(char_t** array, ulong_t length, char_t nextChar, const cha
 #define StrStartsWith startsWith
 #define StrEquals equals
 
+/*
+template<class Ch, class Str>
+status_t StringAppend(std::basic_string<Ch>& out, const Str& app)
+{
+	ErrTry {
+		out.append(app);
+	} 
+	ErrCatch(ex) {
+		return ex;
+	} ErrEndCatch
+	return errNone;
+}
+ */
 
+template<class Ch>
+status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len = -1)
+{
+	if (-1 == len) len = Len(str);
+	ErrTry {
+		out.append(str, len);
+	} 
+	ErrCatch(ex) {
+		return ex;
+	} ErrEndCatch
+	return errNone;
+}
 
 #ifdef DEBUG
 void test_TextUnitTestAll();

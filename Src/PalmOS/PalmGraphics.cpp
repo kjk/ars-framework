@@ -100,7 +100,7 @@ inline static UnderlineModeType convertUnderlineMode(FontEffects::Underline unde
     return result;                
 }
     
-void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft, bool inverted)
+void Graphics::drawText(const char_t* text, ulong_t length, const Point& topLeft, bool inverted)
 {
     FontEffects fx = font_.effects();    
     PalmUnderlineSetter setUnderline(convertUnderlineMode(fx.underline()));
@@ -134,7 +134,7 @@ void Graphics::drawText(const char_t* text, uint_t length, const Point& topLeft,
     }
   }
 
-void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
+void Graphics::charsInWidth(const char_t* text, ulong_t& length, uint_t& width)
 {
 
     ScalingSetter setScaling(*this);
@@ -149,11 +149,11 @@ void Graphics::charsInWidth(const char_t* text, uint_t& length, uint_t& width)
 
 }
 
-uint_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
+ulong_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textDx)
 {
     ScalingSetter setScaling(*this);
 
-    int charsThatFit = FntWordWrap(text, availableDx);
+    ulong_t charsThatFit = FntWordWrap(text, availableDx);
 
     textDx = textWidth(text, charsThatFit);
     return charsThatFit;
@@ -222,14 +222,14 @@ void Graphics::invertRectangle(const ArsRectangle& rect)
     WinInvertRectangle(&r, 0);
 }
 
-uint_t Graphics::textWidth(const char_t* text, uint_t length)
+uint_t Graphics::textWidth(const char_t* text, ulong_t length)
 {
     ScalingSetter setScaling(*this);
     return FntCharsWidth(text, length);
 }
     
 
-uint_t Graphics::wordWrap(const char_t* text, uint_t width)
+ulong_t Graphics::wordWrap(const char_t* text, uint_t width)
 {
     ScalingSetter setScaling(*this);
     return FntWordWrap(text, width);

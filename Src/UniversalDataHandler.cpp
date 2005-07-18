@@ -2,17 +2,15 @@
 #include <SocketConnection.hpp>
 #include <Text.hpp>
 
-/*
 #include <Reader.hpp>
 #include <DataStore.hpp>
 #include <BufferedReader.hpp>
- */
  
 #if defined(__MWERKS__)
 # pragma far_code
 #endif
- /*
-static status_t openDataStoreReader(const char_t* name, DataStoreReaderPtr& reader)
+
+static status_t openDataStoreReader(const char* name, DataStoreReaderPtr& reader)
 {
     DataStore* ds=DataStore::instance();
     if (NULL == ds)
@@ -25,7 +23,7 @@ static status_t openDataStoreReader(const char_t* name, DataStoreReaderPtr& read
     return errNone;
 }
 
-static status_t openDataStoreWriter(const ArsLexis::char_t* name, DataStoreWriterPtr& writer)
+static status_t openDataStoreWriter(const char* name, DataStoreWriterPtr& writer)
 {
     DataStore* ds = DataStore::instance();
     if (NULL == ds)
@@ -37,6 +35,7 @@ static status_t openDataStoreWriter(const ArsLexis::char_t* name, DataStoreWrite
     writer = dsw;
     return errNone;
 }
+ /*
 
 static void writeLineToDataStore(DataStoreWriterPtr& writer, const String& line)
 {

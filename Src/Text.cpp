@@ -1454,7 +1454,6 @@ void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen)
 	if (efrom + elen < ulong_t(tlen))
 		target[tlen - efrom - elen] = L'\0';
 }
-#endif
 
 void strip(String& str)
 {
@@ -1464,6 +1463,8 @@ void strip(String& str)
 	str.erase(0, d - str.data());
 	str.resize(l);
 }
+
+#endif
 
 
 #ifdef DEBUG
