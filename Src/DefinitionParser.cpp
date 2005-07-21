@@ -334,8 +334,9 @@ status_t DefinitionParser::detectHTMLTag(ulong_t end, bool& result)
             }
             if (result)
             {
-				if (NULL == createTextElement())
-					return memErrNotEnoughSpace;
+                status_t err = createTextElement();
+                if (errNone != err)
+                    return err;
 				
                 textPosition_ = tagEnd + 1;
             } 
