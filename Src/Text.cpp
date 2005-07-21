@@ -530,7 +530,7 @@ void removeNonDigits(const char_t* in, uint_t len, String& out)
     while (len>0)
     {
         if (isDigit(*in))
-            out.append(*in, 1);
+            out.append(1, *in);
         ++in;
         --len;
     }

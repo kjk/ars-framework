@@ -565,7 +565,7 @@ status_t DefinitionParser::createTextElement(const char* text, long length, Text
 #else
         ulong_t startPos = 0;
 #endif
-        if (startPos == hyperlinkTarget_.find(text, startPos))
+        if (StrStartsWith(hyperlinkTarget_.data() + startPos, hyperlinkTarget_.length() - startPos, text, length))
         {
             long colonPos = StrFind(text, length, ':');
             // This is to remove possible lang: part from hyperlink caption.
@@ -587,12 +587,13 @@ status_t DefinitionParser::createTextElement(const char* text, long length, Text
         }
         if (NULL == langName)
         {
-            ulong_t colonPos = hyperlinkTarget_.find(':', startPos);
+            NarrowString::size_type colonPos = hyperlinkTarget_.find(':', startPos);
             if (NarrowString::npos != colonPos)
             {
                 langName = GetLangNameByLangCode(hyperlinkTarget_.data() + startPos, colonPos - startPos);
                 if (NULL != langName)
                 {
+                    
                     langCode = hyperlinkTarget_.data() + startPos;
                     langCodeLen = colonPos - startPos;
                 }

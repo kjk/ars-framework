@@ -259,7 +259,7 @@ static const char_t* GetLangNameProper(const char_t* code)
     if (end == res)
         return NULL;
 
-	if (StrEquals(code, res->code))
+	if (!StrEquals(code, res->code))
 		return NULL;
     
     return res->name; 
