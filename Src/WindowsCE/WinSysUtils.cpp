@@ -1,4 +1,5 @@
-#include <windows.h>
+#include <SysUtils.hpp>
+#include <UTF8_Processor.hpp>
 
 #ifdef WIN32_PLATFORM_WFSP
 #include <tpcshell.h>
@@ -6,15 +7,9 @@
 #endif
 
 #include <aygshell.h>
+#include <shellapi.h>
 
-#include <Shellapi.h>
-#include "SysUtils.hpp"
-
-#include <BaseTypes.hpp>
-
-using ArsLexis::String;
-using ArsLexis::char_t;
-
+/*
 int RectDx(RECT *rect)
 {
     int dx = rect->right - rect->left;
@@ -26,17 +21,15 @@ int RectDy(RECT *rect)
     int dy = rect->bottom - rect->top;
     return dy;
 }
+ */
 
-// TODO: implement. Used by iPediaConnection
 ulong_t random(ulong_t range)
 {
     ulong_t result = Random();
     return result;
 }
 
-// must be defined elsewhere e.g. iPediaApplication.cpp
-extern HWND g_hwndForEvents;
-
+/*
 void sendEvent(uint_t event, const void* data, uint_t dataSize, bool unique, const Point*)
 {
 	// TODO: do something to store Point
@@ -50,12 +43,27 @@ void sendEvent(uint_t event, short wph, short wpl, int lp)
 {
     PostMessage(g_hwndForEvents, event, (wph<<16)|wpl, lp);
 }
+ */
+ 
 
 void localizeNumber(char_t* begin, char_t* end)
 {
-	// TODO: implement localizeNumber()   
+	char_t decimal[2] = {_T('.'), _T('\0')};
+	char_t thousand[2] = {_T(','), _T('\0')};
+	int res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, thousand, 1);
+	res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, decimal, 1);
+	
+	while (begin != end)
+	{
+		if (*begin == _T(','))
+			*begin = thousand[0];
+		else if (*begin == _T('.'))
+			*begin = decimal[0];
+		++begin;
+	}
 }
 
+/*
 // Put the text of currently selected item in list control into txtOut
 // return false if no item is currently selected 
 bool ListCtrlGetSelectedItemText(HWND ctrl, String& txtOut)
@@ -108,23 +116,30 @@ void ListCtrlFillFromList(HWND ctrlList, CharPtrList_t& strList, bool fRemoveDup
         ++iter;
     } while (iter!=iterEnd);
 }
-
+ */
+ 
 // try to launch built-in web browser with a given url
-bool GotoURL(const ArsLexis::char_t *url)
+bool OpenURL(const char* url)
 {
+	char_t* p = UTF8_ToNative(url);
+	if (NULL == p)
+		return false;
+		
     SHELLEXECUTEINFO sei;
     ZeroMemory(&sei, sizeof(sei));
     sei.cbSize  = sizeof(sei);
     sei.fMask   = SEE_MASK_FLAG_NO_UI;
     sei.lpVerb  = _T("open");
-    sei.lpFile  = url;
-    sei.nShow   = SW_SHOWMAXIMIZED;
+    sei.lpFile  = p;
+    sei.nShow   = SW_SHOWNORMAL;
 
-    if (ShellExecuteEx(&sei))
-        return true;
-    return false;
+	BOOL res = ShellExecuteEx(&sei);
+	free(p);
+	
+	return TRUE == res;
 }
 
+/*
 // On windows those are defined as:
 //#define CSIDL_PROGRAMS           0x0002
 //#define CSIDL_PERSONAL           0x0005
@@ -433,5 +448,5 @@ static void DrawRectangle(HDC hdc, RECT *rect)
 {
     ::Rectangle(hdc, rect->left, rect->top, rect->right, rect->bottom);
 }
-
+*/
 

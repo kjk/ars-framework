@@ -1,5 +1,4 @@
-#include <Debug.hpp>
-#include "DynStr.hpp"
+#include <DynStr.hpp>
 
 // for interop, get C-compatible string. You can write into this string
 // up to its termination 0 - this is guaranteed to belong to the DynStr
@@ -23,7 +22,7 @@ char_t *DynStrReleaseStr(DynStr *dstr)
     return toReturn;
 }
 
-void DynStrAttachCharPBuf(DynStr* dstr, char_t* str, UInt32 len, UInt32 bufSize)
+void DynStrAttachCharPBuf(DynStr* dstr, char_t* str, ulong_t len, ulong_t bufSize)
 {
     if (dstr->str == str)
         return;
@@ -49,21 +48,21 @@ char *DynStrGetData(DynStr *dstr)
 
 // same as DynStrLen but reinforces the notion that DynStr can handle
 // arbitrary binary data
-UInt32     DynStrGetDataLen(DynStr *dstr)
+ulong_t     DynStrGetDataLen(DynStr *dstr)
 {
     return dstr->strLen*sizeof(char_t);
 }
 
 // get length of the string. Note that since DynStr is binary-safe, this
 // might be different (bigger) than StrLen(DynStrGetCStr(dstr))
-UInt32 DynStrLen(DynStr *dstr)
+ulong_t DynStrLen(DynStr *dstr)
 {
     return dstr->strLen;
 }
 
 /* returns how much data do we have left in the buffer.
    that's how much data we can add to the string without re-allocating it */
-static UInt32 DynStrLeft(DynStr *dstr)
+static ulong_t DynStrLeft(DynStr *dstr)
 {
     if (0 == dstr->bufSize)
         return 0;
@@ -77,7 +76,7 @@ static UInt32 DynStrLeft(DynStr *dstr)
 // The good thing about this function is that it doesn't
 // free the buffer, so it can be used to efficiently re-use
 // the string memory without reallocation
-void   DynStrTruncate(DynStr *dstr, UInt32 len)
+void   DynStrTruncate(DynStr *dstr, ulong_t len)
 {
     assert(NULL != dstr);
     assert(dstr->strLen >= len);
@@ -110,7 +109,7 @@ void DynStrDelete(DynStr *dstr)
    initialize it and allocate buffer of size bufSize.
    returns NULL if failed for any reason (currently
    only memory allocation failure) */
-DynStr * DynStrInit(DynStr* dstr, UInt32 bufSize)
+DynStr * DynStrInit(DynStr* dstr, ulong_t bufSize)
 {
     dstr->reallocIncrement = 0;
 
@@ -127,20 +126,20 @@ DynStr * DynStrInit(DynStr* dstr, UInt32 bufSize)
     return dstr;
 }
 
-DynStr * DynStrNew__(UInt32 bufSize, const char* file, int line)
+DynStr * DynStrNew__(ulong_t bufSize, const char* file, int line)
 {
     return DynStrFromCharP__(_T(""), bufSize, file, line);
 }
 
-void   DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment)
+void   DynStrSetReallocIncrement(DynStr *dstr, ulong_t increment)
 {
     dstr->reallocIncrement = increment;
 }
 
-DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char* file, int line)
+DynStr *DynStrFromCharP__(const char_t *str, ulong_t initBufSize, const char* file, int line)
 {
-    UInt32 strLen  = tstrlen(str);
-    UInt32 bufSize = (strLen+1)*sizeof(char_t);
+    ulong_t strLen  = tstrlen(str);
+    ulong_t bufSize = (strLen+1)*sizeof(char_t);
     DynStr * dstr;
 
     if (bufSize < initBufSize)
@@ -166,10 +165,10 @@ DynStr *DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char* fil
 
 DynStr *DynStrFromCharP2(const char_t *strOne, const char_t *strTwo)
 {
-    UInt32 bufSize;
+    ulong_t bufSize;
     DynStr * dstr;
     DynStr * dstrNew;
-    UInt32 strOneLen, strTwoLen;
+    ulong_t strOneLen, strTwoLen;
 
     assert(NULL != strOne);
     assert(NULL != strTwo);
@@ -191,10 +190,10 @@ DynStr *DynStrFromCharP2(const char_t *strOne, const char_t *strTwo)
 
 DynStr *DynStrFromCharP3(const char_t *strOne, const char_t *strTwo, const char_t *strThree)
 {
-    UInt32 bufSize;
+    ulong_t bufSize;
     DynStr * dstr;
     DynStr * dstrNew;
-    UInt32 strOneLen, strTwoLen, strThreeLen;
+    ulong_t strOneLen, strTwoLen, strThreeLen;
 
     assert(NULL!=strOne);
     assert(NULL!=strTwo);
@@ -225,14 +224,14 @@ DynStr * DynStrAssignCharP(DynStr *dstr, const char_t *str)
     return DynStrAppendCharP(dstr, str);
 }
 
-DynStr * DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, UInt32 strLen)
+DynStr * DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, ulong_t strLen)
 {
     return DynStrAppendData(dstr, (const char*)str, strLen*sizeof(char_t));
 }
 
 DynStr * DynStrAppendCharP(DynStr *dstr, const char_t *str)
 {
-    UInt32 strLen = tstrlen(str);
+    ulong_t strLen = tstrlen(str);
     return DynStrAppendData(dstr, (const char*)str, strLen*sizeof(char_t));
 }
 
@@ -268,12 +267,12 @@ DynStr *DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend)
 // Return pointer to itself or NULL if we had to re-allocate the buffer
 // but failed.
 // THE ORIGINAL DynStr - the client has to do it by himself.
-DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
+DynStr *DynStrAppendData(DynStr *dstr, const char *data, ulong_t dataSize)
 {
     char *  curEnd;
-    UInt32  newStrLen;
+    ulong_t  newStrLen;
     char *  newStr;
-    UInt32  newBufSize;
+    ulong_t  newBufSize;
 
     if ( dataSize > DynStrLeft(dstr) * sizeof(char_t))
     {
@@ -318,7 +317,7 @@ DynStr *DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize)
 // end of string
 char_t * DynStrCharPCopy(DynStr *dstr)
 {
-    UInt32 strLen;
+    ulong_t strLen;
     char_t *result;
 
     if (NULL == dstr->str)
@@ -339,10 +338,10 @@ char_t * DynStrCharPCopy(DynStr *dstr)
 // e.g. DynStrRemoveStartLen("hello", 1, 2) => "hlo" (removed "el")
 // len can be zero to simplify client code
 // start has to be within string <0 - strLen-1>
-void DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len)
+void DynStrRemoveStartLen(DynStr *dstr, ulong_t start, ulong_t len)
 {
     char *  str = (char*)dstr->str;
-    UInt32  toMove;
+    ulong_t  toMove;
 
     if (0==len)
         return;
@@ -437,8 +436,8 @@ DynStr *DynStrUrlEncode(DynStr *toEncode)
 
 void DynStrReplace(DynStr *dstr, char_t orig, char_t replace)
 {
-    UInt32 i;
-    UInt32 len = DynStrLen(dstr);
+    ulong_t i;
+    ulong_t len = DynStrLen(dstr);
     char_t * txt = DynStrGetCStr(dstr);
     for (i=0; i<len; i++)
     {

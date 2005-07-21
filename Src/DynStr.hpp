@@ -1,8 +1,7 @@
 #ifndef _DYNSTR_H_
 #define _DYNSTR_H_
 
-#include <BaseTypes.hpp>
-using ArsLexis::char_t;
+#include <Debug.hpp>
 
 #ifdef WIN32
 // warning C4200: nonstandard extension used : zero-sized array in struct/union
@@ -17,14 +16,14 @@ using ArsLexis::char_t;
 typedef struct DynStrTag {
     // how much space do we have in total for this string. We can use
     // only bufSize-1 since the last byte is always 0 for NULL termination
-    UInt32   bufSize;
+    ulong_t   bufSize;
     // real length of the string. does not include terminating NULL
-    UInt32   strLen;
+    ulong_t   strLen;
     // by how much increase the buffer when a re-allocation is needed.
     // if 0, add only as much as necessary. This can be used to optimize
     // appending i.e. if you expect to append a lot of small strings, set
     // this to minimize the number of re-allocations due to appending
-    UInt32   reallocIncrement;
+    ulong_t   reallocIncrement;
     // that's where the data begins
     char_t     *str;
 } DynStr;
@@ -34,37 +33,37 @@ typedef struct DynStrTag {
    it only has empty string */
 #define DYNSTR_STR(dstr) (dstr->str)
 
-DynStr *   DynStrInit(DynStr* dstr, UInt32 bufSize);
-DynStr *   DynStrNew__(UInt32 bufSize, const char* file, int line);
-DynStr *   DynStrFromCharP__(const char_t *str, UInt32 initBufSize, const char* file, int line);
+DynStr *   DynStrInit(DynStr* dstr, ulong_t bufSize);
+DynStr *   DynStrNew__(ulong_t bufSize, const char* file, int line);
+DynStr *   DynStrFromCharP__(const char_t *str, ulong_t initBufSize, const char* file, int line);
 
 #define DynStrNew(size) DynStrNew__((size), __FILE__, __LINE__)
 #define DynStrFromCharP(str, initBufSize) DynStrFromCharP__((str), (initBufSize), __FILE__, __LINE__)
 
-void       DynStrSetReallocIncrement(DynStr *dstr, UInt32 increment);
+void       DynStrSetReallocIncrement(DynStr *dstr, ulong_t increment);
 DynStr *   DynStrFromCharP2(const char_t *strOne, const char_t *strTwo);
 DynStr *   DynStrFromCharP3(const char_t *strOne, const char_t *strTwo, const char_t *strThree);
 DynStr *   DynStrAssignCharP(DynStr *dstr, const char_t *str);
-void       DynStrTruncate(DynStr *dstr, UInt32 len);
+void       DynStrTruncate(DynStr *dstr, ulong_t len);
 char_t *   DynStrGetCStr(DynStr *dstr);
 char_t *   DynStrReleaseStr(DynStr *dstr);
 char *     DynStrGetData(DynStr *dstr);
-UInt32     DynStrGetDataLen(DynStr *dstr);
-UInt32     DynStrLen(DynStr *dstr);
-DynStr *   DynStrAppendData(DynStr *dstr, const char *data, UInt32 dataSize);
+ulong_t     DynStrGetDataLen(DynStr *dstr);
+ulong_t     DynStrLen(DynStr *dstr);
+DynStr *   DynStrAppendData(DynStr *dstr, const char *data, ulong_t dataSize);
 DynStr *   DynStrAppendCharP(DynStr *dstr, const char_t *str);
 DynStr *   DynStrAppendCharP2(DynStr *dstr, const char_t *str1, const char_t *str2);
 DynStr *   DynStrAppendCharP3(DynStr *dstr, const char_t *str1, const char_t *str2, const char_t *str3);
-DynStr *   DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, UInt32 strLen);
+DynStr *   DynStrAppendCharPBuf(DynStr *dstr, const char_t *str, ulong_t strLen);
 DynStr *   DynStrAppendChar(DynStr *dstr, const char_t c);
 void       DynStrFree(DynStr *dstr);
 void       DynStrDelete(DynStr *dstr);
 char_t *   DynStrCharPCopy(DynStr *dstr);
-void       DynStrRemoveStartLen(DynStr *dstr, UInt32 start, UInt32 len);
+void       DynStrRemoveStartLen(DynStr *dstr, ulong_t start, ulong_t len);
 DynStr *   DynStrAppendDynStr(DynStr *dstr, DynStr *toAppend);
 DynStr *   DynStrUrlEncode(DynStr *srcUrl);
 void       DynStrReplace(DynStr *dstr, char_t orig, char_t replace);
-void        DynStrAttachCharPBuf(DynStr* dstr, char_t* str, UInt32 len, UInt32 bufSize);
+void        DynStrAttachCharPBuf(DynStr* dstr, char_t* str, ulong_t len, ulong_t bufSize);
 void        DynStrAttachStr(DynStr* dstr, char_t* str);
 void        DynStrSwap(DynStr* s1, DynStr* s2);
 
@@ -73,22 +72,22 @@ class CDynStr : public DynStr
 public:
     CDynStr() { bufSize = 0; strLen = 0; reallocIncrement = 0; str = NULL; }
     ~CDynStr() { DynStrFree(this); }
-    void SetReallocIncrement(UInt32 increment) { DynStrSetReallocIncrement(this, increment); }
-    CDynStr *AppendData(const char *data, UInt32 dataSize) { return (CDynStr*) DynStrAppendData(this, data, dataSize); }
-    void Truncate(UInt32 len) { DynStrTruncate(this, len); }
+    void SetReallocIncrement(ulong_t increment) { DynStrSetReallocIncrement(this, increment); }
+    CDynStr *AppendData(const char *data, ulong_t dataSize) { return (CDynStr*) DynStrAppendData(this, data, dataSize); }
+    void Truncate(ulong_t len) { DynStrTruncate(this, len); }
     CDynStr *AssignCharP(const char_t *str) { return (CDynStr*) DynStrAssignCharP(this, str); }
     char_t *GetCStr() { return DynStrGetCStr(this); }
     char_t *GetCharPCopy() { return DynStrCharPCopy(this); }
-    UInt32 Len() { return DynStrLen(this); }
+    ulong_t Len() { return DynStrLen(this); }
     CDynStr *AppendCharP(const char_t *str) { return (CDynStr*)DynStrAppendCharP(this, str); }
     CDynStr *AppendCharP2(const char_t *str1, const char_t *str2) { return (CDynStr*)DynStrAppendCharP2(this, str1, str2); }
     CDynStr *AppendCharP3(const char_t *str1, const char_t *str2, const char_t *str3) { return (CDynStr*)DynStrAppendCharP3(this, str1, str2, str3); }
-    CDynStr *AppendCharPBuf(const char_t *str, UInt32 strLen) { return (CDynStr*)DynStrAppendCharPBuf(this, str, strLen); }
+    CDynStr *AppendCharPBuf(const char_t *str, ulong_t strLen) { return (CDynStr*)DynStrAppendCharPBuf(this, str, strLen); }
     CDynStr *AppendChar(const char_t c) { return (CDynStr*)DynStrAppendChar(this, c); }
     CDynStr *Append(DynStr *dynStr) { return (CDynStr *)DynStrAppendDynStr(this, dynStr); }
     char_t* ReleaseStr() {return DynStrReleaseStr(this);}
     void AttachStr(char_t* str) {DynStrAttachStr(this, str);}
-    void AttachCharPBuf(char_t* buf, UInt32 len, UInt32 bufLen) {DynStrAttachCharPBuf(this, buf, len, bufLen);}
+    void AttachCharPBuf(char_t* buf, ulong_t len, ulong_t bufLen) {DynStrAttachCharPBuf(this, buf, len, bufLen);}
 };
 
 namespace std {

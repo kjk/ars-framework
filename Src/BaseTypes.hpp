@@ -18,8 +18,6 @@ namespace std {
     typedef unsigned __int32 uint32_t;
 }
 
-    typedef unsigned __int32 UInt32;
-
 #else
 #  include <cstdint>
 #endif
@@ -66,12 +64,6 @@ typedef unsigned long ulong_t;
 
 namespace ArsLexis
 {
-    struct EventType
-    {
-        int eType;
-        char data[8];
-    };
-
     typedef DWORD tick_t;
 
     typedef TCHAR char_t;

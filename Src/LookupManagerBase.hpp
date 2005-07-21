@@ -3,6 +3,7 @@
 
 #include <SocketConnection.hpp>
 #include <Utility.hpp>
+#include <ExtendedEvent.hpp>
 
 class Graphics;
 struct ArsRectangle;
@@ -60,7 +61,7 @@ public:
 
     void showProgress(Graphics& graphics, const ArsRectangle& bounds, bool clearBkg=true)
     {
-        if (0!=progressReporter_.get())
+        if (NULL != progressReporter_.get())
             progressReporter_->showProgress(*this, graphics, bounds, clearBkg);
     }
     
@@ -79,7 +80,7 @@ class LookupManagerBase: protected LookupProgressReportingSupport, private NonCo
     
 protected:
 
-    virtual void handleLookupFinished(const LookupFinishedData& data)
+    virtual void handleLookupFinished(const LookupFinishedData* data)
     {}
 
     using LookupProgressReportingSupport::setBytesProgress;
@@ -93,19 +94,20 @@ public:
     using LookupProgressReportingSupport::showProgress;
     using LookupProgressReportingSupport::setProgressReporter;
 
-    enum Event {
-        lookupStartedEvent=firstLookupEventNumber,
+    enum LookupEvent {
+        lookupStartedEvent = firstLookupEventNumber,
         lookupProgressEvent,
         lookupFinishedEvent,
-        lookupEventCount=lookupFinishedEvent-lookupStartedEvent+1
+        lookupEventCount = lookupFinishedEvent - lookupStartedEvent + 1
     };
     
     bool lookupInProgress() const
     {return lookupInProgress_;}
     
-    virtual void handleLookupEvent(const EventType& event)
+    virtual void handleLookupEvent(const Event& event)
     {
-        switch (event.eType)
+		ulong_t id = ExtEventGetID(event); 
+        switch (id)
         {
             case lookupStartedEvent:
                 lookupInProgress_=true;
@@ -113,7 +115,7 @@ public:
                 
             case lookupFinishedEvent:
                 lookupInProgress_=false;
-                handleLookupFinished(reinterpret_cast<const LookupFinishedData&>(event.data));
+                handleLookupFinished(static_cast<LookupFinishedData*>(ExtEventGetObject(event)));
                 setStatusText(_T(""));
                 setPercentProgress(percentProgressDisabled);
                 setBytesProgress(0);

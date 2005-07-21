@@ -63,7 +63,7 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
                 brf=0;
             }
             length=tprintf(buffer, format, bri, brf);
-            localizeNumber(buffer, buffer+length);
+            localizeNumber(buffer, buffer + length);
         }
     }
 
@@ -79,7 +79,7 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
 LookupProgressReportingSupport::LookupProgressReportingSupport():
     percentProgress_(percentProgressDisabled),
     bytesProgress_(0),
-    progressReporter_(new DefaultLookupProgressReporter())
+    progressReporter_(new_nt DefaultLookupProgressReporter())
 {}
 
 LookupProgressReportingSupport::~LookupProgressReportingSupport()

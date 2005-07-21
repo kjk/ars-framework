@@ -233,20 +233,6 @@ Serializer& Serializer::operator()(unsigned long& value, ulong_t id)
     return serializeSimpleType<unsigned long, dtULong>(value, id);    
 }
 
-Serializer& Serializer::narrow(NarrowString& value, ulong_t id)
-{
-	ulong_t length = value.length();
-    serializeSimpleType<ulong_t, dtBlob>(length, id);
-    if (directionOutput == direction_)
-        serializeChunk((char*)value.data(), length);
-    else if (!skipLastRecord_)
-    {
-		value.resize(length); 
-        serializeChunk(&value[0], length);
-    }
-    return *this;
-}
-
 Serializer& Serializer::binary(void* array, ulong_t size, ulong_t id)
 {
 	ulong_t length = size;
@@ -262,6 +248,20 @@ Serializer& Serializer::binary(void* array, ulong_t size, ulong_t id)
 			((char*)array)[length] = '\0';
 	} 
 	return *this;
+}
+
+Serializer& Serializer::narrow(NarrowString& value, ulong_t id)
+{
+	ulong_t length = value.length();
+    serializeSimpleType<ulong_t, dtBlob>(length, id);
+    if (directionOutput == direction_)
+        serializeChunk((char*)value.data(), length);
+    else if (!skipLastRecord_)
+    {
+		value.resize(length); 
+        serializeChunk(&value[0], length);
+    }
+    return *this;
 }
 
 Serializer& Serializer::narrowOut(const char* str, long len, ulong_t id)
@@ -318,12 +318,6 @@ Serializer& Serializer::narrow(char*& str, ulong_t* len, ulong_t id)
 		return narrowIn(str, len, id);
 }
 
-/*
-Serializer& Serializer::text(String& value, ulong_t id = unusedId);
-
-Serializer& Serializer::text(char_t* array, ulong_t size, ulong_t = unusedId); 
- */
- 
 Serializer& Serializer::textOut(const char_t* str, long len, ulong_t id)
 {
 	if (directionOutput != direction_)
@@ -389,6 +383,87 @@ Serializer& Serializer::text(char_t*& str, ulong_t* len, ulong_t id)
 	}
 	else
 		return textIn(str, len, id);
+}
+
+Serializer& Serializer::text(String& value, ulong_t id)
+{
+	if (directionOutput == direction_)
+		return textOut((char_t*)value.data(), value.length(), id);
+
+	ulong_t length;
+	serializeSimpleType<ulong_t, dtText>(length, id);
+	if (skipLastRecord_)
+		return *this;
+
+	free(buffer_);
+	buffer_ = NULL;
+	
+	char* p = (char*)malloc(length);
+	if (NULL == p)
+		ErrThrow(memErrNotEnoughSpace);
+	
+	buffer_ = p;
+	serializeChunk(buffer_, length);
+	
+	ulong_t slen;
+	char_t* s = UTF8_ToNative(p, length, &slen);
+	
+	free(buffer_);
+	buffer_ = NULL;
+	
+	if (NULL == s)
+		ErrThrow(memErrNotEnoughSpace);
+	
+	buffer_ = s;
+	value.assign(s, slen);
+	
+	free(buffer_);
+	buffer_ = NULL;
+	
+	return *this;
+}
+
+ Serializer& Serializer::text(char_t* array, ulong_t size, ulong_t id)
+{
+	if (directionOutput == direction_)
+		return textOut(array, size, id);
+		
+	ulong_t length;
+	serializeSimpleType<ulong_t, dtText>(length, id);
+	if (skipLastRecord_)
+		return *this;
+
+	free(buffer_);
+	buffer_ = NULL;
+	
+	char* p = (char*)malloc(length);
+	if (NULL == p)
+		ErrThrow(memErrNotEnoughSpace);
+	
+	buffer_ = p;
+	serializeChunk(buffer_, length);
+	
+	ulong_t slen;
+	char_t* s = UTF8_ToNative(p, length, &slen);
+	
+	free(buffer_);
+	buffer_ = NULL;
+	
+	if (NULL == s)
+		ErrThrow(memErrNotEnoughSpace);
+	
+	buffer_ = s;
+	if (slen > size)
+		ErrThrow(errBufferTooSmall);
+		
+	memmove(array, s, slen * sizeof(char_t));
+	if (slen < size)
+		array[slen] = _T('\0');
+	
+	free(buffer_);
+	buffer_ = NULL;
+	
+	return *this;
 }
 
 Serializer& Serializer::operator()(Serializable& object, ulong_t id)
