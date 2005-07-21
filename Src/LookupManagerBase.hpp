@@ -115,7 +115,7 @@ public:
                 
             case lookupFinishedEvent:
                 lookupInProgress_=false;
-                handleLookupFinished(static_cast<LookupFinishedData*>(ExtEventGetObject(event)));
+                handleLookupFinished(static_cast<const LookupFinishedData*>(ExtEventGetObject(event)));
                 setStatusText(_T(""));
                 setPercentProgress(percentProgressDisabled);
                 setBytesProgress(0);
