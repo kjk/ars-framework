@@ -233,7 +233,7 @@ Serializer& Serializer::operator()(unsigned long& value, ulong_t id)
     return serializeSimpleType<unsigned long, dtULong>(value, id);    
 }
 
-Serializer& Serializer::binary(void* array, ulong_t size, ulong_t id)
+Serializer& Serializer::narrow(char* array, ulong_t size, ulong_t id)
 {
 	ulong_t length = size;
     serializeSimpleType<ulong_t, dtBlob>(length, id);

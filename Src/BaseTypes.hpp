@@ -81,6 +81,7 @@ namespace ArsLexis
 # define tprintf   _stprintf
 # define ticks     GetTickCount
 # define memzero(data,size)  memset((data), 0, (size))
+# define StrPrintF sprintf
 
     static inline tick_t ticksPerSecond() { return 1000; } // Win32 uses fixed 1-millisecond ticks.
 

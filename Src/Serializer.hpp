@@ -122,7 +122,7 @@ public:
  */    
 
 	// Serializes passed data as a blob, without any transformation
-	Serializer& binary(void* array, ulong_t size, ulong_t id = unusedId);
+	Serializer& narrow(char* array, ulong_t size, ulong_t id = unusedId);
 	
 	Serializer& narrow(NarrowString& value, ulong_t id = unusedId);
 	Serializer& narrowOut(const char* str, long len = -1, ulong_t id = unusedId);

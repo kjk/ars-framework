@@ -1,7 +1,9 @@
- #include <PopupMenu.hpp>
+#include <PopupMenu.hpp>
 #include <Graphics.hpp>
 #include <Text.hpp>
-#include <DynStr.hpp>
+#include <UTF8_Processor.hpp>
+
+#ifdef _PALM_OS
 
 PopupMenu::PopupMenu(Form& form):
     list(form),
@@ -122,7 +124,9 @@ void PopupMenu::setModel(PopupMenuModel* model, ModelOwnerFlag owner)
     modelOwner_ = owner;
 }
 
-uint_t PopupMenuModel::itemsCount() const
+#endif
+
+ulong_t PopupMenuModel::itemsCount() const
 {
     return count;
 }
@@ -131,7 +135,9 @@ PopupMenuModel::PopupMenuModel():
     items(NULL),
     count(0)
 {
+#ifdef _PALM_OS
     setRgbColor(inactiveTextColor, 64, 64, 64);
+#endif 
 }
 
 PopupMenuModel::~PopupMenuModel()
@@ -152,6 +158,7 @@ PopupMenuModel::Item::~Item()
 
 uint_t PopupMenuModel::maxTextWidth() const
 {
+#ifdef _PALM_OS
     if (0 == count)
         return 0;
     uint_t width = 0;
@@ -174,8 +181,14 @@ uint_t PopupMenuModel::maxTextWidth() const
     } 
     FntSetFont(lastFont);
     return width;
+#endif
+#ifdef _WIN32_WCE
+	// TODO: implement
+	return 0;
+#endif   
 }
 
+/*
 void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, const ArsRectangle& itemBounds)
 {
     assert(index < count);
@@ -216,8 +229,9 @@ void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, cons
     graphics.drawLine(itemBounds.x() - 2, y, itemBounds.x() + itemBounds.width(), y);            
     WinSetForeColorRGB(&oldColor, NULL);
 }
-
-static bool extractLong(const char_t*& data, long& length, long& val)
+ */
+ 
+static bool extractLong(const char*& data, ulong_t& length, long& val)
 {
     if (length < 4)
         return false;
@@ -242,13 +256,14 @@ static bool extractLong(const char_t*& data, long& length, long& val)
     return true;
 }
 
-static bool extractString(const char_t*& data, long& length, const char_t*& str, long& strLen)
+static bool extractString(const char*& data, ulong_t& length, const char*& str, long& strLen)
 {
     long len;
     if (!extractLong(data, length, len))
         return false;
     ++len;
-    if (length < len)
+	assert(len > 0); 
+    if (length < ulong_t(len))
         return false;
     strLen = len - 1;
     str = data;
@@ -257,27 +272,30 @@ static bool extractString(const char_t*& data, long& length, const char_t*& str,
     return true;
 }
 
-void PopupMenuModel::setItems(Item* items, uint_t itemsCount)
+void PopupMenuModel::setItems(Item* items, ulong_t itemsCount)
 {
     delete [] this->items;
     this->items = items;
     this->count = itemsCount;
 }
 
-bool PopupMenuModel::itemsFromString(const char_t* data, long length)
+bool PopupMenuModel::itemsFromString(const char* data, ulong_t length)
 {
-    long itemsCount;
+    ulong_t itemsCount;
     long val;
-    const char_t* text;
+    const char* text;
     Item* newItems = NULL;
-    if (!extractLong(data, length, itemsCount))
+    if (!extractLong(data, length, val))
         goto Fail;
     
+	assert(val >= 0);
+	itemsCount = val;
+	 
     newItems = new_nt Item[itemsCount];
     if (NULL == newItems)
         goto Fail;
         
-    for (long i = 0; i < itemsCount; ++i)
+    for (ulong_t i = 0; i < itemsCount; ++i)
     {
         Item& item = newItems[i];
         if (!extractString(data, length, text, val))
@@ -285,7 +303,7 @@ bool PopupMenuModel::itemsFromString(const char_t* data, long length)
         
         if (0 != val)
         {
-            item.text = StringCopy2N(text, val);
+            item.text = UTF8_ToNative(text, val);
             if (NULL == item.text)
                 goto Fail;
         }
@@ -296,7 +314,7 @@ bool PopupMenuModel::itemsFromString(const char_t* data, long length)
         if (0 != val)
         {
             item.hyperlink = StringCopy2N(text, val);
-            if (NULL == item.text)
+            if (NULL == item.hyperlink)
                 goto Fail;
         }
                     
@@ -316,60 +334,177 @@ Fail:
     return false;        
 }
 
-static DynStr* DynStrAppendLongBE(DynStr* str, long ll)
+static char* StrAppendLongBE(char* str, ulong_t& length, long ll)
 {
     union {
         char b[4];
         long l;
     };
-    char_t arr[4];
+    char arr[4];
     l = ll;
     for (int i = 0; i < 4; ++i)
     {
 #ifdef _PALM_OS
         arr[i] = b[i];        
 #else
-        arr[3 - i] = b[i]
+        arr[3 - i] = b[i];
 #endif
     }  
-    return DynStrAppendCharPBuf(str, arr, 4);
+	str = StrAppend(str, length, arr, 4);
+	if (NULL == str)
+		return NULL;
+	length += 4; 
+    return str;
 }
 
-static DynStr* DynStrAppendLenStrBE(DynStr* out, const char_t* str)
+static char* StrAppendLenStrBE(char* out, ulong_t& length, const char* str)
 {
-    long len = tstrlen(str);
-    if (NULL == DynStrAppendLongBE(out, len))
+    long len = Len(str);
+    if (NULL == (out = StrAppendLongBE(out, length, len)))
         return NULL;
-        
-    if (NULL == DynStrAppendCharPBuf(out, str, len + 1))
+
+    if (NULL == (out = StrAppend(out, length, str, len + 1)))
         return NULL;
     
+	length += len + 1; 
     return out;
 }
 
-status_t PopupMenuHyperlinkCreate(DynStrTag* hyperlink, const char_t* prefix, ulong_t itemsCount)
+status_t PopupMenuHyperlinkCreate(char*& hyperlink, ulong_t& length, const char* prefix, ulong_t itemsCount)
 {
-    if (NULL == DynStrAppendCharP(hyperlink, prefix))
-        return memErrNotEnoughSpace;
-    
-    if (NULL == DynStrAppendLongBE(hyperlink, itemsCount))
-        return memErrNotEnoughSpace;
-    
+	ulong_t len = Len(prefix);
+	hyperlink = StringCopyN(prefix, len);
+	if (NULL == hyperlink)
+		goto NoMemory;
+
+	length = len;
+	hyperlink = StrAppendLongBE(hyperlink, length, itemsCount);
+	if (NULL == hyperlink)
+		goto NoMemory;
     return errNone;
+    
+NoMemory:
+	free(hyperlink);
+	hyperlink = NULL;
+	length = 0;
+	return memErrNotEnoughSpace; 
 }
 
-status_t PopupMenuHyperlinkAppendItem(DynStrTag* hyperlink, const char_t* text, const char_t* link, ulong_t itemFlags)
+status_t PopupMenuHyperlinkAppendItem(char*& hyperlink, ulong_t& length, const char_t* text, const char* link, ulong_t itemFlags)
 {
-    if (NULL == DynStrAppendLenStrBE(hyperlink, text))
-        return memErrNotEnoughSpace;
-        
-    if (NULL == DynStrAppendLenStrBE(hyperlink, link))
-        return memErrNotEnoughSpace;
-        
-    if (NULL == DynStrAppendLongBE(hyperlink, itemFlags))
-        return memErrNotEnoughSpace;
+	char* utf = UTF8_FromNative(text);
+	if (NULL == utf)
+		goto NoMemory;
+	
+	hyperlink = StrAppendLenStrBE(hyperlink, length, utf);
+	free(utf);
+	if (NULL == hyperlink)
+		goto NoMemory;
+
+	hyperlink = StrAppendLenStrBE(hyperlink, length, link);
+	if (NULL == hyperlink)
+		goto NoMemory;
+
+	hyperlink = StrAppendLongBE(hyperlink, length, itemFlags);        
+	if (NULL == hyperlink)
+		goto NoMemory;
     
     return errNone;
+    
+NoMemory:
+	free(hyperlink);
+	hyperlink = NULL;
+	length = 0;
+	return memErrNotEnoughSpace; 
 }
 
+#ifdef _WIN32
 
+long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd)
+{
+	long sel = -1;
+	HMENU menu = CreatePopupMenu();
+	if (NULL == menu)
+		goto Finish;
+		
+	//MENUITEMINFO mi;
+	//ZeroMemory(&mi, sizeof(mi));
+	//mi.cbSize = sizeof(mi);
+
+	ulong_t count = model.itemsCount();
+	for (ulong_t i = 0; i < count; ++i)
+	{
+		const PopupMenuModel::Item& item = model.items[i];
+		
+		//if (item.active)
+		//	mi.fState = MFS_ENABLED;
+		//else
+		//	mi.fState = MF_GRAYED;
+		//
+		//if (item.bold)
+		//	mi.fState |= MFS_DEFAULT;
+		//
+		//mi.fMask = MIIM_TYPE|MIIM_STATE|MIIM_ID;
+		//if (item.separator)
+		//{
+		//	mi.fType = MFT_SEPARATOR;
+		//	mi.dwTypeData = NULL;
+		//	mi.cch = 0;
+		//}
+		//else
+		//{
+		//	mi.fType = MFT_STRING;
+		//	mi.dwTypeData = item.text;
+		//	mi.cch = Len(item.text);
+		//}
+		//mi.wID = i + 1;
+		//BOOL res = InsertMenuItem(menu, i, TRUE, &mi);
+		//if (!res)
+		//	goto Finish;
+		UINT flags = MF_BYPOSITION;
+		if (item.separator)
+			flags |= MF_SEPARATOR;
+		else
+			flags |= MF_STRING;
+		if (item.active)
+			flags |= MF_ENABLED;
+		else
+			flags |= MF_GRAYED;
+		BOOL res = InsertMenu(menu, -1, flags, i + 1, item.text);
+		if (!res)
+			goto Finish;
+	}
+	
+	BOOL res = TrackPopupMenu(menu, TPM_LEFTALIGN|TPM_TOPALIGN|TPM_NONOTIFY|TPM_RETURNCMD, point.x, point.y, 0, wnd, NULL);
+	if (0 != res)
+		sel = res - 1;
+		
+Finish:	
+	if (NULL != menu)
+		DestroyMenu(menu);
+	return sel;
+}
+
+#ifndef NDEBUG
+void test_PopupMenu(HWND wnd)
+{
+	char* hl = NULL;
+	ulong_t l = 0;
+	PopupMenuHyperlinkCreate(hl, l, "popup:", 4);
+	PopupMenuHyperlinkAppendItem(hl, l, _T("Item 1"), "test: 1", popupMenuItemBold);
+	PopupMenuHyperlinkAppendItem(hl, l, _T(""), "", popupMenuItemSeparator);
+	PopupMenuHyperlinkAppendItem(hl, l, _T("Item 2"), "test: 2", popupMenuItemInactive);
+	PopupMenuHyperlinkAppendItem(hl, l, _T("Item 3"), "test: 3", 0);
+	long pos = StrFind(hl, l, _T(':'));
+	assert(pos != -1);
+	PopupMenuModel* model = new_nt PopupMenuModel();
+	assert(NULL != model);
+	++pos;
+	assert(model->itemsFromString(hl + pos, l - pos));
+	assert(4 == model->itemsCount());
+	long sel = PopupMenuShow(*model, Point(20, 20), wnd);
+	delete model;
+}
+#endif
+
+#endif

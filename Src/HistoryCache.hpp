@@ -4,7 +4,6 @@
 #include <DataStore.hpp>
 #include <Utility.hpp>
 
-class PopupMenuModel;
 class Serializer;
 
 class HistoryCache: private NonCopyable 
@@ -19,9 +18,9 @@ public:
     
 private:
     
-    typedef char_t CacheEntryUrlBuffer_t[maxCacheEntryUrlLength + 1];
+    typedef char CacheEntryUrlBuffer_t[maxCacheEntryUrlLength + 1];
     typedef char_t CacheEntryTitleBuffer_t[maxCacheEntryTitleLength + 1];
-    typedef char_t StreamNameBuffer_t[DataStore::maxStreamNameLength + 1];
+    typedef char StreamNameBuffer_t[DataStore::maxStreamNameLength + 1];
 
     struct IndexEntry 
     {
@@ -62,9 +61,9 @@ public:
     
     enum {entryNotFound = ulong_t(-1)};
     
-    ulong_t entryIndex(const char_t* entry) const;
+    ulong_t entryIndex(const char* entry) const;
     
-    const char_t* entryUrl(ulong_t index) const;
+    const char* entryUrl(ulong_t index) const;
     
     const char_t* entryTitle(ulong_t index) const;
     
@@ -74,17 +73,17 @@ public:
     
     status_t removeEntry(ulong_t index);
     
-    status_t removeEntry(const char_t* url);
+    status_t removeEntry(const char* url);
     
     status_t removeEntriesAfter(ulong_t startIndex);
     
-    status_t appendEntry(const char_t* url, ulong_t& index);
+    status_t appendEntry(const char* url, ulong_t& index);
     
-    status_t insertLink(ulong_t index, const char_t* url, const char_t* title);
+    status_t insertLink(ulong_t index, const char* url, const char_t* title);
     
-    status_t appendLink(const char_t* url, const char_t* title);
+    status_t appendLink(const char* url, const char_t* title);
     
-    status_t replaceEntries(ulong_t from, const char_t* newUrl);
+    status_t replaceEntries(ulong_t from, const char* newUrl);
     
     DataStoreReader* readerForEntry(ulong_t index);
     

@@ -157,7 +157,7 @@ status_t DataStore::open(const char_t* fileName)
         return memErrNotEnoughSpace;
         
 #ifdef _WIN32
-    status_t error = file_.open(fileName_, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_RANDOM_ACCESS);
+    status_t error = file_.open(fileName_, GENERIC_WRITE|GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS);
 #elif defined(_PALM_OS)
     status_t error = file_.open(fileName_, fileModeUpdate);
 #endif  
@@ -199,7 +199,7 @@ status_t DataStore::create(const char_t* fileName)
         return memErrNotEnoughSpace;
 
 #ifdef _WIN32
-    status_t error = file_.open(fileName_, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_RANDOM_ACCESS);
+    status_t error = file_.open(fileName_, GENERIC_WRITE|GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_FLAG_RANDOM_ACCESS);
 #elif defined(_PALM_OS)
     status_t error = file_.open(fileName_, fileModeUpdate);
 #endif  
@@ -295,7 +295,7 @@ status_t DataStore::createStream(const char* name, StreamHeader*& header)
         return error;
     StreamIndexEntry indexEntry;
     indexEntry.used = true;
-    memmove(indexEntry.name, name, nlen * sizeof(char_t));
+    memmove(indexEntry.name, name, nlen);
     error = file_.write(&indexEntry, sizeof(indexEntry));
     if (errNone != error)
         return error;
@@ -323,7 +323,7 @@ status_t DataStore::writeStreamHeader(const DataStore::StreamHeader& header)
         return error;
     StreamIndexEntry indexEntry;
     indexEntry.used = true;
-    memmove(indexEntry.name, header.name.data(), header.name.length()*sizeof(char_t));
+    memmove(indexEntry.name, header.name.data(), header.name.length());
     indexEntry.firstFragment=header.firstFragment;
     error = file_.write(&indexEntry, sizeof(indexEntry));
     if (errNone != error)

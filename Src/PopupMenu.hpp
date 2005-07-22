@@ -2,20 +2,24 @@
 #define ARSLEXIS_POPUP_MENU_HPP__
 
 #include <Debug.hpp>
-#include <BaseTypes.hpp>
+
+#ifdef _PALM_OS
 #include <FormObject.hpp>
+#endif
+
 #include <Definition.hpp>
 
-struct DynStrTag;
-
-class PopupMenuModel: public List::CustomDrawHandler
+class PopupMenuModel
+#ifdef _PALM_OS
+: public List::CustomDrawHandler
+#endif
 {
 public:
 
     struct Item
     {
-        ArsLexis::char_t* text;
-        ArsLexis::char_t* hyperlink;
+        char_t* text;
+        char* hyperlink;
         bool active;
         bool bold;
         bool separator;
@@ -27,26 +31,32 @@ public:
     };        
        
     Item* items;
-    UInt16 count;
+    ulong_t count;
+
+#ifdef _PALM_OS    
     RGBColorType inactiveTextColor;
+#endif
     
     PopupMenuModel();
     
     ~PopupMenuModel();
     
     uint_t maxTextWidth() const;
-    
+
+#ifdef _PALM_OS    
     void drawItem(Graphics& graphics, List& list, uint_t item, const ArsRectangle& itemBounds);
+#endif
     
-    uint_t itemsCount() const;
+    ulong_t itemsCount() const;
     
     // Passes ownership of items to PopupMenuModel.
-    void setItems(Item* items, uint_t itemsCount);
+    void setItems(Item* items, ulong_t itemsCount);
 
-    bool itemsFromString(const char_t* data, long length);
+    bool itemsFromString(const char* data, ulong_t length);
     
 };
 
+#ifdef _PALM_OS
 class PopupMenu
 {
     UInt16 prevFocusIndex_;
@@ -83,6 +93,7 @@ private:
     ModelOwnerFlag modelOwner_;    
    
 };
+#endif
 
 enum PopupMenuItemFlag 
 {
@@ -92,10 +103,17 @@ enum PopupMenuItemFlag
     popupMenuItemUnderlined = 8
 };
 
-struct DynStrTag;
+status_t PopupMenuHyperlinkCreate(char*& hyperlink, ulong_t& length, const char* prefix, ulong_t itemsCount);
 
-status_t PopupMenuHyperlinkCreate(DynStrTag* hyperlink, const char_t* prefix, ulong_t itemsCount);
+status_t PopupMenuHyperlinkAppendItem(char*& hyperlink, ulong_t& length, const char_t* text, const char* link, ulong_t itemFlags);
 
-status_t PopupMenuHyperlinkAppendItem(DynStrTag* hyperlink, const char_t* text, const char_t* link, ulong_t itemFlags);
+#ifdef _WIN32
+long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd);
+
+#ifndef NDEBUG
+void test_PopupMenu(HWND wnd);
+#endif
+
+#endif
 
 #endif

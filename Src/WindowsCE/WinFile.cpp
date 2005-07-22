@@ -59,14 +59,14 @@ status_t File::read(void* buffer, Size bytesToRead, Size& bytesRead)
 {
 	assert(isOpen());
 	DWORD read;
-	BOOL res = ReadFile(handle_, &buffer, bytesToRead, &read, NULL);
+	BOOL res = ReadFile(handle_, buffer, bytesToRead, &read, NULL);
 	if (!res)
 	{
 		status_t err = GetLastError();
 		if (ERROR_HANDLE_EOF != err)
 			return GetLastError();
 	}
-	bytesRead = read;
+	bytesRead = Size(read);
 	return errNone;
 }
 
@@ -74,7 +74,7 @@ status_t File::write(const void* buffer, Size bytesToWrite)
 {
 	assert(isOpen());
 	DWORD written;
-	BOOL res = WriteFile(handle_, &buffer, bytesToWrite, &written, NULL);
+	BOOL res = WriteFile(handle_, buffer, bytesToWrite, &written, NULL);
 	if (!res)
 		return GetLastError();
 	assert(written == bytesToWrite);

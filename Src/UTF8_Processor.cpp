@@ -290,8 +290,14 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char_t*& nativeTex
 	nativeText = NULL;
 	nativeLen = 0;
 	if (0 == utfLen)
+	{
+		nativeText = (char_t*)malloc(sizeof(char_t));
+		if (NULL == nativeText)
+			return memErrNotEnoughSpace;
+		nativeText[nativeLen] = _T('\0');
 		return errNone;
-
+	}
+	
 	ulong_t bufLen = utfLen;
 	nativeText = (char_t*)malloc(bufLen * sizeof(char_t) + 1);
 	if (NULL == nativeText)
@@ -324,8 +330,14 @@ status_t UTF8_FromNative(const char_t*& nativeText, ulong_t& nativeLen, char*& u
 	utfText = NULL;
 	utfLen = 0;
 	if (0 == nativeLen)
+	{
+		utfText = (char*)malloc(1);
+		if (NULL == utfText)
+			return memErrNotEnoughSpace;
+		utfText[utfLen] = '\0';
 		return errNone;
-
+	}
+	
 	ulong_t bufLen = nativeLen;
 	utfText = (char*)malloc(bufLen * sizeof(char) + 1);
 	if (NULL == utfText)
@@ -360,7 +372,13 @@ status_t UTF8_ToNative(const char*& utfText, ulong_t& utfLen, char*& nativeText,
 	nativeText = NULL;
 	nativeLen = 0;
 	if (0 == utfLen)
+	{
+		nativeText = (char*)malloc(1);
+		if (NULL == nativeText)
+			return memErrNotEnoughSpace;
+		nativeText[nativeLen] = '\0';
 		return errNone;
+	}
 
 	ulong_t bufLen = utfLen;
 	UTF16* buffer = (UTF16*)malloc(bufLen * sizeof(UTF16));
@@ -403,7 +421,13 @@ status_t UTF8_FromNative(const char_t*& nativeText, ulong_t& nativeLen, char*& u
 	utfText = NULL;
 	utfLen = 0;
 	if (0 == nativeLen)
+	{
+		utfText = (char*)malloc(1);
+		if (NULL == utfText)
+			return memErrNotEnoughSpace;
+		utfText[utfLen] = '\0';
 		return errNone;
+	}
 
     UTF16* buffer = (UTF16*)malloc(sizeof(UTF16) * nativeLen);
     if (NULL == buffer)

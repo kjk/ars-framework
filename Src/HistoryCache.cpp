@@ -1,8 +1,7 @@
-#include "HistoryCache.hpp"
+#include <HistoryCache.hpp>
 #include <Serializer.hpp>
 #include <SysUtils.hpp>
 #include <DataStore.hpp>
-#include <PopupMenu.hpp>
 #include <Text.hpp>
 #include <Logging.hpp>
 
@@ -12,7 +11,7 @@ using std::memcpy;
 
 //#define DEBUG_URLS
 
-#define HISTORY_CACHE_INDEX_STREAM _T("_History Cache Index")
+#define HISTORY_CACHE_INDEX_STREAM "_History Cache Index"
 
 enum {
     serialIdIndexVersion,
@@ -106,7 +105,6 @@ FreshIndex:
 
 status_t HistoryCache::serializeIndexIn(Serializer& serialize)
 {
-    volatile status_t err = errNone;
     ErrTry {
         ulong_t cap = maxCacheEntries;
         ulong_t count;
@@ -116,26 +114,25 @@ status_t HistoryCache::serializeIndexIn(Serializer& serialize)
             cap = count;
         indexEntries_ = new_nt IndexEntry[cap];
         if (NULL == indexEntries_)
-            return memErrNotEnoughSpace;
+            ErrReturn(memErrNotEnoughSpace);
         indexCapacity_ = cap;
         for (ulong_t i = 0; i < count; ++i)
         {
             IndexEntry& entry = indexEntries_[i];
-            serialize(entry.url, maxCacheEntryUrlLength + 1);
+            serialize.narrow(entry.url, maxCacheEntryUrlLength + 1);
 #ifdef DEBUG_URLS
             assert('s' == *entry.url);
 #endif         
-            serialize(entry.streamName, DataStore::maxStreamNameLength + 1);
-            serialize(entry.title, maxCacheEntryTitleLength + 1);
+            serialize.narrow(entry.streamName, DataStore::maxStreamNameLength + 1);
+            serialize.text(entry.title, maxCacheEntryTitleLength + 1);
             serialize(entry.onlyLink);
         }
         indexEntriesCount_ = count;
     }
-    ErrCatch(ex)
-    {
-        err = ex;
+    ErrCatch(ex) {
+        return ex;
     } ErrEndCatch
-    return err;
+    return errNone;
 }
 
 status_t HistoryCache::writeIndex()
@@ -153,7 +150,6 @@ status_t HistoryCache::writeIndex()
 
 status_t HistoryCache::serializeIndexOut(Serializer& serialize)
 {
-    volatile status_t err = errNone;
     ErrTry {
         ulong_t indexVersion = 1;
         serialize(indexVersion, serialIdIndexVersion);      
@@ -164,33 +160,32 @@ status_t HistoryCache::serializeIndexOut(Serializer& serialize)
 #ifdef DEBUG_URLS
             assert('s' == *entry.url);
 #endif         
-            serialize(entry.url, maxCacheEntryUrlLength + 1);
+            serialize.narrowOut(entry.url);
 #ifdef DEBUG_URLS
             assert('s' == *entry.url);
 #endif         
-            serialize(entry.streamName, DataStore::maxStreamNameLength + 1);
-            serialize(entry.title, maxCacheEntryTitleLength + 1);
+            serialize.narrowOut(entry.streamName);
+            serialize.textOut(entry.title);
             serialize(entry.onlyLink);
         }
     }
-    ErrCatch(ex)
-    {
-        err = ex;
+    ErrCatch(ex) {
+		return ex;
     } ErrEndCatch
-    return err;    
+    return errNone;    
 }
 
-ulong_t HistoryCache::entryIndex(const char_t* entry) const
+ulong_t HistoryCache::entryIndex(const char* entry) const
 {
     for (long i = long(indexEntriesCount_) - 1; i >= 0; --i)
     {   
-        if (0 == tstrcmp(entry, indexEntries_[i].url))
+        if (StrEquals(entry, indexEntries_[i].url))
             return ulong_t(i);
     }
     return entryNotFound;
 }
 
-const char_t* HistoryCache::entryUrl(ulong_t index) const
+const char* HistoryCache::entryUrl(ulong_t index) const
 {
     assert(index < indexEntriesCount_);
     return indexEntries_[index].url;
@@ -211,7 +206,7 @@ bool HistoryCache::entryIsOnlyLink(ulong_t index) const
 void HistoryCache::setEntryTitle(ulong_t index, const char_t* str)
 {
     assert(index < indexEntriesCount_);
-    size_t len = tstrlen(str);
+    size_t len = Len(str);
     if (len > maxCacheEntryTitleLength)
         len = maxCacheEntryTitleLength;
     
@@ -227,7 +222,7 @@ status_t HistoryCache::removeEntry(ulong_t index)
 {
     assert(index < indexEntriesCount_);
     assert(NULL != dataStore);
-    const char_t* streamName = indexEntries_[index].streamName;
+    const char* streamName = indexEntries_[index].streamName;
     status_t err = dataStore->removeStream(streamName);
     if (errNone != err)
         return err;
@@ -248,24 +243,23 @@ status_t HistoryCache::removeEntriesAfter(ulong_t from)
     return errNone;
 }
 
-status_t HistoryCache::appendEntry(const char_t* url, ulong_t& index)
+status_t HistoryCache::appendEntry(const char* url, ulong_t& index)
 {
-    assert(0 != tstrlen(url));
+    assert(0 != Len(url));
 
     status_t err;
     if (indexEntriesCount_ == indexCapacity_)
         if (errNone != (err = removeEntry(0UL)))
             return err;
     
-    ulong_t len = tstrlen(url);
+    ulong_t len = Len(url);
     if (len > maxCacheEntryUrlLength)
         len = maxCacheEntryUrlLength;
     
     IndexEntry& entry = indexEntries_[indexEntriesCount_];
-    memmove(entry.url, url, len * sizeof(char_t));
-    entry.url[len] = _T('\0');
-    
-    tprintf(entry.streamName, _T("_History %lx%lx"), ticks(), random(ULONG_MAX));
+    memmove(entry.url, url, len);
+    entry.url[len] = '\0';
+	StrPrintF(entry.streamName, "_History %lx%lx", ticks(), random(ULONG_MAX));
 
 #ifdef DEBUG_URLS
     assert('s' == *entry.url);
@@ -280,9 +274,9 @@ status_t HistoryCache::appendEntry(const char_t* url, ulong_t& index)
     return errNone;
 }
 
-status_t HistoryCache::appendLink(const char_t* url, const char_t* title)
+status_t HistoryCache::appendLink(const char* url, const char_t* title)
 {
-    assert(0 != tstrlen(url));
+    assert(0 != Len(url));
 
     ulong_t index;
     status_t err = appendEntry(url, index);
@@ -299,9 +293,9 @@ status_t HistoryCache::appendLink(const char_t* url, const char_t* title)
     return errNone;
 }
 
-status_t HistoryCache::insertLink(ulong_t index, const char_t* url, const char_t* title)
+status_t HistoryCache::insertLink(ulong_t index, const char* url, const char_t* title)
 {
-    assert(0 != tstrlen(url));
+    assert(0 != Len(url));
     
     status_t err = appendLink(url, title);
     if (errNone != err)
@@ -326,7 +320,7 @@ status_t HistoryCache::insertLink(ulong_t index, const char_t* url, const char_t
 }
 
 
-status_t HistoryCache::replaceEntries(ulong_t from, const char_t* newEntryUrl)
+status_t HistoryCache::replaceEntries(ulong_t from, const char* newEntryUrl)
 {
     status_t err = removeEntriesAfter(from);
     if (errNone != err)
@@ -404,7 +398,7 @@ status_t HistoryCache::moveEntryToEnd(ulong_t& index)
     return errNone;
 }
 
-status_t HistoryCache::removeEntry(const char_t* url)
+status_t HistoryCache::removeEntry(const char* url)
 {
     ulong_t index = entryIndex(url);
     if (entryNotFound == index)
@@ -413,20 +407,26 @@ status_t HistoryCache::removeEntry(const char_t* url)
 }
 
 
-#ifdef DEBUG
+#ifndef NDEBUG
 
+#ifdef _WIN32
+static const char_t* unitTestCacheName = _T("UnitTest HistoryCache.dat");
+#endif
+#ifdef _PALM_OS
+static const char_t* unitTestCacheName = _T("UnitTest HistoryCache");
+#endif
 static void test_HistoryCacheWrite()
 {
     HistoryCache cache;
-    status_t err = cache.open(_T("UnitTest HistoryCache"));
+    status_t err = cache.open(unitTestCacheName);
     assert(errNone == err);
     
     assert(0 == cache.entriesCount());
-    char_t buffer[33];
+    char buffer[33];
     ulong_t index;
     for (int i = 0; i < 11; ++i)
     {
-        tprintf(buffer, _T("test %d"), i);
+        StrPrintF(buffer, "test %d", i);
         cache.appendEntry(buffer, index);
     }
     assert(HistoryCache::maxCacheEntries == cache.entriesCount());
@@ -439,7 +439,7 @@ static void test_HistoryCacheWrite()
 static void test_HistoryCacheRead()
 {
     HistoryCache cache;
-    status_t err = cache.open(_T("UnitTest HistoryCache"));
+    status_t err = cache.open(unitTestCacheName);
     assert(errNone == err);
     
     assert(1 == cache.entriesCount());
