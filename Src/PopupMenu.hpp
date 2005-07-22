@@ -31,7 +31,7 @@ public:
     };        
        
     Item* items;
-    ulong_t count;
+    uint_t count;
 
 #ifdef _PALM_OS    
     RGBColorType inactiveTextColor;
@@ -47,10 +47,10 @@ public:
     void drawItem(Graphics& graphics, List& list, uint_t item, const ArsRectangle& itemBounds);
 #endif
     
-    ulong_t itemsCount() const;
+    uint_t itemsCount() const;
     
     // Passes ownership of items to PopupMenuModel.
-    void setItems(Item* items, ulong_t itemsCount);
+    void setItems(Item* items, uint_t itemsCount);
 
     bool itemsFromString(const char* data, ulong_t length);
     

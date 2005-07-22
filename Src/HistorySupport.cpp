@@ -16,7 +16,7 @@ status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& 
 status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel& model, void* userData)
 {
     uint_t count = cache.entriesCount();
-    const char_t* homeUrl = static_cast<const char_t*>(userData);
+    const char* homeUrl = static_cast<const char*>(userData);
     uint_t start = 0;
     if (NULL != homeUrl)
     {
@@ -32,7 +32,7 @@ status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel
     if (NULL != homeUrl)
     {
         item = &items[0];
-        item->text = StringCopy2("Home");
+        item->text = StringCopy2(_T("Home"));
         if (NULL == item->text)
             goto OutOfMem;
         
@@ -63,13 +63,20 @@ OutOfMem:
     return memErrNotEnoughSpace;
 }
 
+#ifdef _PALM_OS
 HistorySupport::HistorySupport(Form& form):
     form_(form),
     popupMenu_(form),
-    cacheName_(NULL),
-    currentHistoryIndex(0),
     popupMenuId_(frmInvalidObjectId),
     historyButtonId_(frmInvalidObjectId),
+#endif
+#ifdef _WIN32
+HistorySupport::HistorySupport(HWND wnd):
+	window_(wnd),
+	commandId_(0),
+#endif
+    cacheName_(NULL),
+    currentHistoryIndex(0),
     popupMenuFillHandler(FillPopupMenuModelFromHistory),
     popupMenuFillHandlerData(NULL),
     hyperlinkHandler(NULL),
@@ -83,6 +90,7 @@ HistorySupport::~HistorySupport()
     free(cacheName_);
 }
 
+#ifdef _PALM_OS
 status_t HistorySupport::setup(const char_t* cacheName, uint_t popupMenuId, uint_t historyButtonId, HyperlinkHandlerBase* hh, CacheReadHandler_t readHandler)
 {
     free(cacheName_);
@@ -95,7 +103,23 @@ status_t HistorySupport::setup(const char_t* cacheName, uint_t popupMenuId, uint
     cacheReadHandler = readHandler;
     return errNone;
 }
+#endif
 
+#ifdef _WIN32
+status_t HistorySupport::setup(const char_t* cacheName, UINT comandId, HyperlinkHandlerBase* hh, CacheReadHandler_t readHandler)
+{
+    free(cacheName_);
+    if (NULL == (cacheName_ = StringCopy2(cacheName)))
+        return memErrNotEnoughSpace;
+        
+    hyperlinkHandler = hh;
+	commandId_ = comandId; 
+    cacheReadHandler = readHandler;
+    return errNone;
+}
+#endif
+
+#ifdef _PALM_OS
 bool HistorySupport::handleEventInForm(EventType& event)
 {
     assert(NULL != cacheReadHandler);
@@ -154,8 +178,75 @@ bool HistorySupport::handleEventInForm(EventType& event)
     followUrl(cache, url);
     return true;
 }
+#endif
 
-ulong_t HistorySupport::setEntryTitleForUrl(const char_t* title, const char_t* url)
+#ifdef _WIN32
+LRESULT HistorySupport::handleEventInForm(UINT msg, WPARAM wParam)
+{
+    assert(NULL != cacheReadHandler);
+    if (NULL == cacheName_)
+        return TRUE;
+    
+	if (WM_COMMAND != msg || LOWORD(wParam) != commandId_)
+		return TRUE;
+	
+    HistoryCache cache;
+    status_t err = cache.open(cacheName_);
+    if (errNone != err)
+        return FALSE;
+    
+    if (0 == cache.entriesCount() && NULL == popupMenuFillHandlerData)
+        return FALSE;
+    
+	PopupMenuModel model; 
+    if (errNone != (err = popupMenuFillHandler(cache, model, popupMenuFillHandlerData)))
+        return FALSE;
+
+	ulong_t initialSelection = currentHistoryIndex;
+    if (NULL != popupMenuFillHandlerData)
+        ++initialSelection;
+	
+	HWND control = GetDlgItem(window_, commandId_);
+	assert(NULL != control);
+
+	RECT rect;
+	GetWindowRect(control, &rect);
+	Point p((rect.bottom - rect.top)/2, (rect.right - rect.left)/2);
+	
+	long sel = PopupMenuShow(model, p, window_); // TODO: add option for initial selection
+    if (-1 == sel)
+    {
+        lastAction_ = actionNewSearch;
+        return FALSE;
+    }
+    if (0 == sel && NULL != popupMenuFillHandlerData)
+        lastAction_ = actionNewSearch;
+    
+    const char* url = static_cast<const char*>(popupMenuFillHandlerData);
+    if (NULL == url || sel > 0)
+        currentHistoryIndex = sel;
+        
+    if (NULL != url)
+    {
+        if (0 == sel)
+        {
+            cache.close();
+            if (NULL == hyperlinkHandler)
+                return FALSE;
+                
+            hyperlinkHandler->handleHyperlink(url, Len(url), NULL);
+            return FALSE;
+        }
+        else
+            --currentHistoryIndex;
+    }
+    url = cache.entryUrl(currentHistoryIndex);
+    followUrl(cache, url);
+    return FALSE;
+}
+#endif
+
+ulong_t HistorySupport::setEntryTitleForUrl(const char_t* title, const char* url)
 {
     HistoryCache cache;
     status_t err = cache.open(cacheName_);
@@ -189,7 +280,7 @@ bool HistorySupport::selectEntry(HistoryCache& cache, ulong_t index)
     if (index >= cache.entriesCount())
         return false;
     
-    const char_t* url = cache.entryUrl(index);
+    const char* url = cache.entryUrl(index);
     currentHistoryIndex = index;
     lastAction_ = actionSelect;
     
@@ -232,10 +323,10 @@ long HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
 
         // Special history flags 'h' and 'H'
         // TODO: write this better!
-        char_t* url = (char_t*) cache.entryUrl(currentHistoryIndex);
+        char* url = (char*) cache.entryUrl(currentHistoryIndex);
         bool wasSpecialHistory = false;
         // TODO: change 'h' to 'H'
-        if (tstrlen(url) > 2)
+        if (Len(url) > 2)
             if ('h' == url[0] && 's' == url[1] && '+' == url[2])
             {
                 url[0] = 'H';
@@ -245,10 +336,10 @@ long HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
         // TODO: remove all other entries with this url
         if (wasSpecialHistory)
         {
-            for (int i = cache.entriesCount() - 1; i >= 0; i--)
+            for (uint_t i = cache.entriesCount() - 1; i >= 0; i--)
             {
                 if (i != currentHistoryIndex)
-                    if (0 == tstrcmp(url, cache.entryUrl(i)))
+                    if (StrEquals(url, cache.entryUrl(i)))
                     {
                         if (i > currentHistoryIndex)
                             cache.removeEntry(i);
@@ -256,7 +347,7 @@ long HistorySupport::lookupFinished(bool success, const char_t* entryTitle)
                         {
                             cache.removeEntry(i);
                             currentHistoryIndex--;
-                            url = (char_t*) cache.entryUrl(currentHistoryIndex);
+                            url = (char*) cache.entryUrl(currentHistoryIndex);
                         }
                     }
             }        
@@ -297,7 +388,7 @@ bool HistorySupport::loadLastEntry()
     return selectEntry(cache, cache.entriesCount() - 1);    
 }
 
-bool HistorySupport::followUrl(HistoryCache& cache, const char_t* url)
+bool HistorySupport::followUrl(HistoryCache& cache, const char* url)
 {
     assert(NULL != cacheReadHandler);
     if (cacheReadHandler(cache, url))
@@ -305,14 +396,10 @@ bool HistorySupport::followUrl(HistoryCache& cache, const char_t* url)
     if (NULL == hyperlinkHandler)
         return false;
     
-    char_t* copy = StringCopy2(url);
-    if (NULL == copy)
-        return false;
-        
     cache.close();
-    hyperlinkHandler->handleHyperlink(copy, tstrlen(copy), NULL);
-    free(copy);
-    return true;
+
+    hyperlinkHandler->handleHyperlink(url, Len(url), NULL);
+	return true;
 }
 
 

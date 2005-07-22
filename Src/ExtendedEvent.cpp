@@ -2,6 +2,10 @@
 #include <Text.hpp>
 #include <Geometry.hpp>
 
+#ifdef __MWERKS__
+using std::memset;
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(disable: 4200)
 #endif
@@ -169,7 +173,7 @@ static void ExtEventSend(void* data)
     EventType event;
     MemSet(&event, sizeof(event), 0);
     event.eType = extEvent;
-	void** p = (void**)&event->data;
+	void** p = (void**)&event.data;
 	*p = data;
 	EvtAddEventToQueue(&event);
 #endif

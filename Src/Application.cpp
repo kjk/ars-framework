@@ -188,10 +188,8 @@ bool Application::handleApplicationEvent(EventType& event)
         handled=true;
     }
     else if (extEvent == event.eType) 
-    {
-        char *data = reinterpret_cast<char*>(&(event.data));
-        handled = handleExtendedEvent((void*)data);
-    }
+        handled = handleExtendedEvent(event);
+
     return handled;
 }
 
@@ -218,7 +216,7 @@ void Application::runEventLoop()
 
         if (extEvent == event.eType) 
         {
-            freeExtendedEvent(&event);
+            ExtEventFree(event);
         }
    };
 }
@@ -285,7 +283,7 @@ void Application::startForm(Form* form, bool popup)
         gotoForm(form->id());                
 }
 
-bool Application::handleExtendedEvent(void *eventData) 
+bool Application::handleExtendedEvent(EventType& event) 
 {
     return false;
 }

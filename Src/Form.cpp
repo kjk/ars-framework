@@ -498,16 +498,16 @@ void Form::draw(UInt16 updateCode)
 
 bool Form::handleExtendedEvent(EventType& event) 
 {
-    if (popupMenuEventInvalid != popupMenuEventId_ && popupMenuEventId_ == getExtendedEventId(&event))
+    if (popupMenuEventInvalid != popupMenuEventId_ && ExtEventGetID(event) == popupMenuEventId_)
     {
         Int16 x = event.screenX, y = event.screenY; Boolean b;
         if (0 == x && 0 == y)
             EvtGetPen(&x, &y, &b);
         Point point(x, y);
-        long len = getTextEventDataLength(&event);
-        const char_t* txt = getTextEventData(&event);
-        if (NULL != txt)
-            showPopupMenu(txt, len, point);
+        ulong_t len;
+        const char* text = ExtEventGetNarrowText(event, &len);
+        if (NULL != text)
+            showPopupMenu(text, len, point);
         return true;
     }
     return false;

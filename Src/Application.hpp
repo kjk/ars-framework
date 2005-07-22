@@ -197,7 +197,7 @@ protected:
     void setEventTimeout(Int32 timeout)
     {eventTimeout_=timeout;}
     
-    virtual bool handleExtendedEvent(void *eventData);
+    virtual bool handleExtendedEvent(EventType& event);
     
 public:
 

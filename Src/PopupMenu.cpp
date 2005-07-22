@@ -126,7 +126,7 @@ void PopupMenu::setModel(PopupMenuModel* model, ModelOwnerFlag owner)
 
 #endif
 
-ulong_t PopupMenuModel::itemsCount() const
+uint_t PopupMenuModel::itemsCount() const
 {
     return count;
 }
@@ -188,7 +188,7 @@ uint_t PopupMenuModel::maxTextWidth() const
 #endif   
 }
 
-/*
+#ifdef _PALM_OS
 void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, const ArsRectangle& itemBounds)
 {
     assert(index < count);
@@ -229,7 +229,7 @@ void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, cons
     graphics.drawLine(itemBounds.x() - 2, y, itemBounds.x() + itemBounds.width(), y);            
     WinSetForeColorRGB(&oldColor, NULL);
 }
- */
+#endif
  
 static bool extractLong(const char*& data, ulong_t& length, long& val)
 {
@@ -272,7 +272,7 @@ static bool extractString(const char*& data, ulong_t& length, const char*& str, 
     return true;
 }
 
-void PopupMenuModel::setItems(Item* items, ulong_t itemsCount)
+void PopupMenuModel::setItems(Item* items, uint_t itemsCount)
 {
     delete [] this->items;
     this->items = items;
@@ -427,9 +427,9 @@ long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd)
 	if (NULL == menu)
 		goto Finish;
 		
-	//MENUITEMINFO mi;
-	//ZeroMemory(&mi, sizeof(mi));
-	//mi.cbSize = sizeof(mi);
+	MENUITEMINFO mi;
+	ZeroMemory(&mi, sizeof(mi));
+	mi.cbSize = sizeof(mi);
 
 	ulong_t count = model.itemsCount();
 	for (ulong_t i = 0; i < count; ++i)
@@ -473,6 +473,20 @@ long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd)
 		BOOL res = InsertMenu(menu, -1, flags, i + 1, item.text);
 		if (!res)
 			goto Finish;
+
+		// Doesn't have any effect on PPC 5.0 and doesn't compile on earlier :(		
+		//if (item.bold)
+		//{
+		//	mi.fMask = MIIM_STATE;
+		//	res = GetMenuItemInfo(menu, i, TRUE, &mi);
+		//	if (!res)
+		//		goto Finish;
+		//	
+		//	mi.fState |= MFS_DEFAULT;
+		//	res = SetMenuItemInfo(menu, i, TRUE, &mi);
+		//	if (!res)
+		//		goto Finish;
+		//}
 	}
 	
 	BOOL res = TrackPopupMenu(menu, TPM_LEFTALIGN|TPM_TOPALIGN|TPM_NONOTIFY|TPM_RETURNCMD, point.x, point.y, 0, wnd, NULL);

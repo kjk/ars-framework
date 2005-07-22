@@ -1454,6 +1454,7 @@ void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen)
 	if (efrom + elen < ulong_t(tlen))
 		target[tlen - efrom - elen] = L'\0';
 }
+#endif
 
 template<class Ch>
 void strip(std::basic_string<Ch>& str)
@@ -1487,7 +1488,6 @@ template status_t StringAppend<wchar_t>(std::wstring& out, const wchar_t* str, l
 template void strip<wchar_t>(std::wstring& str);
 #endif
 
-#endif
 
 
 #ifdef DEBUG
