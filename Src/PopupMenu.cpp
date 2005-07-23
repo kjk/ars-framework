@@ -281,6 +281,7 @@ void PopupMenuModel::setItems(Item* items, uint_t itemsCount)
 
 bool PopupMenuModel::itemsFromString(const char* data, ulong_t length)
 {
+	ulong_t i;
     ulong_t itemsCount;
     long val;
     const char* text;
@@ -295,7 +296,7 @@ bool PopupMenuModel::itemsFromString(const char* data, ulong_t length)
     if (NULL == newItems)
         goto Fail;
         
-    for (ulong_t i = 0; i < itemsCount; ++i)
+    for (i = 0; i < itemsCount; ++i)
     {
         Item& item = newItems[i];
         if (!extractString(data, length, text, val))
@@ -420,7 +421,7 @@ NoMemory:
 
 #ifdef _WIN32
 
-long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd)
+long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd, long initSel)
 {
 	long sel = -1;
 	HMENU menu = CreatePopupMenu();
@@ -431,68 +432,87 @@ long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd)
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 
-	ulong_t count = model.itemsCount();
-	for (ulong_t i = 0; i < count; ++i)
 	{
-		const PopupMenuModel::Item& item = model.items[i];
-		
-		//if (item.active)
-		//	mi.fState = MFS_ENABLED;
-		//else
-		//	mi.fState = MF_GRAYED;
-		//
-		//if (item.bold)
-		//	mi.fState |= MFS_DEFAULT;
-		//
-		//mi.fMask = MIIM_TYPE|MIIM_STATE|MIIM_ID;
-		//if (item.separator)
-		//{
-		//	mi.fType = MFT_SEPARATOR;
-		//	mi.dwTypeData = NULL;
-		//	mi.cch = 0;
-		//}
-		//else
-		//{
-		//	mi.fType = MFT_STRING;
-		//	mi.dwTypeData = item.text;
-		//	mi.cch = Len(item.text);
-		//}
-		//mi.wID = i + 1;
-		//BOOL res = InsertMenuItem(menu, i, TRUE, &mi);
-		//if (!res)
-		//	goto Finish;
-		UINT flags = MF_BYPOSITION;
-		if (item.separator)
-			flags |= MF_SEPARATOR;
-		else
-			flags |= MF_STRING;
-		if (item.active)
-			flags |= MF_ENABLED;
-		else
-			flags |= MF_GRAYED;
-		BOOL res = InsertMenu(menu, -1, flags, i + 1, item.text);
-		if (!res)
-			goto Finish;
+		ulong_t count = model.itemsCount();
+		for (ulong_t i = 0; i < count; ++i)
+		{
+			const PopupMenuModel::Item& item = model.items[i];
+			
+			//if (item.active)
+			//	mi.fState = MFS_ENABLED;
+			//else
+			//	mi.fState = MF_GRAYED;
+			//
+			//if (item.bold)
+			//	mi.fState |= MFS_DEFAULT;
+			//
+			//mi.fMask = MIIM_TYPE|MIIM_STATE|MIIM_ID;
+			//if (item.separator)
+			//{
+			//	mi.fType = MFT_SEPARATOR;
+			//	mi.dwTypeData = NULL;
+			//	mi.cch = 0;
+			//}
+			//else
+			//{
+			//	mi.fType = MFT_STRING;
+			//	mi.dwTypeData = item.text;
+			//	mi.cch = Len(item.text);
+			//}
+			//mi.wID = i + 1;
+			//BOOL res = InsertMenuItem(menu, i, TRUE, &mi);
+			//if (!res)
+			//	goto Finish;
+			UINT flags = MF_BYPOSITION;
+			if (item.separator)
+				flags |= MF_SEPARATOR;
+			else
+				flags |= MF_STRING;
+				
+			if (item.active)
+				flags |= MF_ENABLED;
+			else
+				flags |= MF_GRAYED;
 
-		// Doesn't have any effect on PPC 5.0 and doesn't compile on earlier :(		
-		//if (item.bold)
-		//{
-		//	mi.fMask = MIIM_STATE;
-		//	res = GetMenuItemInfo(menu, i, TRUE, &mi);
-		//	if (!res)
-		//		goto Finish;
-		//	
-		//	mi.fState |= MFS_DEFAULT;
-		//	res = SetMenuItemInfo(menu, i, TRUE, &mi);
-		//	if (!res)
-		//		goto Finish;
-		//}
+			// This simply doesn't work			
+			//if (long(i) == initSel)
+			//	flags |= MF_HILITE;
+			
+			BOOL res = InsertMenu(menu, -1, flags, i + 1, item.text);
+			if (!res)
+				goto Finish;
+
+			if (item.bold || long(i) == initSel)
+			{
+				mi.fMask = MIIM_STATE;
+				res = GetMenuItemInfo(menu, i, TRUE, &mi);
+				if (!res)
+					goto Finish;
+
+#ifndef MFS_DEFAULT
+// WM 2003 doesn't support MFS_DEFAULT, in this case define it as 0 to ignore this flag
+#define MFS_DEFAULT         0
+#endif
+				
+				// Nevertheless, this doesn't seem to work even on WM 5.0
+				if (item.bold)
+					mi.fState |= MFS_DEFAULT;
+					
+				// Neither this
+				if (long(i) == initSel)
+					mi.fState |= MFS_HILITE;
+					
+				res = SetMenuItemInfo(menu, i, TRUE, &mi);
+				if (!res)
+					goto Finish;
+			}
+			
+		}
+		BOOL res = TrackPopupMenuEx(menu, TPM_LEFTALIGN|TPM_TOPALIGN|TPM_NONOTIFY|TPM_RETURNCMD, point.x, point.y, wnd, NULL);
+		if (0 != res)
+			sel = res - 1;
 	}
 	
-	BOOL res = TrackPopupMenu(menu, TPM_LEFTALIGN|TPM_TOPALIGN|TPM_NONOTIFY|TPM_RETURNCMD, point.x, point.y, 0, wnd, NULL);
-	if (0 != res)
-		sel = res - 1;
-		
 Finish:	
 	if (NULL != menu)
 		DestroyMenu(menu);
@@ -516,7 +536,7 @@ void test_PopupMenu(HWND wnd)
 	++pos;
 	assert(model->itemsFromString(hl + pos, l - pos));
 	assert(4 == model->itemsCount());
-	long sel = PopupMenuShow(*model, Point(20, 20), wnd);
+	long sel = PopupMenuShow(*model, Point(230, 360), wnd, 3);
 	delete model;
 }
 #endif

@@ -68,8 +68,10 @@ public:
     
 };
 
+/*
 template<> 
 inline void std::swap(UniversalDataFormat& udf0, UniversalDataFormat& udf1)
 {udf0.swap(udf1);}
+*/
 
 #endif

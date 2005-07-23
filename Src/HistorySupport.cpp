@@ -15,6 +15,7 @@ status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& 
 
 status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel& model, void* userData)
 {
+	uint_t i;
     uint_t count = cache.entriesCount();
     const char* homeUrl = static_cast<const char*>(userData);
     uint_t start = 0;
@@ -45,7 +46,7 @@ status_t FillPopupMenuModelFromHistory(const HistoryCache& cache, PopupMenuModel
         if (1 != count)
             item->underlined = true;
     }
-    for (uint_t i = start; i < count; ++i)
+    for (i = start; i < count; ++i)
     {
         item = &items[i];
         item->active = true;
@@ -213,7 +214,7 @@ LRESULT HistorySupport::handleEventInForm(UINT msg, WPARAM wParam)
 	GetWindowRect(control, &rect);
 	Point p((rect.bottom - rect.top)/2, (rect.right - rect.left)/2);
 	
-	long sel = PopupMenuShow(model, p, window_); // TODO: add option for initial selection
+	long sel = PopupMenuShow(model, p, window_, initialSelection);
     if (-1 == sel)
     {
         lastAction_ = actionNewSearch;

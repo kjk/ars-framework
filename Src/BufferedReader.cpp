@@ -74,7 +74,7 @@ status_t BufferedReader::readNonMarked(void* buffer, ulong_t& length)
     assert(size >= position_);
     uint_t lengthLeft = length;
     length = std::min<uint_t>(size - position_, lengthLeft);
-    std::memcpy(buffer, &buffer_[position_], length);
+    memmove(buffer, &buffer_[position_], length);
     position_ += length;
     lengthLeft -= length;
     if (0 == lengthLeft)
@@ -106,7 +106,7 @@ status_t BufferedReader::readNonMarked(void* buffer, ulong_t& length)
     }
     buffer_.resize(lastPartLength);
     overBuffer = std::min<uint_t>(overBuffer, lastPartLength);
-    std::memcpy(buffer, &buffer_[position_], overBuffer);
+    memmove(buffer, &buffer_[position_], overBuffer);
     position_ += overBuffer;
     length += overBuffer;
     return errNone;
@@ -118,7 +118,7 @@ status_t BufferedReader::readMarked(void* buffer, ulong_t& length)
     assert(size >= position_);
     uint_t lengthLeft = length;
     length = std::min<uint_t>(size - position_, length);
-    std::memcpy(buffer, &buffer_[position_], length);
+    memmove(buffer, &buffer_[position_], length);
     position_ += length;
     lengthLeft -= length;
     if (0 == lengthLeft)
@@ -134,7 +134,7 @@ status_t BufferedReader::readMarked(void* buffer, ulong_t& length)
         return error;
     }
     buffer_.resize(size + tail);
-    std::memcpy(buffer, &buffer_[position_], tail);
+    memmove(buffer, &buffer_[position_], tail);
     length += tail;
     position_ += tail;
     return errNone;

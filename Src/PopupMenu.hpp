@@ -108,7 +108,7 @@ status_t PopupMenuHyperlinkCreate(char*& hyperlink, ulong_t& length, const char*
 status_t PopupMenuHyperlinkAppendItem(char*& hyperlink, ulong_t& length, const char_t* text, const char* link, ulong_t itemFlags);
 
 #ifdef _WIN32
-long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd);
+long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd, long initSel = -1);
 
 #ifndef NDEBUG
 void test_PopupMenu(HWND wnd);

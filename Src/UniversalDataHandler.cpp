@@ -63,18 +63,17 @@ status_t parseUniversalDataFormatTextLine(const char* line, ulong_t len, Univers
 {
     long resultLong;
     const char* data = line; 
-    volatile status_t error=errNone;
+    UniversalDataFormat::Vector_t vec;
     ErrTry {
         if (lineNo == 0)
         {
             if (errNone != numericValue(data, data + len, resultLong))
-                return SocketConnection::errResponseMalformed;
+                ErrReturn(SocketConnection::errResponseMalformed);
 
             out.setHeaderSize(resultLong);
         }
         else if (lineNo <= out.headerSize_)
         {
-            UniversalDataFormat::Vector_t vec;
             //read values from vector
             const char* dataOffset = data;
             while (data + len > dataOffset)
@@ -84,7 +83,7 @@ status_t parseUniversalDataFormatTextLine(const char* line, ulong_t len, Univers
                     dataOffsetEnd++;
                     
                 if (errNone != numericValue(dataOffset, dataOffsetEnd, resultLong))
-                    return SocketConnection::errResponseMalformed;
+		          ErrReturn(SocketConnection::errResponseMalformed);
 
                 vec.push_back(resultLong);
                 controlDataLength += resultLong + 1;
@@ -100,20 +99,20 @@ status_t parseUniversalDataFormatTextLine(const char* line, ulong_t len, Univers
                 out.dataLen_ = 0; 
                 out.data_ = StringCopyN(line, len);
                 if (NULL == out.data_)
-					return memErrNotEnoughSpace;
-				
+					ErrReturn(memErrNotEnoughSpace);
+						
 				out.dataLen_ = len; 
             } 
             else
             {
 				out.data_ = StrAppend(out.data_, out.dataLen_, "\n", 1);
 				if (NULL == out.data_)
-					return memErrNotEnoughSpace;
+					ErrReturn(memErrNotEnoughSpace);
 				
 				++out.dataLen_;
 				out.data_ = StrAppend(out.data_, out.dataLen_, line, len);
 				if (NULL == out.data_)
-					return memErrNotEnoughSpace;
+					ErrReturn(memErrNotEnoughSpace);
 					
 				out.dataLen_ += len;
             }
@@ -121,9 +120,9 @@ status_t parseUniversalDataFormatTextLine(const char* line, ulong_t len, Univers
         lineNo++;
     }
     ErrCatch (ex) {
-        error=ex;
+        return ex;
     } ErrEndCatch
-    return error;
+    return errNone;
 }
 
 status_t UniversalDataHandler::handleLine(const char* line, ulong_t len)
