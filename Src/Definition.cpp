@@ -603,8 +603,20 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::calculateLayout(Graphics& graphics, const Rect& bounds)
+void Definition::calculateLayout(Graphics& graphics, const Rect& bounds, bool force)
 {
+	bool onlyHeight = true;
+	if (force || (bounds.width() != bounds_.width()) || (!elements_.empty() && lines_.empty()))
+		onlyHeight = false;
+	
+    clearHotSpots();
+	bounds_ = bounds;
+	if (onlyHeight)
+	{
+		calculateVisibleRange(firstLine_, lastLine_);
+		return;
+	}
+	
     ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
     uint_t renderingProgress=0;
     if (firstLine_!=0) // If there's actually some first line set, use it - it's position won't change if window width remains the same.
@@ -612,16 +624,21 @@ void Definition::calculateLayout(Graphics& graphics, const Rect& bounds)
         firstElement=lines_[firstLine_].firstElement;  // Store first element and its progress so that we'll restore it as our firstLine_ if we need to recalculate.
         renderingProgress=lines_[firstLine_].renderingProgress;
     }
-    clearHotSpots();
     clearLines();
-    bounds_=bounds;
+    // bounds_=bounds;
     calculateLayout(graphics, firstElement, renderingProgress);
  }
 
+bool Definition::layoutChanged(const Rect& bounds) const
+{
+	return (bounds.width() != bounds_.width()) || (bounds.height() != bounds_.height()) || (!elements_.empty() && lines_.empty());
+}
+ 
+
 void Definition::doRender(Graphics& graphics, const Rect& bounds, bool forceRecalculate)
 {
-    if (bounds.width() != bounds_.width() || forceRecalculate || lines_.empty())
-        calculateLayout(graphics, bounds);
+    if (layoutChanged(bounds) || forceRecalculate)
+        calculateLayout(graphics, bounds, forceRecalculate);
 /*    
     {
         ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
@@ -637,15 +654,15 @@ void Definition::doRender(Graphics& graphics, const Rect& bounds, bool forceReca
         calculateLayout(graphics, firstElement, renderingProgress);
     }
  */    
-    else {
-        clearHotSpots();
-        bool heightChanged = false;
-        if (bounds_.height()!=bounds.height())
-            heightChanged = true;
-        bounds_ = bounds;
-        if (heightChanged)
-            calculateVisibleRange(firstLine_, lastLine_);
-    }
+    //else {
+    //    clearHotSpots();
+    //    bool heightChanged = false;
+    //    if (bounds_.height() != bounds.height())
+    //        heightChanged = true;
+    //    bounds_ = bounds;
+    //    if (heightChanged)
+    //        calculateVisibleRange(firstLine_, lastLine_);
+    //}
     renderLayout(graphics, elements_.end(), elements_.end());
 }
 

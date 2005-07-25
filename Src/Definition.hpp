@@ -248,7 +248,7 @@ public:
     /**
      * Renders (paints) this @c Definition into bounds.
      */
-    ArsLexis::status_t render(Graphics& graphics, const Rect& bounds, bool forceRecalculate = false);
+    status_t render(Graphics& graphics, const Rect& bounds, bool forceRecalculate = false);
     
     uint_t totalLinesCount() const
     {return lines_.size();}
@@ -407,7 +407,9 @@ public:
     
     void highlightHyperlink(Graphics& graphics, uint_t index);
 
-    void calculateLayout(Graphics& graphics, const Rect& bounds);
+    void calculateLayout(Graphics& graphics, const Rect& bounds, bool force = false);
+
+	bool layoutChanged(const Rect& bounds) const; 
 
 private:
 

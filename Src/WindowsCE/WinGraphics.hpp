@@ -44,6 +44,8 @@ class Graphics: private NonCopyable
 	WinFont  currentFont_;
 
 	HPEN originalPen_;
+	
+	bool deleteHandle_;
 
 #ifdef DEBUG
     int             statePushCounter_;
@@ -54,13 +56,19 @@ class Graphics: private NonCopyable
 	void queryFontMetrics();
 
 public:
+	
+	enum DeleteOption {
+		deleteNot,
+		deleteHandle
+	};
+	
     typedef NativeGraphicsHandle_t Handle_t;
     typedef NativeColor_t Color_t;
     typedef NativeGraphicsState_t State_t;
 
 	typedef WinFont Font_t;
 
-    explicit Graphics(const Handle_t& handle);
+    explicit Graphics(const Handle_t& handle, DeleteOption del = deleteHandle);
 	explicit Graphics(HWND hwnd);
     
     ~Graphics();

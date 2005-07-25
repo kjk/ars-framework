@@ -3,18 +3,20 @@
 #include <WindowsCE/WinGraphics.hpp>
 #include <DefinitionStyle.hpp>
 
-Graphics::Graphics(const NativeGraphicsHandle_t& handle):
+Graphics::Graphics(const NativeGraphicsHandle_t& handle, DeleteOption delHandle):
     handle_(handle), 
 	hwnd_(NULL),
 	originalFont_(NULL),
-	originalPen_(NULL)
+	originalPen_(NULL),
+	deleteHandle_(deleteHandle == delHandle)
 {
 	init();
 }
 
 Graphics::Graphics(HWND hwnd):
     handle_(GetDC(hwnd)), 
-	hwnd_(hwnd)
+	hwnd_(hwnd),
+	deleteHandle_(true)
 {
 	init();
 }
@@ -101,7 +103,7 @@ Graphics::~Graphics()
 
     if(NULL != hwnd_)
         ReleaseDC(hwnd_, handle_);
-    else
+    else if (deleteHandle_)
         DeleteDC(handle_);
 }
 

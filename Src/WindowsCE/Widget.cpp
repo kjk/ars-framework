@@ -39,7 +39,6 @@ BOOL ClientToScreen(HWND wnd, RECT& rect)
 
 static void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef DEBUG_WIDGET_MESSAGES
 	const char_t* name = MessageName(uMsg);
 	char_t buffer[12];
 	if (NULL != name)
@@ -56,15 +55,12 @@ static void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	tprintf(buffer, TEXT("0x%08x"), lParam);
 	OutputDebugString(buffer);
 	OutputDebugString(TEXT("\n"));
-#endif	
 }
 
 static LRESULT CALLBACK WidgetCallbackDefault(HWND handle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifndef NDEBUG
 	OutputDebugString(TEXT("WidgetCallbackDefault(): "));
 	DumpMessage(uMsg, wParam, lParam);
-#endif
 
 	return DefWindowProc(handle, uMsg, wParam, lParam);
 }
@@ -170,7 +166,7 @@ LRESULT CALLBACK Widget::callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM 
 	if (uMsg == magicMessage)
 		return widgetCallbackMagicResponse;
 
-#ifndef NDEBUG
+#ifdef DEBUG_WIDGET_MESSAGES
 	DumpMessage(uMsg, wParam, lParam);
 #endif
 		
