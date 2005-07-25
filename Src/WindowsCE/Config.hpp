@@ -33,6 +33,9 @@
 #ifdef SHELL_AYGSHELL
 #include <aygshell.h>
 #pragma comment(lib, "aygshell.lib")
+
+#define SHELL_MENUBAR
+
 #endif // SHELL_AYGSHELL
 
 
@@ -87,7 +90,6 @@
 #endif // _MSC_VER == VC2005
 
 #if defined(SHELL_AYGSHELL) && !defined(WIN32_PLATFORM_WFSP)
-#define SHELL_SHMENUBAR
 #define SHELL_SIP
 #endif // SHELL_AYGSHELL && !WIN32_PLATFORM_WFSP
 

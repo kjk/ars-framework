@@ -6,14 +6,14 @@
 #include <ExtendedEvent.hpp>
 
 class Graphics;
-struct ArsRectangle;
+struct Rect;
 
 class LookupProgressReportingSupport;
 
 class LookupProgressReporter {
 public:
 
-    virtual void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const ArsRectangle& bounds, bool clearBkg=true)=0;
+    virtual void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rect& bounds, bool clearBkg=true)=0;
     
     virtual ~LookupProgressReporter();
     
@@ -22,7 +22,7 @@ public:
 class DefaultLookupProgressReporter: public LookupProgressReporter {
 public:
 
-    void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const ArsRectangle& bounds, bool clearBkg=true);
+    void showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rect& bounds, bool clearBkg=true);
     
     ~DefaultLookupProgressReporter();
     
@@ -59,7 +59,7 @@ public:
    void setBytesProgress(ulong_t bytes)
    {bytesProgress_=bytes;}
 
-    void showProgress(Graphics& graphics, const ArsRectangle& bounds, bool clearBkg=true)
+    void showProgress(Graphics& graphics, const Rect& bounds, bool clearBkg=true)
     {
         if (NULL != progressReporter_.get())
             progressReporter_->showProgress(*this, graphics, bounds, clearBkg);

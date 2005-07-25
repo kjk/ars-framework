@@ -10,12 +10,12 @@ LookupProgressReporter::~LookupProgressReporter()
 DefaultLookupProgressReporter::~DefaultLookupProgressReporter()
 {}
 
-void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const ArsRectangle& bounds, bool clearBkg)
+void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSupport& support, Graphics& graphics, const Rect& bounds, bool clearBkg)
 {
     if (clearBkg) 
         graphics.erase(bounds);
 
-    ArsRectangle rect(bounds);
+    Rect rect(bounds);
     rect.explode(2, 2, -4, -4);
 #ifndef _WIN32
     Graphics::FontSetter setFont(graphics, Font());
@@ -29,14 +29,14 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
     uint_t width = rect.width();
     graphics.charsInWidth(text, length, width);
     uint_t fontDy = graphics.fontHeight();
-    uint_t rectDy = (uint_t)rect.dy();
+    uint_t rectDy = rect.height();
     uint_t fontYOffsetCentered;
     if (rectDy > fontDy)
-        fontYOffsetCentered = (rect.dy()-fontDy)/2;
+        fontYOffsetCentered = (rect.height() - fontDy)/2;
     else
         fontYOffsetCentered = 0;
 
-    Point p(rect.x(), rect.y()+fontYOffsetCentered);
+    Point p(rect.x(), rect.y() + fontYOffsetCentered);
     graphics.drawText(text, length, p);
     char_t buffer[32];
     bool drawMore=false;

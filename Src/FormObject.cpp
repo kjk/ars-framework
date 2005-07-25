@@ -38,18 +38,17 @@ void FormObject::detach()
     object_ = NULL;
 }
 
-void FormObject::bounds(ArsRectangle& out) const
+void FormObject::bounds(Rect& out) const
 {
     RectangleType rect;
     FrmGetObjectBounds(*form_, index(), &rect);
     out=rect;
 }
 
-void FormObject::setBounds(const ArsRectangle& bounds)
+void FormObject::setBounds(const Rect& bounds)
 {
     assert(valid());
-    RectangleType rect=toNative(bounds);
-    FrmSetObjectBounds(*form_, index(), &rect);
+    FrmSetObjectBounds(*form_, index(), &bounds.native());
 }
 
 void FormObject::attachByIndex(UInt16 index)
@@ -60,7 +59,7 @@ void FormObject::attachByIndex(UInt16 index)
     assert(0 != object_);
 }
 
-void FormObject::anchor(const ArsRectangle& boundingBox, FormObjectAnchorStyle horizAnchor, Coord rightMargin, FormObjectAnchorStyle vertAnchor, Coord bottomMargin)
+void FormObject::anchor(const Rect& boundingBox, FormObjectAnchorStyle horizAnchor, Coord rightMargin, FormObjectAnchorStyle vertAnchor, Coord bottomMargin)
 {
     RectangleType rect;
     FrmGetObjectBounds(*form_, index(), &rect);
@@ -300,7 +299,7 @@ void List::CustomDrawHandler::drawCallback(Int16 itemNum, RectangleType* rect, C
 {
     CustomDrawHandler* handler=reinterpret_cast<CustomDrawHandler*>(itemsText);
     assert(0!=handler);
-    ArsRectangle bounds(*rect);
+    Rect bounds(*rect);
     List list(*handler->form_, handler->listId_);
     Graphics graphics(handler->form_->windowHandle());
     handler->drawItem(graphics, list, itemNum, bounds);

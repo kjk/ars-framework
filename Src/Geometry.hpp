@@ -1,107 +1,126 @@
 #ifndef __ARSLEXIS_GEOMETRY_HPP__
 #define __ARSLEXIS_GEOMETRY_HPP__
 
-#include <algorithm>
 #include <NativeGeometry.hpp>
 
-typedef int Coord_t;
+#ifdef _PALM_OS
+struct Point {
+    Coord_t x, y;    
+    NativePoint_t& native() {return *(NativePoint_t*)this;}
+    const NativePoint_t& native() const {return *(const NativePoint_t*)this;}
+    operator NativePoint_t& () {return native();}
+    operator const NativePoint_t& () const {return native();}
+    
+#endif
+#ifdef _WIN32
+struct Point: public NativePoint_t {
 
-struct Point
-{
+#endif
+
     typedef NativePoint_t Native_t;
+    
+    Point& set(Coord_t xx, Coord_t yy) {x = xx; y = yy; return *this;}
 
-    Coord_t x,y;
+    Point() {set(0, 0);}
     
-    Point(): x(0), y(0) {}
+    Point(Coord_t xx, Coord_t yy) {set(xx, yy);}
     
-    Point(Coord_t xx, Coord_t yy): x(xx), y(yy) {}
+    Point(const NativePoint_t& np) {set(np.x, np.y);}
     
-    Point(const NativePoint_t& nativePoint);
+    Point& operator = (const NativePoint_t& np) {return set(np.x, np.y);}
     
-    void toNative(NativePoint_t& nativePoint) const;
-    
-    Point& operator=(const NativePoint_t& nativePoint);
-    
-    Point& operator+=(const Point& offset)
+    Point& operator += (const Point& offset)
     {
-        x+=offset.x;
-        y+=offset.y;
+        x += offset.x;
+        y += offset.y;
         return *this;
     }
     
     Point operator + (const Point& offset) const
     {
         Point result(*this);
-        result+=offset;
+        result += offset;
         return result;
     }
     
-    bool operator==(const Point& p) const
-    {return (x==p.x) && (y==p.y);}
+    bool operator == (const Point& p) const
+    {return (x == p.x) && (y == p.y);}
     
-    bool operator!=(const Point& p) const
-    {return (x!=p.x) || (y!=p.y);}
+    bool operator != (const Point& p) const
+    {return (x != p.x) || (y != p.y);}
     
 };
 
-struct ArsRectangle
+inline Point& PointCast(NativePoint_t& p) {return (Point&)p;}
+inline const Point& PointCast(const NativePoint_t& p) {return (const Point&)p;}
+
+#ifdef _PALM_OS
+struct Rect
 {
+    Point topLeft_, extent__;
+    NativeRectangle_t& native() {return *(NativeRectangle_t*)this;}
+    const NativeRectangle_t& native() const {return *(NativeRectangle_t*)this;}
+    operator NativeRectangle_t& () {return native();}
+    operator const NativeRectangle_t& () const {return native();}
+    
+#endif
+#ifdef _WIN32
+struct Rect: public RECT {
+#endif
+
     typedef NativeRectangle_t Native_t;
     
-    Point topLeft;
-    Point extent;
-    
-    ArsRectangle() {}
-    
-    ArsRectangle(const Point& tl, const Point& ex): topLeft(tl), extent(ex) {}
-    
-    ArsRectangle(Coord_t x, Coord_t y, Coord_t width, Coord_t height):
-        topLeft(x, y), extent(width, height) {}
-        
-    ArsRectangle(const NativeRectangle_t& nativeRect);
-    
-    void toNative(NativeRectangle_t& nativeRect) const;   
-    
-    ArsRectangle& operator=(const NativeRectangle_t& nativeRect);         
-    
-    Coord_t x() const
-    {return topLeft.x;}
-    
-    Coord_t& x()
-    {return topLeft.x;}
-    
-    Coord_t y() const
-    {return topLeft.y;}
-    
-    Coord_t& y()
-    {return topLeft.y;}
-    
+#ifdef _PALM_OS  
+    Point& topLeft() {return topLeft_;}
+    const Point& topLeft() const {return topLeft_;}
+    Point& extent_() {return extent__;}
+    const Point& extent_() const {return extent__;}
+    Coord_t x() const {return topLeft_.x;}
+    Coord_t& x() {return topLeft_.x;}
+    Coord_t y() const {return topLeft_.y;}
+    Coord_t& y() {return topLeft_.y;}
     Coord_t width() const
-    {return extent.x;}
-
-    Coord_t& width()
-    {return extent.x;}
-
-    Coord_t dx() const
-    {return extent.x;}
-
-    Coord_t& dx()
-    {return extent.x;}
-
+    {return extent__.x;}
     Coord_t height() const
-    {return extent.y;}
+    {return extent__.y;}
+   
+    void setWidth(Coord_t w) {extent__.x = w;}
+    void setHeight(Coord_t h) {extent__.y = h;}
+    void setExtent(const Point& p) {extent__ = p;} 
+    void setExtent(Coord_t w, Coord_t h) {extent__.x = w; extent__.y = h;}
+#endif
 
-    Coord_t& height()
-    {return extent.y;}
+#ifdef _WIN32
+    Point& topLeft() {return *(Point*)&left;}
+    Point& bottomRight_() {return *(Point*)&right;}
+    const Point& topLeft() const {return *(Point*)&left;}
+    const Point& bottomRight_() const {return *(Point*)&right;}
+    Coord_t x() const
+    {return left;}
+    Coord_t& x()
+    {return left;}
+    Coord_t y() const
+    {return top;}
+    Coord_t& y()
+    {return top;}
+    Coord_t width() const {return right - left;}
+    Coord_t height() const {return bottom - top;}
+    void setWidth(Coord_t w) {right = left + w;}
+    void setHeight(Coord_t h) {bottom = top + h;}
+    void setExtent(const Point& p) {setWidth(p.x); setHeight(p.y);}
+    void setExtent(Coord_t w, Coord_t h) {setWidth(w); setHeight(h);}
+#endif
 
-    Coord_t dy() const
-    {return extent.y;}
-
-    Coord_t& dy()
-    {return extent.y;}
-
-//        bool hitTest(const Point& point) const
-//        {return (point.x>=x() && point.x<x()+width() && point.y>=y() && point.y<y()+height());}
+    Rect() {set(0, 0, 0, 0);}
+    
+    Rect(const Point& tl, const Point& ext) {set(tl.x, tl.y, ext.x, ext.y);}
+    
+    Rect(Coord_t x, Coord_t y, Coord_t w, Coord_t h) {set(x, y, w, h);}
+        
+    Rect(const NativeRectangle_t& nr);
+    
+    Rect& operator = (const NativeRectangle_t& nativeRect);         
+    
     bool hitTest(const Point& point) const;
     
     struct HitTest
@@ -112,7 +131,7 @@ struct ArsRectangle
             point(p)
         {}
         
-        bool operator() (const ArsRectangle& rect) const
+        bool operator() (const Rect& rect) const
         {return rect.hitTest(point);}
         
     };
@@ -124,79 +143,80 @@ struct ArsRectangle
     {return !empty();}
     
     void clear()
-    {width()=0; height()=0;}
+    {setWidth(0); setHeight(0);}
     
-    ArsRectangle& operator &= (const ArsRectangle& rect);
+    Rect& operator &= (const Rect& rect);
 
-    ArsRectangle operator & (const ArsRectangle& rect)
+    Rect operator & (const Rect& rect)
     {
-        ArsRectangle result(*this);
+        Rect result(*this);
         result &=rect;
         return result;
     }
         
-    bool operator && (const ArsRectangle& rect) const
+    bool operator && (const Rect& rect) const
     {
-        ArsRectangle tmp(*this);
+        Rect tmp(*this);
         return (tmp &= rect);
     }
+
     bool operator && (const Point& point) const
     {return hitTest(point);}
     
-    ArsRectangle& explode(Coord_t deltaLeft, Coord_t deltaTop, Coord_t deltaWidth, Coord_t deltaHeight)
+    Rect& explode(Coord_t deltaLeft, Coord_t deltaTop, Coord_t deltaWidth, Coord_t deltaHeight)
     {
-        x()+=deltaLeft;
-        y()+=deltaTop;
-        width()+=deltaWidth;
-        height()+=deltaHeight;
+        x() += deltaLeft;
+        y() += deltaTop;
+        setWidth(width() + deltaWidth);
+        setHeight(height() + deltaHeight);
         return *this;
     }
 
-    ArsRectangle& operator+= (const Point& offset)
+    Rect& operator+= (const Point& offset)
     {
-        topLeft+=offset;
+        topLeft() += offset;
         return *this;
     }
     
-    bool operator==(const ArsRectangle& rect) const
-    {return (topLeft==rect.topLeft) && (extent==rect.extent);}
+    bool operator == (const Rect& rect) const
+    {return (topLeft() == rect.topLeft()) && (width() == rect.width()) && (height() == rect.height());}
     
-    bool operator!=(const ArsRectangle& rect) const
-    {return (topLeft!=rect.topLeft) || (extent!=rect.extent);}
+    bool operator != (const Rect& rect) const
+    {return !(*this == rect);}
 
-    ArsRectangle& assign(const Point& tl, const Point& ext) 
+    Rect& set(const Point& tl, const Point& extent) 
     {
-        topLeft = tl;
-        extent = ext;
+        topLeft() = tl;
+        setExtent(extent);
         return *this;
     }
     
-    ArsRectangle& assign(Coord_t x, Coord_t y, Coord_t width, Coord_t height)
+    Rect& set(Coord_t xx, Coord_t yy, Coord_t width, Coord_t height)
     {   
-        topLeft.x = x;
-        topLeft.y = y;
-        extent.x = width;
-        extent.y = height;
+        x() = xx; y() = yy; setWidth(width); setHeight(height);
         return *this;
     }
     
-    ArsRectangle& operator+= (const ArsRectangle& rect); 
+    Rect& operator += (const Rect& rect); 
     
     void center(Point& point) const;
                   
 };
 
-inline bool operator && (const Point& p, const ArsRectangle& r)
+inline Rect& RectCast(NativeRectangle_t& r) {return (Rect&)r;}
+inline const Rect& RectCast(const NativeRectangle_t& r) {return (const Rect&)r;}
+
+inline bool operator && (const Point& p, const Rect& r)
 {return (r && p);}
 
-inline ArsRectangle operator+(const ArsRectangle& r, const Point& p)
+inline Rect operator+(const Rect& r, const Point& p)
 {
-    ArsRectangle tmp(r);
+    Rect tmp(r);
     tmp+=p;
     return tmp;
 }        
 
-inline ArsRectangle operator+(const Point& p, const ArsRectangle& r)
-{return r+p;}
+inline Rect operator + (const Point& p, const Rect& r)
+{return r + p;}
 
 #endif

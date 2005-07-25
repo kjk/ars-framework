@@ -45,8 +45,8 @@ Int16 PopupMenu::popup(UInt16 id, const Point& point)
     if (NULL == model_)
         return noListSelection;
         
-    ArsRectangle rect;
-    rect.topLeft = point;
+    Rect rect;
+    rect.topLeft() = point;
     uint_t fontHeight;
     {
         FontID lastFont = FntGetFont();
@@ -54,19 +54,19 @@ Int16 PopupMenu::popup(UInt16 id, const Point& point)
         fontHeight = FntLineHeight() ;
         FntSetFont(lastFont);
     }
-    rect.height() = fontHeight * model_->count + 2;
-    rect.width() = model_->maxTextWidth() + 2;
+    rect.setHeight(fontHeight * model_->count + 2);
+    rect.setWidth(model_->maxTextWidth() + 2);
     
-    ArsRectangle formBounds;
+    Rect formBounds;
     list.form()->bounds(formBounds);
     
     int maxHeight = formBounds.height() - 20;
     int maxWidth = formBounds.width() - 20;
     if (rect.height() > maxHeight)
-        rect.height() = maxHeight;
+        rect.setHeight(maxHeight);
 
     if (rect.width() > maxWidth)
-        rect.width() = maxWidth;
+        rect.setWidth(maxWidth);
         
     if (rect.x() + rect.width() > formBounds.width())
         rect.x() = formBounds.width() - (rect.width() + 10);
@@ -189,7 +189,7 @@ uint_t PopupMenuModel::maxTextWidth() const
 }
 
 #ifdef _PALM_OS
-void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, const ArsRectangle& itemBounds)
+void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, const Rect& itemBounds)
 {
     assert(index < count);
     const Item& item = items[index];
@@ -208,7 +208,7 @@ void PopupMenuModel::drawItem(Graphics& graphics, List& list, uint_t index, cons
         FntSetFont(boldFont);
     else
         FntSetFont(stdFont);
-    Point p = itemBounds.topLeft;
+    Point p = itemBounds.topLeft();
 //    ++p.x;
     uint_t width = itemBounds.width(); // - 2;
     ulong_t length = Len(text);

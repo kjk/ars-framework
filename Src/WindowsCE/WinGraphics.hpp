@@ -66,15 +66,15 @@ public:
     ~Graphics();
 
     // Fills specified rectangle with current background color.
-    void erase(const ArsRectangle& rect);
+    void erase(const Rect& rect);
     
     /**
      * Copies specified rectangular area (bitmap) from this @c Graphics system into @c targetSystem.
      * @param sourceArea bounds of source bitmap in this @c Graphics system.
      */         
-    void copyArea(const ArsRectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft);
+    void copyArea(const Rect& sourceArea, Graphics& targetSystem, const Point& targetTopLeft);
     
-    void copyArea(const ArsRectangle& sourceArea, const Point& targetTopLeft)
+    void copyArea(const Rect& sourceArea, const Point& targetTopLeft)
     {copyArea(sourceArea, *this, targetTopLeft);}
 
     void drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1);
@@ -156,15 +156,15 @@ public:
 
     void stripToWidthWithEllipsis(char_t* textInOut, ulong_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
 
-    void drawTextInBounds(const ArsLexis::String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter = true);
+    void drawTextInBounds(const ArsLexis::String& text, const Rect& itemBounds, int totalLines, bool allowCenter = true);
 
 	void setFont(const WinFont& font);
 
 private:
-    void drawTextInBoundsInternal(const ArsLexis::String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter, int lines);
+    void drawTextInBoundsInternal(const ArsLexis::String& text, const Rect& itemBounds, int totalLines, bool allowCenter, int lines);
 
 public:
-    void invertRectangle(const ArsRectangle& rect);
+    void invertRectangle(const Rect& rect);
 
     Handle_t handle() 
     {return handle_;}

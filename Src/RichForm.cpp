@@ -41,7 +41,7 @@ RichForm::~RichForm()
         static_cast<RichApplication&>(application()).diaSupport().restoreUserSelection(savedDiaState_);
 }
 
-void RichForm::resize(const ArsRectangle&)
+void RichForm::resize(const Rect&)
 {}
 
 WindowFormatType RichForm::windowFormat() const

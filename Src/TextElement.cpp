@@ -37,11 +37,11 @@ static uint_t whitespaceRangeLength(const String& text, uint_t start, uint_t len
 #endif
 }
 
-void TextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsRectangle& area, bool hyperlink)
+void TextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rect& area, bool hyperlink)
 {
     uint_t intersectStart=std::max(start, selectionStart);
     uint_t intersectEnd=std::min(end, selectionEnd);
-    Point point(area.topLeft);
+    Point point(area.topLeft());
     uint_t length;
     const char_t* text;
     if (intersectStart < intersectEnd)
@@ -55,7 +55,7 @@ void TextElement::drawTextWithSelection(Graphics& graphics, uint_t start, uint_t
         if (!hyperlink) 
         {
             graphics.drawText(text=(text_.c_str()+intersectStart), length=(intersectEnd-intersectStart), point);
-            ArsRectangle rect(point, Point(graphics.textWidth(text, length), area.height()));
+            Rect rect(point, Point(graphics.textWidth(text, length), area.height()));
             graphics.invertRectangle(rect);
             point.x += rect.width();
         }
@@ -150,7 +150,7 @@ void TextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
 
     if (render)
     {
-        ArsRectangle textArea(left, top, txtDx, lineHeight);
+        Rect textArea(left, top, txtDx, lineHeight);
         drawTextWithSelection(graphics, layoutContext.renderingProgress, layoutContext.renderingProgress+charsToDraw, 
             layoutContext.selectionStart, layoutContext.selectionEnd, textArea, layoutContext.selectionIsHyperlink);
         if (isHyperlink())
@@ -186,7 +186,7 @@ void TextElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
                         layoutContext.selectionStart, layoutContext.selectionEnd, Point(left, top));
 //                    graphics.drawText(text, charsToDraw, Point(left, top));
                     if (isHyperlink())
-                        defineHotSpot(*definition, ArsRectangle(left, top, width, lineHeight));
+                        defineHotSpot(*definition, Rect(left, top, width, lineHeight));
                 }
                 
                 layoutContext.renderingProgress+=length;

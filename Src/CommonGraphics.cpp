@@ -115,12 +115,12 @@ void Graphics::stripToWidthWithEllipsis(String& textInOut, ulong_t& lengthInOut,
 
 static const int drawTextInBoundsUseLinesValue = -1;
 
-void Graphics::drawTextInBounds(const String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter)
+void Graphics::drawTextInBounds(const String& text, const Rect& itemBounds, int totalLines, bool allowCenter)
 {
     drawTextInBoundsInternal(text, itemBounds,totalLines,allowCenter,drawTextInBoundsUseLinesValue);
 }
 
-void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter, int lines)
+void Graphics::drawTextInBoundsInternal(const String& text, const Rect& itemBounds, int totalLines, bool allowCenter, int lines)
 {
     if (drawTextInBoundsUseLinesValue == lines)
         lines = totalLines;
@@ -130,7 +130,7 @@ void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& 
         uint_t width=itemBounds.width();
         ulong_t length=text.length();
         charsInWidth(text.c_str(), length, width);
-        drawText(text.c_str(), length, itemBounds.topLeft);
+        drawText(text.c_str(), length, itemBounds.topLeft());
     }
     else
     {
@@ -153,18 +153,18 @@ void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& 
                 widthFull = true;
         }
         
-        ArsRectangle newBounds = itemBounds;
+        Rect newBounds = itemBounds;
         if (length == text.length() && totalLines == lines)
         {
             //all text in first line - center ?
             if (allowCenter)
-                newBounds.topLeft.y += itemBounds.height()/2 - fontHeight()/2 -1;
+                newBounds.topLeft().y += itemBounds.height()/2 - fontHeight()/2 -1;
 
-            drawText(text.c_str(), length, newBounds.topLeft);
+            drawText(text.c_str(), length, newBounds.topLeft());
             return;
         }
         else
-            drawText(text.c_str(), length, itemBounds.topLeft);
+            drawText(text.c_str(), length, itemBounds.topLeft());
         
         //draw rest
         if (length < text.length())
@@ -172,8 +172,8 @@ void Graphics::drawTextInBoundsInternal(const String& text, const ArsRectangle& 
             String restOfText(text, 0, length);
             strip(restOfText);
             Coord_t         heightChange = itemBounds.height()/lines;
-            newBounds.topLeft.y += heightChange;
-            newBounds.extent.y -= heightChange;
+            newBounds.y() += heightChange;
+            newBounds.setHeight(newBounds.height() - heightChange);
             drawTextInBoundsInternal(restOfText, newBounds, totalLines, false, lines-1);
         }    
     }

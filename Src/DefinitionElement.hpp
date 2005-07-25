@@ -1,7 +1,7 @@
 #ifndef __DEFINITIONELEMENT_HPP__
 #define __DEFINITIONELEMENT_HPP__
 
-#include "Definition.hpp"
+#include <Definition.hpp>
 
 typedef void action_callback(void *data);
 
@@ -21,7 +21,7 @@ protected:
 
     uint_t indentation() const;
 
-    void defineHotSpot(Definition& definition, const ArsRectangle& bounds);
+    void defineHotSpot(Definition& definition, const Rect& bounds);
 
     void invalidateHotSpot();
 

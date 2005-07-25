@@ -34,7 +34,7 @@ protected:
 
     bool handleEvent(EventType& event);
 
-    void resize(const ArsRectangle& screenBounds);
+    void resize(const Rect& screenBounds);
 
 public:
     explicit StringListForm(RichApplication& app, uint_t formId, uint_t stringListId, uint_t selectButtonId, uint_t cancelButtonId, uint_t eventToSend = dontSendEvent);

@@ -132,21 +132,19 @@ void Graphics::drawText(const char_t* text, ulong_t length, const Point& topLeft
 		InvertRectangle(handle_, topLeft, width, height);
 }
 
-void Graphics::erase(const ArsRectangle& rect)
+void Graphics::erase(const Rect& rect)
 {
-    NativeRectangle_t nr = toNative(rect);
     HBRUSH hbr = CreateSolidBrush(GetBkColor(handle_));
-    FillRect(handle_, &nr, hbr);
+    FillRect(handle_, &rect, hbr);
     DeleteObject(hbr);
 }
 
-void Graphics::copyArea(const ArsRectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
+void Graphics::copyArea(const Rect& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
 {
-    NativeRectangle_t nr=toNative(sourceArea);
     BitBlt(targetSystem.handle_, targetTopLeft.x, targetTopLeft.y,
         sourceArea.width(), sourceArea.height(), 
         handle_,
-        nr.left, nr.top, SRCCOPY);
+        sourceArea.left, sourceArea.top, SRCCOPY);
 }
 
 void Graphics::drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1)

@@ -159,16 +159,14 @@ ulong_t Graphics::wordWrap(const char_t* text, uint_t availableDx, uint_t& textD
     return charsThatFit;
 }
 
-void Graphics::erase(const ArsRectangle& rect)
+void Graphics::erase(const Rect& rect)
 {
-    RectangleType nr=toNative(rect);
-    WinEraseRectangle(&nr, 0);
+    WinEraseRectangle(&rect.native(), 0);
 }
 
-void Graphics::copyArea(const ArsRectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
+void Graphics::copyArea(const Rect& sourceArea, Graphics& targetSystem, const Point& targetTopLeft)
 {
-    RectangleType nr=toNative(sourceArea);
-    WinCopyRectangle(handle_, targetSystem.handle_, &nr, targetTopLeft.x, targetTopLeft.y, winPaint);
+    WinCopyRectangle(handle_, targetSystem.handle_, &sourceArea.native(), targetTopLeft.x, targetTopLeft.y, winPaint);
 }
 
 Graphics::Graphics(const Handle_t& handle):
@@ -182,13 +180,12 @@ Graphics::Graphics(const Handle_t& handle):
     setFont(FntGetFont());
 }
 
-void Graphics::setClipping(const ArsRectangle& rect)
+void Graphics::setClipping(const Rect& rect)
 {
-    RectangleType nr=toNative(rect);
-    WinSetClip(&nr);        
+    WinSetClip(&rect.native());        
 }
 
-Graphics::ClipRectangleSetter::ClipRectangleSetter(Graphics& graphics, const ArsRectangle& rectangle):
+Graphics::ClipRectangleSetter::ClipRectangleSetter(Graphics& graphics, const Rect& rectangle):
     graphics_(graphics)
 {
     WinGetClip(&original_);
@@ -215,11 +212,9 @@ void Graphics::drawBitmap(uint_t bitmapId, const Point& topLeft)
     }
 }
 
-void Graphics::invertRectangle(const ArsRectangle& rect) 
+void Graphics::invertRectangle(const Rect& rect) 
 {
-    RectangleType r;
-    rect.toNative(r);
-    WinInvertRectangle(&r, 0);
+    WinInvertRectangle(&rect.native(), 0);
 }
 
 uint_t Graphics::textWidth(const char_t* text, ulong_t length)

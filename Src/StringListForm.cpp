@@ -26,17 +26,17 @@ void StringListForm::SetStringList(int stringCount, char_t *strList[])
     strList_ = strList;
 }
 
-void StringListForm::resize(const ArsRectangle& screenBounds)
+void StringListForm::resize(const Rect& screenBounds)
 {
-    ArsRectangle rect(bounds());
+    Rect rect(bounds());
     if (screenBounds==rect)
         return;
     setBounds(screenBounds);
     {
         List list(*this, stringListId_);
         list.bounds(rect);
-        rect.height() = screenBounds.height()-34;
-        rect.width() = screenBounds.width()-4;
+        rect.setHeight(screenBounds.height() - 34);
+        rect.setWidth(screenBounds.width() - 4);
         list.setBounds(rect);
         list.adjustVisibleItems();
     }

@@ -2,6 +2,8 @@
 
 #ifdef __MWERKS__
 # pragma pcrelconstdata on
+
+using std::memset;
 #endif
 
 // note: caller needs to free memory with free
@@ -1469,23 +1471,38 @@ void strip(std::basic_string<Ch>& str)
 template<class Ch>
 status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len)
 {
-    status_t err = errNone;
 	if (-1 == len) len = Len(str);
 	ErrTry {
 		out.append(str, len);
 	} 
 	ErrCatch(ex) {
-		err = ex;
+		return ex;
 	} ErrEndCatch
-	return err;
+	return errNone;
 }
+
+template<class Ch>
+Ch* StrAlloc(ulong_t length)
+{
+	++length;
+	length *= sizeof(Ch);
+	
+	Ch* buf = (Ch*)malloc(length);
+	if (NULL == buf)
+		return buf;
+	memset(buf, 0, length);
+	return buf;
+}
+
 
 template status_t StringAppend<char>(std::string& out, const char* str, long len);
 template void strip<char>(std::string& str);
+template char* StrAlloc<char>(ulong_t length);
 
 #ifdef _WIN32_WCE
 template status_t StringAppend<wchar_t>(std::wstring& out, const wchar_t* str, long len);
 template void strip<wchar_t>(std::wstring& str);
+template wchar_t* StrAlloc<wchar_t>(ulong_t length);
 #endif
 
 

@@ -44,7 +44,7 @@ public:
     uint_t maxTextWidth() const;
 
 #ifdef _PALM_OS    
-    void drawItem(Graphics& graphics, List& list, uint_t item, const ArsRectangle& itemBounds);
+    void drawItem(Graphics& graphics, List& list, uint_t item, const Rect& itemBounds);
 #endif
     
     uint_t itemsCount() const;

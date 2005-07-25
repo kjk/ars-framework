@@ -1,8 +1,71 @@
 #include <WindowsCE/Widget.hpp>
+#include <WindowsCE/Window.hpp>
 #include <WindowsCE/Messages.hpp>
+#include <Text.hpp>
+
+BOOL ScreenToClient(HWND wnd, RECT& rect)
+{
+/*
+	POINT p = {rect.left, rect.top};
+	if (!ScreenToClient(wnd, &p))
+		return FALSE;
+	rect.left = p.x; rect.top = p.y;
+	p.x = rect.right; p.y = rect.bottom;
+	if (!ScreenToClient(wnd, &p))
+		return FALSE;
+	rect.right = p.x; rect.bottom = p.y;
+ */
+	MapWindowPoints(NULL, wnd, (POINT*)&rect, 2);
+	return TRUE;  	
+}
+
+BOOL ClientToScreen(HWND wnd, RECT& rect)
+{
+/*
+	POINT p = {rect.left, rect.top};
+	if (!ClientToScreen(wnd, &p))
+		return FALSE;
+	rect.left = p.x; rect.top = p.y;
+	p.x = rect.right; p.y = rect.bottom;
+	if (!ClientToScreen(wnd, &p))
+		return FALSE;
+	rect.right = p.x; rect.bottom = p.y;
+ */
+	MapWindowPoints(wnd, NULL, (POINT*)&rect, 2); 	
+	return TRUE;	
+}
+
+// #define DEBUG_WIDGET_MESSAGES
+
+static void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+#ifdef DEBUG_WIDGET_MESSAGES
+	const char_t* name = MessageName(uMsg);
+	char_t buffer[12];
+	if (NULL != name)
+		OutputDebugString(name);
+	else 
+	{
+		tprintf(buffer, TEXT("0x%08x"), uMsg);
+		OutputDebugString(buffer);
+	}
+	OutputDebugString(TEXT(" wParam="));
+	tprintf(buffer, TEXT("0x%08x"), wParam);
+	OutputDebugString(buffer);
+	OutputDebugString(TEXT(" lParam="));
+	tprintf(buffer, TEXT("0x%08x"), lParam);
+	OutputDebugString(buffer);
+	OutputDebugString(TEXT("\n"));
+#endif	
+}
 
 static LRESULT CALLBACK WidgetCallbackDefault(HWND handle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+#ifndef NDEBUG
+	OutputDebugString(TEXT("WidgetCallbackDefault(): "));
+	DumpMessage(uMsg, wParam, lParam);
+#endif
+
 	return DefWindowProc(handle, uMsg, wParam, lParam);
 }
 
@@ -36,12 +99,14 @@ static Widget* WidgetFromHandle(HWND handle)
 Widget::Widget(AutoDeleteOption ad):
 	handle_(NULL),
 	previousCallback_(NULL),
+	previousUserData_(NULL),
 	autoDelete_(ad)
 {}
 
 Widget::Widget(HWND handle, AutoDeleteOption ad):
 	handle_(NULL),
 	previousCallback_(NULL),
+	previousUserData_(NULL),
 	autoDelete_(ad)
 {
 	assert(NULL == fromHandle(handle));
@@ -50,7 +115,8 @@ Widget::Widget(HWND handle, AutoDeleteOption ad):
 
 Widget::~Widget()
 {
-	detach();
+	if (valid())
+		detach();
 }
 
 void Widget::attach(HWND handle)
@@ -60,6 +126,11 @@ void Widget::attach(HWND handle)
 
 	assert(NULL != handle);
 	handle_ = handle;
+	previousUserData_ = GetWindowLong(handle, GWL_USERDATA);
+	assert(0 == previousUserData_);
+	
+	SetWindowLong(handle, GWL_USERDATA, reinterpret_cast<LONG>(this));
+	
 	WNDPROC proc = reinterpret_cast<WNDPROC>(GetWindowLong(handle_, GWL_WNDPROC));
 
 	LRESULT res = CallWindowProc(proc, handle, WidgetCallbackMagicMessage(), 0, 0);
@@ -73,13 +144,15 @@ void Widget::attach(HWND handle)
 
 void Widget::detach()
 {
-	assert(NULL != handle_);
+	if (!valid())
+		return;
+		
 	WNDPROC callback = WidgetCallbackDefault;
 	if (NULL != previousCallback_)
 		callback = previousCallback_;
 		
 	SetWindowLong(handle_, GWL_WNDPROC, reinterpret_cast<LONG>(callback));
-	SetWindowLong(handle_, GWL_USERDATA, 0);
+	SetWindowLong(handle_, GWL_USERDATA, previousUserData_);
 	handle_ = NULL;
 }
 
@@ -98,12 +171,7 @@ LRESULT CALLBACK Widget::callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM 
 		return widgetCallbackMagicResponse;
 
 #ifndef NDEBUG
-	const char_t* name = MessageName(uMsg);
-	if (NULL != name)
-	{
-		OutputDebugString(name);
-		OutputDebugString(TEXT("\n"));
-	}
+	DumpMessage(uMsg, wParam, lParam);
 #endif
 		
 	Widget* w = WidgetFromHandle(handle);
@@ -119,7 +187,7 @@ LRESULT CALLBACK Widget::callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM 
 			w = (Widget*)lParam;
 			
 		if (NULL != w)
-			w->handle_ = handle;
+			w->attach(handle);
 	}
 	if (NULL == w)
 		return WidgetCallbackDefault(handle, uMsg, wParam, lParam);
@@ -140,6 +208,12 @@ LRESULT Widget::callback(UINT message, WPARAM wParam, LPARAM lParam)
 
 		case WM_COMMAND:
 			return rawHandleCommand(message, wParam, lParam);
+		
+		case WM_SIZE:
+			return rawHandleResize(message, wParam, lParam);
+		
+		case WM_PAINT:
+			return rawHandlePaint(message, wParam, lParam);
 
 		default:
 			return defaultCallback(message, wParam, lParam);
@@ -170,12 +244,16 @@ bool Widget::create(ATOM widget_class, LPCTSTR caption, DWORD style, int x, int 
 
 bool Widget::create(LPCTSTR widget_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance)
 {
-	assert(NULL == handle_);
+	if (valid())
+		detach();
+		
 	HWND handle = CreateWindow(widget_class, caption, style, x, y, width, height, parent, menu, instance, this);
 	if (NULL == handle)
 		return false;
 	
-	assert(handle_ == handle);
+	if (NULL == handle_)
+		attach(handle);
+		
 	return true;
 }
 
@@ -183,29 +261,40 @@ LRESULT Widget::defaultCallback(UINT uMsg, WPARAM wParam, LPARAM lParam, HWND ha
 {
 	if (NULL == handle)
 		handle = handle_;
-		
+
 	if (NULL != previousCallback_)
-		return CallWindowProc(previousCallback_, handle, uMsg, wParam, lParam);
+	{
+		if (0 != previousUserData_)
+			SetWindowLong(handle, GWL_USERDATA, previousUserData_);
+		LRESULT res = CallWindowProc(previousCallback_, handle, uMsg, wParam, lParam);
+		if (0 != previousUserData_)
+			SetWindowLong(handle, GWL_USERDATA, reinterpret_cast<LONG>(this));
+		return res;
+	}
 	else
 		return DefWindowProc(handle, uMsg, wParam, lParam);
 }
 
-/*
-void Widget::caption(tstring& out) const
+char_t* Widget::caption(ulong_t* len) const
 {
 	assert(NULL != handle_);
-	int length = GetWindowTextLength(handle_);
-	out.resize(length);
-	length = GetWindowText(handle_, &out[0], length);
-	out.resize(length);
+	int length = GetWindowTextLength(handle());
+	char_t* buffer = StrAlloc<char_t>(length);
+	if (NULL == buffer)
+		return NULL;
+			
+	length = GetWindowText(handle_, buffer, length);
+	if (NULL != len)
+		*len = length;
+	
+	return buffer;
 }
 
-bool Widget::set_caption(const tchar* text)
+bool Widget::setCaption(const char_t* text)
 {
 	assert(NULL != handle_);
-	return FALSE != SetWindowText(handle_, text);
+	return FALSE != SetWindowText(handle(), text);
 }
- */
  
 #ifndef NDEBUG
 HWND Widget::handle() const
@@ -215,6 +304,56 @@ HWND Widget::handle() const
 }
 #endif
 
+void Widget::bounds(RECT& out) const
+{
+	GetWindowRect(handle(), &out);
+	HWND p = parentHandle();
+	if (NULL != p)
+		ScreenToClient(p, out);
+}
+
+bool Widget::attachControl(HWND wnd, UINT id)
+{
+	HWND w = GetDlgItem(wnd, id);
+	if (NULL == w)
+		return false;
+	attach(w);
+	return true;
+}
+
+void Widget::anchor(AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption r)
+{
+	RECT parentRect;
+	HWND parent = parentHandle();
+	if (NULL != parent)
+		GetClientRect(parent, &parentRect);
+	else 
+	{
+		ZeroMemory(&parentRect, sizeof(parentRect));
+		parentRect.right = GetSystemMetrics(SM_CXSCREEN);
+		parentRect.bottom = GetSystemMetrics(SM_CYSCREEN);
+	}
+	
+	RECT rect;
+	bounds(rect);
+    if (anchorLeft == horiz) 
+	{
+		rect.right =  RectWidth(parentRect) - hMargin + RectWidth(rect);
+        rect.left = RectWidth(parentRect) - hMargin;
+    }
+    else if (anchorRight == horiz)
+        rect.right = rect.left + RectWidth(parentRect) - hMargin;
+    
+    if (anchorTop == vert)
+	{
+		rect.bottom = RectHeight(parentRect) - vMargin + RectHeight(rect);
+        rect.top = RectHeight(parentRect) - vMargin;
+	}
+    else if (anchorBottom == vert)
+        rect.bottom = rect.top + RectHeight(parentRect) - vMargin;
+    
+	setBounds(rect, r); 
+}
 
 
 // ------------------------------------------
@@ -241,11 +380,40 @@ long Widget::handleCommand(ushort notify_code, ushort id, HWND sender)
 	return defaultCallback(WM_COMMAND, MAKEWPARAM(id, notify_code), reinterpret_cast<LPARAM>(sender));
 }
 
+long Widget::handleResize(UINT sizeType, ushort width, ushort height)
+{
+	return defaultCallback(WM_SIZE, sizeType, MAKELPARAM(width, height));
+}
+
+long Widget::handlePaint(HDC dc)
+{
+	assert(NULL != dc);
+	return defaultCallback(WM_PAINT, (WPARAM)dc, 0);
+}
+
 LRESULT Widget::rawHandleCommand(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	ushort notify_code = HIWORD(wParam);
 	ushort id = LOWORD(wParam);
 	HWND sender_handle = reinterpret_cast<HWND>(lParam);
-	return handleCommand(notify_code, id, sender_handle);
+	return this->handleCommand(notify_code, id, sender_handle);
 }
 
+LRESULT Widget::rawHandlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	LRESULT l = TRUE;
+	HDC dc = (HDC)wParam;
+	if (NULL != dc)
+	{
+		l = handlePaint(dc);
+		return l;
+	}
+	PAINTSTRUCT ps;
+	dc = BeginPaint(handle(), &ps);
+	if (NULL != dc)
+	{
+		l = handlePaint(dc);
+		EndPaint(handle_, &ps);
+	}
+	return l;
+}

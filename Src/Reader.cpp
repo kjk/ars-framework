@@ -22,14 +22,13 @@ status_t Reader::read(char* buffer, ulong_t& length)
 
 status_t Reader::readLine(bool& eof, NarrowString& out, char delimiter)
 {
-    volatile status_t error=errNone;
     ErrTry {
         while (true)
         {
             int chr;
             status_t error = read(chr);
             if (errNone != error)
-                return error;
+                ErrReturn(error);
             if (npos != chr && delimiter != chr)
                 out.append(1, char(chr));
             else 
@@ -41,10 +40,10 @@ status_t Reader::readLine(bool& eof, NarrowString& out, char delimiter)
         }
     }
     ErrCatch (ex) {
-        error=ex;
+        return ex;
     }
     ErrEndCatch
-    return error;
+    return errNone;
 }
 
 Reader::~Reader()

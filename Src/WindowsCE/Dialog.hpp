@@ -5,8 +5,15 @@
 
 class Dialog: public Window
 {
+#ifdef SHELL_AYGSHELL
+	DWORD initDialogFlags_;
+#endif
 
 public:
+	
+	Dialog(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false, DWORD initDialogFlags = SHIDIF_DONEBUTTON | SHIDIF_SIPDOWN | SHIDIF_SIZEDLGFULLSCREEN);
+
+	Dialog(HWND wnd, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
 
 	bool create(HINSTANCE instance, LPCTSTR resource_id, HWND parent);
 

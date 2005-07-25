@@ -6,12 +6,16 @@
 #include <Utility.hpp>
 #include <WindowsCE/Config.hpp>
 
+enum AnchorOption {
+	anchorNone,
+	anchorLeft,
+	anchorTop = anchorLeft,
+	anchorRight,
+	anchorBottom = anchorRight
+};
+
 class Widget: private NonCopyable
 {
-	UINT lastMessage_;
-	WPARAM lastWParam_;
-	LPARAM lastLParam_;
-	
 public:
 
 	enum AutoDeleteOption {
@@ -39,6 +43,8 @@ public:
 	virtual ~Widget();
 
 	virtual void attach(HWND handle);
+	
+	bool attachControl(HWND wnd, UINT id);
 
 	virtual void detach();
 
@@ -55,7 +61,7 @@ public:
 
 	bool valid() const {return NULL != handle_;}
 
-	const char_t* caption(ulong_t* length = NULL) const;
+	char_t* caption(ulong_t* length = NULL) const;
 
 	bool setCaption(const char_t* text);
 
@@ -63,22 +69,26 @@ public:
 
 	LRESULT sendMessage(UINT message, WPARAM wParam, LPARAM lParam) {return SendMessage(handle(), message, wParam, lParam);}
 
-	void bounds(ArsRectangle& out) const;
+	void bounds(RECT& rect) const;
 
-	void innerBounds(ArsRectangle& out) const;
+	void innerBounds(RECT& rect) const {GetClientRect(handle(), &rect);}
 
 	enum RepaintOption {
 		repaintNot,
 		repaintWidget
 	};
 
-	bool setBounds(const ArsRectangle& rect, RepaintOption repaint = repaintNot); // {return FALSE != MoveWindow(handle(), rect.left, rect.top, rect.width(), rect.height(), repaint);}
+	bool setBounds(const RECT& rect, RepaintOption repaint = repaintNot) {return FALSE != MoveWindow(handle_, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, repaint);}
 
 	bool update() {return FALSE != UpdateWindow(handle());}
 
 	bool show(int how = SW_SHOW) {return FALSE != ShowWindow(handle(), how);}
 
 	HWND activate() {return SetActiveWindow(handle());}
+	
+	HWND parentHandle() const {return GetParent(handle());}
+	
+	void anchor(AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption = repaintNot);
 
 protected:
 
@@ -88,11 +98,15 @@ protected:
 	
 protected: // message handlers
 
+	virtual long handleCommand(ushort notify_code, ushort id, HWND sender);
+
 	virtual long handleDestroy();
 
 	virtual long handleCreate(const CREATESTRUCT& cs);
-
-	virtual long handleCommand(ushort notify_code, ushort id, HWND sender);
+	
+	virtual long handleResize(UINT sizeType, ushort width, ushort height);
+	
+	virtual long handlePaint(HDC dc);
 
 private: // "raw" message handlers
 
@@ -101,17 +115,28 @@ private: // "raw" message handlers
 	LRESULT rawHandleCreate(UINT uMsg, WPARAM wParam, LPARAM lParam) {return handleCreate(*reinterpret_cast<LPCREATESTRUCT>(lParam));}
 
 	LRESULT rawHandleCommand(UINT uMsg, WPARAM wParam, LPARAM lParam);
+	
+	LRESULT rawHandleResize(UINT uMsg, WPARAM wParam, LPARAM lParam) {return handleResize(wParam, LOWORD(lParam), HIWORD(lParam));}
+	
+	LRESULT rawHandlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
 
 	static LRESULT CALLBACK callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	friend class Dialog;
-
+	friend class CommandBar;
+	
 	HWND handle_;
 	WNDPROC previousCallback_;
+	LONG previousUserData_;
 	AutoDeleteOption autoDelete_;
-
+	
 };
+
+BOOL ScreenToClient(HWND wnd, RECT& rect);
+BOOL ClientToScreen(HWND wnd, RECT& rect);
+inline LONG RectWidth(const RECT& rect) {return rect.right - rect.left;}
+inline LONG RectHeight(const RECT& rect) {return rect.bottom - rect.top;}
 
 #endif

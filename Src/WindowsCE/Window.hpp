@@ -20,7 +20,7 @@ protected:
 	virtual long handleActivate(ushort action, bool minimized, HWND previous);
 
 	virtual long handleSettingChange(ulong flag, LPCTSTR section_name);
-
+	
 protected:
 
 	LRESULT callback(UINT uMsg, WPARAM wParam, LPARAM lParam);

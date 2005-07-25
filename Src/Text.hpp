@@ -245,6 +245,9 @@ template<class Ch>
 status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len = -1);
 
 template<class Ch>
+Ch* StrAlloc(ulong_t length);
+
+template<class Ch>
 void strip(std::basic_string<Ch>& str);
 
 #ifdef DEBUG

@@ -22,7 +22,7 @@ protected:
 
     bool handleEvent(EventType& event);
     
-    virtual void resize(const ArsRectangle&);
+    virtual void resize(const Rect&);
 
     WindowFormatType windowFormat() const;
     

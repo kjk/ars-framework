@@ -1,5 +1,4 @@
 #include <WindowsCE/Dialog.hpp>
-#include <aygshell.h>
 
 BOOL CALLBACK Dialog::dialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -22,6 +21,21 @@ BOOL CALLBACK Dialog::defaultDialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wPar
 	return FALSE;
 }
 
+Dialog::Dialog(AutoDeleteOption ad, bool inputDialog, DWORD initDialogFlags):
+	Window(ad, inputDialog)
+#ifdef SHELL_AYGSHELL
+	, initDialogFlags_(initDialogFlags)
+#endif
+{}
+
+Dialog::Dialog(HWND wnd, AutoDeleteOption ad, bool inputDialog):
+	Window(wnd, ad, inputDialog)
+#ifdef SHELL_AYGSHELL
+	, initDialogFlags_(0) // This really doesn't matter - when attaching to existing HWND, WM_INITDLG has already been sent.
+#endif
+{
+}
+
 bool Dialog::create(HINSTANCE inst, LPCTSTR resource_id, HWND parent)
 {
 	HWND handle = CreateDialogParam(inst, resource_id, parent, dialogCallback, reinterpret_cast<LPARAM>(this));
@@ -39,7 +53,7 @@ bool Dialog::handleInitDialog(HWND focus_widget_handle, long init_param)
 	SHINITDLGINFO idi;
 	idi.dwMask = SHIDIM_FLAGS;
 	idi.hDlg = handle();
-	idi.dwFlags = SHIDIF_DONEBUTTON | SHIDIF_SIPDOWN | SHIDIF_SIZEDLGFULLSCREEN;
+	idi.dwFlags = initDialogFlags_;
 	SHInitDialog(&idi);
 #endif	
 	return 0;

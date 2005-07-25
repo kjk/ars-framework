@@ -44,12 +44,12 @@ void FormGadget::drawProxy()
     if (form()->application().runningOnTreo600() && hasFocus())
         drawFocusRing();
     Graphics graphics(WinGetDrawWindow()); // form()->windowHandle()
-    ArsRectangle rect;
+    Rect rect;
     bounds(rect);
     bool db=doubleBuffer_;
     if (db)
     {
-        ArsRectangle formBounds;
+        Rect formBounds;
         form()->bounds(formBounds);
         Err error;
         WinHandle wh = WinCreateOffscreenWindow(formBounds.width(), formBounds.height(), nativeFormat, &error);
@@ -59,7 +59,7 @@ void FormGadget::drawProxy()
                 Graphics offscreen(wh);
                 ActivateGraphics active(offscreen);
                 handleDraw(graphics);
-                offscreen.copyArea(rect, graphics, rect.topLeft);
+                offscreen.copyArea(rect, graphics, rect.topLeft());
             }
             WinDeleteWindow(wh, false);
         }

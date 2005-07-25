@@ -30,17 +30,17 @@ public:
     
     /**
      * Fills specified rectangle with current background color.
-     * @param rect @c ArsRectangle to erase.
+     * @param rect @c Rect to erase.
      */        
-    void erase(const ArsRectangle& rect);
+    void erase(const Rect& rect);
 
     /**
      * Copies specified rectangular area (bitmap) from this @c Graphics system into @c targetSystem.
      * @param sourceArea bounds of source bitmap in this @c Graphics system.
      */         
-    void copyArea(const ArsRectangle& sourceArea, Graphics& targetSystem, const Point& targetTopLeft);
+    void copyArea(const Rect& sourceArea, Graphics& targetSystem, const Point& targetTopLeft);
     
-    void copyArea(const ArsRectangle& sourceArea, const Point& targetTopLeft)
+    void copyArea(const Rect& sourceArea, const Point& targetTopLeft)
     {copyArea(sourceArea, *this, targetTopLeft);}
 
     void drawLine(Coord_t x0, Coord_t y0, Coord_t x1, Coord_t y1)
@@ -119,7 +119,7 @@ public:
         RectangleType original_;
     public:
         
-        ClipRectangleSetter(Graphics& graphics, const ArsRectangle& rectangle);
+        ClipRectangleSetter(Graphics& graphics, const Rect& rectangle);
         
         ~ClipRectangleSetter();
     };
@@ -182,7 +182,7 @@ public:
     void resetClipping()
     {WinResetClip();}
     
-    void setClipping(const ArsRectangle& rect);
+    void setClipping(const Rect& rect);
     
     void drawBitmap(uint_t bitmapId, const Point& topLeft);
 
@@ -190,15 +190,15 @@ public:
 
     void stripToWidthWithEllipsis(String& textInOut, ulong_t& lengthInOut, uint_t& widthInOut, bool fFullWords = true);
 
-    void drawTextInBounds(const String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter = true);
+    void drawTextInBounds(const String& text, const Rect& itemBounds, int totalLines, bool allowCenter = true);
 
 private:
-    void drawTextInBoundsInternal(const ArsLexis::String& text, const ArsRectangle& itemBounds, int totalLines, bool allowCenter, int lines);
+    void drawTextInBoundsInternal(const ArsLexis::String& text, const Rect& itemBounds, int totalLines, bool allowCenter, int lines);
 
     friend class ScalingSetter;
     
 public:
-    void invertRectangle(const ArsRectangle& rect); 
+    void invertRectangle(const Rect& rect); 
 
     void applyStyle(const DefinitionStyle* style, bool isHyperlink);
 };

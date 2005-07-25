@@ -21,7 +21,7 @@ void DestroyElements(Definition::Elements_t& elems)
     elems.clear();
 }
 
-Definition::HotSpot::HotSpot(const ArsRectangle& rect, DefinitionElement& element):
+Definition::HotSpot::HotSpot(const Rect& rect, DefinitionElement& element):
     element_(&element)
 {
     rectangles_.push_back(rect);
@@ -42,13 +42,13 @@ Definition::HotSpot::~HotSpot()
         element_->invalidateHotSpot();
 }
 
-void Definition::HotSpot::move(const Point& delta, const ArsRectangle& validArea)
+void Definition::HotSpot::move(const Point& delta, const Rect& validArea)
 {
     Rectangles_t::iterator end = rectangles_.end();
     Rectangles_t::iterator it = rectangles_.begin();
     while (it != end)
     {
-        ArsRectangle& rect=*it;
+        Rect& rect=*it;
         rect += delta;
         Rectangles_t::iterator next = it;
         ++next;
@@ -61,7 +61,7 @@ void Definition::HotSpot::move(const Point& delta, const ArsRectangle& validArea
 namespace {
 
     inline 
-        static bool operator<(const ArsRectangle& rect1, const ArsRectangle& rect2) {
+        static bool operator<(const Rect& rect1, const Rect& rect2) {
          if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
             return true;
         else
@@ -70,7 +70,7 @@ namespace {
     
 }
 
-void Definition::HotSpot::addRectangle(const ArsRectangle& rect)
+void Definition::HotSpot::addRectangle(const Rect& rect)
 {
     rectangles_.insert(std::lower_bound(rectangles_.begin(), rectangles_.end(), rect), rect);
 }
@@ -86,31 +86,31 @@ bool Definition::HotSpot::center(Point& point) const
 {
     if (rectangles_.empty())
         return false;
-    ArsRectangle r;
-    r.topLeft.x = INT_MAX;
-    r.topLeft.y = INT_MAX;
+    Rect r;
+    r.x() = INT_MAX;
+    r.y() = INT_MAX;
     Rectangles_t::const_iterator end = rectangles_.end();
     Rectangles_t::const_iterator it = rectangles_.begin();
     while (it != end)
     {
-        const ArsRectangle& o = *it++;
-        if (o.topLeft.x < r.topLeft.x)
-            r.topLeft.x = o.topLeft.x;
-        if (o.topLeft.y < r.topLeft.y)
-            r.topLeft.y = o.topLeft.y;
-        int d = o.topLeft.x + o.extent.x;
-        if (d > r.topLeft.x + r.extent.x)
-            r.extent.x = d - r.topLeft.x;
-        d = o.topLeft.y + o.extent.y;
-        if (d > r.topLeft.y + r.extent.y)
-            r.extent.y = d - r.topLeft.y;
+        const Rect& o = *it++;
+        if (o.x() < r.x())
+            r.x() = o.x();
+        if (o.y() < r.y())
+            r.y() = o.y();
+        int d = o.x() + o.width();
+        if (d > r.x() + r.width())
+            r.setWidth(d - r.x());
+        d = o.y() + o.height();
+        if (d > r.y() + r.height())
+            r.setHeight(d - r.y());
     }
-    if (INT_MAX == r.topLeft.x)
-        r.topLeft.x = 0;
-    if (INT_MAX == r.topLeft.y)
-        r.topLeft.y = 0;
-    point.x = r.topLeft.x + r.extent.x / 2;
-    point.y = r.topLeft.y + r.extent.y / 2;
+    if (INT_MAX == r.x())
+        r.x() = 0;
+    if (INT_MAX == r.y())
+        r.y() = 0;
+    point.x = r.x() + r.width() / 2;
+    point.y = r.y() + r.height() / 2;
     return true;
 }
 
@@ -305,7 +305,7 @@ void Definition::scroll(Graphics& graphics, int delta)
             unionHeight += lines_[index].height;
         }
 
-        ArsRectangle unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
+        Rect unionRect(bounds_.x(), bounds_.y()+unionTop, bounds_.width(), unionHeight);
         Point pointDelta;
 
         Graphics::State_t state = graphics.pushState();
@@ -316,8 +316,8 @@ void Definition::scroll(Graphics& graphics, int delta)
         if (delta>0) 
         {
             pointDelta.y =- int(unionTop);
-            graphics.copyArea(unionRect, bounds_.topLeft);
-            graphics.erase(ArsRectangle(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
+            graphics.copyArea(unionRect, bounds_.topLeft());
+            graphics.erase(Rect(bounds_.x(), bounds_.y() + unionHeight, bounds_.width(), bounds_.height() - unionHeight));
             moveHotSpots(pointDelta);
             renderLineRange(graphics, lines_.begin()+unionLast, lines_.begin()+newLastLine, unionHeight, elements_.end(), elements_.end());
         }
@@ -329,8 +329,8 @@ void Definition::scroll(Graphics& graphics, int delta)
                 pointDelta.y += lines_[index].height;
             }
                 
-            graphics.copyArea(unionRect, bounds_.topLeft + pointDelta);
-            graphics.erase(ArsRectangle(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
+            graphics.copyArea(unionRect, bounds_.topLeft() + pointDelta);
+            graphics.erase(Rect(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
             
             moveHotSpots(pointDelta);
             renderLineRange(graphics, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
@@ -439,7 +439,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
         DefinitionElement::justifyLeft;
 
     // if (elements_.end() == begin)
-    renderContext.graphics.erase(ArsRectangle(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
+    renderContext.graphics.erase(Rect(bounds_.x(), renderContext.top, bounds_.width(), renderContext.usedHeight));
 
     while (!lineFinished && current != last)
     {
@@ -603,7 +603,7 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
     calculateVisibleRange(firstLine_, lastLine_);
 }
 
-void Definition::calculateLayout(Graphics& graphics, const ArsRectangle& bounds)
+void Definition::calculateLayout(Graphics& graphics, const Rect& bounds)
 {
     ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
     uint_t renderingProgress=0;
@@ -618,7 +618,7 @@ void Definition::calculateLayout(Graphics& graphics, const ArsRectangle& bounds)
     calculateLayout(graphics, firstElement, renderingProgress);
  }
 
-void Definition::doRender(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate)
+void Definition::doRender(Graphics& graphics, const Rect& bounds, bool forceRecalculate)
 {
     if (bounds.width() != bounds_.width() || forceRecalculate || lines_.empty())
         calculateLayout(graphics, bounds);
@@ -649,16 +649,15 @@ void Definition::doRender(Graphics& graphics, const ArsRectangle& bounds, bool f
     renderLayout(graphics, elements_.end(), elements_.end());
 }
 
-status_t Definition::render(Graphics& graphics, const ArsRectangle& bounds, bool forceRecalculate)
+status_t Definition::render(Graphics& graphics, const Rect& bounds, bool forceRecalculate)
 {
-    status_t err = errNone;
     ErrTry {
         doRender(graphics, bounds, forceRecalculate);
     }
     ErrCatch(ex) {
-        err = ex;
+        return ex;
     } ErrEndCatch
-    return err;
+    return errNone;
 }
  
 void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end)
@@ -673,7 +672,7 @@ void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, Eleme
     for (uint_t i=firstLine_; i<lastLine_; ++i)
         rangeHeight+=lines_[i].height;
     if (elements_.end() == begin)
-        graphics.erase(ArsRectangle(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
+        graphics.erase(Rect(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
         
     graphics.popState(state);
 }

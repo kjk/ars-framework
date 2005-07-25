@@ -9,7 +9,7 @@ class TextElement: public DefinitionElement
 	// TODO: convert to char_t*
     String text_;
 
-    void drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const ArsRectangle& area, bool hyperlink);
+    void drawTextWithSelection(Graphics& graphics, uint_t start, uint_t end, uint_t selectionStart, uint_t selectionEnd, const Rect& area, bool hyperlink);
 
 
 protected:

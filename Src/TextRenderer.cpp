@@ -49,7 +49,7 @@ TextRenderer::~TextRenderer() {
 void TextRenderer::checkDrawingWindow()
 {
     Form* form = this->form();
-    ArsRectangle bounds;
+    Rect bounds;
     form->bounds(bounds);
     if (NULL != drawingWindow_ && drawingWindowBounds_ == bounds)
         return;
@@ -70,7 +70,7 @@ void TextRenderer::checkDrawingWindow()
             Graphics offscreen(offscreenWindow);
             this->bounds(bounds);
 //            bounds.explode(1, 1, -2, -2);
-            formWindow.copyArea(bounds, offscreen, bounds.topLeft);
+            formWindow.copyArea(bounds, offscreen, bounds.topLeft());
         }
     }
     assert(NULL != drawingWindow_);
@@ -80,11 +80,11 @@ void TextRenderer::updateForm(Graphics& graphics)
 {
     if (!drawingWindowIsOffscreen_)
         return;
-    ArsRectangle bounds;
+    Rect bounds;
     this->bounds(bounds);
     //bounds.explode(1, 1, -2, -2);
     Graphics formWindow(form()->windowHandle()); //form()->windowHandle(); WinGetDrawWindow()
-    graphics.copyArea(bounds, formWindow, bounds.topLeft);
+    graphics.copyArea(bounds, formWindow, bounds.topLeft());
 }
 
 void TextRenderer::drawProxy()
@@ -113,19 +113,19 @@ void TextRenderer::drawProxy()
 void TextRenderer::calculateLayout()
 {
     Graphics formWindow(form()->windowHandle()); 
-    ArsRectangle bounds;
+    Rect bounds;
     this->bounds(bounds);
     definition_.calculateLayout(formWindow, bounds);    
 }
 
-void TextRenderer::drawRendererInBounds(Graphics& graphics, const ArsRectangle& bounds)
+void TextRenderer::drawRendererInBounds(Graphics& graphics, const Rect& bounds)
 {
     lastRenderingError_ = definition_.render(graphics, bounds, false);
 }
 
 void TextRenderer::handleDraw(Graphics& graphics)
 {
-    ArsRectangle bounds;
+    Rect bounds;
     this->bounds(bounds);
     bounds.explode(1, 1, -2, -2);
     drawRendererInBounds(graphics, bounds);
@@ -202,7 +202,7 @@ bool TextRenderer::handleMouseEvent(const EventType& event)
 {
     UInt16 tapCount = 0;
     Point p(event.screenX, event.screenY);
-    ArsRectangle bounds;
+    Rect bounds;
     this->bounds(bounds);
     bounds.explode(1, 1, -2, -2);
     if (penUpEvent == event.eType)
@@ -299,12 +299,12 @@ void TextRenderer::handleNilEvent()
         {
         ActivateGraphics activate(graphics);
         definition_.scroll(graphics, i);
-        ArsRectangle bounds;
+        Rect bounds;
         this->bounds(bounds);
         bounds.explode(1, 1, -2, -2);
-        Point p(bounds.topLeft);
+        Point p(bounds.topLeft());
         if (winDown == dir)
-            p += bounds.extent;
+            p += bounds.extent_();
         update = definition_.extendSelection(graphics, p, 0);
         }
         if (update)
@@ -362,14 +362,13 @@ void TextRenderer::drawFocusRing()
 {
     assert(hasFocus());
     assert(form()->application().runningOnTreo600());
-    ArsRectangle rect;
+    Rect rect;
     bounds(rect);
     if (NULL != scrollBar_) 
     {
         rect += scrollBar_->bounds();
     }
-    RectangleType r = toNative(rect);
-    Err error = HsNavDrawFocusRing(*form(), id(), hsNavFocusRingNoExtraInfo, &r, hsNavFocusRingStyleSquare, false);
+    Err error = HsNavDrawFocusRing(*form(), id(), hsNavFocusRingNoExtraInfo, &rect.native(), hsNavFocusRingStyleSquare, false);
     assert(errNone == error);
 }
 

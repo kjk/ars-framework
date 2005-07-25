@@ -69,14 +69,13 @@ DefinitionElement* DefinitionParser::currentParent()
 
 status_t DefinitionParser::pushParent(DefinitionElement* parent)
 {
-    status_t err = errNone;
 	ErrTry {
 		parentsStack_.push_back(parent);
 	}
 	ErrCatch(ex) {
-		err = ex;
+		return ex;
 	} ErrEndCatch
-	return err;
+	return errNone;
 }
 
 void DefinitionParser::popParent()
@@ -813,7 +812,7 @@ status_t DefinitionParser::appendElement(DefinitionElement* element)
 		return memErrNotEnoughSpace;
 		
     element->setParent(currentParent());
-       status_t err = errNone;
+	status_t err = errNone;
 	ErrTry {
 		elements_.push_back(element);
 	}
