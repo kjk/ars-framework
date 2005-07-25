@@ -23,8 +23,16 @@ using std::size_t;
 # include <cassert>
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+#if defined(_MSC_VER)
+#if _MSC_VER >= 1400
 #include <cassert>
+#else
+#ifdef assert
+#undef assert
+#endif
+#include <dbgapi.h>
+#define assert ASSERT
+#endif
 #endif
 
 

@@ -943,10 +943,10 @@ status_t DefinitionParser::parseTextLine()
 status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bool finish)
 {
      volatile status_t err = errNone;
-     ErrTry {
+ 	NarrowString strText;
+    ErrTry {
         bool goOn = false;
         
-		NarrowString strText;
 		err = StringAppend(strText, text, length);
 		if (errNone != err)
 			goto Finish;

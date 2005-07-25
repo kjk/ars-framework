@@ -37,6 +37,10 @@ status_t File::size(Size& val) const
 	return errNone;
 }
 
+#ifndef INVALID_SET_FILE_POINTER
+#define INVALID_SET_FILE_POINTER ((DWORD)-1)
+#endif
+
 status_t File::seek(SeekOffset offset, SeekType type)
 {
 	assert(isOpen());

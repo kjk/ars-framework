@@ -185,8 +185,8 @@ private:
     
     void serializeRecordOut(Record& record);
     
-    template<class T, DataType dt>
-    Serializer& serializeSimpleType(T& value, ulong_t id)
+    template<class T>
+    Serializer& serializeSimpleType(DataType dt, T& value, ulong_t id)
     {
         Record record(dt, id);
         record.value = value;
@@ -195,7 +195,7 @@ private:
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4800)
+#pragma warning(disable: 4800 4244)
 #endif
 
             value = record.value;

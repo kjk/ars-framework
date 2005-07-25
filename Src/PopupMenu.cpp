@@ -487,7 +487,7 @@ long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd, lo
 				mi.fMask = MIIM_STATE;
 				res = GetMenuItemInfo(menu, i, TRUE, &mi);
 				if (!res)
-					goto Finish;
+					continue;
 
 #ifndef MFS_DEFAULT
 // WM 2003 doesn't support MFS_DEFAULT, in this case define it as 0 to ignore this flag
@@ -504,7 +504,7 @@ long PopupMenuShow(const PopupMenuModel& model, const Point& point, HWND wnd, lo
 					
 				res = SetMenuItemInfo(menu, i, TRUE, &mi);
 				if (!res)
-					goto Finish;
+					continue;
 			}
 			
 		}
@@ -534,7 +534,8 @@ void test_PopupMenu(HWND wnd)
 	PopupMenuModel* model = new_nt PopupMenuModel();
 	assert(NULL != model);
 	++pos;
-	assert(model->itemsFromString(hl + pos, l - pos));
+	bool res = model->itemsFromString(hl + pos, l - pos);
+	assert(res);
 	assert(4 == model->itemsCount());
 	long sel = PopupMenuShow(*model, Point(230, 360), wnd, 3);
 	delete model;

@@ -190,53 +190,53 @@ void Serializer::serializeRecord(Record& record)
 
 Serializer& Serializer::operator()(bool& value, ulong_t id)
 {
-    return serializeSimpleType<bool, dtBool>(value, id);    
+    return serializeSimpleType(dtBool, value, id);    
 }
 
 Serializer& Serializer::operator()(signed char& value, ulong_t id)
 {
-    return serializeSimpleType<signed char, dtChar>(value, id);    
+    return serializeSimpleType(dtChar, value, id);    
 }
 
 Serializer& Serializer::operator()(unsigned char& value, ulong_t id)
 {
-    return serializeSimpleType<unsigned char, dtUChar>(value, id);    
+    return serializeSimpleType(dtUChar, value, id);    
 }
 
 Serializer& Serializer::operator()(signed short& value, ulong_t id)
 {
-    return serializeSimpleType<signed short, dtShort>(value, id);    
+    return serializeSimpleType(dtShort, value, id);    
 }
 
 Serializer& Serializer::operator()(unsigned short& value, ulong_t id)
 {
-    return serializeSimpleType<unsigned short, dtUShort>(value, id);    
+    return serializeSimpleType(dtUShort, value, id);    
 }
 
 Serializer& Serializer::operator()(signed int& value, ulong_t id)
 {
-    return serializeSimpleType<signed int, dtInt>(value, id);    
+    return serializeSimpleType(dtInt, value, id);    
 }
 
 Serializer& Serializer::operator()(unsigned int& value, ulong_t id)
 {
-    return serializeSimpleType<unsigned int, dtUInt>(value, id);    
+    return serializeSimpleType(dtUInt, value, id);    
 }
 
 Serializer& Serializer::operator()(signed long& value, ulong_t id)
 {
-    return serializeSimpleType<signed long, dtLong>(value, id);    
+    return serializeSimpleType(dtLong, value, id);    
 }
 
 Serializer& Serializer::operator()(unsigned long& value, ulong_t id)
 {
-    return serializeSimpleType<unsigned long, dtULong>(value, id);    
+    return serializeSimpleType(dtULong, value, id);    
 }
 
 Serializer& Serializer::narrow(char* array, ulong_t size, ulong_t id)
 {
 	ulong_t length = size;
-    serializeSimpleType<ulong_t, dtBlob>(length, id);
+    serializeSimpleType(dtBlob, length, id);
     if (directionOutput == direction_)
         serializeChunk(array, length);
     else if (!skipLastRecord_)
@@ -253,7 +253,7 @@ Serializer& Serializer::narrow(char* array, ulong_t size, ulong_t id)
 Serializer& Serializer::narrow(NarrowString& value, ulong_t id)
 {
 	ulong_t length = value.length();
-    serializeSimpleType<ulong_t, dtBlob>(length, id);
+    serializeSimpleType(dtBlob, length, id);
     if (directionOutput == direction_)
         serializeChunk((char*)value.data(), length);
     else if (!skipLastRecord_)
@@ -271,7 +271,7 @@ Serializer& Serializer::narrowOut(const char* str, long len, ulong_t id)
 		
 	if (-1 == len) len = Len(str);
 	ulong_t length = len;
-    serializeSimpleType<ulong_t, dtBlob>(length, id);
+    serializeSimpleType(dtBlob, length, id);
     serializeChunk((char*)str, length);
 	return *this; 
 }
@@ -282,7 +282,7 @@ Serializer& Serializer::narrowIn(char*& str, ulong_t* len, ulong_t id)
 		return *this;
 		
 	ulong_t length;
-	serializeSimpleType<ulong_t, dtBlob>(length, id);
+	serializeSimpleType(dtBlob, length, id);
 	if (skipLastRecord_)
 		return *this;
 	
@@ -329,7 +329,7 @@ Serializer& Serializer::textOut(const char_t* str, long len, ulong_t id)
 	if (NULL == buffer_)
 		ErrThrow(memErrNotEnoughSpace);
 		
-	serializeSimpleType<ulong_t, dtText>(length, id);
+	serializeSimpleType(dtText, length, id);
 	serializeChunk(buffer_, length);
 	
 	free(buffer_);
@@ -343,7 +343,7 @@ Serializer& Serializer::textIn(char_t*& str, ulong_t* len, ulong_t id)
 		return *this;
 		
 	ulong_t length;
-	serializeSimpleType<ulong_t, dtText>(length, id);
+	serializeSimpleType(dtText, length, id);
 	if (skipLastRecord_)
 		return *this;
 	
@@ -391,7 +391,7 @@ Serializer& Serializer::text(String& value, ulong_t id)
 		return textOut((char_t*)value.data(), value.length(), id);
 
 	ulong_t length;
-	serializeSimpleType<ulong_t, dtText>(length, id);
+	serializeSimpleType(dtText, length, id);
 	if (skipLastRecord_)
 		return *this;
 
@@ -429,7 +429,7 @@ Serializer& Serializer::text(String& value, ulong_t id)
 		return textOut(array, size, id);
 		
 	ulong_t length;
-	serializeSimpleType<ulong_t, dtText>(length, id);
+	serializeSimpleType(dtText, length, id);
 	if (skipLastRecord_)
 		return *this;
 
@@ -473,7 +473,7 @@ Serializer& Serializer::operator()(Serializable& object, ulong_t id)
     if (directionInput == direction_)
     {
         ulong_t storedSchemaVersion = schemaVersion;
-        serializeSimpleType<ulong_t, dtSerializable>(storedSchemaVersion, id);
+        serializeSimpleType(dtSerializable, storedSchemaVersion, id);
         if (skipLastRecord_)
             return *this;
         if (storedSchemaVersion == schemaVersion)
@@ -483,7 +483,7 @@ Serializer& Serializer::operator()(Serializable& object, ulong_t id)
     }
     else
     {
-        serializeSimpleType<ulong_t, dtSerializable>(schemaVersion, id);
+        serializeSimpleType(dtSerializable, schemaVersion, id);
         object.serialize(*this);
     }
     return *this;

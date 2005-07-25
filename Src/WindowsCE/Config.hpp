@@ -22,6 +22,11 @@
 #define WINVER 0x400
 #endif 
 
+namespace DRA {
+	inline long SCALEX(long x) {return x;}
+	inline long SCALEY(long y) {return y;}
+}
+
 #endif // _MSC_VER
 
 #include <ceconfig.h>

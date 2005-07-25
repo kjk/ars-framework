@@ -160,7 +160,7 @@ status_t FieldPayloadProtocolConnection::processLine(ulong_t lineEnd)
     // if ":" is at the end, it means a field with no value
     // TODO: should we detect fields with arguments that shouldn't have arguments
     // and vice-versa?
-    if (separatorPos + 1 == lineEnd)
+    if (ulong_t(separatorPos + 1) == lineEnd)
         return handleField(name, nameLen, NULL, 0);
 
     ulong_t valueStartPos = separatorPos + 1;
