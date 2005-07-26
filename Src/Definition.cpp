@@ -385,7 +385,7 @@ void Definition::elementAtWidth(Graphics& graphics, const LinePosition_t& line, 
     }
     while (end != elem) 
     {
-        if (elem == nextLine->firstElement && progress == nextLine->renderingProgress)
+        if (lines_.end() != nextLine && elem == nextLine->firstElement && progress == nextLine->renderingProgress)
             break;
         ElementPosition_t nextElem = elem;
         ++nextElem;

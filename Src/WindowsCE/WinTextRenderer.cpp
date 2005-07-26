@@ -159,7 +159,6 @@ void TextRenderer::prepareTestData()
 				break;
 			case 4:
 				elems.back()->setHyperlink("test: 1", -1, hyperlinkUrl);
-				elems.push_back(new_nt LineBreakElement());
 				break;
 		}
 	}
@@ -455,7 +454,7 @@ bool TextRenderer::mouseAction(int x, int y, UINT clickCount)
 			scrollDirection_ = scrollDown;
 		else 
 			scrollDirection_ = scrollNone;
-		if (0 == scrollTimer_ && scrollNone != scrollDirection_)
+		if (0 == scrollTimer_ && scrollNone != scrollDirection_ && definition.usesMouseSelection())
 			scrollTimer_ = SetTimer(handle(), timerId, 1000/7, NULL);
 		return true;
 	}
