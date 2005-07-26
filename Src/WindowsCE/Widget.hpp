@@ -6,6 +6,8 @@
 #include <Utility.hpp>
 #include <WindowsCE/Config.hpp>
 
+void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 enum AnchorOption {
 	anchorNone,
 	anchorLeft,

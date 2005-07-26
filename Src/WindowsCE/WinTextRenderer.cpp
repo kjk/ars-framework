@@ -240,6 +240,8 @@ LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_TIMER:
 			return handleTimer(uMsg, wParam, lParam);
 			
+		case WM_GETDLGCODE:
+			return DLGC_WANTARROWS;
 	}
 	return Widget::callback(uMsg, wParam, lParam);
 }
@@ -494,22 +496,27 @@ bool TextRenderer::mouseAction(int x, int y, UINT clickCount)
 LRESULT TextRenderer::handleKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	Definition::NavigatorKey key = Definition::NavigatorKey(-1);
+	int dir = 0;
 	switch (wParam)
 	{
 		case VK_DOWN:
 			key = Definition::navKeyDown;
+			dir = 1;
 			break;
 		
 		case VK_UP:
 			key = Definition::navKeyUp;
+			dir = -1;
 			break;
 		
 		case VK_LEFT:
 			key = Definition::navKeyLeft;
+			dir = -1;
 			break;
 			
 		case VK_RIGHT:
 			key = Definition::navKeyRight;
+			dir = 1;
 			break;
 		
 		case VK_RETURN:
@@ -541,6 +548,12 @@ LRESULT TextRenderer::handleKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		updateScroller(repaintWidget);
 		return messageHandled;
+	}
+	else if (0 != dir)
+	{
+		HWND parent = parentHandle();
+		if (NULL != parent)
+			PostMessage(parent, WM_NEXTDLGCTL, 1 == dir ? 0 : 1, FALSE);
 	}
 	return defaultCallback(msg, wParam, lParam);	
 }

@@ -64,7 +64,6 @@ protected:
 	long handleCreate(const CREATESTRUCT& cs);
 	long handleResize(UINT sizeType, ushort width, ushort height);
 	long handlePaint(HDC dc);
-//	long handleDestroy();
 
 private:
 

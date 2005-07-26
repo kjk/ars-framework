@@ -37,7 +37,7 @@ BOOL ClientToScreen(HWND wnd, RECT& rect)
 
 // #define DEBUG_WIDGET_MESSAGES
 
-static void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const char_t* name = MessageName(uMsg);
 	char_t buffer[12];
