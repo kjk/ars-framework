@@ -9,6 +9,19 @@ class TextRenderer: public Widget {
 	ScrollBar scrollBar_;
 	bool scrollbarVisible_;
 	bool leftButtonDown_;
+	bool redrawFocus_;
+	UINT scrollTimer_;
+	
+	enum ScrollDirection {
+		scrollNone,
+		scrollDown,
+		scrollUp
+	};
+	
+	enum {timerId = 1};
+	
+	ScrollDirection scrollDirection_;
+	
 	HGDIOBJ origBitmap_;
 	
 	void verifyScrollbarVisible(ushort width, ushort height);
@@ -24,12 +37,12 @@ class TextRenderer: public Widget {
 		scrollPosition
 	};
 	
-	void scroll(int units, ScrollType type);
+	bool scroll(int units, ScrollType type, const Point* p = NULL);
 	
-	void paintDefinition(HDC dc, int scroll = 0);
-	
+	void paintDefinition(HDC dc, int scroll = 0, const Point* p = NULL);
+	void definitionBounds(Rect& r);
 	HDC prepareOffscreenDC(HDC orig, Rect& rect);
-	void updateOrigDC(HDC offs, HDC orig, const Rect& rect);
+	void updateOrigDC(HDC offs, HDC orig, Rect& rect);
 	
 public:
 
@@ -54,6 +67,8 @@ private:
 	bool mouseAction(int x, int y, UINT clickCount);
 	
 	LRESULT handleVScroll(UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT handleKeyDown(UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT handleTimer(UINT msg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif
