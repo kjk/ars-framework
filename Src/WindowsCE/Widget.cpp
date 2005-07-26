@@ -233,17 +233,17 @@ ATOM Widget::registerClass(UINT style, HINSTANCE instance, HICON icon, HCURSOR c
 	return RegisterClass(&wc);
 }
 
-bool Widget::create(ATOM widget_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance)
+bool Widget::create(ATOM widget_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle)
 {
-	return create(reinterpret_cast<LPCTSTR>(widget_class), caption, style, x, y, width, height, parent, menu, instance);
+	return create(reinterpret_cast<LPCTSTR>(widget_class), caption, style, x, y, width, height, parent, menu, instance, exStyle);
 }
 
-bool Widget::create(LPCTSTR widget_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance)
+bool Widget::create(LPCTSTR widget_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle)
 {
 	if (valid())
 		detach();
 		
-	HWND handle = CreateWindow(widget_class, caption, style, x, y, width, height, parent, menu, instance, this);
+	HWND handle = CreateWindowEx(exStyle, widget_class, caption, style, x, y, width, height, parent, menu, instance, this);
 	if (NULL == handle)
 		return false;
 	
@@ -319,7 +319,7 @@ bool Widget::attachControl(HWND wnd, UINT id)
 
 void Widget::anchor(AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption r)
 {
-	RECT parentRect;
+	Rect parentRect;
 	HWND parent = parentHandle();
 	if (NULL != parent)
 		GetClientRect(parent, &parentRect);
@@ -330,27 +330,58 @@ void Widget::anchor(AnchorOption horiz, int hMargin, AnchorOption vert, int vMar
 		parentRect.bottom = GetSystemMetrics(SM_CYSCREEN);
 	}
 	
-	RECT rect;
+	Rect rect;
 	bounds(rect);
     if (anchorLeft == horiz) 
 	{
-		rect.right =  RectWidth(parentRect) - hMargin + RectWidth(rect);
-        rect.left = RectWidth(parentRect) - hMargin;
+		rect.right =  parentRect.width() - hMargin + rect.width();
+        rect.left = parentRect.width() - hMargin;
     }
     else if (anchorRight == horiz)
-        rect.right = rect.left + RectWidth(parentRect) - hMargin;
+        rect.right = rect.left + parentRect.width() - hMargin;
     
     if (anchorTop == vert)
 	{
-		rect.bottom = RectHeight(parentRect) - vMargin + RectHeight(rect);
-        rect.top = RectHeight(parentRect) - vMargin;
+		rect.bottom = parentRect.height() - vMargin + rect.height();
+        rect.top = parentRect.height() - vMargin;
 	}
     else if (anchorBottom == vert)
-        rect.bottom = rect.top + RectHeight(parentRect) - vMargin;
+        rect.bottom = rect.top + parentRect.height() - vMargin;
     
 	setBounds(rect, r); 
 }
 
+bool Widget::anchorChild(UINT itemId, AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption repaint) const
+{
+	HWND item = child(itemId);
+	if (NULL == item)
+		return false;
+	
+	Rect parentRect;
+	innerBounds(parentRect);
+	
+	Rect rect;
+	GetWindowRect(item, &rect);
+	ScreenToClient(handle(), rect);
+
+    if (anchorLeft == horiz) 
+	{
+		rect.right =  parentRect.width() - hMargin + rect.width();
+        rect.left = parentRect.width() - hMargin;
+    }
+    else if (anchorRight == horiz)
+        rect.right = rect.left + parentRect.width() - hMargin;
+    
+    if (anchorTop == vert)
+	{
+		rect.bottom = parentRect.height() - vMargin + rect.height();
+        rect.top = parentRect.height() - vMargin;
+	}
+    else if (anchorBottom == vert)
+        rect.bottom = rect.top + parentRect.height() - vMargin;
+
+	return FALSE != MoveWindow(item, rect.left, rect.top, rect.width(), rect.height(), repaint);	
+}
 
 // ------------------------------------------
 // message handlers follow...

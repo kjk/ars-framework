@@ -55,9 +55,9 @@ public:
 
 	static ATOM registerClass(UINT style, HINSTANCE instance, HICON icon, HCURSOR cursor, HBRUSH brush, LPCTSTR class_name);
 
-	bool create(ATOM window_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance);
+	bool create(ATOM window_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle = 0);
 
-	bool create(LPCTSTR window_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance);
+	bool create(LPCTSTR window_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle = 0);
 
 	bool valid() const {return NULL != handle_;}
 
@@ -89,6 +89,10 @@ public:
 	HWND parentHandle() const {return GetParent(handle());}
 	
 	void anchor(AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption = repaintNot);
+	
+	bool anchorChild(UINT itemId, AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption = repaintNot) const;
+	
+	HWND child(UINT itemId) const {return GetDlgItem(handle(), itemId);}
 
 protected:
 

@@ -4,11 +4,12 @@
 #include <WindowsCE/Widget.hpp>
 
 #define WINDOW_CLASS_SCROLLBAR TEXT("SCROLLBAR")
+#define WINDOW_CLASS_EDITBOX TEXT("EDIT")
 
 class ScrollBar: public Widget {
 public:
 
-	ScrollBar(AutoDeleteOption ad = autoDeleteNot);
+	explicit ScrollBar(AutoDeleteOption ad = autoDeleteNot);
 	
 	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance);
 	
@@ -23,6 +24,15 @@ public:
 	//int position() const {return sendMessage(SBM_GETPOS, 0, 0);}
 	//
 	//void range(int& minPos, int& maxPos) const {sendMessage(SBM_GETRANGE, (WPARAM)&minPos, (LPARAM)&maxPos);}
+	
+};
+
+class EditBox: public Widget {
+public:
+	
+	explicit EditBox(AutoDeleteOption ad = autoDeleteNot);
+	
+	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, const char_t* text = NULL, DWORD styleEx = 0);	
 	
 };
 

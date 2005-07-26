@@ -9,7 +9,6 @@ class TextRenderer: public Widget {
 	ScrollBar scrollBar_;
 	bool scrollbarVisible_;
 	bool leftButtonDown_;
-	bool redrawFocus_;
 	UINT scrollTimer_;
 	
 	enum ScrollDirection {
@@ -22,6 +21,7 @@ class TextRenderer: public Widget {
 	
 	ScrollDirection scrollDirection_;
 	
+	HDC offscreenDC_;
 	HGDIOBJ origBitmap_;
 	
 	void verifyScrollbarVisible(ushort width, ushort height);
@@ -42,11 +42,15 @@ class TextRenderer: public Widget {
 	void paintDefinition(HDC dc, int scroll = 0, const Point* p = NULL);
 	void definitionBounds(Rect& r);
 	HDC prepareOffscreenDC(HDC orig, Rect& rect);
-	void updateOrigDC(HDC offs, HDC orig, Rect& rect);
+	void updateOrigDC(HDC orig, Rect& rect);
+	
+	void destroyOffscreenDC();
 	
 public:
 
 	explicit TextRenderer(AutoDeleteOption ad = autoDeleteNot);
+	
+	~TextRenderer();
 
 	bool create(DWORD style, int x, int y, int w, int h, HWND parent, HINSTANCE instance);
 
