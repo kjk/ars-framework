@@ -35,6 +35,13 @@ struct Point: public NativePoint_t {
         y += offset.y;
         return *this;
     }
+   
+	Point& operator -= (const Point& offset)
+	{
+		x -= offset.x;
+		y -= offset.y;
+		return *this;
+	} 
     
     Point operator + (const Point& offset) const
     {
@@ -174,7 +181,11 @@ struct Rect: public RECT {
 
     Rect& operator+= (const Point& offset)
     {
+#ifdef _PALM_OS
         topLeft() += offset;
+#else
+		set(x() + offset.x, y() + offset.y, width(), height());
+#endif        
         return *this;
     }
     

@@ -14,7 +14,9 @@ static ATOM TextRendererClass(HINSTANCE instance)
 
 TextRenderer::TextRenderer(AutoDeleteOption ad):
 	Widget(ad),
-	scrollbarVisible_(false)
+	scrollbarVisible_(false),
+	leftButtonDown_(false),
+	origBitmap_(NULL)
 {}
 
 bool TextRenderer::create(DWORD style, int x, int y, int w, int h, HWND parent, HINSTANCE instance)
@@ -117,10 +119,7 @@ long TextRenderer::handleResize(UINT sizeType, ushort width, ushort height)
 
 long TextRenderer::handlePaint(HDC dc)
 {
-	{
-		Graphics g(dc, Graphics::deleteNot);
-		paintDefinition(g);
-	}
+	paintDefinition(dc);
 	return Widget::handlePaint(dc);
 }
 
@@ -161,7 +160,8 @@ void TextRenderer::prepareTestData()
 				break;
 		}
 	}
-	setModel(model, Definition::ownModel);	
+	setModel(model, Definition::ownModel);
+	definition.setInteractionBehavior(Definition::behavDoubleClickSelection|Definition::behavHyperlinkNavigation|Definition::behavMouseSelection|Definition::behavUpDownScroll|Definition::behavSelectionClickAction);
 }
 	
 LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -170,6 +170,32 @@ LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		case WM_VSCROLL:
 			return handleVScroll(uMsg, wParam, lParam);
+		
+		case WM_LBUTTONDOWN:
+			leftButtonDown_ = true;
+			if (mouseAction(LOWORD(lParam), HIWORD(lParam), 0))
+				return messageHandled;
+			break;
+		
+		case WM_MOUSEMOVE:
+			if (leftButtonDown_ && mouseAction(LOWORD(lParam), HIWORD(lParam), 0))
+				return messageHandled;
+			break;
+		
+		case WM_LBUTTONUP:
+			if (leftButtonDown_)
+			{
+				leftButtonDown_ = false;
+				if (mouseAction(LOWORD(lParam), HIWORD(lParam), 1))
+					return messageHandled;
+			}
+			break;
+		
+		case WM_LBUTTONDBLCLK:
+			if (mouseAction(LOWORD(lParam), HIWORD(lParam), 2))
+				return messageHandled;
+			break;
+			
 	}
 	return Widget::callback(uMsg, wParam, lParam);
 }
@@ -255,57 +281,96 @@ void TextRenderer::scroll(int units, ScrollType type)
 			break;
 	}
 	
-/*	
-	Rect sr;
-	scrollBar_.bounds(sr);
-	int sx = sr.width() + SCALEX(1);
-	
-	Rect r;
-	bounds(r);
-	if (scrollbarVisible_)
-		r.setWidth(r.width() - sx);		
- */
- 
-	Graphics g(handle());
 	if (0 != units)
 	{
-		paintDefinition(g, units);
+		HDC dc = GetWindowDC(handle());
+		if (NULL != dc)
+		{
+			paintDefinition(dc, units);
+			ReleaseDC(handle(), dc);
+		}
 		updateScroller(repaintWidget);
 	}
 }
 
-void TextRenderer::paintDefinition(Graphics& gr, int scroll)
+HDC TextRenderer::prepareOffscreenDC(HDC orig, Rect& rect)
 {
-	Rect sr;
-	scrollBar_.bounds(sr);
-	int sx = sr.width() + SCALEX(1);
+	bounds(rect);
+	if (scrollbarVisible_)
+	{
+		Rect sr;
+		scrollBar_.bounds(sr);
+		int sx = sr.width() + SCALEX(1);
+		rect.setWidth(rect.width() - sx);
+	}
+	
+	HDC dc = 	CreateCompatibleDC(orig);
+	if (NULL == dc)
+		return NULL;
+	
+    HBITMAP bitmap = CreateCompatibleBitmap(orig, rect.width(), rect.height());
+	if (NULL == bitmap)
+	{
+		DeleteDC(dc);
+		return NULL;
+	} 
+	
+	assert(NULL == origBitmap_);
+	origBitmap_ = SelectObject(dc, bitmap);
+	rect.set(0, 0, rect.width(), rect.height());
+	
+	BitBlt(dc, 0, 0, rect.width(), rect.height(), orig, 0, 0, SRCCOPY);
+	return dc;
+}
+
+void TextRenderer::updateOrigDC(HDC offs, HDC orig, const Rect& rect)
+{
+	assert(NULL != offs);
+	assert(NULL != orig);
+	
+	BitBlt(orig, 0, 0, rect.width(), rect.height(), offs, 0, 0, SRCCOPY);
+	DeleteObject(SelectObject(offs, origBitmap_));
+	origBitmap_ = NULL;	
+}
+
+
+void TextRenderer::paintDefinition(HDC orig, int scroll)
+{
 	
 	Rect r;
-	bounds(r);
-	if (scrollbarVisible_)
-		r.setWidth(r.width() - sx);
-	
-	
-	HDC dc = 	CreateCompatibleDC(gr.handle());
+	HDC dc = prepareOffscreenDC(orig, r);
 	if (NULL == dc)
 		return;
-	
+		
 	Graphics g(dc);
-    HBITMAP bitmap = CreateCompatibleBitmap(gr.handle(), r.width(), r.height());
-	if (NULL == bitmap)
-		return;
-
-    HBITMAP oldBitmap=(HBITMAP)SelectObject(dc, bitmap);
-    
-	Rect rr(0, 0, r.width(), r.height());
-    gr.copyArea(r, g, rr.topLeft());
-
 	if (0 == scroll)		
-		definition.render(g, rr);
+		definition.render(g, r);
 	else
 		definition.scroll(g, scroll);
 	
-	g.copyArea(rr, gr, r.topLeft());
-    SelectObject(dc, oldBitmap);
-    DeleteObject(bitmap);
+	updateOrigDC(dc, orig, r);
+}
+
+bool TextRenderer::mouseAction(int x, int y, UINT clickCount)
+{
+	if (definition.empty())
+		return false;
+		
+	HDC orig = GetWindowDC(handle());
+	if (NULL == orig)
+		return false;
+
+	Point p(x, y);
+	Rect r;
+	
+	bool res = false;
+	HDC offs = prepareOffscreenDC(orig, r);
+	if (NULL != offs)
+	{
+		Graphics g(offs);
+		res = definition.extendSelection(g, p, clickCount);
+		updateOrigDC(offs, orig, r);
+	}
+	ReleaseDC(handle(), orig);
+	return res;
 }

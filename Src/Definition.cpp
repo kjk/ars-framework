@@ -814,6 +814,7 @@ void Definition::extendSelectionToFullHyperlink()
 
 bool Definition::trackHyperlinkHighlight(Graphics& graphics, const Point& point, uint_t clickCount) 
 {
+Again:
     if (trackingSelection_ && !selectionIsHyperlink_)
         return false;
     else if (trackingSelection_ && selectionIsHyperlink_) 
@@ -828,6 +829,11 @@ bool Definition::trackHyperlinkHighlight(Graphics& graphics, const Point& point,
                 selectionStartProgress_ = LayoutContext::progressCompleted;
                 selectionStartElement_ = selectionEndElement_;
                 renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+
+                inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+                trackingSelection_ = false;
+                selectionIsHyperlink_ = false;
+				goto Again;
             }
             else if (insideHyperlink && selectionStartProgress_ == selectionEndProgress_)
             {
