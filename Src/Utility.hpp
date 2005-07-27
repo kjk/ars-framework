@@ -21,13 +21,6 @@ template<>
 struct StaticAssert<true> {
 };
 
-template<class To, class From>
-inline To safe_reinterpret_cast(From from)
-{
-    static ArsLexis::StaticAssert<sizeof(From)<=sizeof(To)> size_of_From_less_than_size_of_To;
-    return reinterpret_cast<To>(from);
-}
-
 class NonCopyable
 {
     explicit NonCopyable(const NonCopyable&);
@@ -51,5 +44,12 @@ inline void PassOwnership(T*& source, T*& target)
     target = source;
     source = NULL;
 }
+
+template<class T> 
+inline void Zero(T& var) {
+	ZeroMemory(&var, sizeof(var));
+}
+
+
 
 #endif

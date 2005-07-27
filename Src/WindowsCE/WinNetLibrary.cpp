@@ -164,16 +164,16 @@ int NetLibrary::socketOptionSet(NativeSocket_t socket, uint_t level, uint_t  opt
 int NetLibrary::select(uint_t width, NativeFDSet_t* readFDs, NativeFDSet_t *writeFDs, NativeFDSet_t *exceptFDs, long timeout, status_t& error)
 {
     error = errNone;
-    struct timeval strtimeout;
-    strtimeout.tv_usec = timeout;
-    strtimeout.tv_sec = 0;
-    const struct timeval* pstrtimeout=&strtimeout;
-    if (-1==timeout)
-        pstrtimeout=NULL;
-    int res = ::select(width, readFDs, writeFDs, exceptFDs, pstrtimeout); 
+    timeval to;
+    to.tv_usec = timeout * 1000;
+    to.tv_sec = 0;
+    const timeval* pto = &to;
+    if (evtWaitForever == timeout)
+        pto = NULL;
+    int res = ::select(width, readFDs, writeFDs, exceptFDs, pto); 
     if (res == SOCKET_ERROR)
     {
-        error=WSAGetLastError();
+        error = WSAGetLastError();
         return -1;            
     }
     return res;

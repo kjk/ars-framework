@@ -118,6 +118,9 @@ struct Rect: public RECT {
     void setExtent(Coord_t w, Coord_t h) {setWidth(w); setHeight(h);}
 #endif
 
+    Coord_t dx() const {return width();}
+    Coord_t dy() const {return height();}
+
     Rect() {set(0, 0, 0, 0);}
     
     Rect(const Point& tl, const Point& ext) {set(tl.x, tl.y, ext.x, ext.y);}

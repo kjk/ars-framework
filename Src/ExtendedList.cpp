@@ -34,7 +34,7 @@ static void saturate(RGBColorType& rgb, int level)
     saturate(rgb.b, level);
 }
 
-static void drawBevel(Graphics& graphics, ArsRectangle& bounds, const RGBColorType& color, bool doubleDensity)
+static void drawBevel(Graphics& graphics, Rect& bounds, const RGBColorType& color, bool doubleDensity)
 {
     RGBColorType oldColor;
     RGBColorType tmp=color;
@@ -77,7 +77,7 @@ static void drawBevel(Graphics& graphics, ArsRectangle& bounds, const RGBColorTy
     WinSetBackColorRGB(&color, &oldColor);
     if (doubleDensity)
     {
-        ArsRectangle fore(x0+2, y0+2, x1-x0-3, y1-y0-4);
+        Rect fore(x0+2, y0+2, x1-x0-3, y1-y0-4);
         graphics.erase(fore);
         WinSetCoordinateSystem(origCoordinateSystem);
         bounds.explode(1, 1, -2, -2);
@@ -136,7 +136,7 @@ ExtendedList::ExtendedList(Form& form, UInt16 id):
 ExtendedList::~ExtendedList()
 {}
 
-void ExtendedList::drawItem(Graphics& graphics, const ArsRectangle& bounds, uint_t item, bool selected)
+void ExtendedList::drawItem(Graphics& graphics, const Rect& bounds, uint_t item, bool selected)
 {
     assert(item<itemsCount());
     assert(0!=itemRenderer_);
@@ -150,20 +150,20 @@ void ExtendedList::drawItem(Graphics& graphics, const ArsRectangle& bounds, uint
     }
     else
         WinSetBackColorRGB(&itemBackgroundColor, &oldColor);
-    ArsRectangle rect=bounds;
+    Rect rect=bounds;
     drawItemBackground(graphics, rect, item, selected);
     itemRenderer_->drawItem(graphics, *this, item, rect);
     WinSetBackColorRGB(&oldColor, 0);
 }
 
-void ExtendedList::drawItemProxy(Graphics& graphics, const ArsRectangle& listBounds, uint_t item, bool showScrollbar)
+void ExtendedList::drawItemProxy(Graphics& graphics, const Rect& listBounds, uint_t item, bool showScrollbar)
 {
     if (noListSelection==topItem_)
         topItem_=0;
     assert(topItem_<=item);
     uint_t offset=item-topItem_;
-    ArsRectangle itemBounds(listBounds.x(), listBounds.y()+offset*itemHeight_, showScrollbar?listBounds.width()-scrollBarWidth_:listBounds.width(), itemHeight_);
-    ArsRectangle clipRectangle(itemBounds);
+    Rect itemBounds(listBounds.x(), listBounds.y()+offset*itemHeight_, showScrollbar?listBounds.width()-scrollBarWidth_:listBounds.width(), itemHeight_);
+    Rect clipRectangle(itemBounds);
     if (clipRectangle.y()+clipRectangle.height()>listBounds.y()+listBounds.height())
     {
         clipRectangle.height()=listBounds.y()+listBounds.height()-clipRectangle.y();
@@ -228,7 +228,7 @@ void ExtendedList::handleDraw(Graphics& graphics)
 
         }
     }
-    ArsRectangle listBounds;
+    Rect listBounds;
     bounds(listBounds);
     drawBackground(graphics, listBounds);
     if (0 == itemsCount)
@@ -373,7 +373,7 @@ void ExtendedList::adjustVisibleItems(RedrawOption ro)
     }
 }
 
-void ExtendedList::drawItemBackground(Graphics& graphics, ArsRectangle& bounds, uint_t, bool selected)
+void ExtendedList::drawItemBackground(Graphics& graphics, Rect& bounds, uint_t, bool selected)
 {
     bounds.explode(0, 0, 0, -1);
     if (selected)
@@ -382,7 +382,7 @@ void ExtendedList::drawItemBackground(Graphics& graphics, ArsRectangle& bounds, 
         drawBevel(graphics, bounds, itemBackgroundColor, screenIsDoubleDensity_);
 }
 
-void ExtendedList::drawBackground(Graphics& graphics, const ArsRectangle& bounds)
+void ExtendedList::drawBackground(Graphics& graphics, const Rect& bounds)
 {
     RGBColorType oldColor;
     WinSetBackColorRGB(&listBackgroundColor, &oldColor);
@@ -390,7 +390,7 @@ void ExtendedList::drawBackground(Graphics& graphics, const ArsRectangle& bounds
     WinSetBackColorRGB(&oldColor, 0);
 }
 
-void ExtendedList::drawScrollBar(Graphics& graphics, const ArsRectangle& bounds)
+void ExtendedList::drawScrollBar(Graphics& graphics, const Rect& bounds)
 {
     const int width = scrollBarWidth_-1;
     const int height = scrollButtonHeight_-1;
@@ -398,8 +398,8 @@ void ExtendedList::drawScrollBar(Graphics& graphics, const ArsRectangle& bounds)
     WinSetBackColorRGB(&itemBackgroundColor, &oldBgColor);
     RGBColorType oldFgColor;
     WinSetForeColorRGB(&foregroundColor, &oldFgColor);
-    ArsRectangle buttonBounds(bounds.x()+1, bounds.y(), width, height);
-    ArsRectangle orig=buttonBounds;
+    Rect buttonBounds(bounds.x()+1, bounds.y(), width, height);
+    Rect orig=buttonBounds;
     drawBevel(graphics, buttonBounds, itemBackgroundColor, screenIsDoubleDensity_);
     const int bmpWidth = 7;
     const int bmpHeight = 4;
@@ -542,10 +542,10 @@ bool ExtendedList::handleEnter(const EventType& event)
     assert(!trackingScrollbar_);
     focus();
     Point penPos(event.screenX, event.screenY);
-    ArsRectangle bounds;
+    Rect bounds;
     this->bounds(bounds);
     assert(bounds && penPos);
-    ArsRectangle itemsBounds=bounds;
+    Rect itemsBounds=bounds;
     itemsBounds.width()-=visibleScrollBarWidth();
     if (itemsBounds && penPos)
         handlePenInItemsList(bounds, penPos, false);
@@ -554,7 +554,7 @@ bool ExtendedList::handleEnter(const EventType& event)
     return true;
 }
 
-void ExtendedList::handlePenInItemsList(const ArsRectangle& bounds, const Point& penPos, bool penUp)
+void ExtendedList::handlePenInItemsList(const Rect& bounds, const Point& penPos, bool penUp)
 {
     uint_t itemsCount=0;
     if (0==(itemsCount=this->itemsCount()))
@@ -568,12 +568,12 @@ void ExtendedList::handlePenInItemsList(const ArsRectangle& bounds, const Point&
         fireItemSelectEvent();
 }
 
-void ExtendedList::handlePenInScrollBar(const ArsRectangle& bounds, const Point& penPos, bool penUp, bool enter)
+void ExtendedList::handlePenInScrollBar(const Rect& bounds, const Point& penPos, bool penUp, bool enter)
 {
     int visibleItems=bounds.height()/itemHeight_;
     int itemsCount=this->itemsCount();
     int height=penPos.y-bounds.y();
-    ArsRectangle scrollBar(bounds.x()+bounds.width()-scrollBarWidth_, bounds.y(), scrollBarWidth_, bounds.height());
+    Rect scrollBar(bounds.x()+bounds.width()-scrollBarWidth_, bounds.y(), scrollBarWidth_, bounds.height());
     if (enter && height>=scrollButtonHeight_ && height<=scrollBar.height()-scrollButtonHeight_)
     {
         trackingScrollbar_=true;
@@ -581,7 +581,7 @@ void ExtendedList::handlePenInScrollBar(const ArsRectangle& bounds, const Point&
     }
     if (trackingScrollbar_)
     {
-        ArsRectangle margin(scrollBar.x(), scrollBar.y()+scrollButtonHeight_, scrollBar.width(), scrollBar.height()-2*scrollButtonHeight_);
+        Rect margin(scrollBar.x(), scrollBar.y()+scrollButtonHeight_, scrollBar.width(), scrollBar.height()-2*scrollButtonHeight_);
         margin.explode(-10, -10, 20, 20);
         int prevTopItem=topItem_;
 //        if ((scrollBar && penPos) && height>=scrollButtonHeight_ && height<=scrollBar.height()-scrollButtonHeight_)
@@ -625,16 +625,16 @@ void ExtendedList::handlePenInScrollBar(const ArsRectangle& bounds, const Point&
 void ExtendedList::handlePenUp(const EventType& event)
 {
     Point penPos(event.screenX, event.screenY);
-    ArsRectangle bounds;
+    Rect bounds;
     this->bounds(bounds);
     int visW=visibleScrollBarWidth();
-    ArsRectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
+    Rect scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
     if (trackingScrollbar_ || (penPos && scrollBounds))
         handlePenInScrollBar(bounds, penPos, true, false);
     else
     {
         scheduledScrollDirection_ = scheduledScrollAbandoned;
-        ArsRectangle itemsBounds=bounds;
+        Rect itemsBounds=bounds;
         itemsBounds.width() -= visW;
         itemsBounds.height() -= (itemsBounds.height() % itemHeight_);
         if (itemsBounds && penPos)
@@ -647,15 +647,15 @@ void ExtendedList::handlePenUp(const EventType& event)
 void ExtendedList::handlePenMove(const EventType& event)
 {
     Point penPos(event.screenX, event.screenY);
-    ArsRectangle bounds;
+    Rect bounds;
     this->bounds(bounds);
     int visW=visibleScrollBarWidth();
-    ArsRectangle scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
+    Rect scrollBounds(bounds.x()+bounds.width()-visW, bounds.y(), visW, bounds.height());
     if (trackingScrollbar_)
         handlePenInScrollBar(bounds, penPos, false, false);
     else
     {
-        ArsRectangle itemsBounds=bounds;
+        Rect itemsBounds=bounds;
         itemsBounds.width() -= visW;
         itemsBounds.height() -= (itemsBounds.height() % itemHeight_);
         if (itemsBounds && penPos)
@@ -745,7 +745,7 @@ BasicStringItemRenderer::BasicStringItemRenderer()
 BasicStringItemRenderer::~BasicStringItemRenderer()
 {}
 
-void BasicStringItemRenderer::drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const ArsRectangle& itemBounds)
+void BasicStringItemRenderer::drawItem(Graphics& graphics, ExtendedList& list, uint_t item, const Rect& itemBounds)
 {
     assert(item<itemsCount());
     String text;
@@ -832,7 +832,7 @@ void ExtendedList::handleFocusChange(FocusChange change)
     if (noListSelection != sel)
     {
         uint_t itemsCount = this->itemsCount();
-        ArsRectangle listBounds;
+        Rect listBounds;
         bounds(listBounds);
         if (noListSelection == topItem_)
             topItem_=0;

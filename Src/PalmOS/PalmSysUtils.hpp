@@ -3,6 +3,16 @@
 
 #include <BaseTypes.hpp>
 
+struct Point;
+
+void sendEvent(uint_t event, const void* data = NULL, uint_t dataSize = 0, bool unique = false, const Point* point = NULL);
+
+template<class EventData>
+void sendEvent(uint_t event, const EventData& data, bool unique = false, const Point* point = NULL)
+{sendEvent(event, &data, sizeof(data), unique, point);}
+
+void processReadyUiEvents();
+
 UInt32 romVersion();
 UInt16 romVersionMajor();
 UInt16 romVersionMinor();

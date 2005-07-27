@@ -217,19 +217,19 @@ status_t SocketSelector::select(long timeout)
 
     status_t error=errNone;
     // Seems NetLibSelect() is really badly screwed in PalmOS - see strange error behaviour in the following if-else...
-    short eventsCount=netLib_.select( width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, error);
+    short eventsCount = netLib_.select( width_+1, &outputFDs_[eventRead], &outputFDs_[eventWrite], &outputFDs_[eventException], timeout, error);
     if (-1 == eventsCount)
     {
         if (!error)
-            error=netErrTimeout;
+            error = netErrTimeout;
         eventsCount_=0;
     }
     else
     {
         assert(!error);
         eventsCount_ = eventsCount;
-        if (0==eventsCount_)
-            error=netErrTimeout;
+        if (0 == eventsCount_)
+            error = netErrTimeout;
     }            
     return error;
 }

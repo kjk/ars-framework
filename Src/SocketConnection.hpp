@@ -59,6 +59,11 @@ public:
 private:
     static bool checkEvent(EventType& event);
 #endif        
+
+#ifdef _WIN32
+	status_t waitForMessage(MSG& msg, long timeout);
+	static bool peekMessage(MSG& msg);
+#endif
 };
 
 class SocketConnection: private NonCopyable

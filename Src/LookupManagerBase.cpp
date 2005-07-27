@@ -40,11 +40,11 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
     graphics.drawText(text, length, p);
     char_t buffer[32];
     bool drawMore=false;
-    if (support.percentProgressDisabled!=support.percentProgress())
+    if (support.percentProgressDisabled != support.percentProgress())
     {
         drawMore=true;
-        assert(support.percentProgress()<=100);
-        length=tprintf(buffer, _T(" %hu%%"), support.percentProgress());
+        assert(support.percentProgress() <= 100);
+        length = tprintf(buffer, _T(" %hu%%"), support.percentProgress());
     }
     else if (0!=support.bytesProgress())
     {
@@ -85,3 +85,34 @@ LookupProgressReportingSupport::LookupProgressReportingSupport():
 LookupProgressReportingSupport::~LookupProgressReportingSupport()
 {}
 
+void LookupProgressReportingSupport::showProgress(Graphics& graphics, const Rect& bounds, bool clearBkg)
+{
+    if (NULL != progressReporter_.get())
+        progressReporter_->showProgress(*this, graphics, bounds, clearBkg);
+}
+
+LookupManagerBase::LookupManagerBase(uint_t firstEvent): 
+	lookupInProgress_(false), 
+	lookupStartedEvent_(firstEvent) 
+{}
+
+void LookupManagerBase::handleLookupEvent(const Event& event)
+{
+	ulong_t id = ExtEventGetID(event);
+	if (lookupStartedEvent_ == id)
+		lookupInProgress_ = true;
+	else if (lookupStartedEvent_ + 2 == id)
+	{
+        lookupInProgress_ = false;
+        setStatusText(_T(""));
+        setPercentProgress(percentProgressDisabled);
+        setBytesProgress(0);
+	}
+}
+
+void LookupManagerBase::abortConnections()
+{
+    lookupInProgress_ = false;
+    connectionManager().abortConnections();
+}
+    

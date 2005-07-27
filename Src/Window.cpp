@@ -15,12 +15,11 @@ Window::~Window()
         dispose();
 }
 
-Err Window::create(const ArsRectangle& bounds, FrameType frame, bool modal, bool focusable)
+Err Window::create(const Rect& bounds, FrameType frame, bool modal, bool focusable)
 {
     assert(!valid());
-    RectangleType rect = toNative(bounds);
     Err error;
-    WinHandle h = WinCreateWindow(&rect, frame, modal, focusable, &error);
+    WinHandle h = WinCreateWindow(&bounds.native(), frame, modal, focusable, &error);
     if (errNone == error)
         handle_ = h;
     return error;

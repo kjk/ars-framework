@@ -42,4 +42,8 @@ void DrawFancyRectangle(HDC hdc, RECT *rect);
  
 bool OpenURL(const char* url);
 
+int Alert(HWND parent, UINT textId, UINT titleId = 0, UINT type = MB_OK|MB_APPLMODAL|MB_ICONERROR);
+
+char_t* LoadString(UINT id, ulong_t* len = NULL);
+
 #endif

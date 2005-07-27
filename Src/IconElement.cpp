@@ -43,7 +43,7 @@ void IconElement::calculateOrRender(LayoutContext& layoutContext, uint_t left, u
             {
                 if (isHyperlink())
                 {
-                    ArsRectangle rect(left, top, totalWidth, totalHeight);
+                    Rect rect(left, top, totalWidth, totalHeight);
                     defineHotSpot(*definition, rect);
                     if (layoutContext.selectionIsHyperlink &&
                         0 == layoutContext.selectionStart &&

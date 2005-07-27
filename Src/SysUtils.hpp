@@ -10,16 +10,6 @@
 # include <WindowsCE/WinSysUtils.hpp>
 #endif
 
-struct Point;
-
-void sendEvent(uint_t event, const void* data = NULL, uint_t dataSize = 0, bool unique = false, const Point* point = NULL);
-
-template<class EventData>
-void sendEvent(uint_t event, const EventData& data, bool unique = false, const Point* point = NULL)
-{sendEvent(event, &data, sizeof(data), unique, point);}
-
-void processReadyUiEvents();
-
 void localizeNumber(char_t* begin, char_t* end);
 
 inline void localizeNumberStrInPlace(char_t *begin)
@@ -39,5 +29,6 @@ inline void delocalizeNumber(String& s) {
     delocalizeNumber(begin, begin + s.length());
 }
 
+void Alert(uint_t alertId);
 
 #endif

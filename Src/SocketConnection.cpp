@@ -278,8 +278,88 @@ status_t SocketConnectionManager::waitForEvent(EventType& event, long timeout)
     EvtGetEvent(&event, timeout);
     return errNone;
 }
-
 #endif    
+
+#ifdef _WIN32
+status_t SocketConnectionManager::waitForMessage(MSG& msg, long timeout)
+{
+    while (true)
+    {    
+		if (0 == connectionsCount_)
+			break;
+			
+        if (peekMessage(msg))
+            return errNone;
+
+        if (manageFinishedConnections() && peekMessage(msg))
+            return errNone;
+
+		if (0 == connectionsCount_)
+			break;
+
+        if (manageUnresolvedConnections() && peekMessage(msg))
+            return errNone;
+
+		if (0 == connectionsCount_)
+			break;
+
+        if (manageUnopenedConnections() && peekMessage(msg))
+            return errNone;
+            
+		if (0 == connectionsCount_)
+			break;
+
+        status_t error=selector_.select(timeout);
+        if (netErrTimeout == error)
+			return handleTimeout(timeout);
+
+        if (errNone != error)
+            return error;
+            
+        for (int i=0; i<connectionsCount_; i++)
+        {
+            status_t connErr=errNone;
+            SocketConnection* conn = connections_[i];
+            assert(SocketConnection::stateOpened==conn->state());
+            if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
+            {
+                unregisterEvents(*conn);
+				conn->resetTimeout();
+                connErr = conn->notifyException();
+            }                        
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
+            {
+                unregisterEvents(*conn);
+				conn->resetTimeout();
+                connErr = conn->notifyWritable();
+            } 
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
+            {
+                unregisterEvents(*conn);
+				conn->resetTimeout();
+                connErr = conn->notifyReadable();
+            }
+            if (connErr)
+            {
+                conn->handleError(connErr);
+                delete conn;
+                connections_[i] = NULL;
+            }
+        }
+        compactConnections();
+    }
+    BOOL res = GetMessage(&msg, NULL, 0, 0);
+	if (-1 == res)
+		return GetLastError();
+	
+    return errNone;
+}
+
+bool SocketConnectionManager::peekMessage(MSG& msg)
+{
+	return FALSE != PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+}
+#endif
 
 void SocketConnectionManager::abortConnections() 
 {

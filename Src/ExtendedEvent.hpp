@@ -57,11 +57,11 @@ const char* ExtEventGetNarrowText(const Event& event, ulong_t* textLen = NULL);
 const void* ExtEventGetData(const Event& event, ulong_t& dataLen);
 const ExtEventObject* ExtEventGetObject(const Event& event);
 
-status_t ExtEventSendEmpty(ulong_t id, const Point* p = NULL);
-status_t ExtEventSendText(ulong_t id, const char_t* text, long len = -1, const Point* p = NULL);
-status_t ExtEventSendNarrow(ulong_t id, const char* text, long len = -1, const Point* p = NULL);
-status_t ExtEventSendBlob(ulong_t id, const void* blob, ulong_t len, const Point* p = NULL);
-status_t ExtEventSendObject(ulong_t id, ExtEventObject* object, const Point* p = NULL);
+status_t ExtEventSendEmpty(ulong_t id, const Point* p = NULL, void* wnd = NULL);
+status_t ExtEventSendText(ulong_t id, const char_t* text, long len = -1, const Point* p = NULL, void* wnd = NULL);
+status_t ExtEventSendNarrow(ulong_t id, const char* text, long len = -1, const Point* p = NULL, void* wnd = NULL);
+status_t ExtEventSendBlob(ulong_t id, const void* blob, ulong_t len, const Point* p = NULL, void* wnd = NULL);
+status_t ExtEventSendObject(ulong_t id, ExtEventObject* object, const Point* p = NULL, void* wnd = NULL);
 
 #ifndef NDEBUG
 void test_ExtEventSend();

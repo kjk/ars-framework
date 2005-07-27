@@ -1,11 +1,14 @@
 #include <StringListPayloadHandler.hpp>
+#include <Text.hpp>
 
 StringListPayloadHandler::~StringListPayloadHandler()
-{}
+{
+	StrArrFree(strings, stringsCount);
+}
 
 status_t StringListPayloadHandler::handleIncrement(const char_t* payload, ulong_t& length, bool finish)
 {
-    status_t error=LineBufferedPayloadHandler::handleIncrement(payload, length, finish);
+    status_t error = LineBufferedPayloadHandler::handleIncrement(payload, length, finish);
     if (finish && errNone == error)
         error = notifyFinished();
     return error;
@@ -13,16 +16,21 @@ status_t StringListPayloadHandler::handleIncrement(const char_t* payload, ulong_
 
 status_t StringListPayloadHandler::handleLine(const char_t* line, ulong_t length)
 {
-    ErrTry {
-        strings.push_back(String(line, length));
-    }
-    ErrCatch (ex) {
-        return ex;
-    } ErrEndCatch
+	char_t* s = StringCopyN(line, length);
+	if (NULL == s)
+		return memErrNotEnoughSpace;
+		
+	if (NULL == StrArrAppendStr(strings, stringsCount, s))
+	{
+		free(s);
+		return memErrNotEnoughSpace;
+	}
     return errNone;
 }
 
-StringListPayloadHandler::StringListPayloadHandler()
+StringListPayloadHandler::StringListPayloadHandler():
+	strings(NULL),
+	stringsCount(0)
 {}
 
 status_t StringListPayloadHandler::notifyFinished()

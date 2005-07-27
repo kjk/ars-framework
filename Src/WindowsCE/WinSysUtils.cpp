@@ -1,5 +1,6 @@
 #include <SysUtils.hpp>
 #include <UTF8_Processor.hpp>
+#include <Text.hpp>
 
 #ifdef WIN32_PLATFORM_WFSP
 #include <tpcshell.h>
@@ -26,7 +27,7 @@ int RectDy(RECT *rect)
 ulong_t random(ulong_t range)
 {
     ulong_t result = Random();
-    return result;
+    return result % range;
 }
 
 /*
@@ -450,3 +451,45 @@ static void DrawRectangle(HDC hdc, RECT *rect)
 }
 */
 
+char_t* LoadString(UINT id, ulong_t* len)
+{
+	ulong_t l = 64;
+	char_t* buffer = StrAlloc<char_t>(l);
+	while (true) 
+	{
+		if (NULL == buffer)
+			return NULL;
+			
+		int ll = LoadString(GetModuleHandle(NULL), id,	buffer, l);
+		if (ulong_t(ll + 1) < l)
+		{
+			if (NULL != len)
+				*len = ll;
+			return buffer;
+		}
+		l *= 2;
+		free(buffer);
+		buffer = StrAlloc<char_t>(l);
+	}
+}
+
+int Alert(HWND parent, UINT textId, UINT titleId, UINT type)
+{
+	char_t* text = LoadString(textId);
+	if (NULL == text)
+		return -1;
+	
+	char_t* title = NULL;
+	if (0 != titleId)
+		title = LoadString(titleId);
+
+	int res = MessageBox(parent, text, title, type);
+	free(title);
+	free(text);
+	return res;
+}
+
+void Alert(uint_t alertId)
+{
+	Alert(NULL, alertId);
+}

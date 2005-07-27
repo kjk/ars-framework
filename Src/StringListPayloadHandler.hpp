@@ -12,9 +12,8 @@ public:
 
     ~StringListPayloadHandler();
     
-    typedef std::vector<String> Strings_t;
-
-    Strings_t strings;    
+	char_t** strings;
+	ulong_t stringsCount;
     
     virtual status_t notifyFinished();
 

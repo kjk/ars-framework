@@ -9,9 +9,9 @@ class HmStyleList: public ExtendedList {
 
 protected:
 
-    void drawItemBackground(Graphics& graphics, ArsRectangle& bounds, uint_t item, bool selected);
+    void drawItemBackground(Graphics& graphics, Rect& bounds, uint_t item, bool selected);
     
-    void drawScrollBar(Graphics& graphics, const ArsRectangle& bounds);
+    void drawScrollBar(Graphics& graphics, const Rect& bounds);
     
 public:
 

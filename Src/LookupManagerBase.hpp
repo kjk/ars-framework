@@ -28,7 +28,7 @@ public:
     
 };
 
-class LookupProgressReportingSupport 
+class LookupProgressReportingSupport: private NonCopyable
 {
     uint_t percentProgress_;
     ulong_t bytesProgress_;
@@ -59,12 +59,8 @@ public:
    void setBytesProgress(ulong_t bytes)
    {bytesProgress_=bytes;}
 
-    void showProgress(Graphics& graphics, const Rect& bounds, bool clearBkg=true)
-    {
-        if (NULL != progressReporter_.get())
-            progressReporter_->showProgress(*this, graphics, bounds, clearBkg);
-    }
-    
+    void showProgress(Graphics& graphics, const Rect& bounds, bool clearBkg = true);
+
     virtual ~LookupProgressReportingSupport();
     
     void setProgressReporter(LookupProgressReporter* reporter)
@@ -72,62 +68,21 @@ public:
     
 };
 
-template<uint_t firstLookupEventNumber, class LookupFinishedData>
-class LookupManagerBase: protected LookupProgressReportingSupport, private NonCopyable {
+class LookupManagerBase: public LookupProgressReportingSupport  {
     
     SocketConnectionManager connectionManager_;
     bool lookupInProgress_;
+	const uint_t lookupStartedEvent_;
     
-protected:
-
-    virtual void handleLookupFinished(const LookupFinishedData* data)
-    {}
-
-    using LookupProgressReportingSupport::setBytesProgress;
-    using LookupProgressReportingSupport::setPercentProgress;
-    using LookupProgressReportingSupport::setStatusText;
-
 public:
 
-    LookupManagerBase(): lookupInProgress_(false) {}
+    LookupManagerBase(uint_t firstEvent);
 
-    using LookupProgressReportingSupport::showProgress;
-    using LookupProgressReportingSupport::setProgressReporter;
-
-    enum LookupEvent {
-        lookupStartedEvent = firstLookupEventNumber,
-        lookupProgressEvent,
-        lookupFinishedEvent,
-        lookupEventCount = lookupFinishedEvent - lookupStartedEvent + 1
-    };
+    bool lookupInProgress() const {return lookupInProgress_;}
     
-    bool lookupInProgress() const
-    {return lookupInProgress_;}
-    
-    virtual void handleLookupEvent(const Event& event)
-    {
-		ulong_t id = ExtEventGetID(event); 
-        switch (id)
-        {
-            case lookupStartedEvent:
-                lookupInProgress_=true;
-                break;
-                
-            case lookupFinishedEvent:
-                lookupInProgress_=false;
-                handleLookupFinished(static_cast<const LookupFinishedData*>(ExtEventGetObject(event)));
-                setStatusText(_T(""));
-                setPercentProgress(percentProgressDisabled);
-                setBytesProgress(0);
-                break;                    
-        }
-    }
+    virtual void handleLookupEvent(const Event& event);
 
-    void abortConnections()
-    {
-        lookupInProgress_=false;
-        connectionManager().abortConnections();
-    }
+    void abortConnections();
     
     SocketConnectionManager& connectionManager()
     {return connectionManager_;}

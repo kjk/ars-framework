@@ -21,7 +21,7 @@ void Table::adjustVisibleItems()
 
 uint_t Table::visibleItems() const
 {
-    ArsRectangle rect;
+    Rect rect;
     bounds(rect);
     uint_t visibleItems = rect.height()/itemHeight();
     return visibleItems;
