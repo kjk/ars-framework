@@ -70,7 +70,7 @@ bool equalsIgnoreCase(const char* s1start, const char* s1end, const char* s2star
             ++s1start;
             ++s2start;
         }
-        else 
+        else
             return false;
     }
     return (s1start == s1end && s2start == s2end);
@@ -86,7 +86,7 @@ bool equalsIgnoreCase(const wchar_t* s1start, const wchar_t* s1end, const wchar_
             ++s1start;
             ++s2start;
         }
-        else 
+        else
             return false;
     }
     return (s1start==s1end && s2start==s2end);
@@ -97,16 +97,16 @@ bool startsWith(const char* text, long len, const char* prefix, long plen)
 {
     if (-1 == len) len = Len(text);
     if (-1 == plen) plen = Len(prefix);
-    
+
     if (plen > len)
         return false;
-    
+
     while (0 != plen)
     {
         if (*text++ != *prefix++)
             return false;
         --plen;
-    }   
+    }
     return true;
 }
 
@@ -115,16 +115,16 @@ bool startsWith(const wchar_t* text, long len, const wchar_t* prefix, long plen)
 {
     if (-1 == len) len =Len(text);
     if (-1 == plen) plen = Len(prefix);
-    
+
     if (plen > len)
         return false;
-    
+
     while (0 != plen)
     {
         if (*text++ != *prefix++)
             return false;
         --plen;
-    }   
+    }
     return true;
 }
 #endif
@@ -133,16 +133,16 @@ bool startsWithIgnoreCase(const char* text, long len, const char* prefix, long p
 {
     if (-1 == len) len = Len(text);
     if (-1 == plen) plen = Len(prefix);
-    
+
     if (plen > len)
         return false;
-    
+
     while (0 != plen)
     {
         if (toLower(*text++) != toLower(*prefix++))
             return false;
         --plen;
-    }   
+    }
     return true;
 }
 
@@ -151,16 +151,16 @@ bool startsWithIgnoreCase(const wchar_t* text, long len, const wchar_t* prefix, 
 {
     if (-1 == len) len =Len(text);
     if (-1 == plen) plen = Len(prefix);
-    
+
     if (plen > len)
         return false;
-    
+
     while (0 != plen)
     {
         if (toLower(*text++) != toLower(*prefix++))
             return false;
         --plen;
-    }   
+    }
     return true;
 }
 #endif
@@ -189,9 +189,9 @@ status_t numericValue(const char* begin, const char* end, long& result, uint_t b
     uint_t   num;
 
     if ( (begin >= end) || (base > MAX_BASE) )
-    {    
+    {
         error=sysErrParamErr;
-        goto OnError;           
+        goto OnError;
     }
 
     if ('-' == *begin)
@@ -200,15 +200,15 @@ status_t numericValue(const char* begin, const char* end, long& result, uint_t b
         if (++begin == end)
         {
             error = sysErrParamErr;
-            goto OnError;           
+            goto OnError;
         }
-    }           
+    }
 
-    while (begin != end) 
+    while (begin != end)
     {
         num = charToNumber(*begin++);
         if (num >= base)
-        {   
+        {
             error = sysErrParamErr;
             break;
         }
@@ -221,7 +221,7 @@ status_t numericValue(const char* begin, const char* end, long& result, uint_t b
     if (!error)
        result = res;
 OnError:
-    return error;    
+    return error;
 }
 
 #ifdef _WIN32_WCE
@@ -233,9 +233,9 @@ status_t numericValue(const wchar_t* begin, const wchar_t* end, long& result, ui
     uint_t   num;
 
     if ( (begin >= end) || (base >  MAX_BASE) )
-    {    
+    {
         error=sysErrParamErr;
-        goto OnError;           
+        goto OnError;
     }
 
     if (L'-' == *begin)
@@ -244,15 +244,15 @@ status_t numericValue(const wchar_t* begin, const wchar_t* end, long& result, ui
         if (++begin == end)
         {
             error = sysErrParamErr;
-            goto OnError;           
+            goto OnError;
         }
-    }           
+    }
 
-    while (begin != end) 
+    while (begin != end)
     {
         num = charToNumber(*begin++);
         if (num >= base)
-        {   
+        {
             error = sysErrParamErr;
             break;
         }
@@ -265,7 +265,7 @@ status_t numericValue(const wchar_t* begin, const wchar_t* end, long& result, ui
     if (!error)
        result = res;
 OnError:
-    return error;    
+    return error;
 }
 #endif
 
@@ -279,7 +279,7 @@ long StrFind(const char* str, long len, char chr)
 
     for (long i = 0; i < len; ++i)
         if (str[i] == chr)
-            return i;    
+            return i;
     return -1;
 }
 
@@ -292,7 +292,7 @@ long StrFind(const wchar_t* str, long len, wchar_t chr)
 
     for (long i = 0; i < len; ++i)
         if (str[i] == chr)
-            return i;    
+            return i;
     return -1;
 }
 #endif
@@ -305,10 +305,10 @@ long StrFind(const char* str, long len, const char* sub, long slen)
         len = Len(str);
     if (-1 == slen)
         slen = Len(sub);
-        
+
     if (slen > len)
         return -1;
-    
+
     long checks = (len - slen) + 1;
     for (long i = 0; i < checks; ++i)
         if (StrEquals(str + i, slen, sub, slen))
@@ -325,10 +325,10 @@ long StrFind(const wchar_t* str, long len, const wchar_t* sub, long slen)
         len = Len(str);
     if (-1 == slen)
         slen = Len(sub);
-        
+
     if (slen > len)
         return -1;
-    
+
     long checks = (len - slen) + 1;
     for (long i = 0; i < checks; ++i)
         if (StrEquals(str + i, slen, sub, slen))
@@ -404,7 +404,7 @@ bool startsWith(const String& text, const String& start, uint_t startOffset)
     }
     return pos==start.length();
 }
-    
+
 bool startsWithIgnoreCase(const String& text, const char_t* start, uint_t startOffset)
 {
     while (startOffset<text.length() && *start)
@@ -469,7 +469,7 @@ inline static void CharToHexString(char* buffer, char chr)
 
 void urlEncode(const NarrowString& in, NarrowString& out)
 {
-	char hexNum[4] = {'%', '\0', '\0', '\0'};
+    char hexNum[4] = {'%', '\0', '\0', '\0'};
 
     const char* begin = in.data();
     const char* end = begin + in.length();
@@ -477,12 +477,12 @@ void urlEncode(const NarrowString& in, NarrowString& out)
     out.reserve(in.length());
 
     while (begin != end)
-    {        
+    {
         char chr=*begin++;
-        if ((chr >= 'a' && chr <= 'z') || 
-            (chr >= 'A' && chr <= 'Z') || 
-            (chr >= '0' && chr <= '9') || 
-		-1 != StrFind("-_.!~*\'()", -1,  chr))
+        if ((chr >= 'a' && chr <= 'z') ||
+            (chr >= 'A' && chr <= 'Z') ||
+            (chr >= '0' && chr <= '9') ||
+        -1 != StrFind("-_.!~*\'()", -1,  chr))
             out.append(1, chr);
         else
         {
@@ -545,13 +545,13 @@ void removeNonDigits(const char_t* in, uint_t len, String& out)
 int formatNumber(long num, char_t* buf, int bufSize)
 {
     char thousand=',';
- 
+
 #if defined(_PALM_OS)
     char dontMind;
     NumberFormatType nf=static_cast<NumberFormatType>(PrefGetPreference(prefNumberFormat));
     LocGetNumberSeparators(nf, &thousand, &dontMind);
-#endif 
-   
+#endif
+
     char_t buffer[32];
     int len = tprintf(buffer, _T("%ld"), num);
     int lenOut = len + ((len-1)/3);  // a thousand separator every 3 chars
@@ -602,7 +602,7 @@ String GetNextLine(const String& str, String::size_type& curPos, bool& fEnd)
     if (String::npos == delimPos)
     {
         lineEndPos = str.length()-1;
-        curPos = str.length();     
+        curPos = str.length();
     }
     else
     {
@@ -705,7 +705,7 @@ std::vector<ArsLexis::String> split(const String& str, const String& spliter)
         {
             vec.push_back(String(str,curPos,spliterPos-curPos));
             curPos = spliterPos + spliter.length();
-        }    
+        }
         else
         {
             vec.push_back(String(str,curPos));
@@ -727,7 +727,7 @@ std::vector<ArsLexis::String> split(const String& str, const char_t* splitter)
         {
             vec.push_back(String(str, curPos, spliterPos-curPos));
             curPos = spliterPos + slen;
-        }    
+        }
         else
         {
             vec.push_back(String(str,curPos));
@@ -742,7 +742,7 @@ char_t **StringListFromStringList(const StringList_t& strList, int& stringCount)
 {
 
     char_t **result;
-    stringCount = strList.size(); 
+    stringCount = strList.size();
     if (0==stringCount)
         return NULL;
 
@@ -759,9 +759,9 @@ char_t **StringListFromStringList(const StringList_t& strList, int& stringCount)
     }
     return result;
 }
-    
+
 // Given a String str returns an array of pointers to strings (a string list).
-// Returns the 
+// Returns the
 char_t **StringListFromString(const String& str, const String& sep, int& stringCount)
 {
     char_t **strList = NULL;
@@ -797,7 +797,7 @@ char_t **StringListFromString(const String& str, const String& sep, int& stringC
             {
                 strLen = sepPos - curPos;
                 curPos = sepPos + sep.length();
-            }    
+            }
             else
             {
                 strLen = str.length() - curPos;
@@ -820,16 +820,16 @@ char_t** StringVectorToCStrArray(const std::vector<String>& vec)
     cstr* arr = new_nt cstr[len];
     if (NULL == arr)
         return NULL;
-    
+
     memzero(arr, sizeof(char_t*) * len);
     for (ulong_t i = 0; i < len; ++i)
         if (NULL == (arr[i] = StringCopyN(vec[i].data(), vec[i].length())))
             goto NoMemory;
-            
+
     return arr;
 NoMemory:
     FreeStringList(arr, len);
-    return NULL;        
+    return NULL;
 }
 */
 
@@ -840,7 +840,7 @@ void FreeStringList(char_t* strList[], int strListLen)
     delete [] strList;
 }
 
-/*   
+/*
 String join(const std::vector<ArsLexis::String>& vec, const char_t* joiner)
 {
     String str;
@@ -889,7 +889,7 @@ void convertFloatStringToUnsignedLong(const ArsLexis::String str, unsigned long&
             assert(0 <= digit && 10 > digit);
             value = 10*value + digit;
             if (wasComma)
-                digitsAfterComma++;        
+                digitsAfterComma++;
         }
         else if (commaSeparator == str[i])
             //if we want to return errors we can do it when more than one comma apears
@@ -910,15 +910,15 @@ ArsLexis::String convertUnsignedLongWithCommaToString(unsigned long value, unsig
     while (comma > 0 && _T('0') == str[str.size()-1])
     {
         comma--;
-        str.erase(str.end()-1);    
-    }        
+        str.erase(str.end()-1);
+    }
     if (comma > 0)
         str.insert(str.begin()+str.size()-comma, commaSymbol);
     //use separators
     while (separator > 0)
     {
         str.insert(str.begin()+separator, kSeparator);
-        separator -= 3;    
+        separator -= 3;
     }
     return str;
 }
@@ -1027,12 +1027,12 @@ Done:
 
     "You can consider fptest.c and the associated routines to be in
     the public domain."
-    
+
  Code edited 2001-01-14 by Ben Combee <bcombee@metrowerks.com> to
  work with CodeWarrior for Palm OS 7 and 8.
 ***********************************************************************/
 
-// Routine to convert a string to a double -- 
+// Routine to convert a string to a double --
 // Allowed input is in fixed notation ddd.fff
 // This does not use MathLib.
 //
@@ -1058,7 +1058,7 @@ bool strToDouble(const char_t* str, double *dbl)
         if (str[i] != _T('.')) {
             if (isDigit(str[i]))
                 result = result * 10.0 + (str[i] - _T('0'));
-            else if (_T(',') != str[i]) 
+            else if (_T(',') != str[i])
                 return false;
         }
         else {
@@ -1187,7 +1187,7 @@ bool StrEmpty(const char_t *str)
 
 ulong_t StrHexlify(const char* in, long inLength, char* out, ulong_t outLength)
 {
-	if (-1 == inLength) inLength = Len(in);
+    if (-1 == inLength) inLength = Len(in);
     assert(ulong_t(inLength * 2) <= outLength);
 
     for (long pos = 0; pos < inLength; pos++)
@@ -1207,11 +1207,11 @@ char_t* StrUnhexlify(const char_t* in, long inLen)
         inLen = tstrlen(in);
     if ((inLen % 2) != 0)
         return NULL;
-    
+
     char_t* buffer = (char_t*)malloc(inLen / 2 + 1);
     if (NULL == buffer)
         return NULL;
-    
+
     char_t* out = buffer;
     while (inLen != 0)
     {
@@ -1219,10 +1219,10 @@ char_t* StrUnhexlify(const char_t* in, long inLen)
         status_t err = numericValue(in, in + 2, val, 16);
         if (errNone != err)
             goto Error;
-        
+
         if (val < 0 || val > 255)
             goto Error;
-        
+
         char c = (unsigned char)val;
         *out++ = c;
         in += 2;
@@ -1232,7 +1232,7 @@ char_t* StrUnhexlify(const char_t* in, long inLen)
     return buffer;
 Error:
     free(buffer);
-    return NULL;    
+    return NULL;
 }
 
 
@@ -1261,7 +1261,7 @@ char_t** StrArrCreate(ulong_t size)
     return arr;
 }
 
-void StrArrFree(char_t**& array, ulong_t size)
+void StrArrFree(char_t**& array, ulong_t& size)
 {
     if (NULL == array)
     {
@@ -1275,22 +1275,24 @@ void StrArrFree(char_t**& array, ulong_t size)
             free(p);
     }
     free(array);
+    size = 0;
     array = NULL;
 }
 
-char_t** StrArrResize(char_t**& array, ulong_t currSize, ulong_t newSize)
+char_t** StrArrResize(char_t**& array, ulong_t& currSize, ulong_t newSize)
 {
     using namespace std;
-    
+
     newSize *= sizeof(char_t*);
     char_t** arr = (char_t**)realloc(array, newSize);
     if (NULL == arr)
         return NULL;
-    
+
     array = arr;
+    currSize = newSize;
     if (newSize <= currSize)
         return arr;
-    
+
     memzero(&arr[currSize], newSize - (sizeof(char_t*) * currSize));
     return arr;
 }
@@ -1300,8 +1302,8 @@ char_t** StrArrAppendStr(char_t**& array, ulong_t& length, char_t* str)
 {
     if (NULL == StrArrResize(array, length, length + 1))
         return NULL;
-        
-    array[length++] = str;
+
+    array[length - 1] = str;
     return array;
 }
 
@@ -1310,7 +1312,7 @@ char_t** StrArrAppendStrCopy(char_t**& array, ulong_t& length, const char_t* str
     char_t* copy = StringCopy2(str);
     if (NULL == copy)
         return NULL;
-    
+
     if (NULL == StrArrAppendStr(array, length, copy))
     {
         free(copy);
@@ -1327,7 +1329,7 @@ void StrArrEraseStr(char_t** array, ulong_t& length, ulong_t index)
         free(p);
     memmove(&array[index], &array[index + 1], sizeof(char_t*) * (length - index - 1));
     array[length - 1] = NULL;
-    StrArrResize(array, length, length - 1);    
+    StrArrResize(array, length, length - 1);
 }
 
 char_t** StrArrInsertStr(char_t**& array, ulong_t& length, ulong_t index, char_t* str)
@@ -1335,9 +1337,8 @@ char_t** StrArrInsertStr(char_t**& array, ulong_t& length, ulong_t index, char_t
     assert(index <= length);
     if (NULL == StrArrResize(array, length, length + 1))
         return NULL;
-    
-    memmove(&array[index + 1], &array[index], sizeof(char_t*) * (length - index));
-    ++length;
+
+    memmove(&array[index + 1], &array[index], sizeof(char_t*) * (length - 1 - index));
     array[index] = str;
     return array;
 }
@@ -1366,10 +1367,10 @@ long StrArrFindPrefix(char_t** array, ulong_t length, char_t nextChar, const cha
         ulong_t l = tstrlen(array[i]);
         if (l < length)
             continue;
-            
+
         if (!StrStartsWith(array[i], l, str, len))
             continue;
-            
+
         if (array[i][len] == nextChar)
             return i;
     }
@@ -1381,117 +1382,117 @@ long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len)
 {
     if (-1 == len)
         len = tstrlen(str);
-        
+
     for (ulong_t i = 0; i < length; ++i)
         if (StrEquals(array[i], str, len))
             return i;
     return -1;
 }
  */
- 
+
 long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len)
 {
     return StrArrFindPrefix(array, length, _T('\0'), str, len);
-}    
+}
 
 
 void* MemAppend(void* target, ulong_t tlen, const void* source, ulong_t slen, ulong_t termlen)
 {
-	using namespace std;
-	void* newLoc = realloc(target, tlen + slen + termlen);
-	if (NULL == newLoc)
-	{
-		free(target);
-		return NULL;
-	}
-	void* t = ((char*)newLoc) + tlen;
-	memmove(t, source, slen);
-	return newLoc;
+    using namespace std;
+    void* newLoc = realloc(target, tlen + slen + termlen);
+    if (NULL == newLoc)
+    {
+        free(target);
+        return NULL;
+    }
+    void* t = ((char*)newLoc) + tlen;
+    memmove(t, source, slen);
+    return newLoc;
 }
 
 void MemErase(void* target, ulong_t tlen, ulong_t efrom, ulong_t elen)
 {
-	assert(efrom + elen <= tlen);
-	void* t = ((char*)target) + efrom;
-	const void* s = ((const char*)target) + efrom + elen;
-	ulong_t len = tlen - efrom - elen;
-	memmove(t, s, len);
+    assert(efrom + elen <= tlen);
+    void* t = ((char*)target) + efrom;
+    const void* s = ((const char*)target) + efrom + elen;
+    ulong_t len = tlen - efrom - elen;
+    memmove(t, s, len);
 }
 
 char* StrAppend(char* target, long tlen, const char* source, long slen)
 {
-	if (-1 == tlen) tlen = Len(target);
-	if (-1 == slen) slen = Len(source);
-	target = (char*)MemAppend(target, tlen, source, slen, sizeof(*target));
-	if (NULL == target)
-		return NULL;
-	target[tlen + slen] = '\0';
-	return target;
+    if (-1 == tlen) tlen = Len(target);
+    if (-1 == slen) slen = Len(source);
+    target = (char*)MemAppend(target, tlen, source, slen, sizeof(*target));
+    if (NULL == target)
+        return NULL;
+    target[tlen + slen] = '\0';
+    return target;
 }
 
 void StrErase(char* target, long tlen, ulong_t efrom, ulong_t elen)
 {
-	if (-1 == tlen) tlen = Len(target);
-	MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
-	if (efrom + elen < ulong_t(tlen))
-		target[tlen - efrom - elen] = '\0';
+    if (-1 == tlen) tlen = Len(target);
+    MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
+    if (efrom + elen < ulong_t(tlen))
+        target[tlen - efrom - elen] = '\0';
 }
 
 #ifdef _WIN32_WCE
 wchar_t* StrAppend(wchar_t* target, long tlen, const wchar_t* source, long slen)
 {
-	if (-1 == tlen) tlen = Len(target);
-	if (-1 == slen) slen = Len(source);
-	target = (wchar_t*)MemAppend(target, sizeof(*target) * tlen, source, sizeof(*target) * slen, sizeof(*target));
-	if (NULL == target)
-		return NULL;
-	target[tlen + slen] = L'\0';
-	return target;
+    if (-1 == tlen) tlen = Len(target);
+    if (-1 == slen) slen = Len(source);
+    target = (wchar_t*)MemAppend(target, sizeof(*target) * tlen, source, sizeof(*target) * slen, sizeof(*target));
+    if (NULL == target)
+        return NULL;
+    target[tlen + slen] = L'\0';
+    return target;
 
 }
 void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen)
 {
-	if (-1 == tlen) tlen = Len(target);
-	MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
-	if (efrom + elen < ulong_t(tlen))
-		target[tlen - efrom - elen] = L'\0';
+    if (-1 == tlen) tlen = Len(target);
+    MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
+    if (efrom + elen < ulong_t(tlen))
+        target[tlen - efrom - elen] = L'\0';
 }
 #endif
 
 template<class Ch>
 void strip(std::basic_string<Ch>& str)
 {
-	const Ch* d = str.data();
-	ulong_t l = str.length();
-	strip(d, l);
-	str.erase(0, d - str.data());
-	str.resize(l);
+    const Ch* d = str.data();
+    ulong_t l = str.length();
+    strip(d, l);
+    str.erase(0, d - str.data());
+    str.resize(l);
 }
 
 template<class Ch>
 status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len)
 {
-	if (-1 == len) len = Len(str);
-	ErrTry {
-		out.append(str, len);
-	} 
-	ErrCatch(ex) {
-		return ex;
-	} ErrEndCatch
-	return errNone;
+    if (-1 == len) len = Len(str);
+    ErrTry {
+        out.append(str, len);
+    }
+    ErrCatch(ex) {
+        return ex;
+    } ErrEndCatch
+    return errNone;
 }
 
 template<class Ch>
 Ch* StrAlloc(ulong_t length)
 {
-	++length;
-	length *= sizeof(Ch);
-	
-	Ch* buf = (Ch*)malloc(length);
-	if (NULL == buf)
-		return buf;
-	memset(buf, 0, length);
-	return buf;
+    ++length;
+    length *= sizeof(Ch);
+
+    Ch* buf = (Ch*)malloc(length);
+    if (NULL == buf)
+        return buf;
+    memset(buf, 0, length);
+    return buf;
 }
 
 
@@ -1543,13 +1544,13 @@ static void test_removeNonDigitsInPlace()
 
 static void test_StrEmpty()
 {
-	/*
+    /*
     assert(true == StrEmpty(NULL));
     assert(true == StrEmpty(_T("")));
     assert(true == StrEmpty(_T(" ")));
     assert(true == StrEmpty(_T("          ")));
     assert(false == StrEmpty(_T(" a")));
-	*/
+    */
 }
 
 static void test_StrFind()

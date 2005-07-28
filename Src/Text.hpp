@@ -196,9 +196,9 @@ char_t* StrUnhexlify(const char_t* in, long inLen = -1);
 
 char_t** StrArrCreate(ulong_t size);
 
-void StrArrFree(char_t**& array, ulong_t size);
+void StrArrFree(char_t**& array, ulong_t& size);
 
-char_t** StrArrResize(char_t**& array, ulong_t currSize, ulong_t newSize);
+char_t** StrArrResize(char_t**& array, ulong_t& currSize, ulong_t newSize);
 
 char_t** StrArrAppendStr(char_t**& array, ulong_t& length, char_t* str);
 
