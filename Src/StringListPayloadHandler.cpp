@@ -16,15 +16,9 @@ status_t StringListPayloadHandler::handleIncrement(const char_t* payload, ulong_
 
 status_t StringListPayloadHandler::handleLine(const char_t* line, ulong_t length)
 {
-	char_t* s = StringCopyN(line, length);
-	if (NULL == s)
+	if (NULL == StrArrAppendStrCopy(strings, stringsCount, line, length))
 		return memErrNotEnoughSpace;
-		
-	if (NULL == StrArrAppendStr(strings, stringsCount, s))
-	{
-		free(s);
-		return memErrNotEnoughSpace;
-	}
+
     return errNone;
 }
 

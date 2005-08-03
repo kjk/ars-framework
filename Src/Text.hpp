@@ -117,6 +117,9 @@ template<class Ch> inline bool equalsIgnoreCase(const std::basic_string<Ch>& s1,
 template<class Ch> inline status_t numericValue(const std::basic_string<Ch>& text, long& result, uint_t base=10)
 {return numericValue(text.data(), text.data() + text.length(), result, base);}
 
+template<class Ch> inline status_t numericValue(const Ch* text, ulong_t len, long& result, uint_t base = 10)
+{return numericValue(text, text + len, result, base);}
+
 void urlEncode(const NarrowString& in, NarrowString& out);
 
 void removeNonDigitsInPlace(char_t *txt);
@@ -202,13 +205,13 @@ char_t** StrArrResize(char_t**& array, ulong_t& currSize, ulong_t newSize);
 
 char_t** StrArrAppendStr(char_t**& array, ulong_t& length, char_t* str);
 
-char_t** StrArrAppendStrCopy(char_t**& array, ulong_t& length, const char_t* str);
+char_t** StrArrAppendStrCopy(char_t**& array, ulong_t& length, const char_t* str, long len = -1);
 
 void StrArrEraseStr(char_t** array, ulong_t& length, ulong_t index);
 
 char_t** StrArrInsertStr(char_t**& array, ulong_t& length, ulong_t index, char_t* str);
 
-char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, const char_t* str);
+char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, const char_t* str, long len = -1);
 
 long StrArrFind(char_t** array, ulong_t length, const char_t* str, long len = -1);
 

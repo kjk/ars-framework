@@ -1307,9 +1307,9 @@ char_t** StrArrAppendStr(char_t**& array, ulong_t& length, char_t* str)
     return array;
 }
 
-char_t** StrArrAppendStrCopy(char_t**& array, ulong_t& length, const char_t* str)
+char_t** StrArrAppendStrCopy(char_t**& array, ulong_t& length, const char_t* str, long len)
 {
-    char_t* copy = StringCopy2(str);
+    char_t* copy = StringCopyN(str, len);
     if (NULL == copy)
         return NULL;
 
@@ -1343,9 +1343,9 @@ char_t** StrArrInsertStr(char_t**& array, ulong_t& length, ulong_t index, char_t
     return array;
 }
 
-char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, const char_t* str)
+char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, const char_t* str, long len)
 {
-    char_t* copy = StringCopy2(str);
+    char_t* copy = StringCopyN(str, len);
     if (NULL == copy)
         return NULL;
 
