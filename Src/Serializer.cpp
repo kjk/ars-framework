@@ -233,7 +233,7 @@ Serializer& Serializer::operator()(unsigned long& value, ulong_t id)
     return serializeSimpleType(dtULong, value, id);    
 }
 
-Serializer& Serializer::narrow(char* array, ulong_t size, ulong_t id)
+Serializer& Serializer::narrowBuffer(char* array, ulong_t size, ulong_t id)
 {
 	ulong_t length = size;
     serializeSimpleType(dtBlob, length, id);
@@ -423,7 +423,7 @@ Serializer& Serializer::text(String& value, ulong_t id)
 	return *this;
 }
 
- Serializer& Serializer::text(char_t* array, ulong_t size, ulong_t id)
+ Serializer& Serializer::textBuffer(char_t* array, ulong_t size, ulong_t id)
 {
 	if (directionOutput == direction_)
 		return textOut(array, size, id);

@@ -9,6 +9,10 @@ bool isTreo600();
 
 bool underSimulator();
 
-ArsLexis::String deviceInfoToken();
+char* deviceInfoToken();
+
+#ifndef NDEBUG
+void test_DeviceInfoToken();
+#endif
 
 #endif

@@ -122,7 +122,7 @@ public:
  */    
 
 	// Serializes passed data as a blob, without any transformation
-	Serializer& narrow(char* array, ulong_t size, ulong_t id = unusedId);
+	Serializer& narrowBuffer(char* array, ulong_t size, ulong_t id = unusedId);
 	
 	Serializer& narrow(NarrowString& value, ulong_t id = unusedId);
 	Serializer& narrowOut(const char* str, long len = -1, ulong_t id = unusedId);
@@ -131,7 +131,7 @@ public:
 	
 	// Converts passed text to UTF-8 encoding prior to serialization
 	Serializer& text(String& value, ulong_t id = unusedId);
-	Serializer& text(char_t* array, ulong_t size, ulong_t = unusedId); 
+	Serializer& textBuffer(char_t* array, ulong_t size, ulong_t = unusedId); 
 	Serializer& textOut(const char_t* str, long len = -1, ulong_t id = unusedId);
 	Serializer& textIn(char_t*& str, ulong_t* len = NULL, ulong_t id = unusedId);
 	Serializer& text(char_t*& str, ulong_t* len = NULL, ulong_t id = unusedId);

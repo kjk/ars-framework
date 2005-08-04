@@ -119,12 +119,12 @@ status_t HistoryCache::serializeIndexIn(Serializer& serialize)
         for (ulong_t i = 0; i < count; ++i)
         {
             IndexEntry& entry = indexEntries_[i];
-            serialize.narrow(entry.url, maxCacheEntryUrlLength + 1);
+            serialize.narrowBuffer(entry.url, maxCacheEntryUrlLength + 1);
 #ifdef DEBUG_URLS
             assert('s' == *entry.url);
 #endif         
-            serialize.narrow(entry.streamName, DataStore::maxStreamNameLength + 1);
-            serialize.text(entry.title, maxCacheEntryTitleLength + 1);
+            serialize.narrowBuffer(entry.streamName, DataStore::maxStreamNameLength + 1);
+            serialize.textBuffer(entry.title, maxCacheEntryTitleLength + 1);
             serialize(entry.onlyLink);
         }
         indexEntriesCount_ = count;

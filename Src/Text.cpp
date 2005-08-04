@@ -1421,6 +1421,7 @@ void MemErase(void* target, ulong_t tlen, ulong_t efrom, ulong_t elen)
 
 char* StrAppend(char* target, long tlen, const char* source, long slen)
 {
+    if (NULL == target) tlen = 0; 
     if (-1 == tlen) tlen = Len(target);
     if (-1 == slen) slen = Len(source);
     target = (char*)MemAppend(target, tlen, source, slen, sizeof(*target));
@@ -1441,6 +1442,7 @@ void StrErase(char* target, long tlen, ulong_t efrom, ulong_t elen)
 #ifdef _WIN32_WCE
 wchar_t* StrAppend(wchar_t* target, long tlen, const wchar_t* source, long slen)
 {
+    if (NULL == target) tlen = 0; 
     if (-1 == tlen) tlen = Len(target);
     if (-1 == slen) slen = Len(source);
     target = (wchar_t*)MemAppend(target, sizeof(*target) * tlen, source, sizeof(*target) * slen, sizeof(*target));

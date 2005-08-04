@@ -493,3 +493,18 @@ void Alert(uint_t alertId)
 {
 	Alert(NULL, alertId);
 }
+
+char_t* GetAppDataPath()
+{
+	char_t buffer[MAX_PATH];
+	BOOL res;
+#ifdef CSIDL_APPDATA
+	res = SHGetSpecialFolderPath(NULL, buffer, CSIDL_APPDATA, TRUE);
+	if (res)
+		return StringCopy(buffer);
+#endif
+	res = SHGetSpecialFolderPath(NULL, buffer, CSIDL_PROGRAM_FILES, TRUE);
+	if (res)
+		return StringCopy(buffer);
+	return StringCopy(TEXT(""));
+}

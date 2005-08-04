@@ -8,87 +8,91 @@
 
 #include <Text.hpp>
 #include <DeviceInfo.hpp>
+#include <UTF8_Processor.hpp>
 
-using ArsLexis::String;
-using ArsLexis::status_t;
-using ArsLexis::char_t;
-
-static status_t getSystemParameter(String& out, UINT uiAction)
+static status_t getSystemParameter(char*& out, UINT uiAction)
 {
-    int      bufChars = 128;
-    int      bufSize;
-    char_t * buffer    = NULL;
-    BOOL     fOk;
-
-    status_t error = ERROR_INSUFFICIENT_BUFFER;
-    while (error == ERROR_INSUFFICIENT_BUFFER)
+	ulong_t size = 64;
+    char_t* buffer    = NULL;
+    status_t err = ERROR_INSUFFICIENT_BUFFER;
+    while (ERROR_INSUFFICIENT_BUFFER == err)
     {
-        bufChars *= 2;
-        bufSize = bufChars*sizeof(char_t);
-        delete [] buffer;
-
-        buffer = new char_t[bufChars];
-        ZeroMemory(buffer,bufSize);
-
-        fOk = SystemParametersInfo(uiAction, bufSize, buffer, 0);
-        if (fOk)
-        {            
-            out.append(buffer);
-            error = errNone;
-        }
+		free(buffer);
+		size *= 2; 
+		buffer = StrAlloc<char_t>(size);
+		
+        if (SystemParametersInfo(uiAction, size, buffer, 0))
+        {
+            err = errNone;
+			break;
+		}
         else
-            error = GetLastError();
+            err = GetLastError();
     }
-
-    delete [] buffer;
-    return error;
+	if (errNone != err)
+	{
+		free(buffer);
+		return err;
+	}
+	out = UTF8_FromNative(buffer);
+	free(buffer);
+	if (NULL == out)
+		return memErrNotEnoughSpace;
+	return errNone;
 }
 
-static status_t getOEMCompanyId(String& out)
+static status_t getOEMCompanyId(char*& out)
 {
-    return getSystemParameter(out,SPI_GETOEMINFO);
+    return getSystemParameter(out, SPI_GETOEMINFO);
 }
 
-static status_t getHotSyncName(String& out)
+static status_t getHotSyncName(char*& out)
 {   
     return sysErrParamErr;
 }
 
-static status_t getPhoneNumber(String& out)
+static status_t getPhoneNumber(char*& out)
 {
-#ifdef WIN32_PLATFORM_WFSP  // smartphone
+    static HINSTANCE mod = LoadLibrary(TEXT("sms"));
+    if (NULL == mod)
+        return sysErrParamErr;
+
+    typedef HRESULT (*SmsGetPhoneNumberProc )(SMS_ADDRESS* const);
+    static SmsGetPhoneNumberProc proc = (SmsGetPhoneNumberProc)GetProcAddress(mod, TEXT("SmsGetPhoneNumber"));
+    if (NULL == proc)
+        return sysErrParamErr;
+           
     SMS_ADDRESS address;
-    ZeroMemory(&address,sizeof(address));
-    HRESULT res = SmsGetPhoneNumber(&address);
-    if (SUCCEEDED(res))
-    {
-        out.append(address.ptsAddress);
-        return errNone;
-    }
-#endif
-    return sysErrParamErr;
+    ZeroMemory(&address, sizeof(address));
+    if (FAILED(proc(&address)))
+		return  sysErrParamErr;
+		
+	out = UTF8_FromNative(address.ptsAddress);
+	if (NULL == out)
+		return memErrNotEnoughSpace;
+	
+	return errNone;
 }
 
-#define DEVID_BUF_SIZE 512
-static status_t getUUID(String& out)
+static status_t getUUID(char*& out)
 { 
-    DWORD dwOutBytes; 
-    char  devIdBuf[DEVID_BUF_SIZE]; 
+    static const ulong_t size = 512;
+    union {
+        DEVICE_ID devId;  
+        char buffer[size];
+    };
+    ZeroMemory(buffer, size);   
 
-    BOOL fOk = ::KernelIoControl(IOCTL_HAL_GET_DEVICEID, 0, 0, devIdBuf, DEVID_BUF_SIZE, &dwOutBytes); 
-    if (!fOk)
-    {
-        // TODO: check if ERROR_INSUFFICIENT_BUFFER == GetLastError() and retry
-        // with a bigger buffer. But it really shouldn't be necessary -
-        // DEVID_BUF_SIZE should be more than enough
-        return sysErrParamErr;
-    }
-
-    // TODO: we really ignore the format of DEVICE_ID struct and treat it as a blob.
-    // Good enough since it's going to be unique anyway
-    String blobEncoded;
-    HexBinEncodeBlob( (unsigned char*)devIdBuf, dwOutBytes, blobEncoded);
-    out.append(blobEncoded);
+    if (!KernelIoControl(IOCTL_HAL_GET_DEVICEID, 0, 0, buffer, size, NULL))
+		return GetLastError();
+		
+	ulong_t sz = devId.dwSize * 2;
+	out = StrAlloc<char>(sz);
+	if (NULL == out)
+		return memErrNotEnoughSpace;
+	
+	sz = StrHexlify(buffer, devId.dwSize, out, sz + 1);
+	assert(sz == devId.dwSize * 2);
     return errNone;
 }
 
@@ -97,66 +101,88 @@ static status_t getUUID(String& out)
 // a given OS and should work on future devices as well.
 // This gives us ability to know what OS is most popular with our users.
 // We could be more specific by also using GetVersionEx()
-static status_t getPlatform(String& out)
+static status_t getPlatform(char*& out)
 {
-    status_t err = getSystemParameter(out,SPI_GETPLATFORMTYPE);
-    if (errNone!=err)
+    status_t err = getSystemParameter(out, SPI_GETPLATFORMTYPE);
+    if (errNone != err)
     {
         // we couldn't get it dynamically (on emulator there's access denied)
         // so we use names based on compile-time detection
 
 #ifdef WIN32_PLATFORM_PSPC
-        out.append(_T("Pocket PC Static"));
+        out = StringCopy("Pocket PC Static");
 #endif
 
 #ifdef WIN32_PLATFORM_WFSP
-       out.append(_T("Smartphone Static"));
+		out = StringCopy("Smartphone Static");
 #endif
-       err = errNone;        
+		
+        if (NULL == out)
+            return memErrNotEnoughSpace;  
     }
 
     OSVERSIONINFO osvi;
     osvi.dwOSVersionInfoSize = sizeof(osvi);
-    BOOL fOk = GetVersionEx(&osvi);
-    if (!fOk)
-    {
-        // GetVersionEx failed. Shouldn't happen but we can safely ignore it
+    if (!GetVersionEx(&osvi))
         return errNone;
-    }
 
-    long osMajor = (int)osvi.dwMajorVersion;
-    long osMinor = (int)osvi.dwMinorVersion;
+    long osMajor = osvi.dwMajorVersion;
+    long osMinor = osvi.dwMinorVersion;
 
-    char_t buffer[32];
-    ZeroMemory(buffer,sizeof(buffer));
-
-    int len = tprintf(buffer, _T(" %ld.%ld"), osMajor, osMinor);
-    out.append(buffer);
+    char buffer[16];
+    StrPrintF(buffer, " %ld.%ld", osMajor, osMinor);
+    out = StrAppend(out, -1, buffer, -1);
+    if (NULL == out)
+        return memErrNotEnoughSpace;
+           
     return errNone;
 }
 
-typedef status_t (TokenGetter)(String&);
+typedef status_t (TokenGetter)(char*&);
 
-static void renderDeviceIdentifierToken(String& out, const char_t* prefix, TokenGetter* getter)
+static status_t renderDeviceIdentifierToken(char*& out, const char* prefix, TokenGetter* getter)
 {
-    String token;
-    status_t error=(*getter)(token);
-    if (!error)
+    char* token = NULL;
+    status_t err = (*getter)(token);
+    if (errNone != err)
+        return err;
+         
+    if (NULL != out)
     {
-        if (!out.empty())
-            out+=':';
-        out.append(prefix);
-        out.append(hexBinEncode(token));
-    }
+        out = StrAppend(out, -1, ":", 1);
+        if (NULL == out)
+            return memErrNotEnoughSpace;
+    } 
+
+    out = StrAppend(out, -1, prefix, -1);
+    if (NULL == out)
+        return memErrNotEnoughSpace;
+        
+    ulong_t len = Len(token);
+    char* coded = StrAlloc<char>(len * 2);
+    if (NULL == coded)
+        return memErrNotEnoughSpace;
+        
+    StrHexlify(token, len, coded, len * 2 + 1);
+    out = StrAppend(out, -1, coded, len * 2);
+    free(coded);
+    return errNone;
 }
 
-String deviceInfoToken()
+char* deviceInfoToken()
 {
-    String out;
-    renderDeviceIdentifierToken(out, _T("SN"), getUUID);
-    renderDeviceIdentifierToken(out, _T("PN"), getPhoneNumber);
-    renderDeviceIdentifierToken(out, _T("PL"), getPlatform);
-    renderDeviceIdentifierToken(out, _T("OC"), getOEMCompanyId);
+    char* out = NULL;
+    renderDeviceIdentifierToken(out, "SN", getUUID);
+    renderDeviceIdentifierToken(out, "PN", getPhoneNumber);
+    renderDeviceIdentifierToken(out, "PL", getPlatform);
+    renderDeviceIdentifierToken(out, "OC", getOEMCompanyId);
     return out;
 }
 
+#ifndef NDEBUG
+void test_DeviceInfoToken()
+{
+    char* p = deviceInfoToken();
+    free(p); 
+}
+#endif
