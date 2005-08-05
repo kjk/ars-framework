@@ -82,8 +82,9 @@ static status_t getUUID(char*& out)
         char buffer[size];
     };
     ZeroMemory(buffer, size);   
-
-    if (!KernelIoControl(IOCTL_HAL_GET_DEVICEID, 0, 0, buffer, size, NULL))
+    
+    DWORD rSize; 
+    if (!KernelIoControl(IOCTL_HAL_GET_DEVICEID, 0, 0, buffer, size, &rSize))
 		return GetLastError();
 		
 	ulong_t sz = devId.dwSize * 2;
