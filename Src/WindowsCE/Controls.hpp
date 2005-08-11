@@ -34,6 +34,30 @@ public:
 	
 	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, const char_t* text = NULL, DWORD styleEx = 0);	
 	
+	bool canUndo() const {return 0 != sendMessage(EM_CANUNDO, 0, 0);}
+	
+	ulong_t charAtPoint(const Point& p, ulong_t* line = NULL) const;
+	
+	void emptyUndoBuffer() {sendMessage(EM_EMPTYUNDOBUFFER, 0, 0);}
+	
+	long lineIndex(long line) const {return sendMessage(EM_LINEINDEX, line, 0);}
+	
+	long lineFromChar(long charIndex) const {return sendMessage(EM_LINEFROMCHAR, charIndex, 0);}
+	
+	ulong_t lineCount() const {return sendMessage(EM_GETLINECOUNT, 0, 0);}
+	
+	ulong_t lineLengthByCharIndex(long charIndex) const {return sendMessage(EM_LINELENGTH, charIndex, 0);}
+	
+	ulong_t lineLength(long line) const {return lineLengthByCharIndex(lineLength(line));}
+	
+	void setReadOnly(bool value) {sendMessage(EM_SETREADONLY, value, 0);}
+	
+	bool readOnly() const {return 0 != (ES_READONLY & style());}
+	
+	bool multiLine() const {return 0 != (ES_MULTILINE & style());}
+	
+	bool password() const {return 0 != (ES_PASSWORD & style());}
+	
 };
 
 #endif

@@ -8,11 +8,7 @@
 #include <sipapi.h>
 
 #include <Text.hpp>
- */
- 
-ulong_t random(ulong_t range);
 
-/*
 void sendEvent(uint_t event, short wph, short wpl, int lp);
 struct EventData {LPARAM lParam; WPARAM wParam;};
 
@@ -47,5 +43,7 @@ int Alert(HWND parent, UINT textId, UINT titleId = 0, UINT type = MB_OK|MB_APPLM
 char_t* LoadString(UINT id, ulong_t* len = NULL);
 
 char_t* GetAppDataPath();
+
+inline HINSTANCE GetInstance() {return GetModuleHandle(NULL);}
 
 #endif

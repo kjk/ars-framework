@@ -61,7 +61,7 @@ public:
 
 	bool destroy() {return FALSE != DestroyWindow(handle());}
 
-	LRESULT sendMessage(UINT message, WPARAM wParam, LPARAM lParam) {return SendMessage(handle(), message, wParam, lParam);}
+	LRESULT sendMessage(UINT message, WPARAM wParam, LPARAM lParam) const {return SendMessage(handle(), message, wParam, lParam);}
 
 	void bounds(RECT& rect) const;
 
@@ -109,6 +109,9 @@ public:
 	bool anchorChild(UINT itemId, AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption = repaintNot) const;
 	
 	HWND child(UINT itemId) const {return GetDlgItem(handle(), itemId);}
+	
+	ulong_t style() const {return GetWindowLong(handle(), GWL_STYLE);}
+	ulong_t styleEx() const {return GetWindowLong(handle(), GWL_EXSTYLE);}
 
 protected:
 

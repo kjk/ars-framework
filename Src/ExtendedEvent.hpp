@@ -49,6 +49,7 @@ void sendTextNEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length
  */
 
 void ExtEventFree(Event& event);
+void ExtEventRepost(Event& event, void* wnd = NULL);
 ExtEventType ExtEventGetType(const Event& event);
 ulong_t ExtEventGetID(const Event& event);
 const Point& ExtEventGetPoint(const Event& event);
