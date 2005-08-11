@@ -214,7 +214,7 @@ static status_t getPhoneNumber(char*& out)
 
 char* deviceInfoToken()
 {
-    char* out;
+    char* out = NULL;
     DeviceInfoTokenRender(out, "SN", getDeviceSerialNumber);
     DeviceInfoTokenRender(out, "HS", getHotSyncName);
     DeviceInfoTokenRender(out, "HN", getHsSerialNum);
