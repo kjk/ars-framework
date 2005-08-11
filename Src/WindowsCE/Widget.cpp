@@ -115,7 +115,7 @@ void Widget::attach(HWND handle)
 	WNDPROC proc = reinterpret_cast<WNDPROC>(GetWindowLong(handle_, GWL_WNDPROC));
 
 	LRESULT res = CallWindowProc(proc, handle, WidgetCallbackMagicMessage(), 0, 0);
-	if (widgetCallbackMagicResponse != res)
+	if (widgetCallbackMagicResponse != res || IsDialog(handle))
 	{
 		WNDPROC newProc = Widget::callback;
 		SetWindowLong(handle_, GWL_WNDPROC, reinterpret_cast<LONG>(newProc));

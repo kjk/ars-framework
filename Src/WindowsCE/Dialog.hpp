@@ -14,14 +14,22 @@ public:
 	Dialog(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false, DWORD initDialogFlags = SHIDIF_DONEBUTTON | SHIDIF_SIPDOWN | SHIDIF_SIZEDLGFULLSCREEN);
 
 	Dialog(HWND wnd, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
+	
+	void setInitFlags(DWORD flags) {initDialogFlags_ = flags;}
 
 	bool create(HINSTANCE instance, LPCTSTR resource_id, HWND parent);
 
-	bool create(HINSTANCE instance, UINT resource_id, HWND parent) {return create(instance, reinterpret_cast<LPCTSTR>(resource_id), parent);}
+	bool create(HINSTANCE instance, UINT resource_id, HWND parent) {return create(instance, MAKEINTRESOURCE(resource_id), parent);}
+	
+	long showModal(HINSTANCE instance, LPCTSTR resource_id, HWND parent);
+	
+	long showModal(HINSTANCE instance, UINT resource_id, HWND parent) {return showModal(instance, MAKEINTRESOURCE(resource_id), parent);}
 
 protected:
 
 	virtual bool handleInitDialog(HWND focus_widget_handle, long init_param);
+	
+	LRESULT callback(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
 

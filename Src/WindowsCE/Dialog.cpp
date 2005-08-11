@@ -2,12 +2,13 @@
 
 BOOL CALLBACK Dialog::dialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	assert(WM_INITDIALOG == uMsg);
-	LRESULT res = Widget::callback(hwndDlg, uMsg, wParam, lParam);
-	SetWindowLong(hwndDlg, DWL_MSGRESULT, res);
-	return TRUE;
+    if (WM_INITDIALOG == uMsg)
+	    return Widget::callback(hwndDlg, uMsg, wParam, lParam);
+    
+    return FALSE; 
 }
 
+/*
 BOOL CALLBACK Dialog::defaultDialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	assert(IsWindow(hwndDlg));
@@ -20,6 +21,8 @@ BOOL CALLBACK Dialog::defaultDialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wPar
 	}
 	return FALSE;
 }
+ */
+ 
 
 Dialog::Dialog(AutoDeleteOption ad, bool inputDialog, DWORD initDialogFlags):
 	Window(ad, inputDialog)
@@ -42,6 +45,11 @@ bool Dialog::create(HINSTANCE inst, LPCTSTR resource_id, HWND parent)
 	return NULL != handle;
 }
 
+long Dialog::showModal(HINSTANCE inst, LPCTSTR resId, HWND parent)
+{
+    return DialogBoxParam(inst, resId, parent, dialogCallback, reinterpret_cast<LPARAM>(this));
+}
+
 BOOL Dialog::rawHandleInitDialog(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	return handleInitDialog(reinterpret_cast<HWND>(wParam), lParam);
@@ -56,5 +64,12 @@ bool Dialog::handleInitDialog(HWND focus_widget_handle, long init_param)
 	idi.dwFlags = initDialogFlags_;
 	SHInitDialog(&idi);
 #endif	
-	return 0;
+	return messageHandled;
+}
+
+LRESULT Dialog::callback(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (WM_INITDIALOG == message)
+        return rawHandleInitDialog(message, wParam, lParam);
+    return Window::callback(message, wParam, lParam); 
 }
