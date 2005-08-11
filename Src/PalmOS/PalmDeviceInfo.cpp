@@ -12,17 +12,17 @@
 #include <Text.hpp>
 #include <DeviceInfo.hpp>
 
-using ArsLexis::String;
-
 // "PL" tag
-static status_t getPlatform(String& out)
+static status_t getPlatform(char*& out)
 {
-    out.append("Palm");
+    out = StringCopy("PalmOS");
+    if (NULL == out)
+        return memErrNotEnoughSpace;
     return errNone;
 }
 
 // "HN" tag - handspring serial number, seems to be unique (at least on Treo 600)
-static status_t getHsSerialNum(String& out)
+static status_t getHsSerialNum(char*& out)
 {
     char  versionStr[hsVersionStringSize];
 
@@ -37,77 +37,87 @@ static status_t getHsSerialNum(String& out)
     if (0==versionStr[0])
         return sysErrNotAllowed;
 
-    out.append((char*)versionStr);
+    out = StringCopy(versionStr);
+    if (NULL == out)
+        return memErrNotEnoughSpace;
     return errNone;
 }
 
 // "SN" tag, doesn't seem to be available (at least not on Treo600). On simulator
 // it's "SERIAL NUMBER"
-static status_t getDeviceSerialNumber(String& out)
+static status_t getDeviceSerialNumber(char*& out)
 {
     unsigned char *  data=NULL;
     UInt16           length=0;
 
     status_t error=SysGetROMToken(0, sysROMTokenSnum, reinterpret_cast<UInt8**>(&data), &length);
-    if (error)
+    if (errNone != error)
         return error;
 
-    if (NULL==data || 0xff==*data || 0x00==*data || 0==length)
+    if (NULL == data || 0xff == *data || 0x00 == *data || 0 == length)
         return sysErrParamErr;
 
-    out.append((char*)data, length);
-    assert(errNone==error);
-    return error;
+    out = StringCopy((const char*)data);
+    if (NULL == out)
+        return memErrNotEnoughSpace;
+    return errNone;
 }
 
 // "OC" tag
-static status_t getOEMCompanyId(String& out)
+static status_t getOEMCompanyId(char*& out)
 {
     UInt32  id;
-    char*   idAsChar;
     status_t error = FtrGet(sysFtrCreator, sysFtrNumOEMCompanyID, &id);
-    if (!error)
-    {
-        idAsChar = (char*)&id;
-        out.append(idAsChar, sizeof(UInt32));
-    }
-    return error;
+    if (errNone != error)
+        return error;
+        
+    const char* idAsChar = (const char*)&id;
+    out = StringCopyN(idAsChar, sizeof(UInt32));
+    if (NULL == out)
+        return memErrNotEnoughSpace;
+
+    return errNone;
 }
 
 // "OD" tag
-static status_t getOEMDeviceId(String& out)
+static status_t getOEMDeviceId(char*& out)
 {
     UInt32  id;
-    char *  idAsChar;
     status_t error=FtrGet(sysFtrCreator, sysFtrNumOEMDeviceID, &id);
-    if (!error)
-    {
-        idAsChar = (char*) &id;
-        out.append(idAsChar, sizeof(UInt32));
-    }
-    return error;
+    if (errNone != error)
+        return error;
+            
+    const char* idAsChar = (const char*)&id;
+    out = StringCopyN(idAsChar, sizeof(UInt32));
+    if (NULL == out)
+        return memErrNotEnoughSpace;
+
+    return errNone;
 }
 
 // "HN" tag
-static status_t getHotSyncName(String& out)
+static status_t getHotSyncName(char*& out)
 {
     char  nameBuffer[dlkUserNameBufSize];
     status_t error=DlkGetSyncInfo(NULL, NULL, NULL, nameBuffer, NULL, NULL);
-    if (!error)
-    {
-        uint_t len=StrLen(nameBuffer);
-        if (len>0)
-            out.append(nameBuffer, len);
-        else
-            error=sysErrParamErr;
-    }
-    return error;
+    if (errNone != error)
+        return error;
+        
+    uint_t len=StrLen(nameBuffer);
+    if (len == 0)
+        return sysErrParamErr;
+        
+    out = StringCopyN(nameBuffer, len);
+    if (NULL == out)
+        return memErrNotEnoughSpace;
+        
+    return errNone;
 }
 
 // "IM" tag for IMEI number, should be unique but apparently the phone
 // needs to be connected to network in order to return this
 // see http://www.mail-archive.com/palm-dev-forum@news.palmos.com/msg76403.html
-static status_t getIMEI(String& out)
+static status_t getIMEI(char*& out)
 {
     bool     libLoaded=false;
     UInt16   refNum=sysInvalidRefNum ;
@@ -129,20 +139,22 @@ static status_t getIMEI(String& out)
 
     assert(sysInvalidRefNum!=refNum);
 
-    char *emei=NULL;
+    char* emei = NULL;
 
-    if (PhnLibCardInfo(refNum,0,0,NULL,&emei))
+    if (PhnLibCardInfo(refNum, 0, 0, NULL, &emei))
     {
         // "00000000" is an invalid IMEI which can happen, according to
         // http://www.mail-archive.com/palm-dev-forum@news.palmos.com/msg76416.html
         // (it's also what simulator returns)
-        if (emei && *emei && (0!=StrCompare(emei,"00000000")))
+        if (emei && *emei && (0 != StrCompare(emei, "00000000")))
         {
-            out.append(emei);
-            MemPtrFree (emei);
+            out = StringCopy(emei);
+            if (NULL == out)
+                error = memErrNotEnoughSpace;
         }
         else
             error = sysErrParamErr;
+        free(emei);
     }
     else
         error = sysErrParamErr;
@@ -155,7 +167,7 @@ static status_t getIMEI(String& out)
 
 
 // "PN" tag, should be unique
-static status_t getPhoneNumber(String& out)
+static status_t getPhoneNumber(char*& out)
 {
     bool libLoaded=false;
     UInt16 refNum=sysInvalidRefNum ;
@@ -172,25 +184,25 @@ static status_t getPhoneNumber(String& out)
     }
     if (!error)
     {
-        assert(sysInvalidRefNum!=refNum);
-        PhnAddressList addressList=NULL;
-        error=PhnLibGetOwnNumbers(refNum, &addressList);
+        assert(sysInvalidRefNum != refNum);
+        PhnAddressList addressList = NULL;
+        error = PhnLibGetOwnNumbers(refNum, &addressList);
         if (!error)
         {
-            PhnAddressHandle address=NULL;
-            error=PhnLibAPGetNth(refNum, addressList, 1, &address);
+            PhnAddressHandle address = NULL;
+            error = PhnLibAPGetNth(refNum, addressList, 1, &address);
             if (!error && address)
             {
-                char* number=PhnLibAPGetField(refNum, address, phnAddrFldPhone);
+                char* number = PhnLibAPGetField(refNum, address, phnAddrFldPhone);
                 MemHandleFree(address);
                 // "00000000000" (eleven '0') is phone number returned by sim
-                if (number && *number && 0!=StrCompare("00000000000",number))
-                {
-                    out.append(number);
-                    MemPtrFree(number);
-                }
+                if (number && *number && 0 != StrCompare("00000000000", number))
+                    out = number;
                 else 
-                    error=sysErrParamErr;
+                {
+                    free(number);
+                    error = sysErrParamErr;
+                }
             }
             MemHandleFree(addressList);
         }
@@ -200,35 +212,17 @@ static status_t getPhoneNumber(String& out)
     return error;
 }
 
-typedef status_t (TokenGetter)(String&);
-
-static void renderDeviceIdentifierToken(String& out, const char* prefix, TokenGetter* getter)
+char* deviceInfoToken()
 {
-    String    token;
-    status_t  error=(*getter)(token);
-    if (error)
-        return;
-
-    if (!out.empty())
-        out+=':';
-        
-    out.append(prefix);
-    String tokenEncoded;
-    HexBinEncode(token, tokenEncoded);
-    out.append(tokenEncoded);
-}
-
-ArsLexis::String deviceInfoToken()
-{
-    ArsLexis::String out;
-    renderDeviceIdentifierToken(out, "SN", getDeviceSerialNumber);
-    renderDeviceIdentifierToken(out, "HS", getHotSyncName);
-    renderDeviceIdentifierToken(out, "HN", getHsSerialNum);
-    renderDeviceIdentifierToken(out, "PN", getPhoneNumber);
-    renderDeviceIdentifierToken(out, "PL", getPlatform);
-    renderDeviceIdentifierToken(out, "OC", getOEMCompanyId);
-    renderDeviceIdentifierToken(out, "OD", getOEMDeviceId);
-    renderDeviceIdentifierToken(out, "IM", getIMEI);    
+    char* out;
+    DeviceInfoTokenRender(out, "SN", getDeviceSerialNumber);
+    DeviceInfoTokenRender(out, "HS", getHotSyncName);
+    DeviceInfoTokenRender(out, "HN", getHsSerialNum);
+    DeviceInfoTokenRender(out, "PN", getPhoneNumber);
+    DeviceInfoTokenRender(out, "PL", getPlatform);
+    DeviceInfoTokenRender(out, "OC", getOEMCompanyId);
+    DeviceInfoTokenRender(out, "OD", getOEMDeviceId);
+    DeviceInfoTokenRender(out, "IM", getIMEI);    
     return out;
 }
 

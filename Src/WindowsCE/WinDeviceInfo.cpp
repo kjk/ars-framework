@@ -139,44 +139,13 @@ static status_t getPlatform(char*& out)
     return errNone;
 }
 
-typedef status_t (TokenGetter)(char*&);
-
-static status_t renderDeviceIdentifierToken(char*& out, const char* prefix, TokenGetter* getter)
-{
-    char* token = NULL;
-    status_t err = (*getter)(token);
-    if (errNone != err)
-        return err;
-         
-    if (NULL != out)
-    {
-        out = StrAppend(out, -1, ":", 1);
-        if (NULL == out)
-            return memErrNotEnoughSpace;
-    } 
-
-    out = StrAppend(out, -1, prefix, -1);
-    if (NULL == out)
-        return memErrNotEnoughSpace;
-        
-    ulong_t len = Len(token);
-    char* coded = StrAlloc<char>(len * 2);
-    if (NULL == coded)
-        return memErrNotEnoughSpace;
-        
-    StrHexlify(token, len, coded, len * 2 + 1);
-    out = StrAppend(out, -1, coded, len * 2);
-    free(coded);
-    return errNone;
-}
-
 char* deviceInfoToken()
 {
     char* out = NULL;
-    renderDeviceIdentifierToken(out, "SN", getUUID);
-    renderDeviceIdentifierToken(out, "PN", getPhoneNumber);
-    renderDeviceIdentifierToken(out, "PL", getPlatform);
-    renderDeviceIdentifierToken(out, "OC", getOEMCompanyId);
+    DeviceInfoTokenRender(out, "SN", getUUID);
+    DeviceInfoTokenRender(out, "PN", getPhoneNumber);
+    DeviceInfoTokenRender(out, "PL", getPlatform);
+    DeviceInfoTokenRender(out, "OC", getOEMCompanyId);
     return out;
 }
 
