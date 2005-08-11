@@ -8,14 +8,6 @@
 
 void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-enum AnchorOption {
-	anchorNone,
-	anchorLeft,
-	anchorTop = anchorLeft,
-	anchorRight,
-	anchorBottom = anchorRight
-};
-
 class Widget: private NonCopyable
 {
 public:
@@ -83,13 +75,35 @@ public:
 	bool setBounds(const RECT& rect, RepaintOption repaint = repaintNot) {return FALSE != MoveWindow(handle_, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, repaint);}
 
 	bool update() {return FALSE != UpdateWindow(handle());}
-
+	
 	bool show(int how = SW_SHOW) {return FALSE != ShowWindow(handle(), how);}
+	
+	bool hide() {return show(SW_HIDE);}
+	
+	bool isDialog() const;
 
+    bool isChild(HWND parent) const {return FALSE != IsChild(parent, handle());}
+	
+	bool exists() const {return valid() && FALSE != IsWindow(handle());}
+	
+	bool visible() const {return FALSE != IsWindowVisible(handle());}
+	
+	bool enabled() const {return FALSE != IsWindowEnabled(handle());}
+	
+    void setEnabled(bool state = true) {EnableWindow(handle(), state);}
+   
 	HWND activate() {return SetActiveWindow(handle());}
 	
 	HWND parentHandle() const {return GetParent(handle());}
 	
+    enum AnchorOption {
+	    anchorNone,
+	    anchorLeft,
+	    anchorTop = anchorLeft,
+	    anchorRight,
+	    anchorBottom = anchorRight
+    };
+
 	void anchor(AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption = repaintNot);
 	
 	bool anchorChild(UINT itemId, AnchorOption horiz, int hMargin, AnchorOption vert, int vMargin, RepaintOption = repaintNot) const;

@@ -5,32 +5,12 @@
 
 BOOL ScreenToClient(HWND wnd, RECT& rect)
 {
-/*
-	POINT p = {rect.left, rect.top};
-	if (!ScreenToClient(wnd, &p))
-		return FALSE;
-	rect.left = p.x; rect.top = p.y;
-	p.x = rect.right; p.y = rect.bottom;
-	if (!ScreenToClient(wnd, &p))
-		return FALSE;
-	rect.right = p.x; rect.bottom = p.y;
- */
 	MapWindowPoints(NULL, wnd, (POINT*)&rect, 2);
 	return TRUE;  	
 }
 
 BOOL ClientToScreen(HWND wnd, RECT& rect)
 {
-/*
-	POINT p = {rect.left, rect.top};
-	if (!ClientToScreen(wnd, &p))
-		return FALSE;
-	rect.left = p.x; rect.top = p.y;
-	p.x = rect.right; p.y = rect.bottom;
-	if (!ClientToScreen(wnd, &p))
-		return FALSE;
-	rect.right = p.x; rect.bottom = p.y;
- */
 	MapWindowPoints(wnd, NULL, (POINT*)&rect, 2); 	
 	return TRUE;	
 }
@@ -79,9 +59,14 @@ static bool IsDialog(HWND handle)
 {
 	char_t buffer[8];
 	int len = GetClassName(handle, buffer, 8);
-	if (6 == len && 0 ==_tcsicmp(TEXT("DIALOG"), buffer))
+	if (6 == len && 0 == _tcsicmp(TEXT("DIALOG"), buffer))
 		return true;
 	return false;
+}
+
+bool Widget::isDialog() const 
+{
+    return IsDialog(handle());
 }
 
 static Widget* WidgetFromHandle(HWND handle)
