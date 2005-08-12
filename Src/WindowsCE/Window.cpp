@@ -1,8 +1,10 @@
 #include <WindowsCE/Window.hpp>
+#include <ExtendedEvent.hpp>
 
 Window::Window(AutoDeleteOption ad, bool inputPanel):
 	Widget(ad),
-	isInputDialog_(inputPanel)
+	isInputDialog_(inputPanel),
+	sizeToInputPanel_(true)
 {
 #ifdef SHELL_SIP
 	ZeroMemory(&activateInfo_, sizeof(activateInfo_));
@@ -37,6 +39,9 @@ LRESULT Window::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_SETTINGCHANGE:
 			return rawHandleSettingChange(uMsg, wParam, lParam);
+			
+        case extEvent:
+            return handleExtendedEvent(lParam);
 
 		default:
 			return Widget::callback(uMsg, wParam, lParam);
@@ -60,7 +65,7 @@ long Window::handleActivate(ushort action, bool minimized, HWND previous)
 	DWORD flags = 0;
 	if (isInputDialog_)
 		flags = SHA_INPUTDIALOG;
-
+		 
 	SHHandleWMActivate(handle(), wParam, lParam, &activateInfo_, flags);
 #endif
 
@@ -78,8 +83,21 @@ long Window::handleSettingChange(ulong flag, LPCTSTR section_name)
 	LPARAM lParam = reinterpret_cast<LPARAM>(section_name);
 
 #ifdef SHELL_SIP
-	SHHandleWMSettingChange(handle(), wParam, lParam, &activateInfo_);
+    if (sizeToInputPanel_)
+	    SHHandleWMSettingChange(handle(), wParam, lParam, &activateInfo_);
 #endif
 
+    if (SETTINGCHANGE_RESET == flag)
+        handleScreenSizeChange(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+ 
 	return defaultCallback(WM_SETTINGCHANGE, wParam, lParam);
+}
+
+long Window::handleExtendedEvent(LPARAM& event)
+{
+    return defaultCallback(extEvent, 0, event);
+}
+
+void Window::handleScreenSizeChange(ulong_t, ulong_t)
+{
 }

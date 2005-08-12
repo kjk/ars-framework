@@ -397,12 +397,15 @@ status_t SocketConnection::open()
         return error;
     }
 
-    //error=socket_.setNonBlocking();
+#ifdef _WIN32
+    error = socket_.setNonBlocking();
     if (error)
     {
         LogStrUlong(eLogInfo, _T("open(), can't setNonBlocking(), "), error);
         return error;
     }
+#endif    
+
 
     error=socket_.connect(address_, transferTimeout());
     if (netErrWouldBlock==error)

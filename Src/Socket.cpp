@@ -111,12 +111,25 @@ status_t SocketBase::receive(uint_t& received, void* buffer, uint_t bufferLength
     return error;
 }
 
-/*status_t SocketBase::setNonBlocking(bool value)
+#ifdef _PALM_OS
+status_t SocketBase::setNonBlocking(bool value)
 {
     bool flag=value;
     status_t error=setOption(socketOptLevelSocket, socketOptSockNonBlocking, &flag, sizeof(flag));
     return error;
-} */
+}
+#endif
+
+#ifdef _WIN32
+status_t SocketBase::setNonBlocking(bool value)
+{
+    u_long arg = value;
+    int res = ioctlsocket(socket_, FIONBIO, &arg);
+    if (SOCKET_ERROR == res)
+        return WSAGetLastError();
+    return errNone;   
+}
+#endif
 
 status_t SocketBase::setOption(uint_t level, uint_t option, const void* optionValue, uint_t valueLength, long timeout)
 {

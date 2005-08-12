@@ -29,27 +29,26 @@ struct ExtEventObject {
 	virtual ~ExtEventObject();
 };
 
-/*
+#ifdef _WIN32
+HWND ExtEventSetWindow(HWND wnd);
+HWND ExtEventGetWindow();
 
-void *    createExtendedEventText(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length);
-void      sendExtendedEvent(void* eventData, const Point* point = NULL);
-ulong_t   getExtendedEventId(void *eventData);
-ulong_t   getExtendedEventId(EventType *event);
-ulong_t   getExtendedEventMagicNumber(void *eventData);
-ulong_t   getExtendedEventType(void *eventData);
-ArsLexis::char_t* getTextEventDataCopy(EventType *event, ulong_t& length);
-const ArsLexis::char_t* getTextEventData(EventType* event);
-ulong_t getTextEventDataLength(EventType* event);
+class ExtEventHelper {
+    HWND prevEventWindow_;
+public:
+    ExtEventHelper(): prevEventWindow_(NULL) {}
+    void start(HWND thisWindow) {prevEventWindow_ = ExtEventSetWindow(thisWindow);} 
+    ~ExtEventHelper() {ExtEventSetWindow(prevEventWindow_);}
+};
+   
+#define EXT_EVENT_WINDOW_PARAM(name) , HWND name = NULL
 
-void freeExtendedEvent(EventType *event);
-
-void sendTextEvent(ulong_t eventId, const ArsLexis::char_t* txt,  const Point* point = NULL);
-
-void sendTextNEvent(ulong_t eventId, const ArsLexis::char_t* txt, ulong_t length, const Point* point = NULL);
- */
+#else
+#define EXT_EVENT_WINDOW_PARAM(name) 
+#endif
 
 void ExtEventFree(Event& event);
-void ExtEventRepost(Event& event, void* wnd = NULL);
+void ExtEventRepost(Event& event EXT_EVENT_WINDOW_PARAM(wnd));
 ExtEventType ExtEventGetType(const Event& event);
 ulong_t ExtEventGetID(const Event& event);
 const Point& ExtEventGetPoint(const Event& event);
@@ -58,11 +57,13 @@ const char* ExtEventGetNarrowText(const Event& event, ulong_t* textLen = NULL);
 const void* ExtEventGetData(const Event& event, ulong_t& dataLen);
 const ExtEventObject* ExtEventGetObject(const Event& event);
 
-status_t ExtEventSendEmpty(ulong_t id, const Point* p = NULL, void* wnd = NULL);
-status_t ExtEventSendText(ulong_t id, const char_t* text, long len = -1, const Point* p = NULL, void* wnd = NULL);
-status_t ExtEventSendNarrow(ulong_t id, const char* text, long len = -1, const Point* p = NULL, void* wnd = NULL);
-status_t ExtEventSendBlob(ulong_t id, const void* blob, ulong_t len, const Point* p = NULL, void* wnd = NULL);
-status_t ExtEventSendObject(ulong_t id, ExtEventObject* object, const Point* p = NULL, void* wnd = NULL);
+status_t ExtEventSendEmpty(ulong_t id, const Point* p = NULL EXT_EVENT_WINDOW_PARAM(wnd));
+status_t ExtEventSendText(ulong_t id, const char_t* text, long len = -1, const Point* p = NULL EXT_EVENT_WINDOW_PARAM(wnd));
+status_t ExtEventSendNarrow(ulong_t id, const char* text, long len = -1, const Point* p = NULL EXT_EVENT_WINDOW_PARAM(wnd));
+status_t ExtEventSendBlob(ulong_t id, const void* blob, ulong_t len, const Point* p = NULL EXT_EVENT_WINDOW_PARAM(wnd));
+status_t ExtEventSendObject(ulong_t id, ExtEventObject* object, const Point* p = NULL EXT_EVENT_WINDOW_PARAM(wnd));
+
+#undef EXT_EVENT_WINDOW_PARAM
 
 #ifndef NDEBUG
 void test_ExtEventSend();

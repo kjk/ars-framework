@@ -1,4 +1,5 @@
 #include <WindowsCE/Controls.hpp>
+#include <commctrl.h>
 
 ScrollBar::ScrollBar(AutoDeleteOption ad):
 	Widget(ad)
@@ -28,4 +29,16 @@ ulong_t EditBox::charAtPoint(const Point& p, ulong_t* line) const
     if (NULL != line)
         *line = HIWORD(res);
     return LOWORD(res);
+}
+
+ProgressBar::ProgressBar(AutoDeleteOption ad):
+    Widget(ad)
+{
+}
+
+bool ProgressBar::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance)
+{
+	assert(parent != NULL);
+	style |= WS_CHILD;
+	return Widget::create(PROGRESS_CLASS, NULL, style, x, y, width, height, parent, NULL, instance);
 }

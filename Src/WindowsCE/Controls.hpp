@@ -60,4 +60,20 @@ public:
 	
 };
 
+
+class ProgressBar: public Widget {
+public:
+
+	explicit ProgressBar(AutoDeleteOption ad = autoDeleteNot);
+	
+	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance);
+	
+	ulong_t position() const {return sendMessage(PBM_GETPOS, 0, 0);}
+	
+	void setRange(ulong_t rangeMin, ulong_t rangeMax) {sendMessage(PBM_SETRANGE32, rangeMin, rangeMax);}
+	
+	void setPosition(ulong_t pos) {sendMessage(PBM_SETPOS, pos, 0);}
+	
+};
+
 #endif

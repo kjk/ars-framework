@@ -24,7 +24,7 @@ inline bool isAlpha(char chr) {using namespace std; return 0 != isalpha(chr);}
 inline bool isAlNum(char chr) {using namespace std; return 0 != isalnum(chr);}
 inline bool isDigit(char chr) {using namespace std; return 0 != isdigit(chr);}
 inline bool isSpace(char chr) {using namespace std; return 0 != isspace(chr);}
-inline ulong_t Len(const char* str) {using namespace std; return strlen(str);}
+inline ulong_t Len(const char* str) {using namespace std; assert(NULL != str); return strlen(str);}
 
 char* StringCopyN__(const char* curStr, long len, const char* file, int line);
 
@@ -52,7 +52,7 @@ inline bool isAlpha(wchar_t chr) {using namespace std; return 0 != iswalpha(chr)
 inline bool isAlNum(wchar_t chr) {using namespace std; return 0 != iswalnum(chr);}
 inline bool isDigit(wchar_t chr) {using namespace std; return 0 != iswdigit(chr);}
 inline bool isSpace(wchar_t chr) {using namespace std; return 0 != iswspace(chr);}
-inline ulong_t Len(const wchar_t* str) {using namespace std; return wcslen(str);}
+inline ulong_t Len(const wchar_t* str) {using namespace std; assert(NULL != str); return wcslen(str);}
 
 wchar_t* StringCopyN__(const wchar_t* curStr, long len, const char* file, int line);
 

@@ -2,6 +2,28 @@
 #include <Text.hpp>
 #include <Geometry.hpp>
 
+#ifdef _WIN32
+static HWND eventWindow = NULL;
+
+HWND ExtEventSetWindow(HWND wnd)
+{
+    HWND res = eventWindow;
+    eventWindow = wnd;
+    return res;  
+}
+
+HWND ExtEventGetWindow()
+{
+    return eventWindow;
+}
+
+#define EXT_EVENT_WINDOW_PARAM(name) , HWND name
+#define EXT_EVENT_WINDOW_PASS(name) , name
+#else
+#define EXT_EVENT_WINDOW_PARAM(name)
+#define EXT_EVENT_WINDOW_PASS(name)
+#endif
+
 #ifdef __MWERKS__
 using std::memset;
 #endif
@@ -49,10 +71,13 @@ static const void* ExtEventExtractContents(const Event& event)
 	return p;
 }
 
-static void ExtEventSend(void* data, void* wnd)
+static void ExtEventSend(void* data EXT_EVENT_WINDOW_PARAM(wnd))
 {
 #ifdef _WIN32
-	PostMessage((HWND)wnd, extEvent, 0, LPARAM(data));
+    if (NULL == wnd)
+        wnd = eventWindow;
+         
+	PostMessage(wnd, extEvent, 0, LPARAM(data));
 #endif
 
 #ifdef _PALM_OS
@@ -65,12 +90,12 @@ static void ExtEventSend(void* data, void* wnd)
 #endif
 }
 
-void ExtEventRepost(Event& event, void* wnd)
+void ExtEventRepost(Event& event EXT_EVENT_WINDOW_PARAM(wnd))
 {
 	ExtEventData*& data = ExtEventExtractDataPtr(event);
 	assert(data != NULL);
 	++data->postCount;
-	ExtEventSend(data, wnd);
+	ExtEventSend(data EXT_EVENT_WINDOW_PASS(wnd));
 }
 
 void ExtEventFree(Event& event)
@@ -169,16 +194,16 @@ const ExtEventObject* ExtEventGetObject(const Event& event)
 	return contents->object;
 }
 
-status_t ExtEventSendEmpty(ulong_t id, const Point* p, void* wnd)
+status_t ExtEventSendEmpty(ulong_t id, const Point* p EXT_EVENT_WINDOW_PARAM(wnd))
 {
 	void* data = ExtEventCreate(id, extEventTypeEmpty, 0, p);
 	if (NULL == data)
 		return memErrNotEnoughSpace;
-	ExtEventSend(data, wnd);
+	ExtEventSend(data EXT_EVENT_WINDOW_PASS(wnd));
 	return errNone;
 }
 
-status_t ExtEventSendText(ulong_t id, const char_t* text, long len, const Point* p, void* wnd)
+status_t ExtEventSendText(ulong_t id, const char_t* text, long len, const Point* p EXT_EVENT_WINDOW_PARAM(wnd))
 {
 	if (-1 == len) len = Len(text);
 	char* data = ExtEventCreate(id, extEventTypeText, sizeof(ulong_t) + sizeof(char_t) * (len + 1), p);
@@ -188,11 +213,11 @@ status_t ExtEventSendText(ulong_t id, const char_t* text, long len, const Point*
 	contents->length = len;
 	memmove(contents->data, text, len * sizeof(char_t));
 	contents->data[len] = _T('\0');
-	ExtEventSend(data, wnd);
+	ExtEventSend(data EXT_EVENT_WINDOW_PASS(wnd));
 	return errNone;
 }
 
-status_t ExtEventSendNarrow(ulong_t id, const char* text, long len, const Point* p, void* wnd)
+status_t ExtEventSendNarrow(ulong_t id, const char* text, long len, const Point* p EXT_EVENT_WINDOW_PARAM(wnd))
 {
 	if (-1 == len) len = Len(text);
 	char* data = ExtEventCreate(id, extEventTypeNarrowText, sizeof(ulong_t) + len + 1, p);
@@ -202,13 +227,13 @@ status_t ExtEventSendNarrow(ulong_t id, const char* text, long len, const Point*
 	contents->length = len;
 	memmove(contents->data, text, len);
 	contents->data[len] = '\0';
-	ExtEventSend(data, wnd);
+	ExtEventSend(data EXT_EVENT_WINDOW_PASS(wnd));
 	return errNone;
 }
 
-status_t ExtEventSendBlob(ulong_t id, const void* blob, ulong_t len, const Point* p, void* wnd);
+status_t ExtEventSendBlob(ulong_t id, const void* blob, ulong_t len, const Point* p EXT_EVENT_WINDOW_PARAM(wnd));
 
-status_t ExtEventSendObject(ulong_t id, ExtEventObject* object, const Point* p, void* wnd)
+status_t ExtEventSendObject(ulong_t id, ExtEventObject* object, const Point* p EXT_EVENT_WINDOW_PARAM(wnd))
 {
 	char* data = ExtEventCreate(id, extEventTypeObject, sizeof(ExtEventObjectContents), p);
 	if (NULL == data)
@@ -216,7 +241,7 @@ status_t ExtEventSendObject(ulong_t id, ExtEventObject* object, const Point* p, 
 	
 	ExtEventObjectContents* contents = (ExtEventObjectContents*)(data + sizeof(ExtEventData));
 	contents->object = object;
-	ExtEventSend(data, wnd);
+	ExtEventSend(data EXT_EVENT_WINDOW_PASS(wnd));
 	return errNone;
 }
 

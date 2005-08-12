@@ -6,6 +6,10 @@
 class Window: public Widget {
 
 public:
+    
+    void setSizeToInputPanel(bool value) {sizeToInputPanel_ = value;}
+     
+    bool isInputDialog() const {return isInputDialog_;} 
 
 	Window(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
 
@@ -20,6 +24,10 @@ protected:
 	virtual long handleActivate(ushort action, bool minimized, HWND previous);
 
 	virtual long handleSettingChange(ulong flag, LPCTSTR section_name);
+	
+	virtual long handleExtendedEvent(LPARAM& event);
+	
+	virtual void handleScreenSizeChange(ulong_t width, ulong_t height);
 	
 protected:
 
@@ -39,6 +47,7 @@ private:
 	SHACTIVATEINFO activateInfo_;
 #endif
 	bool isInputDialog_;
+	bool sizeToInputPanel_;
 
 };
 

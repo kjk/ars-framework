@@ -79,7 +79,8 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
 LookupProgressReportingSupport::LookupProgressReportingSupport():
     percentProgress_(percentProgressDisabled),
     bytesProgress_(0),
-    progressReporter_(new_nt DefaultLookupProgressReporter())
+    progressReporter_(new_nt DefaultLookupProgressReporter()),
+    statusText(_T("")) 
 {}
 
 LookupProgressReportingSupport::~LookupProgressReportingSupport()

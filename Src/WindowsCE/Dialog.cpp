@@ -8,28 +8,14 @@ BOOL CALLBACK Dialog::dialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
     return FALSE; 
 }
 
-/*
-BOOL CALLBACK Dialog::defaultDialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	assert(IsWindow(hwndDlg));
-	if (WM_INITDIALOG == uMsg)
-	{
-		Dialog* d = static_cast<Dialog*>(Widget::fromHandle(hwndDlg));
-		assert(NULL != d);
-		assert(d->handle() == hwndDlg);
-		return d->rawHandleInitDialog(uMsg, wParam, lParam);
-	}
-	return FALSE;
-}
- */
- 
-
 Dialog::Dialog(AutoDeleteOption ad, bool inputDialog, DWORD initDialogFlags):
 	Window(ad, inputDialog)
 #ifdef SHELL_AYGSHELL
 	, initDialogFlags_(initDialogFlags)
 #endif
-{}
+{
+    setSizeToInputPanel(0 != (SHIDIF_SIZEDLGFULLSCREEN & initDialogFlags));
+}
 
 Dialog::Dialog(HWND wnd, AutoDeleteOption ad, bool inputDialog):
 	Window(wnd, ad, inputDialog)
@@ -64,11 +50,25 @@ bool Dialog::handleInitDialog(HWND focus_widget_handle, long init_param)
 	idi.dwFlags = initDialogFlags_;
 	SHInitDialog(&idi);
 #endif	
+
+#ifdef SHELL_SIP
+    if (isInputDialog())
+        SHSipPreference(handle(), SIP_INPUTDIALOG);
+#endif
+    
 	return messageHandled;
 }
 
+// #define DEBUG_DIALOG_MESSAGES
+
 LRESULT Dialog::callback(UINT message, WPARAM wParam, LPARAM lParam)
 {
+
+#ifdef DEBUG_DIALOG_MESSAGES
+    OutputDebugString(TEXT("Dialog::callback(): "));
+    DumpMessage(message, wParam, lParam); 
+#endif
+    
     if (WM_INITDIALOG == message)
         return rawHandleInitDialog(message, wParam, lParam);
     return Window::callback(message, wParam, lParam); 

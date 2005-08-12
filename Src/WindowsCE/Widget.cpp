@@ -1,6 +1,7 @@
 #include <WindowsCE/Widget.hpp>
 #include <WindowsCE/Window.hpp>
 #include <WindowsCE/Messages.hpp>
+#include <ExtendedEvent.hpp>
 #include <Text.hpp>
 
 BOOL ScreenToClient(HWND wnd, RECT& rect)
@@ -28,12 +29,24 @@ void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		tprintf(buffer, TEXT("0x%08x"), uMsg);
 		OutputDebugString(buffer);
 	}
-	OutputDebugString(TEXT(" wParam="));
-	tprintf(buffer, TEXT("0x%08x"), wParam);
-	OutputDebugString(buffer);
-	OutputDebugString(TEXT(" lParam="));
-	tprintf(buffer, TEXT("0x%08x"), lParam);
-	OutputDebugString(buffer);
+	if (extEvent != uMsg)
+	{
+	    OutputDebugString(TEXT(" wParam="));
+	    tprintf(buffer, TEXT("0x%08x"), wParam);
+	    OutputDebugString(buffer);
+	    OutputDebugString(TEXT(" lParam="));
+	    tprintf(buffer, TEXT("0x%08x"), lParam);
+	    OutputDebugString(buffer);
+    }
+    else 
+    {
+	    OutputDebugString(TEXT(" id="));
+	    tprintf(buffer, TEXT("%ld"), ExtEventGetID(lParam));
+	    OutputDebugString(buffer);
+	    OutputDebugString(TEXT(" type="));
+	    tprintf(buffer, TEXT("%ld"), ExtEventGetType(lParam));
+	    OutputDebugString(buffer);
+    }   
 	OutputDebugString(TEXT("\n"));
 }
 
@@ -289,7 +302,7 @@ void Widget::bounds(RECT& out) const
 {
 	GetWindowRect(handle(), &out);
 	HWND p = parentHandle();
-	if (NULL != p)
+	if (NULL != p && 0 != (WS_CHILD & style()))
 		ScreenToClient(p, out);
 }
 
