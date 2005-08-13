@@ -211,6 +211,9 @@ SocketSelector::SocketSelector(NetLibrary& netLib, bool catchStandardEvents):
     width_(0),
     eventsCount_(0)
 {
+    using namespace std;
+    memset(inputFDs_, 0, sizeof(inputFDs_));
+    memset(outputFDs_, 0, sizeof(outputFDs_));
     for (ushort_t i=0; i<eventTypesCount_; ++i)
     {
         netFDZero(&inputFDs_[i]);

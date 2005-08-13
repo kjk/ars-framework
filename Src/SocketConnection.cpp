@@ -23,10 +23,7 @@ SocketConnectionManager::SocketConnectionManager():
 
 SocketConnectionManager::~SocketConnectionManager()
 {
-    for(int i=0; i<connectionsCount_; i++)
-    {
-        delete connections_[i];
-    }
+    abortConnections();
 }
 
 status_t SocketConnectionManager::openNetLib()
@@ -365,7 +362,10 @@ void SocketConnectionManager::abortConnections()
 {
     for(int i=0; i<connectionsCount_; i++)
     {
-        delete connections_[i];
+        SocketConnection* conn = connections_[i];
+        conn->abortConnection();
+        delete conn;
+        connections_[i] = NULL;
     }
     connectionsCount_ = 0;
 }
@@ -380,10 +380,13 @@ SocketConnection::SocketConnection(SocketConnectionManager& manager):
 }
 
 SocketConnection::~SocketConnection()
-{}
+{
+    abortConnection();
+}
 
 void SocketConnection::abortConnection() 
 {
+    manager_.unregisterEvents(*this);
     setState(stateFinished);
 }
 
