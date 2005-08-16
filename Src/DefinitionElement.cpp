@@ -1,4 +1,5 @@
 #include <DefinitionElement.hpp>
+#include <HyperlinkHandlerBase.hpp>
 #include <Text.hpp>
 
 DefinitionElement::DefinitionElement():

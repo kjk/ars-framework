@@ -5,14 +5,12 @@
 #include <HorizontalLineElement.hpp>
 #include <UTF8_Processor.hpp>
 
-#ifdef INFOMAN
-#include "HyperlinkHandler.hpp"
-#endif
-
 #include <memory>
 #include <Utility.hpp>
 #include <Text.hpp>
 #include <LangNames.hpp>
+
+#include <PediaUrl.hpp>
 
 
 DefinitionParser::DefinitionParser():
@@ -344,6 +342,8 @@ status_t DefinitionParser::detectHTMLTag(ulong_t end, bool& result)
     return errNone;
 }
 
+#define urlSeparator ":"
+
 status_t DefinitionParser::detectHyperlink(ulong_t end, bool& result)
 {
     result = false;
@@ -393,12 +393,12 @@ status_t DefinitionParser::detectHyperlink(ulong_t end, bool& result)
 #ifdef INFOMAN
         if (hyperlinkIsTerm)
         {
-            if (String::npos == hyperlinkTarget_.find(urlSeparatorSchema))
+            if (String::npos == hyperlinkTarget_.find(urlSeparator))
             {
-                hyperlinkTarget_.insert(0, 1, urlSeparatorSchema);
+                hyperlinkTarget_.insert(0, urlSeparator);
                 hyperlinkTarget_.insert(0, defaultLanguage);
             }
-            hyperlinkTarget_.insert(0, urlSchemaEncyclopediaTerm urlSeparatorSchemaStr);
+            hyperlinkTarget_.insert(0, pediaUrlTerm urlSeparator);
         }
 #endif                
 
@@ -546,8 +546,8 @@ status_t DefinitionParser::createTextElement(const char* text, long length, Text
     bool hyperlinkIsTerm = false;
     
 #ifdef INFOMAN
-    ulong_t schemaLen = Len(urlSchemaEncyclopediaTerm) + 1;
-    if (insideHyperlink_ && 0 == hyperlinkTarget_.find(urlSchemaEncyclopediaTerm urlSeparatorSchemaStr))
+    ulong_t schemaLen = Len(urlSeparator) + 1;
+    if (insideHyperlink_ && 0 == hyperlinkTarget_.find(urlSeparator urlSeparator))
         hyperlinkIsTerm = true;
 #else
     if (hyperlinkTerm == hyperlinkType_)

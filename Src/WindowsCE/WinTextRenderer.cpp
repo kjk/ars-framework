@@ -141,6 +141,7 @@ void TextRenderer::setModel(DefinitionModel* model, Definition::ModelOwnerFlag o
 	Rect r;
 	bounds(r);
 	verifyScrollbarVisible(ushort(r.width()), ushort(r.height()));
+	InvalidateRect(handle(), NULL, FALSE);
 }
 
 void TextRenderer::prepareTestData()

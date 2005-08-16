@@ -11,9 +11,9 @@ public:
      
     bool isInputDialog() const {return isInputDialog_;} 
 
-	Window(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
+	explicit Window(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
 
-	Window(HWND handle, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
+	explicit Window(HWND handle, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
 
 	void close() {sendMessage(WM_CLOSE, 0, 0);}
 

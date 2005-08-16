@@ -1,6 +1,7 @@
 #include <HistorySupport.hpp>
 #include <HistoryCache.hpp>
 #include <Text.hpp>
+#include <HyperlinkHandlerBase.hpp>
 
 /*
 status_t FillPopupMenuModelFromHistory(const char_t* cacheName, PopupMenuModel& model)

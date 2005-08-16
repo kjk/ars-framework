@@ -11,9 +11,9 @@ class Dialog: public Window
 
 public:
 	
-	Dialog(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false, DWORD initDialogFlags = SHIDIF_DONEBUTTON | SHIDIF_SIPDOWN | SHIDIF_SIZEDLGFULLSCREEN);
+	explicit Dialog(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false, DWORD initDialogFlags = SHIDIF_DONEBUTTON | SHIDIF_SIPDOWN | SHIDIF_SIZEDLGFULLSCREEN);
 
-	Dialog(HWND wnd, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
+	explicit Dialog(HWND wnd, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
 	
 	void setInitFlags(DWORD flags) {initDialogFlags_ = flags;}
 

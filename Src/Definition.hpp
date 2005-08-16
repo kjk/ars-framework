@@ -16,6 +16,7 @@
 
 #include <DefinitionStyle.hpp>
 
+class HyperlinkHandlerBase;
 class DefinitionElement;
 class Definition;
 class PopupMenu;
@@ -32,21 +33,6 @@ enum HyperlinkType
     hyperlinkBookmark
 #endif
 };   
-
-class HyperlinkHandlerBase
-{
-public:
-
-    virtual void handleHyperlink(Definition& definition, DefinitionElement& hyperlinkElement, const Point* point);
-    
- //   void handleHyperlink(const ArsLexis::String& hyperlink, const Point* point)
- //  {handleHyperlink(hyperlink.data(), hyperlink.length(), point);}
-    
-    virtual void handleHyperlink(const char* link, ulong_t len, const Point* point);
-
-    virtual ~HyperlinkHandlerBase();
-    
-};
 
 class DefinitionModel: private NonCopyable
 {

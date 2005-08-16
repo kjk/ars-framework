@@ -21,4 +21,8 @@ public:
     virtual status_t handleIncrement(const char_t* payload, ulong_t& length, bool finish) = 0;
 };
 
+class Reader;
+
+status_t FeedHandlerFromReader(BinaryIncrementalProcessor& handler, Reader& reader);
+
 #endif // ARSLEXIS_INCREMENTAL_PROCESSOR_HPP__

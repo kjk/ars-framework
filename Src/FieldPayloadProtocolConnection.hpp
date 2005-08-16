@@ -71,6 +71,4 @@ public:
     bool inPayload_;
 };
 
-status_t FeedHandlerFromReader(BinaryIncrementalProcessor& handler, Reader& reader);
-
 #endif
