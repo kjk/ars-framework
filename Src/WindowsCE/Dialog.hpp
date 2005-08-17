@@ -15,6 +15,8 @@ public:
 
 	explicit Dialog(HWND wnd, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
 	
+	~Dialog();
+	
 	void setInitFlags(DWORD flags) {initDialogFlags_ = flags;}
 
 	bool create(HINSTANCE instance, LPCTSTR resource_id, HWND parent);

@@ -216,6 +216,9 @@ LRESULT Widget::callback(UINT message, WPARAM wParam, LPARAM lParam)
 
 ATOM Widget::registerClass(UINT style, HINSTANCE instance, HICON icon, HCURSOR cursor, HBRUSH brush, LPCTSTR class_name)
 {
+    if (NULL == instance)
+        instance = GetModuleHandle(NULL);
+      
 	WNDCLASS wc;
 	ZeroMemory(&wc, sizeof(wc));
 	wc.style = style;
@@ -240,7 +243,10 @@ bool Widget::create(LPCTSTR widget_class, LPCTSTR caption, DWORD style, int x, i
 {
 	if (valid())
 		detach();
-		
+
+    if (NULL == instance)
+        instance = GetModuleHandle(NULL);
+         
 	HWND handle = CreateWindowEx(exStyle, widget_class, caption, style, x, y, width, height, parent, menu, instance, this);
 	if (NULL == handle)
 		return false;

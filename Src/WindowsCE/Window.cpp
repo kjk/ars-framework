@@ -22,6 +22,10 @@ Window::Window(HWND handle, AutoDeleteOption ad, bool inputPanel):
 #endif
 }
 
+Window::~Window()
+{
+}
+
 LRESULT Window::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifdef SHELL_SIP

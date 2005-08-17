@@ -63,6 +63,9 @@ void CommandBar::detach()
 
 bool CommandBar::create(HWND parent, DWORD flags, UINT menu_id, HINSTANCE inst, UINT bitmap_id, UINT bitmap_count, COLORREF background_color)
 {
+    if (NULL == inst)
+        inst = GetModuleHandle(NULL);
+         
 	SHMENUBARINFO mbi;
 	ZeroMemory(&mbi, sizeof(mbi));
 	mbi.cbSize = sizeof(mbi);
@@ -100,11 +103,20 @@ void CommandBar::adjustParentSize()
 
 HMENU CommandBar::menuHandle()
 {
+#ifndef SHGetMenu
+#define SHGetMenu(hWndMB) (HMENU)SendMessage((hWndMB), \
+        SHCMBM_GETMENU, (WPARAM)0, (LPARAM)0);
+#endif
+    HMENU menu = SHGetMenu(handle());
+    return menu;
+
+/*
 	NMNEWMENU nm;
 	ZeroMemory(&nm, sizeof(nm));
 	LPARAM lParam = reinterpret_cast<LPARAM>(&nm);
 	LRESULT res = sendMessage(SHCMBM_GETMENU, 0, lParam);
 	return reinterpret_cast<HMENU>(res);
+ */	
 }
 
 #endif // SHELL_MENUBAR

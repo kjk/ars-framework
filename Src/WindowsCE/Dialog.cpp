@@ -25,14 +25,24 @@ Dialog::Dialog(HWND wnd, AutoDeleteOption ad, bool inputDialog):
 {
 }
 
+Dialog::~Dialog()
+{
+}
+
 bool Dialog::create(HINSTANCE inst, LPCTSTR resource_id, HWND parent)
 {
+    if (NULL == inst)
+        inst = GetModuleHandle(NULL);
+         
 	HWND handle = CreateDialogParam(inst, resource_id, parent, dialogCallback, reinterpret_cast<LPARAM>(this));
 	return NULL != handle;
 }
 
 long Dialog::showModal(HINSTANCE inst, LPCTSTR resId, HWND parent)
 {
+    if (NULL == inst)
+        inst = GetModuleHandle(NULL);
+
     return DialogBoxParam(inst, resId, parent, dialogCallback, reinterpret_cast<LPARAM>(this));
 }
 

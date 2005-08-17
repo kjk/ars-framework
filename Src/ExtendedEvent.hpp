@@ -36,9 +36,21 @@ HWND ExtEventGetWindow();
 class ExtEventHelper {
     HWND prevEventWindow_;
 public:
-    ExtEventHelper(): prevEventWindow_(NULL) {}
-    void start(HWND thisWindow) {prevEventWindow_ = ExtEventSetWindow(thisWindow);} 
-    ~ExtEventHelper() {ExtEventSetWindow(prevEventWindow_);}
+    ExtEventHelper(): 
+        prevEventWindow_(NULL) 
+    {
+    }
+    
+    void start(HWND thisWindow) 
+    {
+        prevEventWindow_ = ExtEventSetWindow(thisWindow);
+    }
+     
+    ~ExtEventHelper() 
+    {
+        ExtEventSetWindow(prevEventWindow_);
+    }
+    
 };
    
 #define EXT_EVENT_WINDOW_PARAM(name) , HWND name = NULL

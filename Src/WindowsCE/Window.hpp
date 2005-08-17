@@ -12,6 +12,8 @@ public:
     bool isInputDialog() const {return isInputDialog_;} 
 
 	explicit Window(AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
+	
+	~Window();
 
 	explicit Window(HWND handle, AutoDeleteOption ad = autoDeleteNot, bool inputDialog = false);
 

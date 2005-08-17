@@ -45,8 +45,8 @@ void DefinitionElement::performAction(Definition& definition, const Point* point
     else
     {
         Definition::HyperlinkHandler* handler = definition.hyperlinkHandler();
-        if (handler) 
-            handler->handleHyperlink(definition, *this, point);
+        if (NULL != handler && isHyperlink() && NULL != hyperlink_->resource)
+            handler->handleHyperlink(hyperlink_->resource, hyperlink_->resourceLength, point);
     }
 
 }

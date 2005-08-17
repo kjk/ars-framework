@@ -168,13 +168,13 @@ void TextRenderer::prepareTestData()
 				elems.push_back(new_nt LineBreakElement());
 				break;
 			case 4:
-				elems.back()->setHyperlink("test: 1", -1, hyperlinkUrl);
+				elems.back()->setHyperlink("http://www.google.com", -1, hyperlinkUrl);
 				break;
 		}
 	}
 	setModel(model, Definition::ownModel);
-	definition.setInteractionBehavior(Definition::behavDoubleClickSelection|Definition::behavHyperlinkNavigation|Definition::behavMouseSelection|Definition::behavUpDownScroll|Definition::behavSelectionClickAction);
-	definition.setNavOrderOptions(Definition::navOrderFirst|Definition::navOrderLast);
+	// definition.setInteractionBehavior(Definition::behavDoubleClickSelection|Definition::behavHyperlinkNavigation|Definition::behavMouseSelection|Definition::behavUpDownScroll|Definition::behavSelectionClickAction);
+	// definition.setNavOrderOptions(Definition::navOrderFirst|Definition::navOrderLast);
 }
 	
 LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)

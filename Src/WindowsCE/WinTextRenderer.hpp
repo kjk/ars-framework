@@ -52,7 +52,7 @@ public:
 	
 	~TextRenderer();
 
-	bool create(DWORD style, int x, int y, int w, int h, HWND parent, HINSTANCE instance);
+	bool create(DWORD style, int x, int y, int w, int h, HWND parent, HINSTANCE instance = NULL);
 
 	Definition definition;
 	void setModel(DefinitionModel* model, Definition::ModelOwnerFlag own = Definition::ownModelNot);
