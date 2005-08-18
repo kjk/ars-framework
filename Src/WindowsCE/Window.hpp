@@ -8,6 +8,7 @@ class Window: public Widget {
 public:
     
     void setSizeToInputPanel(bool value) {sizeToInputPanel_ = value;}
+    void setOverrideNavBarText(bool value) {overrideNavBarText_ = value;} 
      
     bool isInputDialog() const {return isInputDialog_;} 
 
@@ -50,6 +51,7 @@ private:
 #endif
 	bool isInputDialog_;
 	bool sizeToInputPanel_;
+	bool overrideNavBarText_;
 
 };
 

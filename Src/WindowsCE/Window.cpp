@@ -4,7 +4,8 @@
 Window::Window(AutoDeleteOption ad, bool inputPanel):
 	Widget(ad),
 	isInputDialog_(inputPanel),
-	sizeToInputPanel_(true)
+	sizeToInputPanel_(true),
+	overrideNavBarText_(false)
 {
 #ifdef SHELL_SIP
 	ZeroMemory(&activateInfo_, sizeof(activateInfo_));
@@ -14,7 +15,9 @@ Window::Window(AutoDeleteOption ad, bool inputPanel):
 
 Window::Window(HWND handle, AutoDeleteOption ad, bool inputPanel):
 	Widget(handle, ad),
-	isInputDialog_(inputPanel)
+	isInputDialog_(inputPanel),
+	sizeToInputPanel_(true),
+	overrideNavBarText_(false)
 {
 #ifdef SHELL_SIP
 	ZeroMemory(&activateInfo_, sizeof(activateInfo_));
@@ -71,6 +74,18 @@ long Window::handleActivate(ushort action, bool minimized, HWND previous)
 		flags = SHA_INPUTDIALOG;
 		 
 	SHHandleWMActivate(handle(), wParam, lParam, &activateInfo_, flags);
+#endif
+
+#ifdef WIN32_PLATFORM_PSPC
+    if (overrideNavBarText_ && (WA_ACTIVE == action || WA_CLICKACTIVE == action))
+    { 
+        char_t* title = caption();
+        if (NULL != title)
+        {
+            SHSetNavBarText(handle(), title);
+            free(title); 
+        }  
+    }
 #endif
 
 	return defaultCallback(WM_ACTIVATE, wParam, lParam);

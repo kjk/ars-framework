@@ -283,7 +283,7 @@ char_t* Widget::caption(ulong_t* len) const
 	if (NULL == buffer)
 		return NULL;
 			
-	length = GetWindowText(handle_, buffer, length);
+	length = GetWindowText(handle_, buffer, length + 1);
 	if (NULL != len)
 		*len = length;
 	

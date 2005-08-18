@@ -37,7 +37,7 @@ class ExtEventHelper {
     HWND prevEventWindow_;
 public:
     ExtEventHelper(): 
-        prevEventWindow_(NULL) 
+        prevEventWindow_(HWND(-1)) 
     {
     }
     
@@ -48,7 +48,8 @@ public:
      
     ~ExtEventHelper() 
     {
-        ExtEventSetWindow(prevEventWindow_);
+        if (HWND(-1) != prevEventWindow_) 
+            ExtEventSetWindow(prevEventWindow_);
     }
     
 };
