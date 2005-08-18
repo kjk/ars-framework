@@ -59,6 +59,13 @@ UniversalDataHandler::UniversalDataHandler():
     controlDataLength_(0)
 {}
 
+#if _MSC_VER == 1200
+#pragma warning(push)
+// C:\ArsLexis\ars_framework_utf8\Src\UniversalDataHandler.cpp(71) : warning C4509: nonstandard extension used: 'parseUniversalDataFormatTextLine' uses SEH and 'vec' has destructor
+// warning is irrelevant - vec is declared outside of ErrTry/Catch block. 
+#pragma warning(disable: 4509) 
+#endif
+
 status_t parseUniversalDataFormatTextLine(const char* line, ulong_t len, UniversalDataFormat& out, ulong_t& lineNo, ulong_t& controlDataLength)
 {
     long resultLong;
@@ -124,6 +131,10 @@ status_t parseUniversalDataFormatTextLine(const char* line, ulong_t len, Univers
     } ErrEndCatch
     return errNone;
 }
+
+#if _MSC_VER == 1200
+#pragma warning(pop)
+#endif
 
 status_t UniversalDataHandler::handleLine(const char* line, ulong_t len)
 {

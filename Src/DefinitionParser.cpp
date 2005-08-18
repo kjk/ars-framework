@@ -940,6 +940,13 @@ status_t DefinitionParser::parseTextLine()
     return parseText(lineEnd_, StyleGetStaticStyle(styleIndexDefault));                
 }
 
+#if _MSC_VER == 1200
+#pragma warning(push)
+// C:\ArsLexis\ars_framework_utf8\Src\DefinitionParser.cpp(1034) : warning C4509: nonstandard extension used: 'handleIncrement' uses SEH and 'strText' has destructor
+// warning is irrelevant - strText is declared outside of ErrTry/ErrCatch block
+#pragma warning(disable: 4509)
+#endif
+
 status_t DefinitionParser::handleIncrement(const char* text, ulong_t& length, bool finish)
 {
      volatile status_t err = errNone;
@@ -1033,6 +1040,10 @@ Finish:
         clear();
     return err;
 }
+
+#if _MSC_VER == 1200
+#pragma warning(pop)
+#endif
 
 //! @todo Add header indexing
 status_t DefinitionParser::parseHeaderLine()

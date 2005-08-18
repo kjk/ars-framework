@@ -281,7 +281,7 @@ Serializer& Serializer::narrowIn(char*& str, ulong_t* len, ulong_t id)
 	if (directionInput != direction_)
 		return *this;
 		
-	ulong_t length;
+	ulong_t length = 0;
 	serializeSimpleType(dtBlob, length, id);
 	if (skipLastRecord_)
 		return *this;
@@ -342,7 +342,7 @@ Serializer& Serializer::textIn(char_t*& str, ulong_t* len, ulong_t id)
 	if (directionInput != direction_)
 		return *this;
 		
-	ulong_t length;
+	ulong_t length = 0;
 	serializeSimpleType(dtText, length, id);
 	if (skipLastRecord_)
 		return *this;
@@ -390,7 +390,7 @@ Serializer& Serializer::text(String& value, ulong_t id)
 	if (directionOutput == direction_)
 		return textOut((char_t*)value.data(), value.length(), id);
 
-	ulong_t length;
+	ulong_t length = 0;
 	serializeSimpleType(dtText, length, id);
 	if (skipLastRecord_)
 		return *this;
@@ -428,7 +428,7 @@ Serializer& Serializer::text(String& value, ulong_t id)
 	if (directionOutput == direction_)
 		return textOut(array, size, id);
 		
-	ulong_t length;
+	ulong_t length = 0;
 	serializeSimpleType(dtText, length, id);
 	if (skipLastRecord_)
 		return *this;

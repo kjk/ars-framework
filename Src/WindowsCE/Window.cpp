@@ -106,9 +106,11 @@ long Window::handleSettingChange(ulong flag, LPCTSTR section_name)
 	    SHHandleWMSettingChange(handle(), wParam, lParam, &activateInfo_);
 #endif
 
+#ifdef SETTINGCHANGE_RESET
     if (SETTINGCHANGE_RESET == flag)
         handleScreenSizeChange(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
- 
+#endif
+
 	return defaultCallback(WM_SETTINGCHANGE, wParam, lParam);
 }
 

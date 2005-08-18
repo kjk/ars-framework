@@ -494,6 +494,15 @@ void Alert(uint_t alertId)
 	Alert(NULL, alertId);
 }
 
+
+#ifdef _MSC_VER
+#pragma warning(push)
+// C:\ArsLexis\ars_framework_utf8\Src\WindowsCE\WinSysUtils.cpp(500) : warning C4101: 'res' : unreferenced local variable
+// C:\ArsLexis\ars_framework_utf8\Src\WindowsCE\WinSysUtils.cpp(499) : warning C4101: 'buffer' : unreferenced local variable
+// warning happens only if both #ifdefs below are false
+#pragma warning(disable: 4101)
+#endif
+
 char_t* GetAppDataPath()
 {
 	char_t buffer[MAX_PATH];
@@ -503,8 +512,16 @@ char_t* GetAppDataPath()
 	if (res)
 		return StringCopy(buffer);
 #endif
+
+#ifdef CSIDL_PROGRAM_FILES
 	res = SHGetSpecialFolderPath(NULL, buffer, CSIDL_PROGRAM_FILES, TRUE);
 	if (res)
 		return StringCopy(buffer);
+#endif
+
 	return StringCopy(TEXT(""));
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

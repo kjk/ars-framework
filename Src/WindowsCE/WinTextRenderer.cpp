@@ -519,9 +519,11 @@ LRESULT TextRenderer::handleKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 			key = Definition::navKeyRight;
 			dir = 1;
 			break;
-		
-		case VK_RETURN:
+
+#ifdef VK_ACTION
 		case VK_ACTION:
+#endif			
+		case VK_RETURN:
 			key = Definition::navKeyCenter;
 			break;
 		

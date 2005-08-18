@@ -96,6 +96,8 @@ public:
 	
 	HWND parentHandle() const {return GetParent(handle());}
 	
+    HWND setParent(HWND wnd) {return SetParent(handle(), wnd);} 
+	
     enum AnchorOption {
 	    anchorNone,
 	    anchorLeft,
@@ -130,6 +132,8 @@ protected: // message handlers
 	virtual long handleResize(UINT sizeType, ushort width, ushort height);
 	
 	virtual long handlePaint(HDC dc);
+	
+    AutoDeleteOption setAutoDelete(AutoDeleteOption ad);
 
 private: // "raw" message handlers
 

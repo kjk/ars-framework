@@ -292,8 +292,14 @@ char_t* Widget::caption(ulong_t* len) const
 
 bool Widget::setCaption(const char_t* text)
 {
-	assert(NULL != handle_);
 	return FALSE != SetWindowText(handle(), text);
+}
+
+Widget::AutoDeleteOption Widget::setAutoDelete(AutoDeleteOption ad)
+{
+    AutoDeleteOption res = autoDelete_;
+    autoDelete_ = ad;
+    return res;  
 }
  
 #ifndef NDEBUG

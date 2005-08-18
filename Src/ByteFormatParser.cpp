@@ -504,7 +504,7 @@ status_t ByteFormatParser::parseAll(const char* inputText, long inputTextLen)
     }           
 
     parseHeader(inputText);
-    assert(totalSize_ == inputTextLen || -1 == inputTextLen);
+    assert(totalSize_ == ulong_t(inputTextLen) || -1 == inputTextLen);
 	
 	free(inText_);
 	inText_ = StringCopyN(inputText, totalSize_);
