@@ -208,6 +208,9 @@ LRESULT Widget::callback(UINT message, WPARAM wParam, LPARAM lParam)
 		
 		case WM_PAINT:
 			return rawHandlePaint(message, wParam, lParam);
+    
+        case WM_NOTIFY:
+            return rawHandleNotify(message, wParam, lParam); 			
 
 		default:
 			return defaultCallback(message, wParam, lParam);
@@ -453,4 +456,16 @@ LRESULT Widget::rawHandlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		EndPaint(handle_, &ps);
 	}
 	return l;
+}
+
+LRESULT Widget::rawHandleNotify(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    LPNMHDR hdr = (LPNMHDR)lParam;
+    assert(NULL != hdr); 
+    return handleNotify(int(wParam), *hdr); 
+}
+
+long Widget::handleNotify(int controlId, const NMHDR& hdr)
+{
+    return defaultCallback(WM_NOTIFY, WPARAM(controlId), LPARAM(&hdr));
 }

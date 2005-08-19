@@ -1,5 +1,13 @@
 #include <WindowsCE/Controls.hpp>
-#include <commctrl.h>
+
+static BOOL InitCC(DWORD control)
+{
+    INITCOMMONCONTROLSEX icc;
+    ZeroMemory(&icc, sizeof(icc));
+    icc.dwSize = sizeof(icc);
+    icc.dwICC = control;   
+    return InitCommonControlsEx(&icc); 
+}
 
 ScrollBar::ScrollBar(AutoDeleteOption ad):
 	Widget(ad)
@@ -41,4 +49,29 @@ bool ProgressBar::create(DWORD style, int x, int y, int width, int height, HWND 
 	assert(parent != NULL);
 	style |= WS_CHILD;
 	return Widget::create(PROGRESS_CLASS, NULL, style, x, y, width, height, parent, NULL, instance);
+}
+
+
+
+TabControl::TabControl(AutoDeleteOption ad):
+    Widget(ad)
+{
+    InitCC(ICC_TAB_CLASSES);
+} 
+
+TabControl::TabControl(HWND wnd, AutoDeleteOption ad):
+    Widget(wnd, ad)
+{
+    InitCC(ICC_TAB_CLASSES);
+} 
+
+TabControl::~TabControl()
+{
+}
+
+bool TabControl::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)
+{
+	assert(parent != NULL);
+	style |= WS_CHILD;
+    return Widget::create(WINDOW_CLASS_TABCONTROL, NULL, style, x, y, width, height, handle(), NULL, instance, styleEx);
 }

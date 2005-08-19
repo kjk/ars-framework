@@ -2,9 +2,11 @@
 #define ARSLEXIS_CONTROLS_HPP__
 
 #include <WindowsCE/Widget.hpp>
+#include <commctrl.h>
 
 #define WINDOW_CLASS_SCROLLBAR TEXT("SCROLLBAR")
 #define WINDOW_CLASS_EDITBOX TEXT("EDIT")
+#define WINDOW_CLASS_TABCONTROL WC_TABCONTROL
 
 class ScrollBar: public Widget {
 public:
@@ -75,5 +77,68 @@ public:
 	void setPosition(ulong_t pos) {sendMessage(PBM_SETPOS, pos, 0);}
 	
 };
+
+class TabControl: public Widget {
+    
+public:
+    
+    explicit TabControl(AutoDeleteOption ad = autoDeleteNot);
+   
+    explicit TabControl(HWND wnd, AutoDeleteOption ad = autoDeleteNot);
+   
+   ~TabControl(); 
+   
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+   
+    HIMAGELIST imageList() const {return TabCtrl_GetImageList(handle());} 
+    
+    HIMAGELIST setImageList(HIMAGELIST lst) {return TabCtrl_SetImageList(handle(), lst);}
+   
+    ulong_t tabCount() const {return TabCtrl_GetItemCount(handle());}
+   
+    bool tab(ulong_t index, TCITEM& it) const {return FALSE != TabCtrl_GetItem(handle(), index, &it);}
+   
+    bool setTab(ulong_t index, const TCITEM& it) {return FALSE != TabCtrl_SetItem(handle(), index, &it);}
+   
+    long insertTab(ulong_t index, const TCITEM& it) {return TabCtrl_InsertItem(handle(), index, &it);}
+   
+    bool  removeTab(ulong_t index) {return FALSE != TabCtrl_DeleteItem(handle(), index);}
+   
+    bool clear() {return FALSE != TabCtrl_DeleteAllItems(handle());}
+   
+    bool tabBounds(ulong_t index, RECT& r) const {return FALSE != TabCtrl_GetItemRect(handle(), index, &r);}
+   
+    static const long selectionNone = -1;
+    
+    long selection() const {return TabCtrl_GetCurSel(handle());} 
+   
+    long setSelection(ulong_t index) {return TabCtrl_SetCurSel(handle(), index);}
+   
+    enum AdjustMode {
+        adjustControl,
+        adjustTab
+    };
+   
+    void adjustBounds(AdjustMode am, RECT& rect) const {TabCtrl_AdjustRect(handle(), am, &rect);}
+   
+    void setTabSize(ulong_t width, ulong_t height) {TabCtrl_SetItemSize(handle(), width, height);}
+   
+    void setPadding(ulong_t h, ulong_t v) {TabCtrl_SetPadding(handle(), h, v);}
+   
+    ulong_t rowCount() const {return TabCtrl_GetRowCount(handle());}
+    
+    long focusedTab() const {return TabCtrl_GetCurFocus(handle());}
+   
+    long setFocusedTab(ulong_t index) {return TabCtrl_SetCurFocus(handle(), index);}
+   
+    static const long tabWidthDefault = -1;
+    long setMinTabWidth(long width) {return TabCtrl_SetMinTabWidth(handle(), width);}
+   
+    bool setTabHighlight(ulong_t index, bool value) {return FALSE != TabCtrl_HighlightItem(handle(), index, value);}
+   
+      
+};
+   
+
 
 #endif

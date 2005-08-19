@@ -133,6 +133,8 @@ protected: // message handlers
 	
 	virtual long handlePaint(HDC dc);
 	
+    virtual long handleNotify(int controlId, const NMHDR& header);
+	
     AutoDeleteOption setAutoDelete(AutoDeleteOption ad);
 
 private: // "raw" message handlers
@@ -146,6 +148,8 @@ private: // "raw" message handlers
 	LRESULT rawHandleResize(UINT uMsg, WPARAM wParam, LPARAM lParam) {return handleResize(wParam, LOWORD(lParam), HIWORD(lParam));}
 	
 	LRESULT rawHandlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam);
+	
+	LRESULT rawHandleNotify(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
 

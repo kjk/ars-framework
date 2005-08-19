@@ -1027,7 +1027,7 @@ const char_t* MessageName(UINT msg)
 		0, 
 		0, 
 		0, 
-		TEXT("WM_USER [extEvent]"), 
+		TEXT("WM_USER"), 
 	};
 	if (msg < ARRAY_SIZE(message_names_)) 
 		return message_names_[msg];
