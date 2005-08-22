@@ -18,12 +18,20 @@ void SocketConnectionManager::unregisterEvents(SocketConnection& connection)
 
 SocketConnectionManager::SocketConnectionManager():
     selector_(netLib_, false),
+#ifdef _WIN32
+    stop_(false),
+    event_(NULL),
+#endif         
     connectionsCount_(0)
 {}
 
 SocketConnectionManager::~SocketConnectionManager()
 {
     abortConnections();
+#ifdef _WIN32
+    if (NULL != event_)
+        CloseHandle(event_);
+#endif      
 }
 
 status_t SocketConnectionManager::openNetLib()
@@ -59,7 +67,8 @@ void SocketConnectionManager::compactConnections()
 }
     
 bool SocketConnectionManager::manageFinishedConnections()
-{
+{ 
+    LockGuard guard(lock_);
     bool fDeletedConnection=false;
     for (int i=0; i<connectionsCount_; i++)
     {
@@ -82,6 +91,7 @@ bool SocketConnectionManager::manageFinishedConnections()
 
 bool SocketConnectionManager::manageUnresolvedConnections()
 {
+    LockGuard guard(lock_);
     for (int i=0; i<connectionsCount_; i++)
     {
         SocketConnection* conn = connections_[i];
@@ -90,10 +100,14 @@ bool SocketConnectionManager::manageUnresolvedConnections()
             status_t error=errNone;
             if (netLib_.closed())
                 error=openNetLib();
-            if (!error)                
+            if (!error)
+            {
+                guard.release();
                 error=conn->resolve();
+            }  
             if (error)
             {
+                guard.acquire();
                 conn->handleError(error);
                 delete conn;
                 connections_[i]=NULL;
@@ -107,14 +121,17 @@ bool SocketConnectionManager::manageUnresolvedConnections()
     
 bool SocketConnectionManager::manageUnopenedConnections()
 {
+    LockGuard guard(lock_);
     for (int i=0; i<connectionsCount_; i++)
     {
         SocketConnection* conn = connections_[i];
         if (SocketConnection::stateUnopened==conn->state())
         {
+            guard.release();
             status_t error=conn->open();
             if (error)
             {
+                guard.acquire();
                 conn->handleError(error);
                 delete conn;
                 connections_[i]=NULL;
@@ -128,6 +145,7 @@ bool SocketConnectionManager::manageUnopenedConnections()
 
 status_t SocketConnectionManager::handleTimeout(long span)
 {
+    LockGuard guard(lock_);
     for (int i = 0; i < connectionsCount_; ++i)
     {
         SocketConnection* conn = connections_[i];
@@ -360,6 +378,7 @@ bool SocketConnectionManager::peekMessage(MSG& msg)
 
 void SocketConnectionManager::abortConnections() 
 {
+    LockGuard g(lock_);
     for(int i=0; i<connectionsCount_; i++)
     {
         SocketConnection* conn = connections_[i];
@@ -484,14 +503,11 @@ status_t SocketConnection::resolve()
     return error;
 }
 
+
 status_t SocketConnection::enqueue()
 {
     assert(stateUnresolved==state());
-    if (manager_.connectionsCount_>=MAX_CONNECTIONS)
-        return netErrUnimplemented;
-    manager_.connections_[manager_.connectionsCount_] = this;
-    manager_.connectionsCount_ += 1;
-    return errNone;
+    return manager_.enqueueConnection(*this);
 }
 
 
@@ -509,4 +525,133 @@ void SocketConnection::handleError(status_t)
 {
     abortConnection();
 }
+
+status_t SocketConnectionManager::enqueueConnection(SocketConnection& conn)
+{
+    LockGuard guard(lock_);
+    if (maxConnections == connectionsCount_)
+        return netErrUnimplemented;
+
+    connections_[connectionsCount_++] = &conn;
+#ifdef _WIN32
+    if (NULL != event_)
+        SetEvent(event_);
+#endif    
+    return errNone;
+}
+
+#ifdef _WIN32
+status_t SocketConnectionManager::runManagerThread()
+{
+    status_t err = errNone;
+    if (NULL == event_ && NULL == (event_ = CreateEvent(NULL, FALSE, FALSE, NULL)))
+    { 
+        err = GetLastError();  
+        return err;
+    }
+    while (true)
+    {
+        LockGuard guard(lock_);
+        ulong_t count = connectionsCount_;
+        guard.release();
+        if (0 == count)
+        {
+            DWORD res = WaitForSingleObject(event_, INFINITE);
+            if (WAIT_FAILED == res)
+            {
+                err = GetLastError();
+                return err; 
+            }   
+        }
+        if (stop_)
+            break;
+        
+        while (manageFinishedConnections());
+        
+        if (stop_)
+            break;
+
+        while (manageUnresolvedConnections());
+        
+        if (stop_)
+            break;
+
+        while (manageUnopenedConnections());
+        
+        if (stop_)
+            break;
+            
+        guard.acquire();
+        err = selector_.select(20);
+        guard.release();
+        
+        if (stop_)
+            break;
+            
+        if (netErrTimeout == err)
+            err = handleTimeout(20);
+            
+        if (errNone != err)
+            return err;
+  
+        if (stop_)
+            break;
+        
+        guard.acquire();
+        for (int i=0; i<connectionsCount_; i++)
+        {
+            status_t connErr = errNone;
+            SocketConnection* conn = connections_[i];
+            assert(SocketConnection::stateOpened == conn->state());
+            if (selector_.checkSocketEvent(conn->socket(), SocketSelector::eventException))
+            {
+                unregisterEvents(*conn);
+                conn->resetTimeout();
+                connErr=conn->notifyException();
+            }                        
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventWrite))
+            {
+                unregisterEvents(*conn);
+                conn->resetTimeout();
+                connErr=conn->notifyWritable();
+            } 
+            else if (selector_.checkSocketEvent(conn->socket_, SocketSelector::eventRead))
+            {
+                unregisterEvents(*conn);
+                conn->resetTimeout();
+                connErr=conn->notifyReadable();
+            }
+            if (connErr)
+            {
+                conn->handleError(connErr);
+                delete conn;
+                connections_[i]=NULL;
+            }
+        }
+        compactConnections();
+        guard.release();
+    }
+    return errNone; 
+}
+
+DWORD SocketConnectionManager::managerThreadProc(LPVOID param)
+{
+    SocketConnectionManager* manager = (SocketConnectionManager*)param;
+    assert(NULL != manager);
+    return manager->runManagerThread();  
+}
+
+HANDLE SocketConnectionManager::startManagerThread()
+{
+    return CreateThread(NULL, 0, &SocketConnectionManager::managerThreadProc, this, 0, NULL);
+}
+
+void SocketConnectionManager::stop()
+{
+    assert(NULL != event_);
+    stop_ = true;
+    SetEvent(event_);  
+}
+
+#endif
 

@@ -68,7 +68,7 @@ static UINT WidgetCallbackMagicMessage()
 
 static const LRESULT widgetCallbackMagicResponse = 0xf6f42e44;
 
-static bool IsDialog(HWND handle)
+bool IsDialog(HWND handle)
 {
 	char_t buffer[8];
 	int len = GetClassName(handle, buffer, 8);

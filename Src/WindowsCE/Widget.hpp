@@ -169,5 +169,6 @@ BOOL ScreenToClient(HWND wnd, RECT& rect);
 BOOL ClientToScreen(HWND wnd, RECT& rect);
 inline LONG RectWidth(const RECT& rect) {return rect.right - rect.left;}
 inline LONG RectHeight(const RECT& rect) {return rect.bottom - rect.top;}
+bool IsDialog(HWND wnd);
 
 #endif

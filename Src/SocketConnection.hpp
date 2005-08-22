@@ -6,18 +6,19 @@
 #include <Logging.hpp>
 #include <SocketAddress.hpp>
 #include <Socket.hpp>
-
-#define MAX_CONNECTIONS 5
+#include <Lock.hpp>
 
 class SocketConnection;
 
 class SocketConnectionManager: private NonCopyable
 {
+    Lock lock_;
     NetLibrary      netLib_;
     SocketSelector  selector_;
 
     int                 connectionsCount_;
-    SocketConnection *  connections_[MAX_CONNECTIONS];
+    enum {maxConnections = 5}; 
+    SocketConnection *  connections_[maxConnections];
 
     void registerEvent(SocketConnection& connection, SocketSelector::EventType event);
 
@@ -38,6 +39,9 @@ class SocketConnectionManager: private NonCopyable
 
 
 public:
+    
+    void acquire() {lock_.acquire();}
+    void release() {lock_.release();}  
 
     SocketConnectionManager();
 
@@ -48,11 +52,13 @@ public:
 
     status_t manageConnectionEvents(long timeout = evtWaitForever);
     
-#ifdef _PALM_OS        
+#ifdef _PALM_OS
     status_t waitForEvent(EventType& event, long timeout = evtWaitForever);
 #endif
     
     void abortConnections();
+    
+    status_t enqueueConnection(SocketConnection& conn);  
 
     friend class SocketConnection;
 #ifdef _PALM_OS        
@@ -61,8 +67,15 @@ private:
 #endif        
 
 #ifdef _WIN32
+    HANDLE startManagerThread();
+    status_t runManagerThread();
 	status_t waitForMessage(MSG& msg, long timeout);
+	void stop();
+private:	
+    static DWORD managerThreadProc(LPVOID param);
 	static bool peekMessage(MSG& msg);
+	HANDLE event_;
+	bool stop_;
 #endif
 };
 
