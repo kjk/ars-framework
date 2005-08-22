@@ -40,4 +40,12 @@ inline void delocalizeNumber(String& s) {
 
 void Alert(uint_t alertId);
 
+#ifdef _WIN32
+#define ALERT(palmAlert, winAlert) Alert(winAlert)
+#endif
+
+#ifdef _PALM_OS
+#define ALERT(palmAlert, winAlert) Alert(palmAlert)
+#endif
+
 #endif

@@ -114,6 +114,11 @@ public:
 	
 	ulong_t style() const {return GetWindowLong(handle(), GWL_STYLE);}
 	ulong_t styleEx() const {return GetWindowLong(handle(), GWL_EXSTYLE);}
+	
+	void setStyle(ulong_t style);
+	void modifyStyle(ulong_t add, ulong_t remove);
+	void addStyle(ulong_t style) {modifyStyle(style, 0);}
+	void removeStyle(ulong_t style) {modifyStyle(0, style);}
 
 protected:
 

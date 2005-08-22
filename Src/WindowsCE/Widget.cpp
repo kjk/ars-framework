@@ -396,6 +396,20 @@ bool Widget::anchorChild(UINT itemId, AnchorOption horiz, int hMargin, AnchorOpt
 	return FALSE != MoveWindow(item, rect.left, rect.top, rect.width(), rect.height(), repaint);	
 }
 
+void Widget::setStyle(ulong_t style)
+{
+    SetWindowLong(handle(), GWL_STYLE, LONG(style));
+}
+
+void Widget::modifyStyle(ulong_t add, ulong_t remove)
+{
+    ulong_t s = style();
+    s |= add;
+    s &= ~remove;
+    setStyle(s);   
+}
+
+
 // ------------------------------------------
 // message handlers follow...
 
