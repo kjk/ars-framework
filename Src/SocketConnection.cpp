@@ -582,6 +582,12 @@ status_t SocketConnectionManager::runManagerThread()
             break;
             
         guard.acquire();
+        if (0 == connectionsCount_)
+        {
+            guard.release();
+            continue;
+        }
+            
         err = selector_.select(20);
         guard.release();
         
@@ -589,7 +595,10 @@ status_t SocketConnectionManager::runManagerThread()
             break;
             
         if (netErrTimeout == err)
-            err = handleTimeout(20);
+        {
+            handleTimeout(20);
+            continue;
+        }
             
         if (errNone != err)
             return err;
