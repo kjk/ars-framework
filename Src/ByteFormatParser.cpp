@@ -10,37 +10,39 @@
 #include <BulletElement.hpp>
 #include <UTF8_Processor.hpp>
 
+#include <UniversalDataFormat.hpp>
+
 //elements
-#define typeLineBreakElement                'lbrk'
-#define typeHorizontalLineElement           'hrzl'
-#define typeTextElement              'gtxt'
-#define typeBulletElement                   'bull'
-#define typeListNumberElement               'linu'
-#define typeParagraphElement                'parg'
-#define typeIndentedParagraphElement        'ipar'
+static const ulong_t  typeLineBreakElement = 'lbrk';
+static const ulong_t  typeHorizontalLineElement = 'hrzl';
+static const ulong_t  typeTextElement = 'gtxt';
+static const ulong_t  typeBulletElement = 'bull';
+static const ulong_t  typeListNumberElement = 'linu';
+static const ulong_t  typeParagraphElement = 'parg';
+static const ulong_t  typeIndentedParagraphElement = 'ipar';
 //styles table (params are styles entries)
-#define typeStylesTableElement              'sttb'
+static const ulong_t  typeStylesTableElement = 'sttb';
 //form title (use getTitle() to get it)
-#define typeTitleElement                    'titl'
+static const ulong_t  typeTitleElement = 'titl';
 //pop parent element
-#define typePopParentElement                'popp'
+static const ulong_t  typePopParentElement = 'popp';
 
 //params
-#define paramTextValue                      'text'
-#define paramJustification                  'just'
-#define paramHyperlink                      'hypl'
-#define paramListNumber                     'lnum'
-#define paramListTotalCount                 'ltcn'
-#define paramLineBreakSize                  'muld'
-#define paramStyleName                      'stnm'
+static const ulong_t  paramTextValue = 'text';
+static const ulong_t  paramJustification = 'just';
+static const ulong_t  paramHyperlink = 'hypl';
+static const ulong_t  paramListNumber = 'lnum';
+static const ulong_t  paramListTotalCount = 'ltcn';
+static const ulong_t  paramLineBreakSize = 'muld';
+static const ulong_t  paramStyleName = 'stnm';
 //param of StylesTable - one style entry
-#define paramStyleEntry                     'sten'
-#define paramStylesCount                    'stcn'
+static const ulong_t  paramStyleEntry = 'sten';
+static const ulong_t  paramStylesCount = 'stcn';
 
 //other (numbers)
-#define typeLength  sizeof(elementTypeType)
-#define sizeLength  sizeof(elementSizeType)
-#define headerLength 12
+static const ulong_t  typeLength = sizeof(ulong_t);
+static const ulong_t  sizeLength = sizeof(ulong_t);
+static const ulong_t  headerLength = 12;
 
 ByteFormatParser::ByteFormatParser():
     start_(0),
@@ -543,3 +545,35 @@ void writeUnaligned32(char* addr, ulong_t value)
     addr[2] = (char)((ulong_t)(value) >>  8);
     addr[3] = (char)((ulong_t)(value));
 }    
+
+DefinitionModel* DefinitionModelFromUDF(const UniversalDataFormat& udf)
+{
+    ByteFormatParser* parser = new_nt ByteFormatParser();
+    if (NULL == parser)
+        return NULL;
+
+    ulong_t cnt = udf.getItemsCount();
+    for (ulong_t i = 0; i < cnt; ++i)
+    {
+        if (2 != udf.getItemElementsCount(i))
+            continue;
+             
+        ulong_t len;
+        const char* text = udf.getItemData(i, 0, len);
+        if (1 != len || 'D' != *text)
+            continue;
+
+        text = udf.getItemData(i, 1, len);
+        status_t err = parser->parseAll(text, len);
+        if (errNone != err)
+            break;
+        else
+        {
+            DefinitionModel* model = parser->releaseModel();
+            delete parser;
+            return model;
+        }
+    }
+    delete parser;
+    return NULL;  
+}

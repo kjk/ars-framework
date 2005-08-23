@@ -132,6 +132,7 @@ void UniversalDataFormat::swap(UniversalDataFormat& udf)
     std::swap(fNormalized_, udf.fNormalized_);
     header_.swap(udf.header_);
     std::swap(data_, udf.data_); 
+    std::swap(dataLen_, udf.dataLen_); 
 	std::swap(text_, udf.text_);
 	std::swap(textLen_, udf.textLen_); 
 }

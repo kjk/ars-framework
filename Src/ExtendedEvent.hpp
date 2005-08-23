@@ -45,11 +45,16 @@ public:
     {
         prevEventWindow_ = ExtEventSetWindow(thisWindow);
     }
-     
-    ~ExtEventHelper() 
+   
+    void stop() 
     {
         if (HWND(-1) != prevEventWindow_) 
             ExtEventSetWindow(prevEventWindow_);
+    }  
+     
+    ~ExtEventHelper() 
+    {
+        stop(); 
     }
     
 };

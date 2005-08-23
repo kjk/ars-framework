@@ -66,11 +66,14 @@ status_t LineBufferedNarrowProcessor::handleIncrement(const char* payload, ulong
             break;
 		
 		const char* line = buffer_;
+		if (finish && -1 == pos)
+		    pos = bufferLen_;
+		    
         status_t error=handleLine(line, pos);
         if (errNone != error)
             return error;
 
-        if (-1 == pos)
+        if (-1 == pos || finish)
             break;
 
 		StrErase(buffer_, bufferLen_, 0, pos + 1);

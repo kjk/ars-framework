@@ -119,6 +119,8 @@ public:
 	void modifyStyle(ulong_t add, ulong_t remove);
 	void addStyle(ulong_t style) {modifyStyle(style, 0);}
 	void removeStyle(ulong_t style) {modifyStyle(0, style);}
+	
+	void focus() {SetFocus(handle());}
 
 protected:
 

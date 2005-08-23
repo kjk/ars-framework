@@ -73,4 +73,7 @@ class ByteFormatParser: public BinaryIncrementalProcessor
         
  };
 
+struct UniversalDataFormat;
+DefinitionModel* DefinitionModelFromUDF(const UniversalDataFormat& udf);
+
 #endif

@@ -120,7 +120,7 @@ void TextRenderer::destroyOffscreenDC()
 
 long TextRenderer::handleResize(UINT sizeType, ushort width, ushort height)
 {
-	destroyOffscreenDC();
+	// destroyOffscreenDC();
 	verifyScrollbarVisible(width, height);
 
 	Rect rect;
@@ -372,7 +372,7 @@ void TextRenderer::definitionBounds(Rect& rect)
 HDC TextRenderer::prepareOffscreenDC(HDC orig, Rect& rect)
 {
 	if (NULL != offscreenDC_)
-		return offscreenDC_;
+		return NULL;
 		
 	HDC dc = 	CreateCompatibleDC(orig);
 	if (NULL == dc)
