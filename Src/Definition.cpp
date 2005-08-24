@@ -12,6 +12,7 @@
 #include <Text.hpp>
 #include <LineBreakElement.hpp>
 #include <DynStr.hpp>
+#include <UTF8_Processor.hpp>
 
 void DestroyElements(Definition::Elements_t& elems)
 {
@@ -1340,74 +1341,123 @@ bool Definition::isLastLinkSelected() const
 // TODO: this is only used in InfoMan, it shouldn't be here because it breaks
 // ipedia/smartphone build. For now I'll do a Palm OS ifdef
 
-#ifdef _PALM_OS
-#define brTag       _T("<br>")
-#define bTagStart   _T("<b>")
-#define bTagEnd     _T("</b>")
-#define aTagStart   _T("<a>")
-#define aTagEnd     _T("</a>")
+#define brTag       "<br>"
+#define bTagStart   "<b>"
+#define bTagEnd     "</b>"
+#define aTagStart   "<a>"
+#define aTagEnd     "</a>"
 
-void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink, const char_t* hyperlinkSchema)
+static TextElement* TextEl(const char* start, ulong_t len)
 {
-    using namespace std;
-    uint_t bold=0;
-    String::size_type start=0;
-    String::size_type pos=start;
-    while (true) 
+    char_t* text = UTF8_ToNative(start, len);
+    if (NULL == text)
+        return NULL;
+    
+    TextElement* el = new_nt TextElement();
+    if (NULL == el)
     {
-        String::size_type next=text.find(_T('<'), pos);
-        if (text.npos==next) 
+        free(text);
+        return NULL; 
+    }    
+    status_t err = errNone; 
+    ErrTry {
+        el->setText(text);
+    }
+    ErrCatch(ex) {
+        err = ex;
+    } ErrEndCatch
+    free(text);
+    if (errNone != err)
+    {
+        delete el;
+        return NULL; 
+    }
+    return el;
+}
+
+status_t DefinitionParseSimple(DefinitionModel& out, const char* text, long textLen, bool useHyperlink, const char* hyperlinkSchema)
+{
+    if (-1 == textLen)
+        textLen = Len(text);
+
+#define APP(elem) if (errNone != (err = out.append((elem)))) goto Error
+#define TXT(start, len) if (0 != (len)) {APP(TextEl((start), (len)));}
+         
+    uint_t bold=0;
+    status_t err = errNone;
+    ulong_t tagLen; 
+    while (0 != textLen) 
+    {
+        long next = StrFind(text, textLen, '<');
+        if (-1 == next) 
         {
-            out.push_back(new TextElement(String(text, start, next)));
+            TXT(text, textLen);
             break;
         }
-        if (startsWithIgnoreCase(text, brTag, next))
+        if (startsWithIgnoreCase(text + next, textLen - next, brTag, -1))
         {
-            out.push_back(new TextElement(String(text, start, next-pos)));
-            out.push_back(new LineBreakElement());
-            start=pos=next+tstrlen(brTag);
+            TXT(text, next);
+            tagLen = Len(brTag);
+            text += next + tagLen;
+            textLen -= next + tagLen;
+            APP(new_nt LineBreakElement());
         }
-        else if (startsWithIgnoreCase(text, bTagStart, next))
+        else if (startsWithIgnoreCase(text + next, textLen - next, bTagStart, -1))
         {
-            out.push_back(new TextElement(String(text, start, next-pos)));
+            TXT(text, next);
+            tagLen = Len(bTagStart);
+            text += next + tagLen;
+            textLen -= next + tagLen;
             bold++;
-            start=pos=next+tstrlen(bTagStart);
         }
-        else if (startsWithIgnoreCase(text, bTagEnd, next))
+        else if (startsWithIgnoreCase(text + next, textLen - next, bTagEnd, -1))
         {
-            out.push_back(new TextElement(String(text, start, next-pos)));
+            TXT(text, next);
+            tagLen = Len(bTagEnd);
+            text += next + tagLen;
+            textLen -= next + tagLen;
             bold--;
-            start=pos=next+tstrlen(bTagEnd);
         }
-        else if (startsWithIgnoreCase(text, aTagStart, next) && useHyperlink)
+        else if (startsWithIgnoreCase(text + next, textLen - next, aTagStart, -1) && useHyperlink)
         {
-            out.push_back(new TextElement(String(text, start, next-pos)));
-            start=pos=next+tstrlen(aTagStart);
+            TXT(text, next);
+            tagLen = Len(aTagStart);
+            text += next + tagLen;
+            textLen -= next + tagLen;
         }
-        else if (startsWithIgnoreCase(text, aTagEnd, next) && useHyperlink)
+        else if (startsWithIgnoreCase(text + next, textLen - next, aTagEnd, -1) && useHyperlink)
         {
-            TextElement* gText;
-            out.push_back(gText = new TextElement(String(text, start, next-pos)));
-            String href;
+            TXT(text, next);
+
+            NarrowString href;
             if (NULL != hyperlinkSchema)
             {
                 href = hyperlinkSchema;
-                href += _T(':');
+                href += ':';
             }
-            href.append(text, start, next-pos);
-            gText->setHyperlink(href.data(), href.length(), hyperlinkUrl);
-            start=pos=next+tstrlen(aTagEnd);
+            href.append(text, next);
+            out.last()->setHyperlink(href.data(), href.length(), hyperlinkUrl);
+
+            tagLen = Len(aTagEnd);
+            text += next + tagLen;
+            textLen -= next + tagLen;
         }
         else
-            pos=next+1;
-        if (text.length()==pos)
         {
-            out.push_back(new TextElement(String(text, start, pos)));
-            break;
+            TXT(text, next);
+            text += next;
+            textLen -= next;
         }
+        //if (text.length()==pos)
+        //{
+        //    out.push_back(new TextElement(String(text, start, pos)));
+        //    break;
+        //}
     }
+    return errNone; 
+Error:
+    return err;    
 }
-#endif
 
 DefinitionModel::DefinitionModel():
     styles_(NULL),

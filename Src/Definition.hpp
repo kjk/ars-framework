@@ -477,6 +477,6 @@ void DestroyElements(Definition::Elements_t& elems);
  *   gText->setHyperlink(text, hyperlinkType);
  *   where text is text between <a> and </a>
  */
-void parseSimpleFormatting(Definition::Elements_t& out, const ArsLexis::String& text, bool useHyperlink = false, const ArsLexis::char_t* hyperlinkSchema = NULL);
+status_t DefinitionParseSimple(DefinitionModel& out, const char* text, long textLen = -1, bool useHyperlink = false, const char* hyperlinkSchema = NULL);
 
 #endif

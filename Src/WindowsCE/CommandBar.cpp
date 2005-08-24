@@ -2,6 +2,12 @@
 
 #ifdef SHELL_MENUBAR 
 
+#ifndef SHGetMenu
+#define SHGetMenu(hWndMB) (HMENU)SendMessage((hWndMB), \
+        SHCMBM_GETMENU, (WPARAM)0, (LPARAM)0);
+#endif
+
+
 //#include <newmenu.h>
 
 #if defined(_WIN32_WCE_PSPC)
@@ -82,6 +88,7 @@ bool CommandBar::create(HWND parent, DWORD flags, UINT menu_id, HINSTANCE inst, 
 		assert(NULL != mbi.hwndMB);
 		attach(mbi.hwndMB);
 	}
+	
 	return valid();
 }
 
@@ -103,20 +110,9 @@ void CommandBar::adjustParentSize()
 
 HMENU CommandBar::menuHandle()
 {
-#ifndef SHGetMenu
-#define SHGetMenu(hWndMB) (HMENU)SendMessage((hWndMB), \
-        SHCMBM_GETMENU, (WPARAM)0, (LPARAM)0);
-#endif
     HMENU menu = SHGetMenu(handle());
     return menu;
 
-/*
-	NMNEWMENU nm;
-	ZeroMemory(&nm, sizeof(nm));
-	LPARAM lParam = reinterpret_cast<LPARAM>(&nm);
-	LRESULT res = sendMessage(SHCMBM_GETMENU, 0, lParam);
-	return reinterpret_cast<HMENU>(res);
- */	
 }
 
 #endif // SHELL_MENUBAR
