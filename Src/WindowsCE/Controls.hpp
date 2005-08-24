@@ -7,6 +7,7 @@
 #define WINDOW_CLASS_SCROLLBAR TEXT("SCROLLBAR")
 #define WINDOW_CLASS_EDITBOX TEXT("EDIT")
 #define WINDOW_CLASS_TABCONTROL WC_TABCONTROL
+#define WINDOW_CLASS_LISTVIEW WC_LISTVIEW
 
 class ScrollBar: public Widget {
 public:
@@ -136,9 +137,34 @@ public:
    
     bool setTabHighlight(ulong_t index, bool value) {return FALSE != TabCtrl_HighlightItem(handle(), index, value);}
    
-      
 };
-   
 
+class ListView: public Widget {
+
+public:
+
+    explicit ListView(AutoDeleteOption ad = autoDeleteNot);
+   
+    explicit ListView(HWND wnd, AutoDeleteOption ad = autoDeleteNot);
+   
+   ~ListView(); 
+   
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+   
+    bool clear() {return FALSE != ListView_DeleteAllItems(handle());}
+   
+    bool removeItem(ulong_t index) {return FALSE != ListView_DeleteItem(handle(), index);}
+   
+    bool item(LVITEM& it) const {return FALSE != ListView_GetItem(handle(), &it);}
+   
+    ulong_t itemCount() const {return ListView_GetItemCount(handle());}
+   
+    long insertItem(const LVITEM& it) {return ListView_InsertItem(handle(), &it);}
+   
+    HIMAGELIST setImageList(HIMAGELIST list, int type) {return ListView_SetImageList(handle(), list, type);}  
+   
+    void setStyleEx(DWORD styleEx) {ListView_SetExtendedListViewStyle(handle(), styleEx);}
+
+};
 
 #endif

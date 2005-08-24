@@ -1438,6 +1438,22 @@ void DefinitionModel::setTitle(const char_t* txt, long len)
     ReplaceCharP(&title_, StringCopy2N(txt, len));
 }
 
+status_t DefinitionModel::append(DefinitionElement* e)
+{
+    if (NULL == e)
+        return memErrNotEnoughSpace;
+    
+    ErrTry {
+        elements.push_back(e);
+    }
+    ErrCatch (ex) {
+        return ex;
+    } ErrEndCatch
+   return errNone;    
+}
+
+
+
 
 void Definition::setSelection(Graphics& graphics, const ElementPosition_t& startElement, uint_t startProgress, const ElementPosition_t& endElement, uint_t endProgress, bool isHyperlink)
 {

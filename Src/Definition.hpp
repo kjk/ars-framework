@@ -58,6 +58,10 @@ public:
     ~DefinitionModel();
     
     const char_t * title() const {return title_;}
+   
+    status_t append(DefinitionElement* e);
+   
+    DefinitionElement* last() {return elements.back();} 
 
     friend class ByteFormatParser;
 };     

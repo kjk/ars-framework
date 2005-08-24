@@ -75,3 +75,26 @@ bool TabControl::create(DWORD style, int x, int y, int width, int height, HWND p
 	style |= WS_CHILD;
     return Widget::create(WINDOW_CLASS_TABCONTROL, NULL, style, x, y, width, height, handle(), NULL, instance, styleEx);
 }
+
+
+ListView::ListView(AutoDeleteOption ad):
+    Widget(ad)
+{
+    InitCC(ICC_LISTVIEW_CLASSES);
+}
+
+ListView::ListView(HWND wnd, AutoDeleteOption ad):
+    Widget(wnd, ad)
+{
+    InitCC(ICC_LISTVIEW_CLASSES);
+}
+
+ListView::~ListView()
+{}
+
+bool ListView::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
+{
+    assert(parent != NULL);
+    style |= WS_CHILD;
+    return Widget::create(WINDOW_CLASS_LISTVIEW, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
+}

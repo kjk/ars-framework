@@ -1,10 +1,12 @@
-#include "BulletElement.hpp"
+#include <BulletElement.hpp>
 
-using ArsLexis::String;
+#ifdef _PALM_OS
+static const char_t chrBullet = '\x95';
+#endif
 
-namespace {
-    const ArsLexis::char_t chrBullet=_T('\x95');
-}    
+#ifdef _WIN32
+static const char_t chrBullet = L'\u2022';
+#endif
 
 BulletElement::BulletElement():
     TextElement(ArsLexis::String(1, chrBullet)),
