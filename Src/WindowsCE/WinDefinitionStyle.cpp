@@ -150,17 +150,17 @@ const WinFont& DefinitionStyle::font() const
 
 	font.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 
-#ifdef _WIN32_WCE
-#if _WIN32_WCE > 400
-	//font.lfQuality = DEFAULT_QUALITY;
-	font.lfQuality = CLEARTYPE_QUALITY;
-#else
-	font.lfQuality = DEFAULT_QUALITY;
-//	font.lfQuality = ANTIALIASED_QUALITY;
-#endif
-#endif
+//#ifdef SPI_GETFONTSMOOTHING
+//
+//	BOOL en = FALSE;
+//	BOOL res = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &en, FALSE);
+//	if (res && en)
+//	    font.lfQuality = CLEARTYPE_QUALITY;
+//    else    
+//#endif
 
-	// font.lfQuality = CLEARTYPE_COMPAT_QUALITY;
+    // This part should suffice
+    	font.lfQuality = DEFAULT_QUALITY;
 
 	if (fontFamilyNotDefined == fontFamily)
 		font.lfPitchAndFamily = fontFamilyNormal;

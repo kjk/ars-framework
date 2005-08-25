@@ -451,28 +451,6 @@ static void DrawRectangle(HDC hdc, RECT *rect)
 }
 */
 
-char_t* LoadString(UINT id, ulong_t* len)
-{
-	ulong_t l = 64;
-	char_t* buffer = StrAlloc<char_t>(l);
-	while (true) 
-	{
-		if (NULL == buffer)
-			return NULL;
-			
-		int ll = LoadString(GetModuleHandle(NULL), id,	buffer, l);
-		if (ulong_t(ll + 1) < l)
-		{
-			if (NULL != len)
-				*len = ll;
-			return buffer;
-		}
-		l *= 2;
-		free(buffer);
-		buffer = StrAlloc<char_t>(l);
-	}
-}
-
 int Alert(HWND parent, UINT textId, UINT titleId, UINT type)
 {
 	char_t* text = LoadString(textId);
@@ -525,3 +503,66 @@ char_t* GetAppDataPath()
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+
+static const void* LoadRes(UINT id, LPCTSTR type, HINSTANCE instance = NULL)
+{
+    if (NULL == instance)
+        instance = GetInstance();
+          
+    HRSRC h = FindResource(instance, MAKEINTRESOURCE(id), type);
+    if (NULL == h)
+    
+        return NULL;
+
+    HGLOBAL hg = LoadResource(instance, h);
+    if (NULL == hg)
+        return NULL;
+    
+    void* p = LockResource(hg);
+    return p; 
+}
+
+const void* LoadBinaryData(UINT id, HINSTANCE instance)
+{
+    return LoadRes(id, RT_RCDATA, instance);
+}
+
+char_t* LoadString(UINT id, ulong_t* len)
+{
+	ulong_t l = 64;
+	char_t* buffer = StrAlloc<char_t>(l);
+	while (true) 
+	{
+		if (NULL == buffer)
+			return NULL;
+			
+		int ll = LoadString(GetModuleHandle(NULL), id,	buffer, l);
+		if (ulong_t(ll + 1) < l)
+		{
+			if (NULL != len)
+				*len = ll;
+			return buffer;
+		}
+		l *= 2;
+		free(buffer);
+		buffer = StrAlloc<char_t>(l);
+	}
+}
+
+//char_t* LoadString(UINT id, ulong_t* len)
+//{
+//    const WORD* w = (const WORD*)LoadRes(id, RT_STRING);
+//    if (NULL == w)
+//        return NULL;  
+//        
+//    ulong_t l = *w++;
+//    if (NULL != len)
+//        *len = l;
+//          
+//    const wchar_t* s = (const wchar_t*)w;
+//#if _UNICODE
+//    return StringCopyN(s, l);
+//#else
+//    #error "Define string narrowization ;) for LoadString()."
+//#endif   
+//}

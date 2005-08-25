@@ -43,7 +43,7 @@ long TextRenderer::handleCreate(const CREATESTRUCT& cs)
 	if (!scrollBar_.create(SBS_VERT, cs.cx - sx, 0, sx, cs.cy, handle(), cs.hInstance))
 		return createFailed;
 	
-	prepareTestData();
+	// prepareTestData();
 	
 	return Widget::handleCreate(cs);
 }
@@ -144,6 +144,7 @@ void TextRenderer::setModel(DefinitionModel* model, Definition::ModelOwnerFlag o
 	InvalidateRect(handle(), NULL, FALSE);
 }
 
+/*
 void TextRenderer::prepareTestData()
 {
 	DefinitionModel* model = new_nt DefinitionModel();
@@ -176,6 +177,7 @@ void TextRenderer::prepareTestData()
 	// definition.setInteractionBehavior(Definition::behavDoubleClickSelection|Definition::behavHyperlinkNavigation|Definition::behavMouseSelection|Definition::behavUpDownScroll|Definition::behavSelectionClickAction);
 	// definition.setNavOrderOptions(Definition::navOrderFirst|Definition::navOrderLast);
 }
+ */
 	
 LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

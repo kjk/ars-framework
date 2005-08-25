@@ -46,4 +46,6 @@ char_t* GetAppDataPath();
 
 inline HINSTANCE GetInstance() {return GetModuleHandle(NULL);}
 
+const void* LoadBinaryData(UINT id, HINSTANCE instance = NULL);
+
 #endif
