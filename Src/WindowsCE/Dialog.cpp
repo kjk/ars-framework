@@ -1,4 +1,5 @@
 #include <WindowsCE/Dialog.hpp>
+#include <ExtendedEvent.hpp>
 
 BOOL CALLBACK Dialog::dialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -9,7 +10,8 @@ BOOL CALLBACK Dialog::dialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 }
 
 Dialog::Dialog(AutoDeleteOption ad, bool inputDialog, DWORD initDialogFlags):
-	Window(ad, inputDialog)
+	Window(ad, inputDialog),
+    modal_(false)
 #ifdef SHELL_AYGSHELL
 	, initDialogFlags_(initDialogFlags)
 #endif
@@ -18,7 +20,8 @@ Dialog::Dialog(AutoDeleteOption ad, bool inputDialog, DWORD initDialogFlags):
 }
 
 Dialog::Dialog(HWND wnd, AutoDeleteOption ad, bool inputDialog):
-	Window(wnd, ad, inputDialog)
+	Window(wnd, ad, inputDialog),
+	modal_(false)
 #ifdef SHELL_AYGSHELL
 	, initDialogFlags_(0) // This really doesn't matter - when attaching to existing HWND, WM_INITDLG has already been sent.
 #endif
@@ -43,6 +46,7 @@ long Dialog::showModal(HINSTANCE inst, LPCTSTR resId, HWND parent)
     if (NULL == inst)
         inst = GetModuleHandle(NULL);
 
+    modal_ = true;
     return DialogBoxParam(inst, resId, parent, dialogCallback, reinterpret_cast<LPARAM>(this));
 }
 
@@ -69,17 +73,31 @@ bool Dialog::handleInitDialog(HWND focus_widget_handle, long init_param)
 	return messageHandled;
 }
 
+void Dialog::endModal(int code)
+{
+    assert(modal_);
+    EndDialog(handle(), code);
+    modal_ = false; 
+}
+
 // #define DEBUG_DIALOG_MESSAGES
 
 LRESULT Dialog::callback(UINT message, WPARAM wParam, LPARAM lParam)
 {
-
+    LRESULT res;
 #ifdef DEBUG_DIALOG_MESSAGES
     OutputDebugString(TEXT("Dialog::callback(): "));
     DumpMessage(message, wParam, lParam); 
 #endif
     
     if (WM_INITDIALOG == message)
-        return rawHandleInitDialog(message, wParam, lParam);
-    return Window::callback(message, wParam, lParam); 
+        res = rawHandleInitDialog(message, wParam, lParam);
+    else 
+        res = Window::callback(message, wParam, lParam); 
+    if (modal_ && extEvent == message)
+    {
+        ExtEventGetID(lParam);
+        ExtEventFree(lParam); 
+    }
+    return res; 
 }

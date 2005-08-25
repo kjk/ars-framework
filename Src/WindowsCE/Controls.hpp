@@ -164,6 +164,8 @@ public:
     HIMAGELIST setImageList(HIMAGELIST list, int type) {return ListView_SetImageList(handle(), list, type);}  
    
     void setStyleEx(DWORD styleEx) {ListView_SetExtendedListViewStyle(handle(), styleEx);}
+   
+    bool setTextBkColor(COLORREF color) {return FALSE != ListView_SetTextBkColor(handle(), color);} 
 
 };
 

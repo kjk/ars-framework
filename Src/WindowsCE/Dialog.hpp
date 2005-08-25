@@ -5,6 +5,8 @@
 
 class Dialog: public Window
 {
+    bool modal_;
+    
 #ifdef SHELL_AYGSHELL
 	DWORD initDialogFlags_;
 #endif
@@ -26,6 +28,10 @@ public:
 	long showModal(HINSTANCE instance, LPCTSTR resource_id, HWND parent);
 	
 	long showModal(HINSTANCE instance, UINT resource_id, HWND parent) {return showModal(instance, MAKEINTRESOURCE(resource_id), parent);}
+	
+	virtual void endModal(int code);
+	
+	bool modal() const {return modal_;}
 
 protected:
 
