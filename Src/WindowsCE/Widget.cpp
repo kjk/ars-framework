@@ -46,14 +46,30 @@ void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	    OutputDebugString(TEXT(" type="));
 	    tprintf(buffer, TEXT("%ld"), ExtEventGetType(lParam));
 	    OutputDebugString(buffer);
-    }   
+    }
+    if (WM_NOTIFY == uMsg &&  0 != lParam)
+    {
+        NMHDR* hdr = (NMHDR*)lParam;
+        OutputDebugString(TEXT(" notify="));
+        name = MessageName(hdr->code);
+        if (NULL != name)
+            OutputDebugString(name);
+        else
+        {
+		    tprintf(buffer, TEXT("0x%08x"), hdr->code);
+		    OutputDebugString(buffer);
+        } 
+        OutputDebugString(TEXT(" sender="));
+		tprintf(buffer, TEXT("%ld"), hdr->idFrom);
+		OutputDebugString(buffer);
+    }  
 	OutputDebugString(TEXT("\n"));
 }
 
 static LRESULT CALLBACK WidgetCallbackDefault(HWND handle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	OutputDebugString(TEXT("WidgetCallbackDefault(): "));
-	DumpMessage(uMsg, wParam, lParam);
+	//OutputDebugString(TEXT("WidgetCallbackDefault(): "));
+	//DumpMessage(uMsg, wParam, lParam);
 
 	return DefWindowProc(handle, uMsg, wParam, lParam);
 }

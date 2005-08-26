@@ -98,3 +98,23 @@ bool ListView::create(DWORD style, int x, int y, int width, int height, HWND par
     style |= WS_CHILD;
     return Widget::create(WINDOW_CLASS_LISTVIEW, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
 }
+
+Button::Button(AutoDeleteOption ad):
+    Widget(ad)
+{
+}
+
+Button::Button(HWND wnd, AutoDeleteOption ad):
+    Widget(wnd, ad)
+{
+}
+
+Button::~Button()
+{}
+
+bool Button::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
+{
+    assert(parent != NULL);
+    style |= WS_CHILD;
+    return Widget::create(WINDOW_CLASS_BUTTON, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
+}

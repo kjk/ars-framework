@@ -21,7 +21,7 @@ public:
 
 	void adjustParentSize();
 
-	HMENU menuHandle();
+	HMENU menuHandle() const;
 
 	void attach(HWND handle);
 
@@ -32,6 +32,12 @@ public:
 	Menu& menuBar() {return menuBar_;}
 
 	const Menu& menuBar() const {return menuBar_;}
+	
+	HMENU subMenu(UINT id) const;
+	
+	bool replaceSubMenu(UINT id, UINT newId, HMENU newMenu, UINT captionId);
+	
+	bool replaceButton(UINT id, UINT newId, UINT captionId);
 
 protected:
 

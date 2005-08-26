@@ -13,7 +13,7 @@ typedef EventType Event;
 
 #ifdef _WIN32
 typedef LPARAM Event;
-static const UINT extEvent = WM_USER + 0x1000;
+static const UINT extEvent = WM_APP + 0x1000;
 #endif
 
 enum {extEventMagicNumber = ulong_t(901107055L)};

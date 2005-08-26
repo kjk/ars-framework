@@ -8,6 +8,7 @@
 #define WINDOW_CLASS_EDITBOX TEXT("EDIT")
 #define WINDOW_CLASS_TABCONTROL WC_TABCONTROL
 #define WINDOW_CLASS_LISTVIEW WC_LISTVIEW
+#define WINDOW_CLASS_BUTTON  TEXT("BUTTON")
 
 class ScrollBar: public Widget {
 public:
@@ -167,6 +168,19 @@ public:
    
     bool setTextBkColor(COLORREF color) {return FALSE != ListView_SetTextBkColor(handle(), color);} 
 
+};
+
+class Button: public Widget {
+public:
+    
+    explicit Button(AutoDeleteOption ad = autoDeleteNot);
+   
+    explicit Button(HWND wnd, AutoDeleteOption ad = autoDeleteNot);
+   
+   ~Button(); 
+   
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+   
 };
 
 #endif

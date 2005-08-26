@@ -155,11 +155,9 @@ const WinFont& DefinitionStyle::font() const
 //	BOOL en = FALSE;
 //	BOOL res = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &en, FALSE);
 //	if (res && en)
-//	    font.lfQuality = CLEARTYPE_QUALITY;
+//	    font.lfQuality = CLEARTYPE_COMPAT_QUALITY;
 //    else    
 //#endif
-
-    // This part should suffice
     	font.lfQuality = DEFAULT_QUALITY;
 
 	if (fontFamilyNotDefined == fontFamily)

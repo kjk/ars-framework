@@ -1,4 +1,6 @@
 #include <WindowsCE/CommandBar.hpp>
+#include <commctrl.h>
+#include <SysUtils.hpp>
 
 #ifdef SHELL_MENUBAR 
 
@@ -108,11 +110,82 @@ void CommandBar::adjustParentSize()
 	MoveWindow(parent, parent_rect.left, parent_rect.top, parent_rect.right - parent_rect.left, parent_rect.bottom - parent_rect.top, FALSE);
 }
 
-HMENU CommandBar::menuHandle()
+HMENU CommandBar::menuHandle() const  
 {
     HMENU menu = SHGetMenu(handle());
     return menu;
-
 }
+
+HMENU CommandBar::subMenu(UINT id) const 
+{
+    TBBUTTONINFO tbbi = {0};
+    tbbi.cbSize = sizeof(tbbi);
+    tbbi.dwMask = TBIF_LPARAM | TBIF_STYLE;
+
+    if (-1 == sendMessage(TB_GETBUTTONINFO, id, (LPARAM)&tbbi))
+        return NULL;
+         
+    if (0 == (TBSTYLE_DROPDOWN & tbbi.fsStyle))
+        return NULL;
+         
+    HMENU menu = (HMENU)tbbi.lParam;
+    return menu;        
+}
+
+bool CommandBar::replaceSubMenu(UINT id, UINT newId, HMENU newMenu, UINT captionId)
+{
+    TBBUTTONINFO tbbi = {0};
+    tbbi.cbSize = sizeof(tbbi);
+    tbbi.dwMask = TBIF_LPARAM | TBIF_STYLE;
+
+    if (-1 == sendMessage(TB_GETBUTTONINFO, id, (LPARAM)&tbbi))
+        return false;
+    
+    if (0 == (TBSTYLE_DROPDOWN & tbbi.fsStyle))
+        return false;
+    
+    HMENU prevMenu = (HMENU)tbbi.lParam; 
+    char_t* text = LoadString(captionId);
+    if (NULL == text)
+        return false;
+          
+    tbbi.dwMask = TBIF_LPARAM | TBIF_COMMAND | TBIF_TEXT;
+    tbbi.lParam = (DWORD)newMenu;
+    tbbi.idCommand = newId;
+    tbbi.pszText = text;
+    long res = sendMessage(TB_SETBUTTONINFO, id, (LPARAM)&tbbi);
+    free(text);
+    if (0 == res)  
+        return false;
+    DestroyMenu(prevMenu);
+    return true;   
+}
+
+bool CommandBar::replaceButton(UINT id, UINT newId, UINT captionId)
+{
+    TBBUTTONINFO tbbi = {0};
+    tbbi.cbSize = sizeof(tbbi);
+    tbbi.dwMask = TBIF_STYLE;
+
+    if (-1 == sendMessage(TB_GETBUTTONINFO, id, (LPARAM)&tbbi))
+        return false;
+    
+    if (0 != (TBSTYLE_DROPDOWN & tbbi.fsStyle))
+        return false;
+    
+    char_t* text = LoadString(captionId);
+    if (NULL == text)
+        return false;
+
+    tbbi.dwMask = TBIF_COMMAND | TBIF_TEXT;
+    tbbi.idCommand = newId;
+    tbbi.pszText = text;
+    long res = sendMessage(TB_SETBUTTONINFO, id, (LPARAM)&tbbi);
+    free(text);
+    if (0 == res)  
+        return false;
+    return true;
+}
+
 
 #endif // SHELL_MENUBAR

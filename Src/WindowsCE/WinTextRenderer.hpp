@@ -21,8 +21,8 @@ class TextRenderer: public Widget {
 	
 	ScrollDirection scrollDirection_;
 	
-	HDC offscreenDC_;
-	HGDIOBJ origBitmap_;
+	//HDC offscreenDC_;
+	//HGDIOBJ origBitmap_;
 	
 	void verifyScrollbarVisible(ushort width, ushort height);
 	void updateScroller(RepaintOption repaint);
@@ -41,10 +41,18 @@ class TextRenderer: public Widget {
 	
 	void paintDefinition(HDC dc, int scroll = 0, const Point* p = NULL);
 	void definitionBounds(Rect& r);
-	HDC prepareOffscreenDC(HDC orig, Rect& rect);
-	void updateOrigDC(HDC orig, Rect& rect);
 	
-	void destroyOffscreenDC();
+	struct DC_Helper {
+	    HDC orig;
+	    HDC offscreen;
+	    HGDIOBJ origBmp;
+    
+        DC_Helper(HDC org): orig(org), offscreen(NULL), origBmp(NULL) {}
+    }; 
+	
+	bool prepareOffscreenDC(DC_Helper& h, Rect& rect);
+	void updateOrigDC(DC_Helper& h, Rect& rect);
+	void destroyOffscreenDC(DC_Helper& h);
 	
 public:
 

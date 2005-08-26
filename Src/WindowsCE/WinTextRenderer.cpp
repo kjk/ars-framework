@@ -16,15 +16,12 @@ TextRenderer::TextRenderer(AutoDeleteOption ad):
 	Widget(ad),
 	scrollbarVisible_(false),
 	leftButtonDown_(false),
-	offscreenDC_(NULL),
-	origBitmap_(NULL),
 	scrollTimer_(0),
 	scrollDirection_(scrollNone)
 {}
 
 TextRenderer::~TextRenderer()
 {
-	destroyOffscreenDC();
 }
 
 bool TextRenderer::create(DWORD style, int x, int y, int w, int h, HWND parent, HINSTANCE instance)
@@ -106,14 +103,15 @@ void TextRenderer::updateScroller(RepaintOption repaint)
 	scrollBar_.setScrollInfo(si, repaint);
 }
 
-void TextRenderer::destroyOffscreenDC()
+void TextRenderer::destroyOffscreenDC(DC_Helper& h)
 {
-	if (NULL != offscreenDC_)
+	if (NULL != h.offscreen)
 	{
-		DeleteObject(SelectObject(offscreenDC_, origBitmap_));
-		origBitmap_ = NULL;
-		DeleteDC(offscreenDC_);
-		offscreenDC_ = NULL;		
+	    assert(NULL != h.origBmp);
+		DeleteObject(SelectObject(h.offscreen, h.origBmp));
+		h.origBmp = NULL;
+		DeleteDC(h.offscreen);
+		h.offscreen = NULL;		
 	}
 }
 
@@ -225,7 +223,12 @@ LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_ACTIVATE:
 			if (WA_INACTIVE == LOWORD(wParam) && handle() == GetCapture())
 				ReleaseCapture();
-			return defaultCallback(uMsg, wParam, lParam);
+			return Widget::callback(uMsg, wParam, lParam);
+        
+        case WM_CANCELMODE:
+            if (handle() == GetCapture())
+                ReleaseCapture();
+            return Widget::callback(uMsg, wParam, lParam); 
 		
 		case WM_LBUTTONDBLCLK:
 			if (mouseAction(LOWORD(lParam), HIWORD(lParam), 2))
@@ -244,7 +247,19 @@ LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			return handleTimer(uMsg, wParam, lParam);
 			
 		case WM_GETDLGCODE:
-			return DLGC_WANTARROWS;
+		{
+		    MSG* msg = (MSG*)lParam;
+		    if (NULL != msg)
+		    {
+		        //OutputDebugString(_T("TextRenderer::WM_GETDLGCODE: "));
+		        //DumpMessage(msg->message, msg->wParam, msg->lParam);
+		        if (WM_KEYDOWN == msg->message)
+		            return  DLGC_WANTARROWS;
+		    }
+		    else
+			    return DLGC_WANTARROWS;
+        }
+			
 	}
 	return Widget::callback(uMsg, wParam, lParam);
 }
@@ -371,38 +386,36 @@ void TextRenderer::definitionBounds(Rect& rect)
 }
 
 
-HDC TextRenderer::prepareOffscreenDC(HDC orig, Rect& rect)
+bool TextRenderer::prepareOffscreenDC(DC_Helper& h, Rect& rect)
 {
-	if (NULL != offscreenDC_)
-		return NULL;
-		
-	HDC dc = 	CreateCompatibleDC(orig);
-	if (NULL == dc)
-		return NULL;
-	
 	definitionBounds(rect);
-    HBITMAP bitmap = CreateCompatibleBitmap(orig, rect.width() + SCALEX(2), rect.height() + SCALEY(2));
+
+    assert(NULL != h.orig);
+	HDC dc = 	CreateCompatibleDC(h.orig);
+	if (NULL == dc)
+		return false;
+	
+    HBITMAP bitmap = CreateCompatibleBitmap(h.orig, rect.width() + SCALEX(2), rect.height() + SCALEY(2));
 	if (NULL == bitmap)
 	{
 		DeleteDC(dc);
-		return NULL;
+		return false;
 	} 
 	
-	assert(NULL == origBitmap_);
-	origBitmap_ = SelectObject(dc, bitmap);
-	BitBlt(dc, 0, 0, rect.width() + SCALEX(2), rect.height() + SCALEY(2), orig, 0, 0, SRCCOPY);
-	offscreenDC_ = dc;
-	return dc;
+	assert(NULL == h.origBmp);
+	h.origBmp = SelectObject(h.offscreen = dc, bitmap);
+	BitBlt(dc, 0, 0, rect.width() + SCALEX(2), rect.height() + SCALEY(2), h.orig, 0, 0, SRCCOPY);
+	return true;
 }
 
-void TextRenderer::updateOrigDC(HDC orig, Rect& rect)
+void TextRenderer::updateOrigDC(DC_Helper& h, Rect& rect)
 {
-	assert(NULL != offscreenDC_);
-	assert(NULL != orig);
+	assert(NULL != h.offscreen);
+	assert(NULL != h.orig);
 	
 	rect.set(0, 0, rect.width() + SCALEX(2), rect.height() + SCALEY(2));
 
-	HGDIOBJ obj = SelectObject(offscreenDC_, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_WINDOW)));
+	HGDIOBJ obj = SelectObject(h.offscreen, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_WINDOW)));
 	Point p[5] = {
 		rect.topLeft(), 
 		Point(rect.left, rect.bottom - 1), 
@@ -410,21 +423,21 @@ void TextRenderer::updateOrigDC(HDC orig, Rect& rect)
 		Point(rect.right - 1, rect.top), 
 		rect.topLeft()
 	};
-	Polyline(offscreenDC_, p, 5);
-	DeleteObject(SelectObject(offscreenDC_, obj));
+	Polyline(h.offscreen, p, 5);
+	DeleteObject(SelectObject(h.offscreen, obj));
  	
 	if (handle() == GetFocus() && (definition.usesDoubleClickSelection() || definition.usesMouseSelection()
 		 || definition.usesHyperlinkNavigation() || definition.usesUpDownScroll()))
 	{
 #if _WIN32_WCE >= 0x500	
-		DrawFocusRectColor(offscreenDC_, &rect, DFRC_FOCUSCOLOR);
+		DrawFocusRectColor(h.offscreen, &rect, DFRC_FOCUSCOLOR);
 #else
-		DrawFocusRect(offscreenDC_, &rect);
+		DrawFocusRect(h.offscreen, &rect);
 #endif
 	}
 	
-	BitBlt(orig, 0, 0, rect.width(), rect.height(), offscreenDC_, 0, 0, SRCCOPY);
-	destroyOffscreenDC();
+	BitBlt(h.orig, 0, 0, rect.width(), rect.height(), h.offscreen, 0, 0, SRCCOPY);
+	destroyOffscreenDC(h);
 }
 
 
@@ -432,11 +445,11 @@ void TextRenderer::paintDefinition(HDC orig, int scroll, const Point* p)
 {
 	
 	Rect r;
-	HDC dc = prepareOffscreenDC(orig, r);
-	if (NULL == dc)
+	DC_Helper h(orig);
+	if (!prepareOffscreenDC(h, r))
 		return;
 	{	
-		Graphics g(dc, Graphics::deleteNot);
+		Graphics g(h.offscreen, Graphics::deleteNot);
 		if (0 == scroll)
 			definition.render(g, r);
 		else
@@ -444,7 +457,7 @@ void TextRenderer::paintDefinition(HDC orig, int scroll, const Point* p)
 		if (NULL != p)
 			definition.extendSelection(g, *p);
 	}
-	updateOrigDC(orig, r);
+	updateOrigDC(h, r);
 }
 
 bool TextRenderer::mouseAction(int x, int y, UINT clickCount)
@@ -482,15 +495,15 @@ bool TextRenderer::mouseAction(int x, int y, UINT clickCount)
 	if (NULL == orig)
 		return false;
 	
-	HDC offs = prepareOffscreenDC(orig, r);
+	DC_Helper h(orig);
 	bool res = false;
-	if (NULL != offs)
+	if (prepareOffscreenDC(h, r))
 	{
 		{
-			Graphics g(offs, Graphics::deleteNot);
+			Graphics g(h.offscreen, Graphics::deleteNot);
 			res = definition.extendSelection(g, p, clickCount);
 		}
-		updateOrigDC(orig, r);
+		updateOrigDC(h, r);
 	}
 	ReleaseDC(handle(), orig);
 	return res;
@@ -539,14 +552,14 @@ LRESULT TextRenderer::handleKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 	
 	bool res = false;
 	Rect r;
-	HDC offs = prepareOffscreenDC(orig, r);
-	if (NULL != offs)
+	DC_Helper h(orig);
+	if (prepareOffscreenDC(h, r))
 	{
 		{
-			Graphics g(offs, Graphics::deleteNot);
+			Graphics g(h.offscreen, Graphics::deleteNot);
 			res = definition.navigatorKey(g, key);
 		}
-		updateOrigDC(orig, r);
+		updateOrigDC(h, r);
 	}
 	ReleaseDC(handle(), orig);
 	if (res)
