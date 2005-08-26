@@ -6,14 +6,8 @@
 
 class Reader;
 
-class DataStoreReader;
-class DataStoreWriter;
-
-typedef std::auto_ptr<DataStoreReader> DataStoreReaderPtr;
-typedef std::auto_ptr<DataStoreWriter> DataStoreWriterPtr;
-
-extern ArsLexis::status_t readUniversalDataFromReader(Reader& origReader, UniversalDataFormat& out);
-extern void readUniversalDataFromStream(const ArsLexis::char_t* streamName, UniversalDataFormat& out);
+status_t UDF_ReadFromReader(Reader& origReader, UniversalDataFormat& out);
+status_t UDF_ReadFromStream(const char* streamName, UniversalDataFormat& out);
 
 class UniversalDataHandler: public LineBufferedNarrowProcessor {
 

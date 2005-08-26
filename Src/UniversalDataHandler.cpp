@@ -10,6 +10,11 @@
 # pragma far_code
 #endif
 
+
+typedef std::auto_ptr<DataStoreReader> DataStoreReaderPtr;
+typedef std::auto_ptr<DataStoreWriter> DataStoreWriterPtr;
+
+
 static status_t openDataStoreReader(const char* name, DataStoreReaderPtr& reader)
 {
     DataStore* ds=DataStore::instance();
@@ -161,40 +166,45 @@ status_t UniversalDataHandler::handleIncrement(const char* payload, ulong_t& len
 
 UniversalDataHandler::~UniversalDataHandler() {}
 
-/*
-status_t readUniversalDataFromReader(Reader& origReader, UniversalDataFormat& out)
+
+status_t UDF_ReadFromReader(Reader& origReader, UniversalDataFormat& out)
 {
     BufferedReader reader(origReader, 1024);
-    int lineNo = 0;
+    ulong_t lineNo = 0;
     ulong_t controlDataLength = 0;
     bool eof = false;
     out.reset();
     while (!eof)
     {
-        ArsLexis::String line;
-        ArsLexis::status_t error=reader.readLine(eof, line);
-        if (errNone!=error)
+        NarrowString line;
+        status_t error = reader.readLine(eof, line);
+        if (errNone != error)
             return error;
+            
         if (eof && line.empty()) //writer puts '\n' after last line... 
             break;
-        error = parseUniversalDataFormatTextLine(line, out, lineNo, controlDataLength);
-        if (errNone!=error)
+
+        error = parseUniversalDataFormatTextLine(line.data(), line.length(), out, lineNo, controlDataLength);
+        if (errNone != error)
             return error;
     }
     assert(controlDataLength == out.dataLength());
     if (controlDataLength != out.dataLength())
-        return SocketConnection::errResponseMalformed;
+        return SocketConnection::errResponseMalformed
+        ;
     return errNone;
 }
 
-void readUniversalDataFromStream(const char_t* streamName, UniversalDataFormat& out)
+status_t UDF_ReadFromStream(const char* streamName, UniversalDataFormat& out)
 {
     DataStoreReaderPtr reader;
     status_t error = openDataStoreReader(streamName, reader);
     if (errNone != error)
-        return;
-    if (errNone != readUniversalDataFromReader(*reader, out))
-        out.reset(); //any errors - return empty UDF
+        return error;
+        
+    if (errNone != (error = UDF_ReadFromReader(*reader, out)))
+        return error;
+    
+    return errNone; 
 }
- */
  
