@@ -110,7 +110,7 @@ public:
    
     bool tabBounds(ulong_t index, RECT& r) const {return FALSE != TabCtrl_GetItemRect(handle(), index, &r);}
    
-    static const long selectionNone = -1;
+    enum {selectionNone = long(-1)};
     
     long selection() const {return TabCtrl_GetCurSel(handle());} 
    
@@ -133,7 +133,7 @@ public:
    
     long setFocusedTab(ulong_t index) {return TabCtrl_SetCurFocus(handle(), index);}
    
-    static const long tabWidthDefault = -1;
+    enum {tabWidthDefault = long(-1)};
     long setMinTabWidth(long width) {return TabCtrl_SetMinTabWidth(handle(), width);}
    
     bool setTabHighlight(ulong_t index, bool value) {return FALSE != TabCtrl_HighlightItem(handle(), index, value);}

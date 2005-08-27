@@ -18,6 +18,8 @@
 
 #if _MSC_VER == 1200 // eVC++ 3.0
 
+#define for if (true) for 
+
 #ifndef WINVER
 #define WINVER 0x400
 #endif 

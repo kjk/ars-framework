@@ -5,7 +5,7 @@ static const char_t chrBullet = '\x95';
 #endif
 
 #ifdef _WIN32
-static const char_t chrBullet = L'\u2022';
+static const char_t chrBullet = 0x2022;
 #endif
 
 BulletElement::BulletElement():

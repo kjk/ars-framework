@@ -471,7 +471,7 @@ status_t SocketConnection::getSocketErrorStatus(status_t& out) const
 #endif
 
     NativeSocket_t socketRef=socket_;
-    assert(socketRef!=0);
+    // assert(socketRef != 0);
     int     status=0;
     uint_t  size=sizeof(status);
     //! @bug PalmOS <5 returns error==netErrParamErr here always, although everything is done according to documentation.

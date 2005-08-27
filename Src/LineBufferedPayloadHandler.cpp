@@ -73,7 +73,7 @@ status_t LineBufferedNarrowProcessor::handleIncrement(const char* payload, ulong
         if (errNone != error)
             return error;
 
-        if (bufferLen_ == pos)
+        if (bufferLen_ == ulong_t(pos))
             break;
 
 		StrErase(buffer_, bufferLen_, 0, pos + 1);
