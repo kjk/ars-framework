@@ -51,7 +51,7 @@ public:
 		fontFamilyCursive = FF_SCRIPT | VARIABLE_PITCH,
 		fontFamilyFantasy = FF_DECORATIVE | VARIABLE_PITCH,
 		fontFamilyMonospace = FF_MODERN | FIXED_PITCH,
-		fontFamilyNormal = fontFamilySansSerif
+		fontFamilyNormal = FF_SWISS | DEFAULT_PITCH
 	};
 
 	FontFamily fontFamily;

@@ -104,7 +104,14 @@ const WinFont& DefinitionStyle::font() const
 	if (cachedFont_.valid())
 		return cachedFont_;
 
-	LOGFONT font;
+    
+	LOGFONT font, system;
+	
+	
+    HGDIOBJ f = GetStockObject(SYSTEM_FONT);
+    GetObject(f, sizeof(system), &system);
+    DeleteObject(f); 
+       
 	ZeroMemory(&font, sizeof(font));
 
 	long height;
@@ -118,18 +125,14 @@ const WinFont& DefinitionStyle::font() const
 		height *= 2;
 		height /= 3;
 	}
+    
+	LONG  dwFontSize = 800;
+	SHGetUIMetrics(SHUIM_FONTSIZE_POINT, &dwFontSize, sizeof(dwFontSize),  NULL);
+	HDC  dc = GetWindowDC(NULL);
+	int dpi = GetDeviceCaps(dc, LOGPIXELSY);
+	ReleaseDC(NULL, dc);
+	font.lfHeight = - ((height * dwFontSize * dpi + fontSizeNormal * 3600) / (fontSizeNormal * 7200));
 
-	LONG  dwFontSize = 12;
-	if (S_OK == SHGetUIMetrics(SHUIM_FONTSIZE_PIXEL, &dwFontSize, sizeof(dwFontSize),  NULL))
-	{
-		font.lfHeight = - (height * dwFontSize) / fontSizeNormal;
-	}
-	else
-	{
-		HDC dc = GetDC(NULL);
-		font.lfHeight = - (height * GetDeviceCaps(dc, LOGPIXELSY)) / 72;
-		ReleaseDC(NULL, dc);
-	}
 
 	if (fontWeightNotDefined == fontWeight)
 		font.lfWeight = fontWeightNormal;
@@ -145,7 +148,7 @@ const WinFont& DefinitionStyle::font() const
 	if (yes == strike)
 		font.lfStrikeOut = TRUE;
 
-	font.lfCharSet = ANSI_CHARSET;
+	font.lfCharSet = DEFAULT_CHARSET;
 	font.lfOutPrecision = OUT_DEFAULT_PRECIS;
 
 	font.lfClipPrecision = CLIP_DEFAULT_PRECIS;
@@ -161,7 +164,10 @@ const WinFont& DefinitionStyle::font() const
     	font.lfQuality = DEFAULT_QUALITY;
 
 	if (fontFamilyNotDefined == fontFamily)
+	{
 		font.lfPitchAndFamily = fontFamilyNormal;
+        memcpy(font.lfFaceName, system.lfFaceName, sizeof(font.lfFaceName));
+    }
 	else
 		font.lfPitchAndFamily = fontFamily;
 
