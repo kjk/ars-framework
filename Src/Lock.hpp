@@ -29,7 +29,7 @@ public:
 
 template<> class Guard<DummyLock>: private NonCopyable {
 public:
-    Guard(DummyLock&, bool) {}
+    Guard(DummyLock&, bool = true) {}
     void acquire() {}
     void release() {}
     ~Guard() {}   

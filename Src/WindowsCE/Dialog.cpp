@@ -1,10 +1,17 @@
 #include <WindowsCE/Dialog.hpp>
 #include <ExtendedEvent.hpp>
 
+//#define DEBUG_DIALOG_CALLBACK_MESSAGES
+
 BOOL CALLBACK Dialog::dialogCallback(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (WM_INITDIALOG == uMsg)
 	    return Widget::callback(hwndDlg, uMsg, wParam, lParam);
+
+#ifdef DEBUG_DIALOG_CALLBACK_MESSAGES
+    OutputDebugString(TEXT("Dialog::dialogCallback(): "));
+    DumpMessage(uMsg, wParam, lParam); 
+#endif
     
     return FALSE; 
 }
@@ -70,7 +77,7 @@ bool Dialog::handleInitDialog(HWND focus_widget_handle, long init_param)
         SHSipPreference(handle(), SIP_INPUTDIALOG);
 #endif
     
-	return messageHandled;
+	return true;
 }
 
 void Dialog::endModal(int code)

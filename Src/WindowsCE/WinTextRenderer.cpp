@@ -259,7 +259,16 @@ LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		    else
 			    return DLGC_WANTARROWS;
         }
-			
+        
+        //case WM_HOTKEY:
+        //{
+        //    HWND parent = parentHandle();
+        //    if (NULL != parent)
+        //    {
+        //        PostMessage(parent, uMsg, wParam, lParam);
+        //        return messageHandled;
+        //    }  
+        //}
 	}
 	return Widget::callback(uMsg, wParam, lParam);
 }

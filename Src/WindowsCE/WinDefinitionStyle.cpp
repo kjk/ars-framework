@@ -87,6 +87,7 @@ void DefinitionStyle::reset()
 	fontWeight = fontWeightNotDefined;
 	italic = superscript = subscript = small = strike = underline = notDefined;
 	fontFamily = fontFamilyNotDefined;
+	fontFamilyName = NULL;
 	cachedFont_ = WinFont();
 }
 
@@ -97,6 +98,7 @@ DefinitionStyle::DefinitionStyle()
 
 DefinitionStyle::~DefinitionStyle()
 {
+    free(fontFamilyName);
 }
 
 const WinFont& DefinitionStyle::font() const
@@ -162,7 +164,7 @@ const WinFont& DefinitionStyle::font() const
 //    else    
 //#endif
     	font.lfQuality = DEFAULT_QUALITY;
-
+    
 	if (fontFamilyNotDefined == fontFamily)
 	{
 		font.lfPitchAndFamily = fontFamilyNormal;

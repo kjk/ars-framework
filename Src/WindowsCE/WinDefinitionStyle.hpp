@@ -51,10 +51,11 @@ public:
 		fontFamilyCursive = FF_SCRIPT | VARIABLE_PITCH,
 		fontFamilyFantasy = FF_DECORATIVE | VARIABLE_PITCH,
 		fontFamilyMonospace = FF_MODERN | FIXED_PITCH,
-		fontFamilyNormal = FF_SWISS | DEFAULT_PITCH
+		fontFamilyNormal = FF_DONTCARE | DEFAULT_PITCH
 	};
 
 	FontFamily fontFamily;
+	char* fontFamilyName;
 
 //	char_t fontFamilyCustomName[LF_FACESIZE];
 	

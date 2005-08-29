@@ -181,6 +181,10 @@ public:
    
     bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
    
+    void setCheck(ulong_t state = BST_CHECKED) {sendMessage(BM_SETCHECK, state, 0);} 
+    
+    long checked() const {return sendMessage(BM_GETCHECK, 0, 0);}  
+   
 };
 
 #endif

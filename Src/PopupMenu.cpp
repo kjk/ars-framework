@@ -2,6 +2,7 @@
 #include <Graphics.hpp>
 #include <Text.hpp>
 #include <UTF8_Processor.hpp>
+#include <HyperlinkHandlerBase.hpp>
 
 #ifdef _PALM_OS
 

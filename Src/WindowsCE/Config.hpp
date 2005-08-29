@@ -41,6 +41,14 @@ namespace DRA {
 #include <aygshell.h>
 #pragma comment(lib, "aygshell.lib")
 
+#ifdef WIN32_PLATFORM_WFSP
+#define SHELL_TPCSHELL
+#endif
+
+#ifdef SHELL_TPCSHELL
+#include <tpcshell.h>
+#endif
+
 #define SHELL_MENUBAR
 
 #endif // SHELL_AYGSHELL
