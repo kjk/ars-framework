@@ -17,7 +17,8 @@ TextRenderer::TextRenderer(AutoDeleteOption ad):
 	scrollbarVisible_(false),
 	leftButtonDown_(false),
 	scrollTimer_(0),
-	scrollDirection_(scrollNone)
+	scrollDirection_(scrollNone),
+	actionDown_(0)
 {}
 
 TextRenderer::~TextRenderer()
@@ -253,11 +254,17 @@ LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		    {
 		        //OutputDebugString(_T("TextRenderer::WM_GETDLGCODE: "));
 		        //DumpMessage(msg->message, msg->wParam, msg->lParam);
+		        if ((WM_KEYDOWN == msg->message || WM_KEYUP == msg->message) && (VK_RETURN == wParam || VK_ACTION == wParam))
+		        {
+		            handleKeyDown(msg->message, msg->wParam, msg->lParam);
+		            return DLGC_DEFPUSHBUTTON;
+		        }  
+		             
 		        if (WM_KEYDOWN == msg->message)
 		            return  DLGC_WANTARROWS;
 		    }
 		    else
-			    return DLGC_WANTARROWS;
+			    return DLGC_WANTARROWS | DLGC_DEFPUSHBUTTON;
         }
         
         //case WM_HOTKEY:
@@ -548,7 +555,16 @@ LRESULT TextRenderer::handleKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 		case VK_ACTION:
 #endif			
 		case VK_RETURN:
-			key = Definition::navKeyCenter;
+		    if (WM_KEYDOWN == msg)
+		    {
+		        ++actionDown_;
+		        return messageHandled; 
+            } 
+            else if (WM_KEYUP == msg && 0 != actionDown_)
+            {
+                --actionDown_;
+    			key = Definition::navKeyCenter;
+            } 
 			break;
 		
 		default:
@@ -582,7 +598,7 @@ LRESULT TextRenderer::handleKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 		if (NULL != parent)
 			PostMessage(parent, WM_NEXTDLGCTL, 1 == dir ? 0 : 1, FALSE);
 	}
-	return defaultCallback(msg, wParam, lParam);	
+	return messageHandled;	
 }
 
 LRESULT TextRenderer::handleTimer(UINT msg, WPARAM wParam, LPARAM lParam)

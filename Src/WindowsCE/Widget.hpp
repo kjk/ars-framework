@@ -121,6 +121,14 @@ public:
 	void removeStyle(ulong_t style) {modifyStyle(0, style);}
 	
 	void focus() {SetFocus(handle());}
+	
+	enum EraseOption {
+	    eraseNot,
+	    erase
+    };
+    
+	bool invalidate(EraseOption e) {return FALSE != InvalidateRect(handle(), NULL, e);}
+	bool invalidate(const RECT& r, EraseOption e) {return FALSE != InvalidateRect(handle(), &r, e);}
 
 protected:
 

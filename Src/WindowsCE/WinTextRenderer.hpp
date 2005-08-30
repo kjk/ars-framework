@@ -10,6 +10,7 @@ class TextRenderer: public Widget {
 	bool scrollbarVisible_;
 	bool leftButtonDown_;
 	UINT scrollTimer_;
+	ulong_t actionDown_;
 	
 	enum ScrollDirection {
 		scrollNone,

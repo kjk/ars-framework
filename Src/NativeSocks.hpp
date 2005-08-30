@@ -155,13 +155,14 @@ public:
 
 #if defined(_WIN32)
 
-const ArsLexis::status_t netErrorClass = WSABASEERR;
-const ArsLexis::status_t netErrParamErr = WSAEINVAL;
-const ArsLexis::status_t netErrTimeout = WSAETIMEDOUT;
-const ArsLexis::status_t netErrSocketClosedByRemote = WSAECONNRESET;
-const ArsLexis::status_t netErrWouldBlock = WSAEWOULDBLOCK;
-const ArsLexis::status_t netErrSocketBusy = WSAEADDRINUSE;
-const ArsLexis::status_t netErrUnimplemented = WSAEOPNOTSUPP;
+const status_t netErrorClass = WSABASEERR;
+const status_t netErrParamErr = WSAEINVAL;
+const status_t netErrTimeout = WSAETIMEDOUT;
+const status_t netErrSocketClosedByRemote = WSAECONNRESET;
+const status_t netErrWouldBlock = WSAEWOULDBLOCK;
+const status_t netErrSocketBusy = WSAEADDRINUSE;
+const status_t netErrUnimplemented = WSAEOPNOTSUPP;
+const status_t netErrUnreachableDest = WSAEHOSTUNREACH;
 
 #endif
 
