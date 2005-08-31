@@ -8,6 +8,7 @@ class Reader;
 
 status_t UDF_ReadFromReader(Reader& origReader, UniversalDataFormat& out);
 status_t UDF_ReadFromStream(const char* streamName, UniversalDataFormat& out);
+UniversalDataFormat* UDF_ReadFromStream(const char* streamName);
 
 class UniversalDataHandler: public LineBufferedNarrowProcessor {
 

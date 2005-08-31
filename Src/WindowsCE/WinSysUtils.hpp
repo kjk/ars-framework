@@ -48,4 +48,9 @@ inline HINSTANCE GetInstance() {return GetModuleHandle(NULL);}
 
 const void* LoadBinaryData(UINT id, HINSTANCE instance = NULL);
 
+ulong_t LogX(ulong_t x);
+ulong_t LogY(ulong_t y);
+ulong_t PelsX(ulong_t logx);
+ulong_t PelsY(ulong_t logy);
+
 #endif

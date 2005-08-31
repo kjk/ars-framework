@@ -208,3 +208,17 @@ status_t UDF_ReadFromStream(const char* streamName, UniversalDataFormat& out)
     return errNone; 
 }
  
+UniversalDataFormat* UDF_ReadFromStream(const char* streamName)
+{
+    UniversalDataFormat* udf = new_nt UniversalDataFormat();
+    if (NULL == udf)
+        return NULL;
+
+    status_t err = UDF_ReadFromStream(streamName, *udf);
+    if (errNone != err)
+    {
+        delete udf;
+        return NULL; 
+    }
+    return udf; 
+}   

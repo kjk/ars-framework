@@ -64,6 +64,9 @@ public:
 	LRESULT sendMessage(UINT message, WPARAM wParam, LPARAM lParam) const {return SendMessage(handle(), message, wParam, lParam);}
 
 	void bounds(RECT& rect) const;
+	
+	ulong_t height() const;
+	ulong_t width() const;
 
 	void innerBounds(RECT& rect) const {GetClientRect(handle(), &rect);}
 

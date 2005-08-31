@@ -337,6 +337,21 @@ void Widget::bounds(RECT& out) const
 		ScreenToClient(p, out);
 }
 
+ulong_t Widget::height() const
+{
+    RECT out;
+    GetWindowRect(handle(), &out);
+    return out.bottom - out.top;
+}
+
+ulong_t Widget::width() const
+{
+    RECT out;
+    GetWindowRect(handle(), &out);
+    return out.right - out.left;
+}
+
+
 bool Widget::attachControl(HWND wnd, UINT id)
 {
 	HWND w = GetDlgItem(wnd, id);

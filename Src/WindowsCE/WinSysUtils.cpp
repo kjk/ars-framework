@@ -566,3 +566,37 @@ char_t* LoadString(UINT id, ulong_t* len)
 //    #error "Define string narrowization ;) for LoadString()."
 //#endif   
 //}
+
+// #define ROUND_LOGICAL_UNITS
+
+#ifdef ROUND_LOGICAL_UNITS
+#define LOG_X_ADD 2
+#define LOG_Y_ADD 4
+#else
+#define LOG_X_ADD 0
+#define LOG_Y_ADD 0
+#endif
+
+ulong_t LogX(ulong_t x)
+{
+    static ulong_t w = LOWORD(GetDialogBaseUnits());
+    return (x * w + LOG_X_ADD) / 4;
+}
+
+ulong_t LogY(ulong_t y)
+{
+    static ulong_t h = HIWORD(GetDialogBaseUnits());
+    return (y * h + LOG_Y_ADD) / 8;     
+}
+
+ulong_t PelsX(ulong_t logx)
+{
+    static ulong_t w = LOWORD(GetDialogBaseUnits());
+    return (4 * logx) / w; 
+}
+
+ulong_t PelsY(ulong_t logy)
+{
+    static ulong_t h = HIWORD(GetDialogBaseUnits());
+    return (8 * logy) / h; 
+}
