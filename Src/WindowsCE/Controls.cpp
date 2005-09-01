@@ -118,3 +118,25 @@ bool Button::create(DWORD style, int x, int y, int width, int height, HWND paren
     style |= WS_CHILD;
     return Widget::create(WINDOW_CLASS_BUTTON, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
 }
+
+
+ListBox::ListBox(AutoDeleteOption ad):
+    Widget(ad)
+{
+}
+
+ListBox::ListBox(HWND wnd, AutoDeleteOption ad):
+    Widget(wnd, ad)
+{
+}
+
+ListBox::~ListBox()
+{}
+
+bool ListBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
+{
+    assert(parent != NULL);
+    style |= WS_CHILD;
+    return Widget::create(WINDOW_CLASS_LISTBOX, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
+}
+

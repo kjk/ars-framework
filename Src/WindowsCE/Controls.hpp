@@ -9,6 +9,7 @@
 #define WINDOW_CLASS_TABCONTROL WC_TABCONTROL
 #define WINDOW_CLASS_LISTVIEW WC_LISTVIEW
 #define WINDOW_CLASS_BUTTON  TEXT("BUTTON")
+#define WINDOW_CLASS_LISTBOX TEXT("LISTBOX")
 
 class ScrollBar: public Widget {
 public:
@@ -185,6 +186,18 @@ public:
     
     long checked() const {return sendMessage(BM_GETCHECK, 0, 0);}  
    
+};
+
+class ListBox: public Widget {
+public:
+    
+    explicit ListBox(AutoDeleteOption ad = autoDeleteNot);
+   
+    explicit ListBox(HWND wnd, AutoDeleteOption ad = autoDeleteNot);
+   
+   ~ListBox(); 
+   
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
 };
 
 #endif
