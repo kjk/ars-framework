@@ -1493,15 +1493,44 @@ status_t DefinitionModel::append(DefinitionElement* e)
     if (NULL == e)
         return memErrNotEnoughSpace;
     
+    status_t err = errNone; 
     ErrTry {
         elements.push_back(e);
     }
     ErrCatch (ex) {
-        return ex;
+        err = ex;
     } ErrEndCatch
+   if (errNone != err)
+   {
+        delete e;
+        return err;
+   } 
    return errNone;    
 }
 
+status_t DefinitionModel::appendText(const char_t* text, long len)
+{
+    if (-1 == len)
+        len = Len(text);
+
+    TextElement* t = new_nt TextElement();
+    if (NULL == t)
+        return memErrNotEnoughSpace;
+
+    status_t err = errNone;
+    ErrTry {
+        t->setText(String(text, len));
+    }
+    ErrCatch (ex) {
+        err = ex;
+    } ErrEndCatch
+    if (errNone != err)
+    {
+        delete t;
+        return memErrNotEnoughSpace; 
+    }
+    return append(t); 
+}
 
 
 

@@ -60,6 +60,7 @@ public:
     const char_t * title() const {return title_;}
    
     status_t append(DefinitionElement* e);
+    status_t appendText(const char_t* text, long len = -1); 
    
     DefinitionElement* last() {return elements.back();} 
 
