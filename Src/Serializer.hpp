@@ -36,7 +36,7 @@ class Serializer {
     bool skipLastRecord_;
 	void* buffer_; 
     
-    typedef std::map<std::uint32_t, ulong_t> RecordIndex_t;
+    typedef std::map<ulong_t, ulong_t> RecordIndex_t;
     RecordIndex_t recordIndex_;
     
     bool indexNextRecord();
@@ -160,15 +160,15 @@ private:
     
         union {
             DataType type;
-            std::uint32_t fill_;
+            ulong_t fill_;
         };
         
-        std::uint32_t id;
+        ulong_t id;
         
         union {
-            std::uint32_t value;
-            std::uint32_t stringLength;
-            std::uint32_t objectVersion;
+            ulong_t value;
+            ulong_t stringLength;
+            ulong_t objectVersion;
         };
         
         Record() {}

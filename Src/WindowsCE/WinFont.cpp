@@ -22,10 +22,10 @@ void WinFont::release()
 	if (0 == --*refCount_)
 	{
 		delete refCount_;
-		refCount_ = NULL;
 		DeleteObject((HGDIOBJ)handle_);
-		handle_ = NULL;
 	}
+	refCount_ = NULL;
+	handle_ = NULL;
 }
 
 void WinFont::attach(HFONT handle, bool nonDestructible)
@@ -65,6 +65,16 @@ void WinFont::getSystemFont()
 	bool res = getStockFont(SYSTEM_FONT);
 	assert(res);
 }
+
+bool WinFont::getSystemBoldFont()
+{
+	getStockFont(SYSTEM_FONT);
+	LOGFONT f;
+	GetObject(handle_, sizeof(f), &f);
+	f.lfWeight = FW_BOLD;
+	return createIndirect(f);
+}
+
 
 WinFont::WinFont(const WinFont& other):
 	handle_(other.handle_),

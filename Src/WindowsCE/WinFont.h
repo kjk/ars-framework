@@ -19,6 +19,8 @@ public:
 	bool getStockFont(int object);
 
 	void getSystemFont();
+	
+	bool getSystemBoldFont();
 
 	bool valid() const {return NULL != handle_;}
 

@@ -254,7 +254,11 @@ LRESULT TextRenderer::callback(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		    {
 		        //OutputDebugString(_T("TextRenderer::WM_GETDLGCODE: "));
 		        //DumpMessage(msg->message, msg->wParam, msg->lParam);
-		        if ((WM_KEYDOWN == msg->message || WM_KEYUP == msg->message) && (VK_RETURN == wParam || VK_ACTION == wParam))
+		        if ((WM_KEYDOWN == msg->message || WM_KEYUP == msg->message) && (VK_RETURN == wParam
+#ifdef VK_ACTION
+					|| VK_ACTION == wParam
+#endif
+				))
 		        {
 		            handleKeyDown(msg->message, msg->wParam, msg->lParam);
 		            return DLGC_DEFPUSHBUTTON;
