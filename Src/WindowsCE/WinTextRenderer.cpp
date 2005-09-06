@@ -8,7 +8,7 @@ static const char_t* textRendererWindowClass = TEXT("TextRenderer");
 
 static ATOM TextRendererClass(HINSTANCE instance)
 {
-	static ATOM a = Widget::registerClass(CS_DBLCLKS|CS_PARENTDC, instance, NULL, NULL, (HBRUSH)(COLOR_WINDOW+1), textRendererWindowClass);
+	static ATOM a = Widget::registerClass(CS_DBLCLKS, instance, NULL, NULL, (HBRUSH)(COLOR_WINDOW+1), textRendererWindowClass);
 	return a;	
 }
 
@@ -35,6 +35,8 @@ bool TextRenderer::create(DWORD style, int x, int y, int w, int h, HWND parent, 
 	return Widget::create(a, NULL, style, x, y, w, h, parent, NULL, instance);
 }
 
+//#define DISABLE_DOUBLEBUFFER
+
 long TextRenderer::handleCreate(const CREATESTRUCT& cs)
 {
 	int sx = GetSystemMetrics(SM_CXVSCROLL);
@@ -46,16 +48,16 @@ long TextRenderer::handleCreate(const CREATESTRUCT& cs)
 	return Widget::handleCreate(cs);
 }
 
-void TextRenderer::verifyScrollbarVisible(ushort width, ushort height)
+void TextRenderer::verifyScrollbarVisible()
 {
-	Rect r;
-	scrollBar_.bounds(r);
-	int sx = r.width() + SCALEX(1);
+	int sx = scrollBar_.width() + SCALEX(1);
 	
+	Rect r;
+	bounds(r);
+	r.set(SCALEX(1), SCALEY(1), r.width() - SCALEX(2), r.height() - SCALEX(2));
 	if (scrollbarVisible_)
-		width -= sx;
+		r.setWidth(r.width() - sx);
 		
-	r.set(0, 0, width, height);
 	if (definition.layoutChanged(r))
 	{
 		Graphics g(handle());
@@ -65,21 +67,19 @@ void TextRenderer::verifyScrollbarVisible(ushort width, ushort height)
 		{
 			scrollbarVisible_ = false;
 			scrollBar_.show(SW_HIDE);
-			width += sx;
+			r.setWidth(r.width() + sx);
 			recalc = true;
 		}
 		else if (!scrollbarVisible_ && definition.shownLinesCount() < definition.totalLinesCount())
 		{
 			scrollbarVisible_ = true;
 			scrollBar_.show(SW_SHOW);
-			width -= sx;
+			r.setWidth(r.width() - sx);
 			recalc = true;
 		}
 		if (recalc)
-		{
-			r.setWidth(width);
 			definition.calculateLayout(g, r);
-		}
+
 		if (scrollbarVisible_)
 			updateScroller(repaintNot);
 	}
@@ -97,7 +97,7 @@ void TextRenderer::updateScroller(RepaintOption repaint)
     int total = definition.totalLinesCount();
     int shown = definition.shownLinesCount();
     
-   assert(total > shown);
+    assert(total > shown);
 	si.nMax = total - 1;
 	si.nPage = shown;
 	si.nPos = first;
@@ -106,6 +106,7 @@ void TextRenderer::updateScroller(RepaintOption repaint)
 
 void TextRenderer::destroyOffscreenDC(DC_Helper& h)
 {
+#ifndef DISABLE_DOUBLEBUFFER
 	if (NULL != h.offscreen)
 	{
 	    assert(NULL != h.origBmp);
@@ -114,18 +115,20 @@ void TextRenderer::destroyOffscreenDC(DC_Helper& h)
 		DeleteDC(h.offscreen);
 		h.offscreen = NULL;		
 	}
+#endif
 }
 
 
 long TextRenderer::handleResize(UINT sizeType, ushort width, ushort height)
 {
-	// destroyOffscreenDC();
-	verifyScrollbarVisible(width, height);
+	verifyScrollbarVisible();
 
-	Rect rect;
+    Rect rect;
 	scrollBar_.bounds(rect);
 	scrollBar_.anchor(anchorLeft, rect.width(), anchorBottom, 0, repaintWidget);
-	return Widget::handleResize(sizeType, width, height);
+	// return Widget::handleResize(sizeType, width, height);
+	invalidate(eraseNot);
+	return messageHandled;
 }
 
 long TextRenderer::handlePaint(HDC dc)
@@ -137,9 +140,7 @@ long TextRenderer::handlePaint(HDC dc)
 void TextRenderer::setModel(DefinitionModel* model, Definition::ModelOwnerFlag own)
 {
 	definition.setModel(model, own);
-	Rect r;
-	bounds(r);
-	verifyScrollbarVisible(ushort(r.width()), ushort(r.height()));
+	verifyScrollbarVisible();
 	InvalidateRect(handle(), NULL, FALSE);
 }
 
@@ -411,11 +412,15 @@ bool TextRenderer::prepareOffscreenDC(DC_Helper& h, Rect& rect)
 	definitionBounds(rect);
 
     assert(NULL != h.orig);
+
+#ifdef DISABLE_DOUBLEBUFFER    
+    h.offscreen = h.orig;
+#else     
 	HDC dc = 	CreateCompatibleDC(h.orig);
 	if (NULL == dc)
 		return false;
 	
-    HBITMAP bitmap = CreateCompatibleBitmap(h.orig, rect.width() + SCALEX(2), rect.height() + SCALEY(2));
+	HBITMAP bitmap = CreateCompatibleBitmap(h.orig, rect.width() + SCALEX(2), rect.height() + SCALEY(2));
 	if (NULL == bitmap)
 	{
 		DeleteDC(dc);
@@ -425,6 +430,7 @@ bool TextRenderer::prepareOffscreenDC(DC_Helper& h, Rect& rect)
 	assert(NULL == h.origBmp);
 	h.origBmp = SelectObject(h.offscreen = dc, bitmap);
 	BitBlt(dc, 0, 0, rect.width() + SCALEX(2), rect.height() + SCALEY(2), h.orig, 0, 0, SRCCOPY);
+#endif	
 	return true;
 }
 
@@ -455,9 +461,11 @@ void TextRenderer::updateOrigDC(DC_Helper& h, Rect& rect)
 		DrawFocusRect(h.offscreen, &rect);
 #endif
 	}
-	
+
+#ifndef DISABLE_DOUBLEBUFFER	
 	BitBlt(h.orig, 0, 0, rect.width(), rect.height(), h.offscreen, 0, 0, SRCCOPY);
 	destroyOffscreenDC(h);
+#endif
 }
 
 

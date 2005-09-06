@@ -25,7 +25,7 @@ class TextRenderer: public Widget {
 	//HDC offscreenDC_;
 	//HGDIOBJ origBitmap_;
 	
-	void verifyScrollbarVisible(ushort width, ushort height);
+	void verifyScrollbarVisible();
 	void updateScroller(RepaintOption repaint);
 	
 	void prepareTestData();
