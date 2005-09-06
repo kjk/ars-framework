@@ -40,7 +40,7 @@ class TextRenderer: public Widget {
 	
 	bool scroll(int units, ScrollType type, const Point* p = NULL);
 	
-	void paintDefinition(HDC dc, int scroll = 0, const Point* p = NULL);
+	void paintDefinition(HDC dc, int scroll = 0, const Point* p = NULL, bool erase = false);
 	void definitionBounds(Rect& r);
 	
 	struct DC_Helper {
@@ -72,7 +72,7 @@ protected:
 
 	long handleCreate(const CREATESTRUCT& cs);
 	long handleResize(UINT sizeType, ushort width, ushort height);
-	long handlePaint(HDC dc);
+	long handlePaint(HDC dc, PAINTSTRUCT* ps);
 
 private:
 

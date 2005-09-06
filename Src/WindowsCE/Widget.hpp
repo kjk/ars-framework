@@ -149,7 +149,7 @@ protected: // message handlers
 	
 	virtual long handleResize(UINT sizeType, ushort width, ushort height);
 	
-	virtual long handlePaint(HDC dc);
+	virtual long handlePaint(HDC dc, PAINTSTRUCT* ps);
 	
     virtual long handleNotify(int controlId, const NMHDR& header);
 	

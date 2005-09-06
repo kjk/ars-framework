@@ -470,7 +470,7 @@ long Widget::handleResize(UINT sizeType, ushort width, ushort height)
 	return defaultCallback(WM_SIZE, sizeType, MAKELPARAM(width, height));
 }
 
-long Widget::handlePaint(HDC dc)
+long Widget::handlePaint(HDC dc, PAINTSTRUCT* ps)
 {
 	assert(NULL != dc);
 	return defaultCallback(WM_PAINT, (WPARAM)dc, 0);
@@ -490,14 +490,14 @@ LRESULT Widget::rawHandlePaint(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	HDC dc = (HDC)wParam;
 	if (NULL != dc)
 	{
-		l = handlePaint(dc);
+		l = handlePaint(dc, NULL);
 		return l;
 	}
 	PAINTSTRUCT ps;
 	dc = BeginPaint(handle(), &ps);
 	if (NULL != dc)
 	{
-		l = handlePaint(dc);
+		l = handlePaint(dc, &ps);
 		EndPaint(handle_, &ps);
 	}
 	return l;

@@ -8,7 +8,7 @@ static const char_t* textRendererWindowClass = TEXT("TextRenderer");
 
 static ATOM TextRendererClass(HINSTANCE instance)
 {
-	static ATOM a = Widget::registerClass(CS_DBLCLKS, instance, NULL, NULL, (HBRUSH)(COLOR_WINDOW+1), textRendererWindowClass);
+	static ATOM a = Widget::registerClass(CS_DBLCLKS | CS_PARENTDC, instance, NULL, NULL, NULL, textRendererWindowClass);
 	return a;	
 }
 
@@ -131,10 +131,13 @@ long TextRenderer::handleResize(UINT sizeType, ushort width, ushort height)
 	return messageHandled;
 }
 
-long TextRenderer::handlePaint(HDC dc)
+long TextRenderer::handlePaint(HDC dc, PAINTSTRUCT* ps)
 {
-	paintDefinition(dc);
-	return Widget::handlePaint(dc);
+    bool erase = false;
+    if (NULL != ps && ps->fErase)
+        erase = true;  
+	paintDefinition(dc, 0, NULL, erase);
+	return messageHandled;
 }
 
 void TextRenderer::setModel(DefinitionModel* model, Definition::ModelOwnerFlag own)
@@ -469,7 +472,7 @@ void TextRenderer::updateOrigDC(DC_Helper& h, Rect& rect)
 }
 
 
-void TextRenderer::paintDefinition(HDC orig, int scroll, const Point* p)
+void TextRenderer::paintDefinition(HDC orig, int scroll, const Point* p, bool erase)
 {
 	
 	Rect r;
@@ -478,6 +481,15 @@ void TextRenderer::paintDefinition(HDC orig, int scroll, const Point* p)
 		return;
 	{	
 		Graphics g(h.offscreen, Graphics::deleteNot);
+		if (erase)
+		{
+		    const DefinitionStyle* s = StyleGetStaticStyle(styleIndexDefault);
+		    COLORREF c = g.setBackgroundColor(s->backgroundColor);
+		    Rect b;
+		    innerBounds(b);
+		    g.erase(b);
+		    g.setBackgroundColor(c);
+		}
 		if (0 == scroll)
 			definition.render(g, r);
 		else
