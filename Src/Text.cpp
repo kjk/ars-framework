@@ -10,8 +10,7 @@ using std::memset;
 char* StringCopyN__(const char* curStr, long len, const char* file, int line)
 {
     using namespace std;
-    if (-1 == len)
-        len = Len(curStr);
+    StrLenFix(curStr, len);
     char* newStr = (char*)malloc__(sizeof(*curStr) * (len + 1), file, line);
     if (NULL == newStr)
         return NULL;
@@ -26,8 +25,7 @@ char* StringCopyN__(const char* curStr, long len, const char* file, int line)
 wchar_t* StringCopyN__(const wchar_t* curStr, long len, const char* file, int line)
 {
     using namespace std;
-    if (-1 == len)
-        len = Len(curStr);
+    StrLenFix(curStr, len);
     wchar_t* newStr = (wchar_t*)malloc__(sizeof(*curStr) * (len + 1), file, line);
     if (NULL == newStr)
         return NULL;
@@ -41,8 +39,9 @@ wchar_t* StringCopyN__(const wchar_t* curStr, long len, const char* file, int li
 bool equals(const char* s1, long s1len, const char* s2, long s2len)
 {
     using namespace std;
-    if (-1 == s1len) s1len = Len(s1);
-    if (-1 == s2len) s2len = Len(s2);
+    StrLenFix(s1, s1len);
+    StrLenFix(s2, s2len);  
+
     if (s1len != s2len)
         return false;
     return 0 == strncmp(s1, s2, s1len);
@@ -51,8 +50,8 @@ bool equals(const char* s1, long s1len, const char* s2, long s2len)
 #ifdef _WIN32_WCE
 bool equals(const wchar_t* s1, long s1len, const wchar_t* s2, long s2len)
 {
-    if (-1 == s1len) s1len = Len(s1);
-    if (-1 == s2len) s2len = Len(s2);
+    StrLenFix(s1, s1len);
+    StrLenFix(s2, s2len);  
 
     if (s1len != s2len)
         return false;
@@ -95,8 +94,8 @@ bool equalsIgnoreCase(const wchar_t* s1start, const wchar_t* s1end, const wchar_
 
 bool startsWith(const char* text, long len, const char* prefix, long plen)
 {
-    if (-1 == len) len = Len(text);
-    if (-1 == plen) plen = Len(prefix);
+    StrLenFix(text, len);
+    StrLenFix(prefix, plen); 
 
     if (plen > len)
         return false;
@@ -113,8 +112,8 @@ bool startsWith(const char* text, long len, const char* prefix, long plen)
 #ifdef _WIN32_WCE
 bool startsWith(const wchar_t* text, long len, const wchar_t* prefix, long plen)
 {
-    if (-1 == len) len =Len(text);
-    if (-1 == plen) plen = Len(prefix);
+    StrLenFix(text, len);
+    StrLenFix(prefix, plen); 
 
     if (plen > len)
         return false;
@@ -131,8 +130,8 @@ bool startsWith(const wchar_t* text, long len, const wchar_t* prefix, long plen)
 
 bool startsWithIgnoreCase(const char* text, long len, const char* prefix, long plen)
 {
-    if (-1 == len) len = Len(text);
-    if (-1 == plen) plen = Len(prefix);
+    StrLenFix(text, len);
+    StrLenFix(prefix, plen); 
 
     if (plen > len)
         return false;
@@ -149,8 +148,8 @@ bool startsWithIgnoreCase(const char* text, long len, const char* prefix, long p
 #ifdef _WIN32_WCE
 bool startsWithIgnoreCase(const wchar_t* text, long len, const wchar_t* prefix, long plen)
 {
-    if (-1 == len) len =Len(text);
-    if (-1 == plen) plen = Len(prefix);
+    StrLenFix(text, len);
+    StrLenFix(prefix, plen); 
 
     if (plen > len)
         return false;
@@ -273,10 +272,8 @@ OnError:
 
 long StrFind(const char* str, long len, char chr)
 {
-    if (NULL == str)
-        return -1;
-    if (-1 == len) len = Len(str);
-
+    StrLenFix(str, len);
+    
     for (long i = 0; i < len; ++i)
         if (str[i] == chr)
             return i;
@@ -286,9 +283,7 @@ long StrFind(const char* str, long len, char chr)
 #ifdef _WIN32_WCE
 long StrFind(const wchar_t* str, long len, wchar_t chr)
 {
-    if (NULL == str)
-        return -1;
-    if (-1 == len) len = Len(str);
+    StrLenFix(str, len);
 
     for (long i = 0; i < len; ++i)
         if (str[i] == chr)
@@ -301,10 +296,9 @@ long StrFind(const char* str, long len, const char* sub, long slen)
 {
     if (NULL == str || NULL == sub)
         return -1;
-    if (-1 == len)
-        len = Len(str);
-    if (-1 == slen)
-        slen = Len(sub);
+        
+    StrLenFix(str, len);
+    StrLenFix(sub, slen);
 
     if (slen > len)
         return -1;
@@ -321,10 +315,9 @@ long StrFind(const wchar_t* str, long len, const wchar_t* sub, long slen)
 {
     if (NULL == str || NULL == sub)
         return -1;
-    if (-1 == len)
-        len = Len(str);
-    if (-1 == slen)
-        slen = Len(sub);
+        
+    StrLenFix(str, len);
+    StrLenFix(sub, slen);
 
     if (slen > len)
         return -1;
@@ -1187,7 +1180,8 @@ bool StrEmpty(const char_t *str)
 
 ulong_t StrHexlify(const char* in, long inLength, char* out, ulong_t outLength)
 {
-    if (-1 == inLength) inLength = Len(in);
+    StrLenFix(in, inLength);
+    
     assert(ulong_t(inLength * 2) <= outLength);
 
     for (long pos = 0; pos < inLength; pos++)
@@ -1201,10 +1195,11 @@ ulong_t StrHexlify(const char* in, long inLength, char* out, ulong_t outLength)
     return inLength * 2;
 }
 
+/*
 char_t* StrUnhexlify(const char_t* in, long inLen)
 {
-    if (-1 == inLen)
-        inLen = tstrlen(in);
+    StrLenFix(in, inLength);
+    
     if ((inLen % 2) != 0)
         return NULL;
 
@@ -1234,7 +1229,7 @@ Error:
     free(buffer);
     return NULL;
 }
-
+ */
 
 
 
@@ -1359,8 +1354,7 @@ char_t** StrArrInsertStrCopy(char_t**& array, ulong_t& length, ulong_t index, co
 
 long StrArrFindPrefix(char_t** array, ulong_t length, char_t nextChar, const char_t* str, long len)
 {
-    if (-1 == len)
-        len = tstrlen(str);
+    StrLenFix(str, len);
 
     for (ulong_t i = 0; i < length; ++i)
     {
@@ -1421,9 +1415,9 @@ void MemErase(void* target, ulong_t tlen, ulong_t efrom, ulong_t elen)
 
 char* StrAppend(char* target, long tlen, const char* source, long slen)
 {
-    if (NULL == target) tlen = 0; 
-    if (-1 == tlen) tlen = Len(target);
-    if (-1 == slen) slen = Len(source);
+    StrLenFix(target, tlen);
+    StrLenFix(source, slen);
+     
     target = (char*)MemAppend(target, tlen, source, slen, sizeof(*target));
     if (NULL == target)
         return NULL;
@@ -1433,7 +1427,7 @@ char* StrAppend(char* target, long tlen, const char* source, long slen)
 
 void StrErase(char* target, long tlen, ulong_t efrom, ulong_t elen)
 {
-    if (-1 == tlen) tlen = Len(target);
+    StrLenFix(target, tlen);
     MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
     if (efrom + elen < ulong_t(tlen))
         target[tlen - efrom - elen] = '\0';
@@ -1442,9 +1436,8 @@ void StrErase(char* target, long tlen, ulong_t efrom, ulong_t elen)
 #ifdef _WIN32_WCE
 wchar_t* StrAppend(wchar_t* target, long tlen, const wchar_t* source, long slen)
 {
-    if (NULL == target) tlen = 0; 
-    if (-1 == tlen) tlen = Len(target);
-    if (-1 == slen) slen = Len(source);
+    StrLenFix(target, tlen);
+    StrLenFix(source, slen);
     target = (wchar_t*)MemAppend(target, sizeof(*target) * tlen, source, sizeof(*target) * slen, sizeof(*target));
     if (NULL == target)
         return NULL;
@@ -1454,7 +1447,7 @@ wchar_t* StrAppend(wchar_t* target, long tlen, const wchar_t* source, long slen)
 }
 void StrErase(wchar_t* target, long tlen, ulong_t efrom, ulong_t elen)
 {
-    if (-1 == tlen) tlen = Len(target);
+    StrLenFix(target, tlen);
     MemErase(target, sizeof(*target) * tlen, sizeof(*target) * efrom, sizeof(*target) * elen);
     if (efrom + elen < ulong_t(tlen))
         target[tlen - efrom - elen] = L'\0';
@@ -1474,7 +1467,7 @@ void strip(std::basic_string<Ch>& str)
 template<class Ch>
 status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len)
 {
-    if (-1 == len) len = Len(str);
+    StrLenFix(str, len);
     ErrTry {
         out.append(str, len);
     }
@@ -1497,15 +1490,46 @@ Ch* StrAlloc(ulong_t length)
     return buf;
 }
 
+template<class Ch>
+Ch* StrAppend(Ch* target, long tlen, const Ch* src0, long slen0, const Ch* src1, long slen1)
+{
+    StrLenFix(target, tlen);
+    StrLenFix(src0, slen0);
+     
+    target = StrAppend(target, tlen, src0, slen0);
+    if (NULL == target)
+        return NULL;
+    tlen += slen0;
+    return StrAppend(target, tlen, src1, slen1);
+}
+
+template<class Ch>
+Ch* StrAppend(Ch* target, long tlen, const Ch* src0, long slen0, const Ch* src1, long slen1, const Ch* src2, long slen2)
+{
+    StrLenFix(target, tlen);
+    StrLenFix(src0, slen0);
+    StrLenFix(src1, slen1);
+    target = StrAppend(target, tlen, src0, slen1, src1, slen1);  
+    if (NULL == target)
+        return NULL;
+    
+    tlen += slen0 + slen1;
+    return StrAppend(target, tlen, src2, slen2);    
+}
+
 
 template status_t StringAppend<char>(std::string& out, const char* str, long len);
 template void strip<char>(std::string& str);
 template char* StrAlloc<char>(ulong_t length);
+template char* StrAppend(char*, long, const char*, long, const char*, long);
+template char* StrAppend(char*, long, const char*, long, const char*, long, const char*, long);
 
 #ifdef _WIN32_WCE
 template status_t StringAppend<wchar_t>(std::wstring& out, const wchar_t* str, long len);
 template void strip<wchar_t>(std::wstring& str);
 template wchar_t* StrAlloc<wchar_t>(ulong_t length);
+template wchar_t* StrAppend(wchar_t*, long, const wchar_t*, long, const wchar_t*, long);
+template wchar_t* StrAppend(wchar_t*, long, const wchar_t*, long, const wchar_t*, long, const wchar_t*, long);
 #endif
 
 

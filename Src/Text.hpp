@@ -248,10 +248,24 @@ template<class Ch>
 status_t StringAppend(std::basic_string<Ch>& out, const Ch* str, long len = -1);
 
 template<class Ch>
+Ch* StrAppend(Ch* target, long tlen, const Ch* src0, long slen0, const Ch* src1, long slen1);
+
+template<class Ch>
+Ch* StrAppend(Ch* target, long tlen, const Ch* src0, long slen0, const Ch* src1, long slen1, const Ch* src2, long slen2);
+
+template<class Ch>
 Ch* StrAlloc(ulong_t length);
 
 template<class Ch>
 void strip(std::basic_string<Ch>& str);
+
+template<class Ch>
+inline void StrLenFix(const Ch* str, long& len)
+{
+    if (-1 == len)
+        len = (NULL == str ? 0 : Len(str)); 
+}
+
 
 #ifdef DEBUG
 void test_TextUnitTestAll();

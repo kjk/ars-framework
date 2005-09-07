@@ -469,7 +469,8 @@ int Alert(HWND parent, UINT textId, UINT titleId, UINT type)
 
 void Alert(uint_t alertId)
 {
-	Alert(NULL, alertId);
+    HWND parent = GetForegroundWindow();
+	Alert(parent, alertId);
 }
 
 

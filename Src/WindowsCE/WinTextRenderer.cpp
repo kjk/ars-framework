@@ -410,7 +410,7 @@ void TextRenderer::definitionBounds(Rect& rect)
 }
 
 
-bool TextRenderer::prepareOffscreenDC(DC_Helper& h, Rect& rect)
+bool TextRenderer::prepareOffscreenDC(DC_Helper& h, Rect& rect, bool erase)
 {
 	definitionBounds(rect);
 
@@ -423,7 +423,10 @@ bool TextRenderer::prepareOffscreenDC(DC_Helper& h, Rect& rect)
 	if (NULL == dc)
 		return false;
 	
-	HBITMAP bitmap = CreateCompatibleBitmap(h.orig, rect.width() + SCALEX(2), rect.height() + SCALEY(2));
+	rect.setWidth(rect.width() + SCALEX(2));
+	rect.setHeight(rect.height() + SCALEY(2));
+	
+	HBITMAP bitmap = CreateCompatibleBitmap(h.orig, rect.width(), rect.height());
 	if (NULL == bitmap)
 	{
 		DeleteDC(dc);
@@ -432,7 +435,22 @@ bool TextRenderer::prepareOffscreenDC(DC_Helper& h, Rect& rect)
 	
 	assert(NULL == h.origBmp);
 	h.origBmp = SelectObject(h.offscreen = dc, bitmap);
-	BitBlt(dc, 0, 0, rect.width() + SCALEX(2), rect.height() + SCALEY(2), h.orig, 0, 0, SRCCOPY);
+	
+    if (erase && scrollbarVisible_)
+    {
+		const DefinitionStyle* s = StyleGetStaticStyle(styleIndexDefault);
+		HBRUSH br = CreateSolidBrush(s->backgroundColor);
+		Rect r(rect.width(), 0, SCALEX(2), rect.height());
+		int mode = SetBkMode(h.orig, OPAQUE);
+		FillRect(h.orig, &r, br);
+		SetBkMode(h.orig, mode);
+		DeleteObject(br);
+    }  	
+    else 
+	    BitBlt(dc, 0, 0, rect.width(), rect.height(), h.orig, 0, 0, SRCCOPY);
+	    
+	rect.setWidth(rect.width() - SCALEX(2));
+	rect.setHeight(rect.height() - SCALEY(2));
 #endif	
 	return true;
 }
@@ -477,19 +495,10 @@ void TextRenderer::paintDefinition(HDC orig, int scroll, const Point* p, bool er
 	
 	Rect r;
 	DC_Helper h(orig);
-	if (!prepareOffscreenDC(h, r))
+	if (!prepareOffscreenDC(h, r, erase))
 		return;
 	{	
 		Graphics g(h.offscreen, Graphics::deleteNot);
-		if (erase)
-		{
-		    const DefinitionStyle* s = StyleGetStaticStyle(styleIndexDefault);
-		    COLORREF c = g.setBackgroundColor(s->backgroundColor);
-		    Rect b;
-		    innerBounds(b);
-		    g.erase(b);
-		    g.setBackgroundColor(c);
-		}
 		if (0 == scroll)
 			definition.render(g, r);
 		else

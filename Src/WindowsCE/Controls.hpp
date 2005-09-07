@@ -63,6 +63,9 @@ public:
 	
 	bool password() const {return 0 != (ES_PASSWORD & style());}
 	
+	void setSelection(ulong_t start = 0, long end = -1) {sendMessage(EM_SETSEL, start, end);}
+	
+	void selection(ulong_t& start, ulong_t& end) const {sendMessage(EM_GETSEL, (WPARAM)&start, (LPARAM)&end);}
 };
 
 
@@ -168,6 +171,14 @@ public:
     void setStyleEx(DWORD styleEx) {ListView_SetExtendedListViewStyle(handle(), styleEx);}
    
     bool setTextBkColor(COLORREF color) {return FALSE != ListView_SetTextBkColor(handle(), color);} 
+   
+    void setIconSpacing(ulong_t x, ulong_t y) {ListView_SetIconSpacing(handle(), x, y);}
+   
+    void setItemState(ulong_t index, ulong_t data, ulong_t mask) {ListView_SetItemState(handle(), index, data, mask);}
+   
+    void redrawItems(ulong_t begin, ulong_t end) {ListView_RedrawItems(handle(), begin, end);}   
+   
+    void setColumnWidth(ulong_t index, ulong_t width) {ListView_SetColumnWidth(handle(), index, width);}
 
 };
 

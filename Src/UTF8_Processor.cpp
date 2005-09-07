@@ -551,7 +551,7 @@ void test_UTF8_FromNative()
 
 char_t* UTF8_ToNative(const char* utfText, long len, ulong_t* olen)
 {
-	if (-1 == len) len = Len(utfText);
+	StrLenFix(utfText, len);
 	char_t* out;
 	ulong_t outLen;
 	ulong_t inLen = len;
@@ -567,7 +567,7 @@ char_t* UTF8_ToNative(const char* utfText, long len, ulong_t* olen)
 
 char* UTF8_FromNative(const char_t* nativeText, long len, ulong_t* olen)
 {
-	if (-1 == len) len = Len(nativeText);
+	StrLenFix(nativeText, len);
 	char* out;
 	ulong_t outLen;
 	ulong_t inLen = len;

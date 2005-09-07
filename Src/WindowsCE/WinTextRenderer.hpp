@@ -51,7 +51,7 @@ class TextRenderer: public Widget {
         DC_Helper(HDC org): orig(org), offscreen(NULL), origBmp(NULL) {}
     }; 
 	
-	bool prepareOffscreenDC(DC_Helper& h, Rect& rect);
+	bool prepareOffscreenDC(DC_Helper& h, Rect& rect, bool erase = false);
 	void updateOrigDC(DC_Helper& h, Rect& rect);
 	void destroyOffscreenDC(DC_Helper& h);
 	
