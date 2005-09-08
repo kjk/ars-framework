@@ -10,6 +10,7 @@
 #define WINDOW_CLASS_LISTVIEW WC_LISTVIEW
 #define WINDOW_CLASS_BUTTON  TEXT("BUTTON")
 #define WINDOW_CLASS_LISTBOX TEXT("LISTBOX")
+#define WINDOW_CLASS_COMBOBOX TEXT("COMBO")
 
 class ScrollBar: public Widget {
 public:
@@ -209,6 +210,26 @@ public:
    ~ListBox(); 
    
     bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+};
+
+class ComboBox: public Widget {
+public:
+
+    explicit ComboBox(AutoDeleteOption ad = autoDeleteNot);
+   
+    explicit ComboBox(HWND wnd, AutoDeleteOption ad = autoDeleteNot);
+   
+   ~ComboBox(); 
+   
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+   
+    long addString(const char_t* str) {return sendMessage(CB_ADDSTRING, 0, (LPARAM)str);}
+    long insertString(long index, const char_t* str) {return sendMessage(CB_INSERTSTRING, index, (LPARAM)str);}
+    void clear() {sendMessage(CB_RESETCONTENT, 0, 0);}
+    long selection() const {return sendMessage(CB_GETCURSEL, 0, 0);}
+    void setSelection(long index) {sendMessage(CB_SETCURSEL, index, 0);}
+    long removeString(ulong_t index) {return sendMessage(CB_DELETESTRING, index, 0);}
+    long itemCount() const {return sendMessage(CB_GETCOUNT, 0, 0);}
 };
 
 #endif

@@ -435,8 +435,8 @@ void Widget::setStyle(ulong_t style)
 void Widget::modifyStyle(ulong_t add, ulong_t remove)
 {
     ulong_t s = style();
-    s |= add;
     s &= ~remove;
+    s |= add;
     setStyle(s);   
 }
 

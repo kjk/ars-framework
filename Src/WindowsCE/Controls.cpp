@@ -140,3 +140,23 @@ bool ListBox::create(DWORD style, int x, int y, int width, int height, HWND pare
     return Widget::create(WINDOW_CLASS_LISTBOX, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
 }
 
+ComboBox::ComboBox(AutoDeleteOption ad):
+    Widget(ad)
+{
+}
+
+ComboBox::ComboBox(HWND wnd, AutoDeleteOption ad):
+    Widget(wnd, ad)
+{
+}
+
+ComboBox::~ComboBox()
+{}
+
+bool ComboBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
+{
+    assert(parent != NULL);
+    style |= WS_CHILD;
+    return Widget::create(WINDOW_CLASS_COMBOBOX, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
+}
+

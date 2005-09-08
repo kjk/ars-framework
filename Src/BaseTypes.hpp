@@ -145,7 +145,7 @@ namespace ArsLexis
 # define chrNull _T('\0')
 #endif
 
-#define ARRAY_SIZE(arr) sizeof(arr)/sizeof(*arr)
+#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*arr))
 
 typedef ArsLexis::char_t tchar;
 
