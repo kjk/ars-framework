@@ -89,7 +89,7 @@ bool Serializer::indexNextRecord()
     if (unusedId != record.id)
         recordIndex_[record.id] = reader_->position() - length;
         
-    if (dtStringVer0 == record.type || dtBlob == record.type || dtText == record.type)
+    if (dtStringVer0 == record.type || dtBlob == record.type || dtText == record.type || dtDouble == record.type)
     { 
         length = record.stringLength;
         void* buffer = malloc(length);
@@ -168,7 +168,7 @@ void Serializer::serializeRecordIn(Record& record)
     if (buffer.id != record.id)
         ErrThrow(errCorrupted);
 
-	if (buffer.type != buffer.type)
+	if (buffer.type != record.type)
 		if (!(dtStringVer0 == buffer.type && (dtBlob == record.type || dtText == record.type)))
 			ErrThrow(errCorrupted);
 
@@ -233,6 +233,20 @@ Serializer& Serializer::operator()(unsigned long& value, ulong_t id)
     return serializeSimpleType(dtULong, value, id);    
 }
 
+Serializer& Serializer::operator()(double& value, ulong_t id)
+{
+	ulong_t length = sizeof(double);
+    serializeSimpleType(dtDouble, length, id);
+    
+    if (directionInput == direction() && sizeof(double) != length)
+        ErrThrow(errCorrupted);
+          
+    if (directionOutput == direction() || !skipLastRecord_) 
+        serializeChunk(&value, sizeof(double)); 
+    return *this;
+}
+
+
 Serializer& Serializer::narrowBuffer(char* array, ulong_t size, ulong_t id)
 {
 	ulong_t length = size;
@@ -249,6 +263,7 @@ Serializer& Serializer::narrowBuffer(char* array, ulong_t size, ulong_t id)
 	} 
 	return *this;
 }
+
 
 Serializer& Serializer::narrow(NarrowString& value, ulong_t id)
 {

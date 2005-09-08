@@ -101,6 +101,7 @@ public:
 
     Serializer& operator()(unsigned long& value, ulong_t id = unusedId);
    
+    Serializer& operator()(double& value, ulong_t id = unusedId);
     
 /*    
    
@@ -153,7 +154,8 @@ private:
         dtStringVer0,
         dtSerializable,
         dtBlob,
-        dtText
+        dtText,
+        dtDouble
     };
     
     struct Record {
