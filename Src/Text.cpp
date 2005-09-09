@@ -1517,7 +1517,6 @@ Ch* StrAppend(Ch* target, long tlen, const Ch* src0, long slen0, const Ch* src1,
     return StrAppend(target, tlen, src2, slen2);    
 }
 
-
 template status_t StringAppend<char>(std::string& out, const char* str, long len);
 template void strip<char>(std::string& str);
 template char* StrAlloc<char>(ulong_t length);

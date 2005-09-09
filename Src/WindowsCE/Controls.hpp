@@ -10,7 +10,7 @@
 #define WINDOW_CLASS_LISTVIEW WC_LISTVIEW
 #define WINDOW_CLASS_BUTTON  TEXT("BUTTON")
 #define WINDOW_CLASS_LISTBOX TEXT("LISTBOX")
-#define WINDOW_CLASS_COMBOBOX TEXT("COMBO")
+#define WINDOW_CLASS_COMBOBOX TEXT("COMBOBOX")
 
 class ScrollBar: public Widget {
 public:
@@ -221,7 +221,8 @@ public:
    
    ~ComboBox(); 
    
-    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+    bool create(DWORD style, const RECT& rect, HWND parent, HINSTANCE inst, UINT controlId = 0, DWORD styleEx = 0);
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, UINT controlId = 0, DWORD styleEx = 0);
    
     long addString(const char_t* str) {return sendMessage(CB_ADDSTRING, 0, (LPARAM)str);}
     long insertString(long index, const char_t* str) {return sendMessage(CB_INSERTSTRING, index, (LPARAM)str);}
@@ -230,6 +231,12 @@ public:
     void setSelection(long index) {sendMessage(CB_SETCURSEL, index, 0);}
     long removeString(ulong_t index) {return sendMessage(CB_DELETESTRING, index, 0);}
     long itemCount() const {return sendMessage(CB_GETCOUNT, 0, 0);}
+    long droppedWidth() const {return sendMessage(CB_GETDROPPEDWIDTH, 0, 0);} 
+    long setDroppedWidth(long w) {return sendMessage(CB_SETDROPPEDWIDTH, w, 0);}
+    long itemHeight(long item = 0) const {return sendMessage(CB_GETITEMHEIGHT, item, 0);}
+    long setItemHeight(long h, long item = 0) {return sendMessage(CB_SETITEMHEIGHT, item, h);}
+    long droppedRect(RECT& r) const {return sendMessage(CB_GETDROPPEDCONTROLRECT, 0, (LPARAM)&r);}
+    bool setDroppedRect(const RECT& r);  
 };
 
 #endif

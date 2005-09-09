@@ -53,11 +53,19 @@ public:
 
 	bool create(LPCTSTR window_class, LPCTSTR caption, DWORD style, int x, int y, int width, int height, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle = 0);
 
+	bool create(ATOM window_class, LPCTSTR caption, DWORD style, const RECT& rect, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle = 0);
+
+	bool create(LPCTSTR window_class, LPCTSTR caption, DWORD style, const RECT& rect, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle = 0);
+
 	bool valid() const {return NULL != handle_;}
 
 	char_t* caption(ulong_t* length = NULL) const;
-
+    char_t* text(ulong_t* length = NULL) const {return caption(length);}
+    
+    bool setCaption(UINT resourceId);
 	bool setCaption(const char_t* text);
+	bool setText(const char_t* text) {return setCaption(text);}
+	bool setText(UINT resourceId) {return setCaption(resourceId);}
 
 	bool destroy() {return FALSE != DestroyWindow(handle());}
 
@@ -76,6 +84,22 @@ public:
 	};
 
 	bool setBounds(const RECT& rect, RepaintOption repaint = repaintNot) {return FALSE != MoveWindow(handle_, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, repaint);}
+	// Some more functions for fine-grained control over layout
+	bool setBounds(long x, long y, long w, long h, RepaintOption repaint = repaintNot) {return FALSE != MoveWindow(handle_, x, y, w, h, repaint);}
+	bool setTopLeft(long x, long y, RepaintOption repaint = repaintNot);
+	bool setTopLeft(const Point& p, RepaintOption repaint = repaintNot) {return setTopLeft(p.x, p.y, repaint);}
+	bool setExtent(long w, long h, RepaintOption repaint = repaintNot);
+    bool setExtent(const Point& p, RepaintOption repaint = repaintNot) {return setExtent(p.x, p.y, repaint);}
+    bool setBottomRight(long x, long y, RepaintOption repaint = repaintNot);
+    bool setBottomRight(const Point& p, RepaintOption repaint = repaintNot) {return setBottomRight(p.x, p.y, repaint);}  
+    bool setLeft(long x, RepaintOption repaint = repaintNot);
+    bool setTop(long y, RepaintOption repaint = repaintNot);  	
+    bool setRight(long x, RepaintOption repaint = repaintNot);
+    bool setBottom(long y, RepaintOption repaint = repaintNot);
+    bool setWidth(long w, RepaintOption repaint = repaintNot);
+    bool setHeight(long h, RepaintOption repaint = repaintNot);
+    bool move(long x, long y, RepaintOption repaint = repaintNot);
+     
 
 	bool update() {return FALSE != UpdateWindow(handle());}
 	

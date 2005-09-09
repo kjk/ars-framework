@@ -153,10 +153,28 @@ ComboBox::ComboBox(HWND wnd, AutoDeleteOption ad):
 ComboBox::~ComboBox()
 {}
 
-bool ComboBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
+bool ComboBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, UINT controlId, DWORD styleEx)   
 {
     assert(parent != NULL);
     style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_COMBOBOX, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
+    return Widget::create(WINDOW_CLASS_COMBOBOX, NULL, style, x, y, width, height, parent, HMENU(controlId), instance, styleEx);    
 }
 
+bool ComboBox::create(DWORD style, const RECT& rect, HWND parent, HINSTANCE instance, UINT controlId, DWORD styleEx)
+{
+    assert(parent != NULL);
+    style |= WS_CHILD;
+    return Widget::create(WINDOW_CLASS_COMBOBOX, NULL, style, rect, parent, HMENU(controlId), instance, styleEx);    
+}
+
+bool ComboBox::setDroppedRect(const RECT& r)
+{
+    COMBOBOXINFO info = {sizeof(info)};
+    if (0 == sendMessage(CB_GETCOMBOBOXINFO, 0, (LPARAM)&info))
+        return false;
+
+    if (NULL == info.hwndList)
+        return false;
+
+    return FALSE != MoveWindow(info.hwndList, r.left, r.top, r.right - r.left, r.bottom - r.top, FALSE); 
+}

@@ -3,6 +3,7 @@
 #include <WindowsCE/Messages.hpp>
 #include <ExtendedEvent.hpp>
 #include <Text.hpp>
+#include <SysUtils.hpp>
 
 BOOL ScreenToClient(HWND wnd, RECT& rect)
 {
@@ -276,6 +277,16 @@ bool Widget::create(LPCTSTR widget_class, LPCTSTR caption, DWORD style, int x, i
 	return true;
 }
 
+bool Widget::create(LPCTSTR widget_class, LPCTSTR caption, DWORD style, const RECT& rect, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle)
+{
+    return create(widget_class, caption, style, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, parent, menu, instance, exStyle);
+}
+    
+bool Widget::create(ATOM widget_class, LPCTSTR caption, DWORD style, const RECT& rect, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle)
+{
+	return create(reinterpret_cast<LPCTSTR>(widget_class), caption, style, rect, parent, menu, instance, exStyle);
+}
+
 LRESULT Widget::defaultCallback(UINT uMsg, WPARAM wParam, LPARAM lParam, HWND handle)
 {
 	if (NULL == handle)
@@ -312,6 +323,17 @@ char_t* Widget::caption(ulong_t* len) const
 bool Widget::setCaption(const char_t* text)
 {
 	return FALSE != SetWindowText(handle(), text);
+}
+
+bool Widget::setCaption(UINT resourceId)
+{
+    char_t* str = LoadString(resourceId);
+    if (NULL == str)
+        return false;
+    
+    bool res = setCaption(str);
+    free(str);
+    return res;     
 }
 
 Widget::AutoDeleteOption Widget::setAutoDelete(AutoDeleteOption ad)
@@ -426,6 +448,87 @@ bool Widget::anchorChild(UINT itemId, AnchorOption horiz, int hMargin, AnchorOpt
 
 	return FALSE != MoveWindow(item, rect.left, rect.top, rect.width(), rect.height(), repaint);	
 }
+
+bool Widget::setTopLeft(long x, long y, RepaintOption repaint)
+{
+    RECT r;
+    bounds(r);
+    r.left = x; r.top = y;
+    return setBounds(r, repaint);   
+}
+
+bool Widget::setExtent(long w, long h, RepaintOption repaint)
+{
+    Rect r;
+    bounds(r);
+    r.setExtent(w, h);
+    return setBounds(r, repaint);   
+}
+
+bool Widget::setBottomRight(long x, long y, RepaintOption repaint)
+{
+    RECT r;
+    bounds(r);
+    r.right = x; r.bottom = y;
+    return setBounds(r, repaint);   
+}
+
+bool Widget::setLeft(long x, RepaintOption repaint)
+{
+    RECT r;
+    bounds(r);
+    r.left = x;
+    return setBounds(r, repaint);   
+}
+
+bool Widget::setTop(long y, RepaintOption repaint)
+{
+    RECT r;
+    bounds(r);
+    r.top = y;
+    return setBounds(r, repaint);
+}
+
+bool Widget::setRight(long x, RepaintOption repaint)
+{
+    RECT r;
+    bounds(r);
+    r.right = x;
+    return setBounds(r, repaint);
+}
+
+bool Widget::setBottom(long y, RepaintOption repaint)
+{
+    RECT r;
+    bounds(r);
+    r.bottom = y;
+    return setBounds(r, repaint);
+}
+
+bool Widget::setWidth(long w, RepaintOption repaint)
+{
+    Rect r;
+    bounds(r);
+    r.setWidth(w);
+    return setBounds(r, repaint);
+}
+
+bool Widget::setHeight(long h, RepaintOption repaint)
+{
+    Rect r;
+    bounds(r);
+    r.setHeight(h);
+    return setBounds(r, repaint);
+}
+
+bool Widget::move(long x, long y, RepaintOption repaint)
+{
+    Rect r;
+    bounds(r);
+    r += Point(x, y);
+    return setBounds(r, repaint);   
+}
+
 
 void Widget::setStyle(ulong_t style)
 {
