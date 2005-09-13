@@ -143,8 +143,11 @@ long TextRenderer::handlePaint(HDC dc, PAINTSTRUCT* ps)
 void TextRenderer::setModel(DefinitionModel* model, Definition::ModelOwnerFlag own)
 {
 	definition.setModel(model, own);
-	verifyScrollbarVisible();
-	InvalidateRect(handle(), NULL, FALSE);
+    if (valid())
+    { 
+	    verifyScrollbarVisible();
+	    invalidate(eraseNot);
+    }
 }
 
 /*

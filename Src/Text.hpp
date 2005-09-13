@@ -266,6 +266,11 @@ inline void StrLenFix(const Ch* str, long& len)
         len = (NULL == str ? 0 : Len(str)); 
 }
 
+template<class Ch>
+status_t numericValue(const Ch* str, long len, double& value);
+
+template<class Ch>
+bool StrNumberApplyGrouping(Ch* buffer, ulong_t length, ulong_t grouping = 3);
 
 #ifdef DEBUG
 void test_TextUnitTestAll();

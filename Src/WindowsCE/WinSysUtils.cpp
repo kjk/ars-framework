@@ -49,10 +49,10 @@ void sendEvent(uint_t event, short wph, short wpl, int lp)
 
 void localizeNumber(char_t* begin, char_t* end)
 {
-	char_t decimal[2] = {_T('.'), _T('\0')};
-	char_t thousand[2] = {_T(','), _T('\0')};
-	int res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, thousand, 1);
-	res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, decimal, 1);
+	char_t decimal[4] = {_T('.'), _T('\0')};
+	char_t thousand[4] = {_T(','), _T('\0')};
+	int res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, thousand, 4);
+	res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, decimal, 4);
 	
 	while (begin != end)
 	{

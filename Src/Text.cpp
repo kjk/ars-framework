@@ -1517,11 +1517,94 @@ Ch* StrAppend(Ch* target, long tlen, const Ch* src0, long slen0, const Ch* src1,
     return StrAppend(target, tlen, src2, slen2);    
 }
 
+template<class Ch>
+status_t numericValue(const Ch* str, long len, double& value)
+{
+    StrLenFix(str, len);
+    if (0 == len)
+        return sysErrParamErr;
+          
+    double v = 0;
+    bool negative = false;
+    double decimals = 0.; 
+    for (long i = 0; i < len; ++i)
+    {
+        Ch ch = str[i];
+        switch (ch) 
+        {
+            case Ch('-'):
+                if (0 == i)
+                    negative = true;
+                else
+                    return sysErrParamErr;
+                break;
+                
+            case Ch('+'):
+                if (0 != i)
+                    return sysErrParamErr;
+                break; 
+            
+            case Ch(','):
+                break;
+            
+            case Ch('.'):
+                if (decimals != 0.)
+                    return sysErrParamErr;
+                else
+                    decimals = 0.1;
+                break;
+            
+            default:
+                if (ch < Ch('0') || ch > Ch('9'))
+                    return sysErrParamErr;
+                double val = ch - Ch('0');
+                if (decimals != 0.)
+                {
+                     v += (decimals * val);
+                     decimals *= 0.1;
+                }
+                else
+                { 
+                    v *= 10.;
+                    v += val;  
+                }
+        } 
+    }
+    if (negative)
+        v *= -1.0;
+    value = v;
+    return errNone;      
+}
+
+template<class Ch>
+bool StrNumberApplyGrouping(Ch* buffer, ulong_t len, ulong_t grouping)
+{
+    ulong_t strLen = Len(buffer);
+    assert(strLen < len);
+    long dot = StrFind(buffer, strLen, Ch('.'));
+    if (-1 == dot)
+        dot = strLen;
+   
+    ulong_t groups = (dot - 1) / grouping;
+    if (len < strLen + 1 + groups)
+        return false;
+    
+    for (ulong_t i = 0; i < groups; ++i)
+    {
+        ulong_t start = dot - (i * grouping) - grouping;
+        memmove(buffer + start + 1, buffer + start, sizeof(Ch) * (strLen + 1 - start)); 
+        buffer[start] = Ch(',');
+    }
+    return true; 
+}
+
 template status_t StringAppend<char>(std::string& out, const char* str, long len);
 template void strip<char>(std::string& str);
 template char* StrAlloc<char>(ulong_t length);
 template char* StrAppend(char*, long, const char*, long, const char*, long);
 template char* StrAppend(char*, long, const char*, long, const char*, long, const char*, long);
+template status_t numericValue(const char*, long, double&);
+template bool StrNumberApplyGrouping(char*, ulong_t, ulong_t);
 
 #ifdef _WIN32_WCE
 template status_t StringAppend<wchar_t>(std::wstring& out, const wchar_t* str, long len);
@@ -1529,6 +1612,8 @@ template void strip<wchar_t>(std::wstring& str);
 template wchar_t* StrAlloc<wchar_t>(ulong_t length);
 template wchar_t* StrAppend(wchar_t*, long, const wchar_t*, long, const wchar_t*, long);
 template wchar_t* StrAppend(wchar_t*, long, const wchar_t*, long, const wchar_t*, long, const wchar_t*, long);
+template status_t numericValue(const wchar_t*, long, double&);
+template bool StrNumberApplyGrouping(wchar_t*, ulong_t, ulong_t);
 #endif
 
 
