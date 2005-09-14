@@ -180,6 +180,11 @@ public:
     void redrawItems(ulong_t begin, ulong_t end) {ListView_RedrawItems(handle(), begin, end);}   
    
     void setColumnWidth(ulong_t index, ulong_t width) {ListView_SetColumnWidth(handle(), index, width);}
+   
+    long selection() const {return ListView_GetSelectionMark(handle());}
+    long setSelection(long index) {return ListView_SetSelectionMark(handle(), index);}
+    long hitTest(LVHITTESTINFO& hti) const {return ListView_HitTest(handle(), &hti);}
+    long itemBounds(ulong_t index, RECT& r, int code) const {return ListView_GetItemRect(handle(), index, &r, code);}
 
 };
 
