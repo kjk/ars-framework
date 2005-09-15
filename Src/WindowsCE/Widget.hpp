@@ -157,6 +157,16 @@ public:
 	bool invalidate(EraseOption e) {return FALSE != InvalidateRect(handle(), NULL, e);}
 	bool invalidate(const RECT& r, EraseOption e) {return FALSE != InvalidateRect(handle(), &r, e);}
 
+    bool sipPreference(SIPSTATE state)
+    {
+#ifdef SHELL_SIP            
+        return FALSE != SHSipPreference(handle(), state);
+#else
+        return true;
+#endif
+    }
+     	
+
 protected:
 
 	virtual LRESULT callback(UINT uMsg, WPARAM wParam, LPARAM lParam);
