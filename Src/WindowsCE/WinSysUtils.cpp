@@ -601,3 +601,69 @@ ulong_t PelsY(ulong_t logy)
     static ulong_t h = HIWORD(GetDialogBaseUnits());
     return (8 * logy) / h; 
 }
+
+void DumpErrorMessage(status_t err)
+{
+    LPVOID lpMsgBuf = 0;
+    DWORD res = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        err,
+        0, 
+        (LPTSTR) &lpMsgBuf,
+        0,
+        NULL 
+    );
+    if (0 == res)
+        return;
+      
+    OutputDebugString((LPCTSTR)lpMsgBuf);
+    LocalFree(lpMsgBuf);  
+}
+
+
+//void TimeRollDays(SYSTEMTIME& st, int count)
+//{
+//    union {
+//        FILETIME ft; 
+//        unsigned long long it;
+//    };
+//    SystemTimeToFileTime(&st, &ft);   
+//    //24 * 60 * 60 * 1000 * 1000 * 10;
+//    long long d = 864000000000LL;
+//    d *= count;  
+//    it += d;
+//    FileTimeToSystemTime(&ft, &st);  
+//}
+
+void TimeRoll(SYSTEMTIME& st, TimeRollUnits units, int count)
+{
+    union {
+        FILETIME ft; 
+        unsigned long long it;
+    };
+    SystemTimeToFileTime(&st, &ft);   
+    long long d;
+    switch (units)
+    {
+        case timeRollMilliseconds:
+            d = 10000;
+            break;
+        case timeRollSeconds:
+            d = 10000000LL;
+            break;
+        case timeRollMinutes:
+            d = 600000000LL;
+            break;
+        case timeRollHours:
+            d = 36000000000LL;
+            break;
+        case timeRollDays:
+            d = 864000000000LL;
+            break;
+        default:
+            assert(false);
+    }
+    d *= count;
+    it += d;
+    FileTimeToSystemTime(&ft, &st);   
+}

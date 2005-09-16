@@ -17,8 +17,10 @@ public:
 
 	explicit ScrollBar(AutoDeleteOption ad = autoDeleteNot);
 	
-	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance);
-	
+	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance = NULL);
+
+	bool create(DWORD style, const RECT& r, HWND parent, HINSTANCE instance = NULL);
+
 	void setScrollRange(int minPos, int maxPos, RepaintOption repaint) {SetScrollRange(handle(), SB_CTL, minPos, maxPos, repaint);}
 	
 	void setScrollInfo(const SCROLLINFO& si, RepaintOption repaint) {SetScrollInfo(handle(), SB_CTL, &si, repaint);}
@@ -38,7 +40,9 @@ public:
 	
 	explicit EditBox(AutoDeleteOption ad = autoDeleteNot);
 	
-	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, const char_t* text = NULL, DWORD styleEx = 0);	
+	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance = NULL, const char_t* text = NULL, DWORD styleEx = 0);	
+	
+	bool create(DWORD style, const RECT& r, HWND parent, HINSTANCE instance = NULL, const char_t* text = NULL, DWORD styleEx = 0);	
 	
 	bool canUndo() const {return 0 != sendMessage(EM_CANUNDO, 0, 0);}
 	
@@ -75,7 +79,7 @@ public:
 
 	explicit ProgressBar(AutoDeleteOption ad = autoDeleteNot);
 	
-	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance);
+	bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance = NULL);
 	
 	ulong_t position() const {return sendMessage(PBM_GETPOS, 0, 0);}
 	
@@ -95,7 +99,7 @@ public:
    
    ~TabControl(); 
    
-    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance = NULL, DWORD styleEx = 0);
    
     HIMAGELIST imageList() const {return TabCtrl_GetImageList(handle());} 
     
@@ -145,6 +149,14 @@ public:
    
 };
 
+#ifndef LVS_EX_DOUBLEBUFFER
+#define LVS_EX_DOUBLEBUFFER 0
+#endif
+
+#ifndef LVS_EX_GRADIENT
+#define LVS_EX_GRADIENT 0
+#endif
+
 class ListView: public Widget {
 
 public:
@@ -155,8 +167,10 @@ public:
    
    ~ListView(); 
    
-    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx = 0);
+    bool create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance = NULL, DWORD styleEx = 0);
    
+    bool create(DWORD style, const RECT& r, HWND parent, HINSTANCE instance = NULL, DWORD styleEx = 0);
+
     bool clear() {return FALSE != ListView_DeleteAllItems(handle());}
    
     bool removeItem(ulong_t index) {return FALSE != ListView_DeleteItem(handle(), index);}

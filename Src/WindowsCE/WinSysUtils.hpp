@@ -53,4 +53,18 @@ ulong_t LogY(ulong_t y);
 ulong_t PelsX(ulong_t logx);
 ulong_t PelsY(ulong_t logy);
 
+void DumpErrorMessage(status_t err);
+
+
+enum TimeRollUnits {
+    timeRollMilliseconds,
+    timeRollSeconds,
+    timeRollMinutes,
+    timeRollHours,
+    timeRollDays
+};  
+
+void TimeRoll(SYSTEMTIME& st, TimeRollUnits units, int count);
+inline void TimeRollDays(SYSTEMTIME& st, int count) {TimeRoll(st, timeRollDays, count);}
+
 #endif
