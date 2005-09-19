@@ -8,7 +8,7 @@
 #ifdef _MSC_VER
 # pragma warning(disable: 4068)
 #endif
-    
+
 class SimpleSocketConnection: public SocketConnection
 {
     char*       request_;
@@ -18,43 +18,43 @@ class SimpleSocketConnection: public SocketConnection
     ulong_t       maxResponseSize_;
     ulong_t       chunkSize_;
     ulong_t      totalReceived_;
-    
+
     bool         sending_;
-	char*		chunk_;
+    char*		chunk_;
 
 protected:
 
     char*		response_;
-	ulong_t		responseLen_;
-    
+    ulong_t		responseLen_;
+
 protected:
 
     status_t open();
-    
+
     status_t notifyWritable();
-    
+
     status_t notifyReadable();
-    
+
     virtual status_t notifyFinished();
-    
+
     virtual status_t notifyProgress();
 
     // set request to send to a copy of request
     status_t setRequest(const char* request, ulong_t requestSize);
 
-	/*
+    /*
     status_t setRequest(const NarrowString& request)
     {
-        return setRequestCopy(request.data(), request.size());
+    return setRequestCopy(request.data(), request.size());
     }
-    
+
     void setResponse(const NarrowString& response)
     {response_ = response;}
 
     NarrowString& response()
     {return response_;}
-	*/
-    
+    */
+
 public:
 
     SimpleSocketConnection(SocketConnectionManager& manager);
@@ -66,16 +66,16 @@ public:
         request_ = request;
         requestLenLeft_ = requestSize;
     }
-    
+
     void setMaxResponseSize(ulong_t size)
     {maxResponseSize_=size;}
-    
+
     void setChunkSize(ulong_t size)
     {chunkSize_=size;}
-    
+
     bool sending() const
     {return sending_;}
-    
+
     ~SimpleSocketConnection();
 
     bool fRequestExists()

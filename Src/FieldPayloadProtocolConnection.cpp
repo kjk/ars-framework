@@ -10,24 +10,24 @@
 #define fieldSeparatorChar ':'
 
 FieldPayloadProtocolConnection::FieldPayloadProtocolConnection(SocketConnectionManager& manager):
-    SimpleSocketConnection(manager),
-	payloadHandler_(NULL),
-    payloadLengthLeft_(0),
-    payloadLength_(0),
-    inPayload_(false)
+SimpleSocketConnection(manager),
+payloadHandler_(NULL),
+payloadLengthLeft_(0),
+payloadLength_(0),
+inPayload_(false)
 {}
 
 FieldPayloadProtocolConnection::~FieldPayloadProtocolConnection()
 {
-	delete payloadHandler_;
+    delete payloadHandler_;
 }
 
 void FieldPayloadProtocolConnection::startPayload(PayloadHandler* payloadHandler, ulong_t length)
 {
-	delete payloadHandler_;
-	payloadHandler_ = payloadHandler;
+    delete payloadHandler_;
+    payloadHandler_ = payloadHandler;
 
-	inPayload_ = true;
+    inPayload_ = true;
     payloadLengthLeft_ = length;
     payloadLength_ = length;
 }
@@ -60,7 +60,7 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
         if (!inPayload_) 
         {
             long toConsume = StrFind(response_, responseLen_, lineSeparatorChar);
-                
+
             if (-1 == toConsume)
                 goOn = false;
             else
@@ -98,7 +98,7 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                     error = handlePayloadIncrement(response_, length, true);
                 if (errNone != error)
                     goto Exit;
-                    
+
                 error = notifyPayloadFinished();
 
                 assert(responseLen_ >= payloadLengthLeft_ + lineSeparatorLength);
@@ -111,7 +111,7 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
                 bool finishPayload = false;
                 if (responseLen_ >= payloadLengthLeft_)
                     finishPayload = true;
-                    
+
                 error = handlePayloadIncrement(response_, length, finishPayload);
                 if (errNone != error)
                     goto Exit;
@@ -127,7 +127,7 @@ status_t FieldPayloadProtocolConnection::processResponseIncrement(bool finish)
             }
         }
     } while (goOn && !error);
-    
+
 Exit:
     return error;
 }
@@ -156,7 +156,7 @@ status_t FieldPayloadProtocolConnection::processLine(ulong_t lineEnd)
     const char* name = resp;
     ulong_t nameLen = separatorPos;
     strip(name, nameLen);
-    
+
     // if ":" is at the end, it means a field with no value
     // TODO: should we detect fields with arguments that shouldn't have arguments
     // and vice-versa?
@@ -178,16 +178,16 @@ status_t FieldPayloadProtocolConnection::notifyFinished()
     if (!error)
         error = processResponseIncrement(true);
 #ifdef DEBUG
-        if (errNone != error)
-            LogStrUlong(eLogDebug, _T("FieldPayloadProtocolConnection::notifyFinished() has error"), error);
+    if (errNone != error)
+        LogStrUlong(eLogDebug, _T("FieldPayloadProtocolConnection::notifyFinished() has error"), error);
 #endif
     return error;    
 }
 
 BinaryIncrementalProcessor* FieldPayloadProtocolConnection::releasePayloadHandler()
 {
-	BinaryIncrementalProcessor* h = payloadHandler_;
-	payloadHandler_ = NULL;
-	return h;
+    BinaryIncrementalProcessor* h = payloadHandler_;
+    payloadHandler_ = NULL;
+    return h;
 }
 

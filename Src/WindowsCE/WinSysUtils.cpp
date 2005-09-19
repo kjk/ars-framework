@@ -635,35 +635,63 @@ void DumpErrorMessage(status_t err)
 //    FileTimeToSystemTime(&ft, &st);  
 //}
 
-void TimeRoll(SYSTEMTIME& st, TimeRollUnits units, int count)
+static long long TimeDivider(TimeUnits units)
 {
-    union {
-        FILETIME ft; 
-        unsigned long long it;
-    };
-    SystemTimeToFileTime(&st, &ft);   
     long long d;
     switch (units)
     {
-        case timeRollMilliseconds:
+        case timeUnitsMilliseconds:
             d = 10000;
             break;
-        case timeRollSeconds:
+        case timeUnitsSeconds:
             d = 10000000LL;
             break;
-        case timeRollMinutes:
+        case timeUnitsMinutes:
             d = 600000000LL;
             break;
-        case timeRollHours:
+        case timeUnitsHours:
             d = 36000000000LL;
             break;
-        case timeRollDays:
+        case timeUnitsDays:
             d = 864000000000LL;
             break;
         default:
             assert(false);
     }
+    return d; 
+}
+
+void TimeRoll(SYSTEMTIME& st, TimeUnits units, int count)
+{
+    union {
+        FILETIME ft; 
+        unsigned long long it;
+    };
+    SystemTimeToFileTime(&st, &ft);  
+    long long d = TimeDivider(units);  
     d *= count;
     it += d;
     FileTimeToSystemTime(&ft, &st);   
+}
+
+void GetTime(FILETIME& ft)
+{
+    SYSTEMTIME st;
+    GetSystemTime(&st);
+    SystemTimeToFileTime(&st, &ft); 
+}
+
+long TimeDiff(const FILETIME& ft1, const FILETIME& ft2, TimeUnits units)
+{
+    union {
+        FILETIME ft;
+        long long ul;
+    };
+    long long ul1; 
+    ft = ft1;
+    ul1 = ul;
+    ft = ft2;
+    ul1 -= ul;
+    ul1 /= TimeDivider(units);
+    return long(ul1);          
 }

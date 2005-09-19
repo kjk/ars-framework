@@ -3,17 +3,17 @@
 #include <DeviceInfo.hpp>
 
 SimpleSocketConnection::SimpleSocketConnection(SocketConnectionManager& manager):
-    SocketConnection(manager),
-    maxResponseSize_(32768),
-    sending_(true),
-    chunkSize_(576),
-    request_(NULL),
-    requestLenLeft_(0),
-    requestSent_(0),
-	response_(NULL),
-	responseLen_(0),
-    totalReceived_(0),
-	chunk_(NULL)
+SocketConnection(manager),
+maxResponseSize_(32768),
+sending_(true),
+chunkSize_(576),
+request_(NULL),
+requestLenLeft_(0),
+requestSent_(0),
+response_(NULL),
+responseLen_(0),
+totalReceived_(0),
+chunk_(NULL)
 {}
 
 status_t SimpleSocketConnection::notifyWritable()
@@ -74,13 +74,13 @@ status_t SimpleSocketConnection::notifyReadable()
         goto Exit;
     }
 
-	if (NULL == chunk_)
-		chunk_ = (char*)malloc(chunkSize_);
-	if (NULL == chunk_)
-	{
-		error = memErrNotEnoughSpace;
-		goto Exit;
-	}
+    if (NULL == chunk_)
+        chunk_ = (char*)malloc(chunkSize_);
+    if (NULL == chunk_)
+    {
+        error = memErrNotEnoughSpace;
+        goto Exit;
+    }
 
     dataSize = 0;
     error = socket().receive(dataSize, chunk_, chunkSize_, transferTimeout());
@@ -90,12 +90,12 @@ status_t SimpleSocketConnection::notifyReadable()
     totalReceived_ += dataSize;
     assert(dataSize <= chunkSize_);
 
-	response_ = StrAppend(response_, responseLen_, chunk_, dataSize);
-	if (NULL == response_)
-	{
-		error = memErrNotEnoughSpace;
-		goto Exit;
-	}
+    response_ = StrAppend(response_, responseLen_, chunk_, dataSize);
+    if (NULL == response_)
+    {
+        error = memErrNotEnoughSpace;
+        goto Exit;
+    }
     responseLen_ += dataSize;
 
     if (0 == dataSize)
@@ -136,11 +136,11 @@ SimpleSocketConnection::~SimpleSocketConnection()
     if (NULL != request_)
         free(request_);
 
-	if (NULL != response_)
-		free(response_);
+    if (NULL != response_)
+        free(response_);
 
-	if (NULL != chunk_)
-		free(chunk_);
+    if (NULL != chunk_)
+        free(chunk_);
 }
 
 status_t SimpleSocketConnection::open()

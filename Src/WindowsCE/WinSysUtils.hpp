@@ -56,15 +56,18 @@ ulong_t PelsY(ulong_t logy);
 void DumpErrorMessage(status_t err);
 
 
-enum TimeRollUnits {
-    timeRollMilliseconds,
-    timeRollSeconds,
-    timeRollMinutes,
-    timeRollHours,
-    timeRollDays
+enum TimeUnits {
+    timeUnitsMilliseconds,
+    timeUnitsSeconds,
+    timeUnitsMinutes,
+    timeUnitsHours,
+    timeUnitsDays
 };  
 
-void TimeRoll(SYSTEMTIME& st, TimeRollUnits units, int count);
-inline void TimeRollDays(SYSTEMTIME& st, int count) {TimeRoll(st, timeRollDays, count);}
+void TimeRoll(SYSTEMTIME& st, TimeUnits units, int count);
+inline void TimeRollDays(SYSTEMTIME& st, int count) {TimeRoll(st, timeUnitsDays, count);}
+
+void GetTime(FILETIME& ft);
+long TimeDiff(const FILETIME& ft1, const FILETIME& ft2, TimeUnits units);
 
 #endif
