@@ -272,6 +272,9 @@ status_t numericValue(const Ch* str, long len, double& value);
 template<class Ch>
 bool StrNumberApplyGrouping(Ch* buffer, ulong_t length, ulong_t grouping = 3);
 
+template<class Ch>
+Ch* StrStripCopy(const Ch* str, long len = -1);
+
 #ifdef DEBUG
 void test_TextUnitTestAll();
 #endif

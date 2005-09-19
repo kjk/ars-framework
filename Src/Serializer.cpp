@@ -284,7 +284,7 @@ Serializer& Serializer::narrowOut(const char* str, long len, ulong_t id)
 	if (directionOutput != direction_)
 		return *this;
 		
-	if (-1 == len) len = Len(str);
+	StrLenFix(str, len);
 	ulong_t length = len;
     serializeSimpleType(dtBlob, length, id);
     serializeChunk((char*)str, length);

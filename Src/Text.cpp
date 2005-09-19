@@ -1598,6 +1598,16 @@ bool StrNumberApplyGrouping(Ch* buffer, ulong_t len, ulong_t grouping)
     return true; 
 }
 
+template<class Ch>
+Ch* StrStripCopy(const Ch* str, long len)
+{
+    StrLenFix(str, len);
+    ulong_t l = len;
+    strip(str, l);
+    return StringCopyN(str, l);   
+}
+
+
 template status_t StringAppend<char>(std::string& out, const char* str, long len);
 template void strip<char>(std::string& str);
 template char* StrAlloc<char>(ulong_t length);
@@ -1605,6 +1615,7 @@ template char* StrAppend(char*, long, const char*, long, const char*, long);
 template char* StrAppend(char*, long, const char*, long, const char*, long, const char*, long);
 template status_t numericValue(const char*, long, double&);
 template bool StrNumberApplyGrouping(char*, ulong_t, ulong_t);
+template char* StrStripCopy(const char*, long);
 
 #ifdef _WIN32_WCE
 template status_t StringAppend<wchar_t>(std::wstring& out, const wchar_t* str, long len);
@@ -1614,6 +1625,7 @@ template wchar_t* StrAppend(wchar_t*, long, const wchar_t*, long, const wchar_t*
 template wchar_t* StrAppend(wchar_t*, long, const wchar_t*, long, const wchar_t*, long, const wchar_t*, long);
 template status_t numericValue(const wchar_t*, long, double&);
 template bool StrNumberApplyGrouping(wchar_t*, ulong_t, ulong_t);
+template wchar_t* StrStripCopy(const wchar_t*, long);
 #endif
 
 
