@@ -200,6 +200,8 @@ public:
     long hitTest(LVHITTESTINFO& hti) const {return ListView_HitTest(handle(), &hti);}
     long itemBounds(ulong_t index, RECT& r, int code) const {return ListView_GetItemRect(handle(), index, &r, code);}
     long insertColumn(ulong_t index, const LVCOLUMN& col) {return ListView_InsertColumn(handle(), index, &col);} 
+    
+    void focusItem(ulong_t index) {ListView_SetItemState(handle(), index, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);}
 
 };
 
