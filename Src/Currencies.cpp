@@ -6,20 +6,10 @@
 # pragma pcrelconstdata on
 #endif
 
-enum {
-    currencyAbbrevLength    = 4,
-    currencyNameLength      = 55,
-    currencyCoutriesLength  = 106
-};
-
-typedef const char_t CurrencyAbbrevField_t[currencyAbbrevLength];
-typedef const char_t CurrencyNameField_t[currencyNameLength];
-typedef const char_t CurrencyCountriesField_t[currencyCoutriesLength];
-
 struct CurrencyArrayEntry {
-    const CurrencyAbbrevField_t abbrev;
-    const CurrencyNameField_t name;
-    const CurrencyCountriesField_t countries;
+    const char_t* abbrev;
+    const char_t* name;
+    const char_t* countries;
 };
 
 static const CurrencyArrayEntry currencies[]=
@@ -169,26 +159,26 @@ static const CurrencyArrayEntry currencies[]=
     {_T("ZWD"), _T("Zimbabwe Dollars"), _T("Zimbabwe") }
 };
 
-uint_t getCurrenciesCount()
+uint_t CurrencyCount()
 {
     return ARRAY_SIZE(currencies);
 }
 
-const char_t* getCurrencySymbol(uint_t pos)
+const char_t* CurrencySymbol(uint_t pos)
 {
     assert (pos<ARRAY_SIZE(currencies));
     return currencies[pos].abbrev;
     
 }
 
-const char_t* getCurrencyName(uint_t pos)
+const char_t* CurrencyName(uint_t pos)
 {
     assert (pos<ARRAY_SIZE(currencies));
     return currencies[pos].name;
     
 }
 
-const char_t* getCurrencyRegion(uint_t pos)
+const char_t* CurrencyRegion(uint_t pos)
 {
     assert (pos<ARRAY_SIZE(currencies));
     return currencies[pos].countries;
@@ -201,16 +191,12 @@ static bool currencyLess(const CurrencyArrayEntry& e1, const CurrencyArrayEntry&
 }
 
 // always return index value in [0, statesCount-1)   
-uint_t getCurrencyIndexByFirstChar(char_t inChar)
+uint_t CurrencyIndexByFirstChar(char_t inChar)
 {
     uint_t count = ARRAY_SIZE(currencies);
-    // skip four first currencies USD, EUR, GBP and JPY
-    // the rest is set alphabetically
     const CurrencyArrayEntry* end = currencies + count;
-    // Use static allocation to reduce stack usage
-    static CurrencyArrayEntry entry;
-    char* abbrev = const_cast<char*>(entry.abbrev);
-    abbrev[0] = toUpper(inChar);
+    char_t buffer[] = {toUpper(inChar), _T('\0')};
+    CurrencyArrayEntry entry = {buffer, NULL, NULL};
     const CurrencyArrayEntry* p = std::lower_bound(currencies, end, entry, currencyLess);
     if (end == p)
         --p;
@@ -222,24 +208,20 @@ static bool currencyLessFull(const CurrencyArrayEntry& e1, const CurrencyArrayEn
     return 0 > tstrcmp(e1.abbrev, e2.abbrev);
 }
 
-int getCurrencyIndex(const char_t* symbol)
+int CurrencyIndex(const char_t* symbol)
 {
     assert(3 == tstrlen(symbol));
     uint_t count = ARRAY_SIZE(currencies);
-    // skip four first currencies USD, EUR, GBP and JPY
-    // the rest is set alphabetically
+
     const CurrencyArrayEntry* end = currencies + count;
-    // Use static allocation to reduce stack usage
-    static CurrencyArrayEntry entry;
-    char* abbrev = const_cast<char*>(entry.abbrev);
-    abbrev[0] = symbol[0];
-    abbrev[1] = symbol[1];
-    abbrev[2] = symbol[2];
-    abbrev[3] = _T('\0');
+    CurrencyArrayEntry entry = {symbol, NULL, NULL};
+
     const CurrencyArrayEntry* p = std::lower_bound(currencies, end, entry, currencyLessFull);
     if (end == p)
         return -1;
+
     if (0 != tstrcmp(p->abbrev, entry.abbrev))
         return -1;
+
     return p - currencies;
 }

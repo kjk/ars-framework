@@ -49,19 +49,19 @@ void sendEvent(uint_t event, short wph, short wpl, int lp)
 
 void localizeNumber(char_t* begin, char_t* end)
 {
-	char_t decimal[4] = {_T('.'), _T('\0')};
-	char_t thousand[4] = {_T(','), _T('\0')};
-	int res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, thousand, 4);
-	res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, decimal, 4);
-	
-	while (begin != end)
-	{
-		if (*begin == _T(','))
-			*begin = thousand[0];
-		else if (*begin == _T('.'))
-			*begin = decimal[0];
-		++begin;
-	}
+    char_t decimal[4] = {_T('.'), _T('\0')};
+    char_t thousand[4] = {_T(','), _T('\0')};
+    int res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, thousand, 4);
+    res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, decimal, 4);
+
+    while (begin != end)
+    {
+        if (*begin == _T(','))
+            *begin = thousand[0];
+        else if (*begin == _T('.'))
+            *begin = decimal[0];
+        ++begin;
+    }
 }
 
 /*
@@ -530,24 +530,24 @@ const void* LoadBinaryData(UINT id, HINSTANCE instance)
 
 char_t* LoadString(UINT id, ulong_t* len)
 {
-	ulong_t l = 64;
-	char_t* buffer = StrAlloc<char_t>(l);
-	while (true) 
-	{
-		if (NULL == buffer)
-			return NULL;
-			
-		int ll = LoadString(GetModuleHandle(NULL), id,	buffer, l);
-		if (ulong_t(ll + 1) < l)
-		{
-			if (NULL != len)
-				*len = ll;
-			return buffer;
-		}
-		l *= 2;
-		free(buffer);
-		buffer = StrAlloc<char_t>(l);
-	}
+    ulong_t l = 64;
+    char_t* buffer = StrAlloc<char_t>(l);
+    while (true) 
+    {
+        if (NULL == buffer)
+            return NULL;
+
+        int ll = LoadString(GetModuleHandle(NULL), id,	buffer, l);
+        if (ulong_t(ll + 1) < l)
+        {
+            if (NULL != len)
+                *len = ll;
+            return buffer;
+        }
+        l *= 2;
+        free(buffer);
+        buffer = StrAlloc<char_t>(l);
+    }
 }
 
 //char_t* LoadString(UINT id, ulong_t* len)

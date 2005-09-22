@@ -11,6 +11,7 @@
 #define WINDOW_CLASS_BUTTON  TEXT("BUTTON")
 #define WINDOW_CLASS_LISTBOX TEXT("LISTBOX")
 #define WINDOW_CLASS_COMBOBOX TEXT("COMBOBOX")
+#define WINDOW_CLASS_STATIC TEXT("STATIC")
 
 class ScrollBar: public Widget {
 public:
@@ -180,6 +181,7 @@ public:
     ulong_t itemCount() const {return ListView_GetItemCount(handle());}
    
     long insertItem(const LVITEM& it) {return ListView_InsertItem(handle(), &it);}
+    bool setItem(const LVITEM& it) {return FALSE != ListView_SetItem(handle(), &it);}
    
     HIMAGELIST setImageList(HIMAGELIST list, int type) {return ListView_SetImageList(handle(), list, type);}  
    

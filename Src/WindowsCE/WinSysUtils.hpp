@@ -70,4 +70,17 @@ inline void TimeRollDays(SYSTEMTIME& st, int count) {TimeRoll(st, timeUnitsDays,
 void GetTime(FILETIME& ft);
 long TimeDiff(const FILETIME& ft1, const FILETIME& ft2, TimeUnits units);
 
+#ifndef NDEBUG
+
+#define DTEST(expr) if (!(expr)) DumpErrorMessage(GetLastError())
+#define DERR(expr) {status_t err = (expr); if (errNone != err) DumpErrorMessage(err);}
+
+#else
+
+#define DTEST(expr) (expr)
+#define DERR(expr) (expr)
+
+#endif
+
+
 #endif
