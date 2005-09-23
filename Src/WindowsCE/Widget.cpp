@@ -180,6 +180,7 @@ Widget* Widget::fromHandle(HWND handle, CreateOption co)
 
 LRESULT CALLBACK Widget::callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+
     if (uMsg >= 0xC000 && uMsg <= 0xFFFF)
     {
         UINT magicMessage = WidgetCallbackMagicMessage();
@@ -191,10 +192,10 @@ LRESULT CALLBACK Widget::callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM 
     DumpMessage(uMsg, wParam, lParam);
 #endif
     
-#ifndef NDEBUG
-    __try 
-    {
-#endif    
+//#ifndef NDEBUG
+//    __try 
+//    {
+//#endif    
         Widget* w = WidgetFromHandle(handle);
         if (NULL == w)
         {
@@ -214,19 +215,19 @@ LRESULT CALLBACK Widget::callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM 
             return WidgetCallbackDefault(handle, uMsg, wParam, lParam);
     
         return w->callback(uMsg, wParam, lParam);
-#ifndef NDEBUG
-    }
-    __except (EXCEPTION_EXECUTE_HANDLER)
-    {
-        OutputDebugString(_T("Widget::callback(): exception trapped: "));
-        static TCHAR buffer[16];
-        _stprintf(buffer, _T("0x%x; "), GetExceptionCode());
-        OutputDebugString(buffer);
-        DumpMessage(uMsg, wParam, lParam);
-        assert(false);
-    }
-    return -1;
-#endif
+//#ifndef NDEBUG
+//    }
+//    __except ((EXCEPTION_BREAKPOINT == GetExceptionCode() || EXCEPTION_SINGLE_STEP == GetExceptionCode()) ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_EXECUTE_HANDLER)
+//    {
+//        OutputDebugString(_T("Widget::callback(): exception trapped: "));
+//        static TCHAR buffer[16];
+//        _stprintf(buffer, _T("0x%x; "), GetExceptionCode());
+//        OutputDebugString(buffer);
+//        DumpMessage(uMsg, wParam, lParam);
+//        assert(false);
+//    }
+//    return -1;
+//#endif
 }
 
 LRESULT Widget::callback(UINT message, WPARAM wParam, LPARAM lParam)
