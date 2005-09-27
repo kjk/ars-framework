@@ -64,6 +64,24 @@ void localizeNumber(char_t* begin, char_t* end)
     }
 }
 
+void delocalizeNumber(char_t* begin, char_t* end)
+{
+    char_t decimal[4] = {_T('.'), _T('\0')};
+    char_t thousand[4] = {_T(','), _T('\0')};
+    int res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, thousand, 4);
+    res = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SDECIMAL, decimal, 4);
+
+    while (begin != end)
+    {
+        if (*begin == thousand[0])
+            *begin = _T(',');
+        else if (*begin == decimal[0])
+            *begin = _T('.');
+        ++begin;
+    }
+}
+
+
 /*
 // Put the text of currently selected item in list control into txtOut
 // return false if no item is currently selected 

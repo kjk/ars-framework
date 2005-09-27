@@ -21,7 +21,7 @@ ulong_t random(ulong_t range);
 
 void localizeNumber(char_t* begin, char_t* end);
 
-inline void localizeNumberStrInPlace(char_t *begin)
+inline void localizeNumberStrInPlace(char_t* begin)
 {
     localizeNumber(begin, begin + tstrlen(begin));
 }
@@ -36,6 +36,11 @@ void delocalizeNumber(char_t* begin, char_t* end);
 inline void delocalizeNumber(String& s) {
     char_t* begin = &s[0];
     delocalizeNumber(begin, begin + s.length());
+}
+
+inline void delocalizeNumberStrInPlace(char_t* begin)
+{
+    delocalizeNumber(begin, begin + tstrlen(begin));
 }
 
 void Alert(uint_t alertId);
