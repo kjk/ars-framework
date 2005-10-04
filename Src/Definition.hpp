@@ -61,6 +61,7 @@ public:
    
     status_t append(DefinitionElement* e);
     status_t appendText(const char_t* text, long len = -1); 
+    status_t appendLineBreak();
    
     DefinitionElement* last() {return elements.back();} 
 

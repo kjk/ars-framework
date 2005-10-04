@@ -1532,6 +1532,11 @@ status_t DefinitionModel::appendText(const char_t* text, long len)
     return append(t); 
 }
 
+status_t DefinitionModel::appendLineBreak()
+{
+    return append(new_nt LineBreakElement());
+}
+
 
 
 void Definition::setSelection(Graphics& graphics, const ElementPosition_t& startElement, uint_t startProgress, const ElementPosition_t& endElement, uint_t endProgress, bool isHyperlink)
