@@ -9,26 +9,39 @@ static BOOL InitCC(DWORD control)
     return InitCommonControlsEx(&icc); 
 }
 
-ScrollBar::ScrollBar(AutoDeleteOption ad):
-	Widget(ad)
-{}
+#define DEFINE_CONTROL_CTORS(ControlClass) \
+ControlClass::ControlClass(AutoDeleteOption ad): Widget(ad) {} \
+ControlClass::ControlClass(HWND wnd, AutoDeleteOption ad): Widget(wnd, ad) {} \
+ControlClass::~ControlClass() {}
 
-bool ScrollBar::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance)
-{
-	assert(parent != NULL);
-	style |= WS_CHILD;
-	return Widget::create(WINDOW_CLASS_SCROLLBAR, NULL, style, x, y, width, height, parent, NULL, instance);
+
+#define DEFINE_CONTROL_CREATE(ControlClass, CLASS) \
+bool ControlClass::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, UINT controlId) \
+{ \
+    assert(parent != NULL); \
+    style |= WS_CHILD; \
+    return Widget::create(CLASS, NULL, style, x, y, width, height, parent, (HMENU)controlId, instance); \
+} \
+bool ControlClass::create(DWORD style, const RECT& rect, HWND parent, HINSTANCE instance, UINT controlId) \
+{ \
+    assert(parent != NULL); \
+    style |= WS_CHILD; \
+    return Widget::create(CLASS, NULL, style, rect, parent, (HMENU)controlId, instance); \
 }
 
-EditBox::EditBox(AutoDeleteOption ad):
-	Widget(ad)
-{}
+#define DEFINE_CONTROL_ALL(ControlClass, CLASS) \
+    DEFINE_CONTROL_CTORS(ControlClass) \
+    DEFINE_CONTROL_CREATE(ControlClass, CLASS)
 
-bool EditBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, const char_t* text, DWORD styleEx)
+DEFINE_CONTROL_ALL(ScrollBar, WINDOW_CLASS_SCROLLBAR)
+
+DEFINE_CONTROL_CTORS(EditBox)
+
+bool EditBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, const char_t* text)
 {
-	assert(parent != NULL);
-	style |= WS_CHILD;
-	return Widget::create(WINDOW_CLASS_EDITBOX, text, style, x, y, width, height, parent, NULL, instance, styleEx);
+    assert(parent != NULL);
+    style |= WS_CHILD;
+    return Widget::create(WINDOW_CLASS_EDITBOX, text, style, x, y, width, height, parent, NULL, instance);
 }
 
 ulong_t EditBox::charAtPoint(const Point& p, ulong_t* line) const
@@ -39,141 +52,17 @@ ulong_t EditBox::charAtPoint(const Point& p, ulong_t* line) const
     return LOWORD(res);
 }
 
-ProgressBar::ProgressBar(AutoDeleteOption ad):
-    Widget(ad)
-{
-}
+DEFINE_CONTROL_ALL(ProgressBar, PROGRESS_CLASS)
 
-bool ProgressBar::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance)
-{
-	assert(parent != NULL);
-	style |= WS_CHILD;
-	return Widget::create(PROGRESS_CLASS, NULL, style, x, y, width, height, parent, NULL, instance);
-}
+DEFINE_CONTROL_ALL(TabControl, WINDOW_CLASS_TABCONTROL)
 
+DEFINE_CONTROL_ALL(ListView, WINDOW_CLASS_LISTVIEW)
 
+DEFINE_CONTROL_ALL(Button, WINDOW_CLASS_BUTTON)
 
-TabControl::TabControl(AutoDeleteOption ad):
-    Widget(ad)
-{
-    InitCC(ICC_TAB_CLASSES);
-} 
+DEFINE_CONTROL_ALL(ListBox, WINDOW_CLASS_LISTBOX)
 
-TabControl::TabControl(HWND wnd, AutoDeleteOption ad):
-    Widget(wnd, ad)
-{
-    InitCC(ICC_TAB_CLASSES);
-} 
-
-TabControl::~TabControl()
-{
-}
-
-bool TabControl::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)
-{
-	assert(parent != NULL);
-	style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_TABCONTROL, NULL, style, x, y, width, height, handle(), NULL, instance, styleEx);
-}
-
-
-ListView::ListView(AutoDeleteOption ad):
-    Widget(ad)
-{
-    InitCC(ICC_LISTVIEW_CLASSES);
-}
-
-ListView::ListView(HWND wnd, AutoDeleteOption ad):
-    Widget(wnd, ad)
-{
-    InitCC(ICC_LISTVIEW_CLASSES);
-}
-
-ListView::~ListView()
-{}
-
-bool ListView::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
-{
-    assert(parent != NULL);
-    style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_LISTVIEW, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
-}
-
-bool ListView::create(DWORD style, const RECT& r, HWND parent, HINSTANCE instance, DWORD styleEx)   
-{
-    assert(parent != NULL);
-    style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_LISTVIEW, NULL, style, r, parent, NULL, instance, styleEx);    
-}
-
-
-Button::Button(AutoDeleteOption ad):
-    Widget(ad)
-{
-}
-
-Button::Button(HWND wnd, AutoDeleteOption ad):
-    Widget(wnd, ad)
-{
-}
-
-Button::~Button()
-{}
-
-bool Button::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
-{
-    assert(parent != NULL);
-    style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_BUTTON, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
-}
-
-
-ListBox::ListBox(AutoDeleteOption ad):
-    Widget(ad)
-{
-}
-
-ListBox::ListBox(HWND wnd, AutoDeleteOption ad):
-    Widget(wnd, ad)
-{
-}
-
-ListBox::~ListBox()
-{}
-
-bool ListBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, DWORD styleEx)   
-{
-    assert(parent != NULL);
-    style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_LISTBOX, NULL, style, x, y, width, height, parent, NULL, instance, styleEx);    
-}
-
-ComboBox::ComboBox(AutoDeleteOption ad):
-    Widget(ad)
-{
-}
-
-ComboBox::ComboBox(HWND wnd, AutoDeleteOption ad):
-    Widget(wnd, ad)
-{
-}
-
-ComboBox::~ComboBox()
-{}
-
-bool ComboBox::create(DWORD style, int x, int y, int width, int height, HWND parent, HINSTANCE instance, UINT controlId, DWORD styleEx)   
-{
-    assert(parent != NULL);
-    style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_COMBOBOX, NULL, style, x, y, width, height, parent, HMENU(controlId), instance, styleEx);    
-}
-
-bool ComboBox::create(DWORD style, const RECT& rect, HWND parent, HINSTANCE instance, UINT controlId, DWORD styleEx)
-{
-    assert(parent != NULL);
-    style |= WS_CHILD;
-    return Widget::create(WINDOW_CLASS_COMBOBOX, NULL, style, rect, parent, HMENU(controlId), instance, styleEx);    
-}
+DEFINE_CONTROL_ALL(ComboBox, WINDOW_CLASS_COMBOBOX)
 
 bool ComboBox::setDroppedRect(const RECT& r)
 {
@@ -186,3 +75,5 @@ bool ComboBox::setDroppedRect(const RECT& r)
 
     return FALSE != MoveWindow(info.hwndList, r.left, r.top, r.right - r.left, r.bottom - r.top, FALSE); 
 }
+
+DEFINE_CONTROL_ALL(TrackBar, WINDOW_CLASS_TRACKBAR);
