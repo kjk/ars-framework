@@ -225,7 +225,9 @@ public:
     DECLARE_CONTROL_ALL(ComboBox);
 
     long addString(const char_t* str) {return sendMessage(CB_ADDSTRING, 0, (LPARAM)str);}
+    long addString(UINT stringId);
     long insertString(long index, const char_t* str) {return sendMessage(CB_INSERTSTRING, index, (LPARAM)str);}
+    long insertString(long index, UINT stringId);
     void clear() {sendMessage(CB_RESETCONTENT, 0, 0);}
     long selection() const {return sendMessage(CB_GETCURSEL, 0, 0);}
     void setSelection(long index) {sendMessage(CB_SETCURSEL, index, 0);}
@@ -246,6 +248,7 @@ public:
 
     long position() const {return sendMessage(TBM_GETPOS, 0, 0);}
     void setRange(ushort rangeMin, ushort rangeMax, RepaintOption repaint) {sendMessage(TBM_SETRANGE, (WPARAM)(BOOL)repaint, (LPARAM)MAKELONG(rangeMin, rangeMax));}
+    void setPosition(long pos, RepaintOption repaint) {sendMessage(TBM_SETPOS, (WPARAM)(BOOL)repaint, (LPARAM)(LONG)pos);}
     
     enum BuddyType {
         buddyRight,

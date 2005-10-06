@@ -1,4 +1,5 @@
 #include <WindowsCE/Controls.hpp>
+#include <SysUtils.hpp>
 
 static BOOL InitCC(DWORD control)
 {
@@ -74,6 +75,28 @@ bool ComboBox::setDroppedRect(const RECT& r)
         return false;
 
     return FALSE != MoveWindow(info.hwndList, r.left, r.top, r.right - r.left, r.bottom - r.top, FALSE); 
+}
+
+long ComboBox::addString(UINT stringId)
+{
+    char_t* str = LoadString(stringId);
+    if (NULL == str)
+        return CB_ERRSPACE;
+    
+    long err = addString(str);
+    free(str);
+    return err;
+}
+
+long ComboBox::insertString(long index, UINT stringId)
+{
+    char_t* str = LoadString(stringId);
+    if (NULL == str)
+        return CB_ERRSPACE;
+    
+    long err = insertString(index, str);
+    free(str);
+    return err;
 }
 
 DEFINE_CONTROL_ALL(TrackBar, WINDOW_CLASS_TRACKBAR);

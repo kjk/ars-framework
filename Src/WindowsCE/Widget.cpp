@@ -19,7 +19,7 @@ BOOL ClientToScreen(HWND wnd, RECT& rect)
     return TRUE;	
 }
 
-// #define DEBUG_WIDGET_MESSAGES
+//#define DEBUG_WIDGET_MESSAGES
 
 void DumpMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -110,18 +110,18 @@ static Widget* WidgetFromHandle(HWND handle)
 }
 
 Widget::Widget(AutoDeleteOption ad):
-    handle_(NULL),
-    previousCallback_(NULL),
-    previousUserData_(NULL),
-    autoDelete_(ad)
+handle_(NULL),
+previousCallback_(NULL),
+previousUserData_(NULL),
+autoDelete_(ad)
 {
 }
 
 Widget::Widget(HWND handle, AutoDeleteOption ad):
-    handle_(NULL),
-    previousCallback_(NULL),
-    previousUserData_(NULL),
-    autoDelete_(ad)
+handle_(NULL),
+previousCallback_(NULL),
+previousUserData_(NULL),
+autoDelete_(ad)
 {
     assert(NULL == fromHandle(handle));
     attach(handle);
@@ -187,47 +187,47 @@ LRESULT CALLBACK Widget::callback(HWND handle, UINT uMsg, WPARAM wParam, LPARAM 
         if (uMsg == magicMessage)
             return widgetCallbackMagicResponse;
     }
-    
+
 #ifdef DEBUG_WIDGET_MESSAGES
     DumpMessage(uMsg, wParam, lParam);
 #endif
-    
-//#ifndef NDEBUG
-//    __try 
-//    {
-//#endif    
-        Widget* w = WidgetFromHandle(handle);
-        if (NULL == w)
-        {
-            if (WM_CREATE == uMsg)
-            {
-                CREATESTRUCT* p = (CREATESTRUCT*)lParam;
-                assert(NULL != p);
-                w = (Widget*)p->lpCreateParams;
-            }
-            if (WM_INITDIALOG == uMsg)
-                w = (Widget*)lParam;
 
-            if (NULL != w)
-                w->attach(handle);
+    //#ifndef NDEBUG
+    //    __try 
+    //    {
+    //#endif    
+    Widget* w = WidgetFromHandle(handle);
+    if (NULL == w)
+    {
+        if (WM_CREATE == uMsg)
+        {
+            CREATESTRUCT* p = (CREATESTRUCT*)lParam;
+            assert(NULL != p);
+            w = (Widget*)p->lpCreateParams;
         }
-        if (NULL == w)
-            return WidgetCallbackDefault(handle, uMsg, wParam, lParam);
-    
-        return w->callback(uMsg, wParam, lParam);
-//#ifndef NDEBUG
-//    }
-//    __except ((EXCEPTION_BREAKPOINT == GetExceptionCode() || EXCEPTION_SINGLE_STEP == GetExceptionCode()) ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_EXECUTE_HANDLER)
-//    {
-//        OutputDebugString(_T("Widget::callback(): exception trapped: "));
-//        static TCHAR buffer[16];
-//        _stprintf(buffer, _T("0x%x; "), GetExceptionCode());
-//        OutputDebugString(buffer);
-//        DumpMessage(uMsg, wParam, lParam);
-//        assert(false);
-//    }
-//    return -1;
-//#endif
+        if (WM_INITDIALOG == uMsg)
+            w = (Widget*)lParam;
+
+        if (NULL != w)
+            w->attach(handle);
+    }
+    if (NULL == w)
+        return WidgetCallbackDefault(handle, uMsg, wParam, lParam);
+
+    return w->callback(uMsg, wParam, lParam);
+    //#ifndef NDEBUG
+    //    }
+    //    __except ((EXCEPTION_BREAKPOINT == GetExceptionCode() || EXCEPTION_SINGLE_STEP == GetExceptionCode()) ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_EXECUTE_HANDLER)
+    //    {
+    //        OutputDebugString(_T("Widget::callback(): exception trapped: "));
+    //        static TCHAR buffer[16];
+    //        _stprintf(buffer, _T("0x%x; "), GetExceptionCode());
+    //        OutputDebugString(buffer);
+    //        DumpMessage(uMsg, wParam, lParam);
+    //        assert(false);
+    //    }
+    //    return -1;
+    //#endif
 }
 
 LRESULT Widget::callback(UINT message, WPARAM wParam, LPARAM lParam)
@@ -235,26 +235,26 @@ LRESULT Widget::callback(UINT message, WPARAM wParam, LPARAM lParam)
     assert(NULL != handle_);
     switch (message)
     {
-        case WM_CREATE:
-            return rawHandleCreate(message, wParam, lParam);
+    case WM_CREATE:
+        return rawHandleCreate(message, wParam, lParam);
 
-        case WM_DESTROY:
-            return rawHandleDestroy(message, wParam, lParam);
+    case WM_DESTROY:
+        return rawHandleDestroy(message, wParam, lParam);
 
-        case WM_COMMAND:
-            return rawHandleCommand(message, wParam, lParam);
+    case WM_COMMAND:
+        return rawHandleCommand(message, wParam, lParam);
 
-        case WM_SIZE:
-            return rawHandleResize(message, wParam, lParam);
+    case WM_SIZE:
+        return rawHandleResize(message, wParam, lParam);
 
-        case WM_PAINT:
-            return rawHandlePaint(message, wParam, lParam);
+    case WM_PAINT:
+        return rawHandlePaint(message, wParam, lParam);
 
-        case WM_NOTIFY:
-            return rawHandleNotify(message, wParam, lParam); 			
+    case WM_NOTIFY:
+        return rawHandleNotify(message, wParam, lParam); 			
 
-        default:
-            return defaultCallback(message, wParam, lParam);
+    default:
+        return defaultCallback(message, wParam, lParam);
     };
 }
 
@@ -305,10 +305,10 @@ bool Widget::create(LPCTSTR widget_class, LPCTSTR caption, DWORD style, const RE
 {
     return create(widget_class, caption, style, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, parent, menu, instance, exStyle);
 }
-    
+
 bool Widget::create(ATOM widget_class, LPCTSTR caption, DWORD style, const RECT& rect, HWND parent, HMENU menu, HINSTANCE instance, DWORD exStyle)
 {
-	return create(reinterpret_cast<LPCTSTR>(widget_class), caption, style, rect, parent, menu, instance, exStyle);
+    return create(reinterpret_cast<LPCTSTR>(widget_class), caption, style, rect, parent, menu, instance, exStyle);
 }
 
 LRESULT Widget::defaultCallback(UINT uMsg, WPARAM wParam, LPARAM lParam, HWND handle)
