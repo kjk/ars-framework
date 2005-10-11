@@ -352,9 +352,61 @@ void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* file
 
 #else // _PALM_OS
 
+// #define FLUSH_ALWAYS
+
+static HANDLE allocFile = INVALID_HANDLE_VALUE;
 // TODO: implement Win CE version
 void ArsLexis::logAllocation(void* ptr, size_t size, bool free, const char* fileName, int line)
 {
+    DWORD w;
+    if (INVALID_HANDLE_VALUE == allocFile)
+        allocFile = CreateFile(_T("\\My Documents\\allocs.txt"), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (INVALID_HANDLE_VALUE == allocFile)
+    {
+        w = GetLastError();
+        assert(false);
+        return;
+    }
+
+    char buffer[16];
+    if (free)
+    {
+         if (NULL != ptr)
+         {
+            WriteFile(allocFile, "-\t0x", 4, &w, NULL);
+            sprintf(buffer, "%08lx\n", ptr);
+            WriteFile(allocFile, buffer, 9, &w, NULL);
+         }
+    }
+    else 
+    {
+        if (NULL == fileName)
+            fileName = "(Unknown)";
+        WriteFile(allocFile, "+\t0x", 4, &w, NULL);
+        sprintf(buffer, "%08lx\t", ptr);
+        WriteFile(allocFile, buffer, 9, &w, NULL);
+        w = sprintf(buffer, "%ld\t", size);
+        WriteFile(allocFile, buffer, w, &w, NULL);
+        w = strlen(fileName);
+        WriteFile(allocFile, fileName, w, &w, NULL);
+        w = sprintf(buffer, ": %d\n", line);
+        WriteFile(allocFile, buffer, w, &w, NULL);
+    }
+#ifdef FLUSH_ALWAYS
+    FlushFileBuffers(allocFile);
+#endif
+}
+
+void ArsLexis::cleanAllocationLogging()
+{
+    if (INVALID_HANDLE_VALUE == allocFile)
+        return;
+    
+    SetEndOfFile(allocFile);
+    FlushFileBuffers(allocFile);
+    CloseHandle(allocFile);
+    allocFile = INVALID_HANDLE_VALUE;
 }
 
 #endif // _PALMOS

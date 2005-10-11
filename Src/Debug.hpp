@@ -118,14 +118,33 @@ inline void operator delete[](void* p, NewDontThrowTag, const char*, int) {::ope
 # define realloc(p, s) realloc__((p), (s))
 #endif
 
-#if !defined(NDEBUG) && !defined(_MSC_VER)
-// MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
-// # define new new (__FILE__, __LINE__)
-# define new_nt new (newDontThrow, __FILE__, __LINE__)
-// # define malloc(a) malloc__((a), __FILE__, __LINE__)
+#ifdef _MSC_VER
+#if _MSC_VER >= 1400
+#define ARSLEXIS_DEBUG_NEW
+#define ARSLEXIS_DEBUG_NEW_MODE 0
+#endif
 #else
+#define ARSLEXIS_DEBUG_NEW
+#define ARSLEXIS_DEBUG_NEW_MODE 1
+#endif
+
+
+#if !defined(NDEBUG) && defined(ARSLEXIS_DEBUG_NEW)
+// MS VC++ containers use operator placement new to construct values (instead of allocator::construct()).
+
+// # define new new (__FILE__, __LINE__)
+
+#if (ARSLEXIS_DEBUG_NEW_MODE == 0)
+# define new_nt new (newDontThrow, __FILE__, __LINE__)
+#else
+# define new new (newDontThrow, __FILE__, __LINE__)
+# define new_nt new
+#endif
+
+#else
+
 # define new_nt new (newDontThrow)
-// # define malloc(a) malloc__(a)
+
 #endif
 
 using namespace ArsLexis;

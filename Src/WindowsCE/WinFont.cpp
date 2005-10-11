@@ -8,7 +8,11 @@ WinFont::WinFont(HFONT handle):
 	refCount_(NULL)
 {
 	if (NULL != handle_)
-		refCount_ = new uint_t(1);
+	{
+		refCount_ = new_nt uint_t(1);
+	    if (NULL == refCount_)
+	        ArsLexis::handleBadAlloc();
+    }	
 }
 
 void WinFont::release()
@@ -35,7 +39,10 @@ void WinFont::attach(HFONT handle, bool nonDestructible)
 	if (NULL == handle)
 		return;
 
-	refCount_ = new uint_t(nonDestructible ? 2 : 1);
+	refCount_ = new_nt uint_t(nonDestructible ? 2 : 1);
+	if (NULL == refCount_)
+	    ArsLexis::handleBadAlloc();
+	    
 	handle_ = handle;
 }
 
@@ -56,7 +63,7 @@ bool WinFont::getStockFont(int object)
 		return false;
 
 	release();
-	attach(HFONT(obj), true);
+	attach(HFONT(obj), false);
 	return true;
 }
 

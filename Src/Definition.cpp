@@ -1,9 +1,9 @@
 /**
- * @file Definition.cpp
- * Implementation of class @c Definition.
- *
- * @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
- */
+* @file Definition.cpp
+* Implementation of class @c Definition.
+*
+* @author Andrzej Ciarkowski (a.ciarkowski@interia.pl)
+*/
 #include <Definition.hpp>
 #include <DefinitionElement.hpp>
 #include <Utility.hpp>
@@ -13,6 +13,7 @@
 #include <LineBreakElement.hpp>
 #include <DynStr.hpp>
 #include <UTF8_Processor.hpp>
+#include <BulletElement.hpp>
 
 void DestroyElements(Definition::Elements_t& elems)
 {
@@ -23,18 +24,18 @@ void DestroyElements(Definition::Elements_t& elems)
 }
 
 Definition::HotSpot::HotSpot(const Rect& rect, DefinitionElement& element):
-    element_(&element)
+element_(&element)
 {
     rectangles_.push_back(rect);
 }
 
 bool Definition::HotSpot::hitTest(const Point& point) const
 {
-	Rectangles_t::const_iterator end = rectangles_.end();
-	for (Rectangles_t::const_iterator it = rectangles_.begin(); it != end; ++it)
-		if (it->hitTest(point))
-			return true;
-	return false;
+    Rectangles_t::const_iterator end = rectangles_.end();
+    for (Rectangles_t::const_iterator it = rectangles_.begin(); it != end; ++it)
+        if (it->hitTest(point))
+            return true;
+    return false;
 }
 
 Definition::HotSpot::~HotSpot()
@@ -63,12 +64,12 @@ namespace {
 
     inline 
         static bool operator<(const Rect& rect1, const Rect& rect2) {
-         if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
-            return true;
-        else
-            return false;
+            if (rect1.y()<rect2.y() || (rect1.y()==rect2.y() && rect1.x()<rect2.x()))
+                return true;
+            else
+                return false;
     }
-    
+
 }
 
 void Definition::HotSpot::addRectangle(const Rect& rect)
@@ -116,33 +117,33 @@ bool Definition::HotSpot::center(Point& point) const
 }
 
 Definition::Definition():
-    firstLine_(0),
-    lastLine_(0),
-    hyperlinkHandler_(0),
-    selectionStartElement_(elements_.end()),
-    selectionEndElement_(elements_.end()),
-    inactiveSelectionStartElement_(elements_.end()),
-    inactiveSelectionEndElement_(elements_.end()),
-    mouseDownElement_(elements_.end()),
-    mouseDownProgress_(LayoutContext::progressCompleted),
-    selectionStartProgress_(LayoutContext::progressCompleted),
-    selectionEndProgress_(LayoutContext::progressCompleted),
-    trackingSelection_(false),
-    renderingProgressReporter_(0),
-    interactionBehavior_(0),
-    selectionIsHyperlink_(false),
-    navOrderOptions_(0),
-    navigatingUp_(false),
-    navigatingDown_(false),
-    selectionClickHandler(NULL),
-    selectionClickHandlerContext(NULL),
-    model_(NULL),
-    modelOwner_(ownModelNot),
-    consumeNextPenUp_(false)
+firstLine_(0),
+lastLine_(0),
+hyperlinkHandler_(0),
+selectionStartElement_(elements_.end()),
+selectionEndElement_(elements_.end()),
+inactiveSelectionStartElement_(elements_.end()),
+inactiveSelectionEndElement_(elements_.end()),
+mouseDownElement_(elements_.end()),
+mouseDownProgress_(LayoutContext::progressCompleted),
+selectionStartProgress_(LayoutContext::progressCompleted),
+selectionEndProgress_(LayoutContext::progressCompleted),
+trackingSelection_(false),
+renderingProgressReporter_(0),
+interactionBehavior_(0),
+selectionIsHyperlink_(false),
+navOrderOptions_(0),
+navigatingUp_(false),
+navigatingDown_(false),
+selectionClickHandler(NULL),
+selectionClickHandlerContext(NULL),
+model_(NULL),
+modelOwner_(ownModelNot),
+consumeNextPenUp_(false)
 {}
 
 namespace {
-	
+
     struct HotSpotNotLess {
 
         const Definition::HotSpot* hotSpot;
@@ -184,7 +185,7 @@ void Definition::clear()
 {
     clearHotSpots();
     clearLines();
-    
+
     if (ownModel == modelOwner_)
     {
         delete model_;
@@ -228,7 +229,7 @@ void Definition::calculateVisibleRange(uint_t& firstLine, uint_t& lastLine, int 
     if (!lines_.empty())
     {
         uint_t linesCount=lines_.size();
-        
+
         int newFirstLine=firstLine_+delta;
         if (newFirstLine<0)
             newFirstLine=0;
@@ -311,9 +312,9 @@ void Definition::scroll(Graphics& graphics, int delta)
 
         Graphics::State_t state = graphics.pushState();
         graphics.applyStyle(StyleGetStaticStyle(styleIndexDefault), false);
-        
-//        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
-        
+
+        //        Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
+
         if (delta>0) 
         {
             pointDelta.y =- int(unionTop);
@@ -329,16 +330,16 @@ void Definition::scroll(Graphics& graphics, int delta)
             {
                 pointDelta.y += lines_[index].height;
             }
-                
+
             graphics.copyArea(unionRect, bounds_.topLeft() + pointDelta);
             graphics.erase(Rect(bounds_.x(), bounds_.y()+unionHeight+pointDelta.y, bounds_.width(), bounds_.height()-unionHeight-pointDelta.y));
-            
+
             moveHotSpots(pointDelta);
             renderLineRange(graphics, lines_.begin()+newFirstLine, lines_.begin()+unionFirst, 0, elements_.end(), elements_.end());
         }
-        
+
         graphics.popState(state);
-        
+
         firstLine_ = newFirstLine;
         lastLine_ = newLastLine;
     }
@@ -400,15 +401,15 @@ void Definition::elementAtWidth(Graphics& graphics, const LinePosition_t& line, 
             (*elem)->calculateLayout(lc);
             layoutContext.usedWidth += lc.availableWidth();
         }
-     
+
         LayoutContext after = layoutContext;
         progress = (*elem)->charIndexAtOffset(after, width);
         if (DefinitionElement::offsetOutsideElement != progress)
             break;
-            
+
         layoutContext.renderingProgress = after.renderingProgress;
         layoutContext.usedWidth = after.usedWidth;
-        
+
         ++elem;
         layoutContext.renderingProgress = 0;
         progress = 0;
@@ -466,7 +467,7 @@ void Definition::renderLine(RenderingContext& renderContext, LinePosition_t line
             else
                 renderContext.nextTextElement = 0;
         }
-        
+
         if (DefinitionElement::justifyRightLastElementInLine == (*current)->justification() && line->firstElement != current)
         {
             //move last element to right
@@ -517,9 +518,9 @@ void Definition::renderLineRange(Graphics& graphics, LinePosition_t begin, LineP
         else
             renderContext.top += line->height;
 
-		line = nextLine;
-		if (lines_.end() == line)
-			break;
+        line = nextLine;
+        if (lines_.end() == line)
+            break;
 
         if (line->firstElement > endElem)
             break;
@@ -546,10 +547,10 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
         }
         uint_t progressBefore=layoutContext.renderingProgress;
         (*element)->calculateLayout(layoutContext);
-        
+
         if (element==firstElement && progressBefore<=renderingProgress && layoutContext.renderingProgress>renderingProgress)
             firstLine_=lines_.size();
-        
+
         bool startNewLine=false;    
         if (layoutContext.isElementCompleted())
         {
@@ -570,28 +571,28 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
         }
         else
             startNewLine=true;
-            
+
         if (startNewLine)
         {
             lastLine.height=layoutContext.usedHeight;
             lastLine.baseLine=layoutContext.baseLine;
             switch (justify) 
             {
-                case DefinitionElement::justifyRightLastElementInLine: 
-                    //no break (when longer than one line)
-                case DefinitionElement::justifyRight:
-                    lastLine.leftMargin=layoutContext.screenWidth-layoutContext.usedWidth;
-                    break;
-                
-                case DefinitionElement::justifyCenter:
-                    if (layoutContext.usedWidth>layoutContext.screenWidth) // This means line ends with whitespace we should ignore...
-                        lastLine.leftMargin=0;
-                    else
-                        lastLine.leftMargin=(layoutContext.screenWidth-layoutContext.usedWidth)/2;
-                    break;
-                    
-                default:
+            case DefinitionElement::justifyRightLastElementInLine: 
+                //no break (when longer than one line)
+            case DefinitionElement::justifyRight:
+                lastLine.leftMargin=layoutContext.screenWidth-layoutContext.usedWidth;
+                break;
+
+            case DefinitionElement::justifyCenter:
+                if (layoutContext.usedWidth>layoutContext.screenWidth) // This means line ends with whitespace we should ignore...
                     lastLine.leftMargin=0;
+                else
+                    lastLine.leftMargin=(layoutContext.screenWidth-layoutContext.usedWidth)/2;
+                break;
+
+            default:
+                lastLine.leftMargin=0;
             }            
             lines_.push_back(lastLine);
             if (end!=element)
@@ -606,18 +607,18 @@ void Definition::calculateLayout(Graphics& graphics, ElementPosition_t firstElem
 
 void Definition::calculateLayout(Graphics& graphics, const Rect& bounds, bool force)
 {
-	bool onlyHeight = true;
-	if (force || (bounds.width() != bounds_.width()) || (!elements_.empty() && lines_.empty()))
-		onlyHeight = false;
-	
+    bool onlyHeight = true;
+    if (force || (bounds.width() != bounds_.width()) || (!elements_.empty() && lines_.empty()))
+        onlyHeight = false;
+
     clearHotSpots();
-	bounds_ = bounds;
-	if (onlyHeight)
-	{
-		calculateVisibleRange(firstLine_, lastLine_);
-		return;
-	}
-	
+    bounds_ = bounds;
+    if (onlyHeight)
+    {
+        calculateVisibleRange(firstLine_, lastLine_);
+        return;
+    }
+
     ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
     uint_t renderingProgress=0;
     if (firstLine_!=0) // If there's actually some first line set, use it - it's position won't change if window width remains the same.
@@ -628,33 +629,33 @@ void Definition::calculateLayout(Graphics& graphics, const Rect& bounds, bool fo
     clearLines();
     // bounds_=bounds;
     calculateLayout(graphics, firstElement, renderingProgress);
- }
+}
 
 bool Definition::layoutChanged(const Rect& bounds) const
 {
-	return (bounds.width() != bounds_.width()) || (bounds.height() != bounds_.height()) || (!elements_.empty() && lines_.empty());
+    return (bounds.width() != bounds_.width()) || (bounds.height() != bounds_.height()) || (!elements_.empty() && lines_.empty());
 }
- 
+
 
 void Definition::doRender(Graphics& graphics, const Rect& bounds, bool forceRecalculate)
 {
     if (layoutChanged(bounds) || forceRecalculate)
         calculateLayout(graphics, bounds, forceRecalculate);
-/*    
+    /*    
     {
-        ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
-        uint_t renderingProgress=0;
-        if (firstLine_!=0) // If there's actually some first line set, use it - it's position won't change if window width remains the same.
-        {
-            firstElement=lines_[firstLine_].firstElement;  // Store first element and its progress so that we'll restore it as our firstLine_ if we need to recalculate.
-            renderingProgress=lines_[firstLine_].renderingProgress;
-        }
-        clearHotSpots();
-        clearLines();
-        bounds_=bounds;
-        calculateLayout(graphics, firstElement, renderingProgress);
+    ElementPosition_t firstElement = elements_.begin(); // This will be used in calculating first line we should show.
+    uint_t renderingProgress=0;
+    if (firstLine_!=0) // If there's actually some first line set, use it - it's position won't change if window width remains the same.
+    {
+    firstElement=lines_[firstLine_].firstElement;  // Store first element and its progress so that we'll restore it as our firstLine_ if we need to recalculate.
+    renderingProgress=lines_[firstLine_].renderingProgress;
     }
- */    
+    clearHotSpots();
+    clearLines();
+    bounds_=bounds;
+    calculateLayout(graphics, firstElement, renderingProgress);
+    }
+    */    
     //else {
     //    clearHotSpots();
     //    bool heightChanged = false;
@@ -675,15 +676,15 @@ status_t Definition::render(Graphics& graphics, const Rect& bounds, bool forceRe
     ErrCatch(ex) {
         return ex;
     } ErrEndCatch
-    return errNone;
+        return errNone;
 }
- 
+
 void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, ElementPosition_t end)
 {
     Graphics::State_t state = graphics.pushState();
     graphics.applyStyle(StyleGetStaticStyle(styleIndexDefault), false);
-    
-//    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
+
+    //    Graphics::ColorSetter setBackground(graphics, Graphics::colorBackground, prefs.backgroundColor());
 
     renderLineRange(graphics, lines_.begin() + firstLine_, lines_.begin() + lastLine_, 0, begin, end);
     uint_t rangeHeight = 0;
@@ -691,7 +692,7 @@ void Definition::renderLayout(Graphics& graphics, ElementPosition_t begin, Eleme
         rangeHeight+=lines_[i].height;
     if (elements_.end() == begin)
         graphics.erase(Rect(bounds_.x(), bounds_.y() + rangeHeight, bounds_.width(), bounds_.height() - rangeHeight));        
-        
+
     graphics.popState(state);
 }
 
@@ -793,9 +794,9 @@ void Definition::extendSelectionToFullHyperlink()
         if (pos == elements_.begin())
             break;
         --pos;
-       if (!hyperlinksEqual(*pos, *selectionStartElement_))
+        if (!hyperlinksEqual(*pos, *selectionStartElement_))
             break;
-       selectionStartElement_ = pos;
+        selectionStartElement_ = pos;
     }
     pos = selectionEndElement_;
     while (true) 
@@ -834,7 +835,7 @@ Again:
                 inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
                 trackingSelection_ = false;
                 selectionIsHyperlink_ = false;
-				goto Again;
+                goto Again;
             }
             else if (insideHyperlink && selectionStartProgress_ == selectionEndProgress_)
             {
@@ -913,7 +914,7 @@ bool Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphi
 {
     ElementPosition_t start = selectionStartElement_;
     ElementPosition_t end = selectionEndElement_;
-    
+
     bool same = (start == end) && (selectionStartProgress_ == selectionEndProgress_);
     String text;
     bool inside = true;
@@ -929,16 +930,16 @@ bool Definition::removeSelectionOrShowPopup(const Point& point, Graphics& graphi
         LinePosition_t line = lineAtHeight(p.y);
         uint_t wordEnd;
         elementAtWidth(graphics, line, p.x, elem, progress, wordEnd, false);
-        
+
         if (elem < start || (elem == start && progress < selectionStartProgress_))
             inside = false;
-        
+
         if (inside && (elem > end || (elem == end && progress >= selectionEndProgress_)))
             inside = false;    
     }
     else
         inside = false;
-          
+
     if (elements_.end() != end)
         ++end;
 
@@ -1039,7 +1040,7 @@ bool Definition::extendSelection(Graphics& graphics, const Point& point, uint_t 
         consumeNextPenUp_ = false;
         return false;
     }
-        
+
     navigatingDown_ = navigatingUp_ = false;
     if (elements_.empty())
         return false;
@@ -1059,23 +1060,23 @@ bool Definition::extendSelection(Graphics& graphics, const Point& point, uint_t 
 }
 
 Definition::LineHeader::LineHeader():
-    renderingProgress(0),
-    height(0),
-    baseLine(0),
-    leftMargin(0)
+renderingProgress(0),
+height(0),
+baseLine(0),
+leftMargin(0)
 {}
 
 /*
 void Definition::replaceElements(Elements_t& elements)
 {
-    clear();
-    elements_.swap(elements);
-    selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
-        inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
-    selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
-    trackingSelection_ = false;
-    selectionIsHyperlink_ = false;
-    elementsOwner_ = true;
+clear();
+elements_.swap(elements);
+selectionStartElement_ = selectionEndElement_ = mouseDownElement_ = 
+inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+selectionStartProgress_ = selectionEndProgress_ = mouseDownProgress_ = LayoutContext::progressCompleted;
+trackingSelection_ = false;
+selectionIsHyperlink_ = false;
+elementsOwner_ = true;
 }
 */
 
@@ -1101,46 +1102,46 @@ bool Definition::navigatorKey(Graphics& graphics, NavigatorKey navKey)
     {
         switch (navKey)
         {
-            case navKeyRight:
-                navigatingUp_ = false;
-                if (!navigatingDown_ && navigateHyperlink(graphics, true))
-                    return true;
-                navigatingDown_ = true;
-                navKey = navKeyDown;
-                break;
-            
-            case navKeyLeft:
-                navigatingDown_ = false;
-                if (!navigatingUp_ && navigateHyperlink(graphics, false))
-                    return true;
-                navigatingUp_ = true;
-                navKey = navKeyUp;
-                break;
-            
-            case navKeyCenter:
-                if (!selectionIsHyperlink_)
-                    return false;
-                assert(inactiveSelectionStartElement_ != elements_.end());
-/*                
-                selectionIsHyperlink_ = false;
-                trackingSelection_ = false;
-                selectionStartElement_ = selectionEndElement_ = elements_.end();
-                selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
-                renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
-   */             
-                {
-                    Point center;
-                    DefinitionElement* elem = (*inactiveSelectionStartElement_);
-                    const DefinitionElement::HyperlinkProperties* props = elem->hyperlinkProperties();
-                    if (NULL != props && NULL != props->hotSpot && props->hotSpot->center(center))
-                        elem->performAction(*this, &center);
-                    else
-                        elem->performAction(*this, NULL);
-                }
-                
-//                inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+        case navKeyRight:
+            navigatingUp_ = false;
+            if (!navigatingDown_ && navigateHyperlink(graphics, true))
                 return true;
-            
+            navigatingDown_ = true;
+            navKey = navKeyDown;
+            break;
+
+        case navKeyLeft:
+            navigatingDown_ = false;
+            if (!navigatingUp_ && navigateHyperlink(graphics, false))
+                return true;
+            navigatingUp_ = true;
+            navKey = navKeyUp;
+            break;
+
+        case navKeyCenter:
+            if (!selectionIsHyperlink_)
+                return false;
+            assert(inactiveSelectionStartElement_ != elements_.end());
+            /*                
+            selectionIsHyperlink_ = false;
+            trackingSelection_ = false;
+            selectionStartElement_ = selectionEndElement_ = elements_.end();
+            selectionStartProgress_ = selectionEndProgress_ = LayoutContext::progressCompleted;
+            renderElementRange(graphics, inactiveSelectionStartElement_, inactiveSelectionEndElement_);
+            */             
+            {
+                Point center;
+                DefinitionElement* elem = (*inactiveSelectionStartElement_);
+                const DefinitionElement::HyperlinkProperties* props = elem->hyperlinkProperties();
+                if (NULL != props && NULL != props->hotSpot && props->hotSpot->center(center))
+                    elem->performAction(*this, &center);
+                else
+                    elem->performAction(*this, NULL);
+            }
+
+            //                inactiveSelectionStartElement_ = inactiveSelectionEndElement_ = elements_.end();
+            return true;
+
         }
     }
     if (navigatingUp_ || navigatingDown_ || usesUpDownScroll())
@@ -1148,15 +1149,15 @@ bool Definition::navigatorKey(Graphics& graphics, NavigatorKey navKey)
         int items = 0;
         switch (navKey)
         {
-            case navKeyUp:
-                navigatingDown_ = false;
-                items = -int(shownLinesCount() + 1);
-                break;
-                
-            case navKeyDown:
-                navigatingUp_ = false;
-                items = shownLinesCount() - 1;
-                break;
+        case navKeyUp:
+            navigatingDown_ = false;
+            items = -int(shownLinesCount() + 1);
+            break;
+
+        case navKeyDown:
+            navigatingUp_ = false;
+            items = shownLinesCount() - 1;
+            break;
         }
         if (0 != items)
         {
@@ -1202,8 +1203,8 @@ bool Definition::navigateHyperlink(Graphics& graphics, bool next)
     {
         assert(elements_.end() != inactiveSelectionStartElement_);
         if ((inactiveSelectionStartElement_ >= firstElem && inactiveSelectionStartElement_ <lastElem) 
-         || (inactiveSelectionEndElement_ > firstElem && inactiveSelectionEndElement_ <= lastElem)
-         || (inactiveSelectionStartElement_ < firstElem && inactiveSelectionEndElement_ >= lastElem))
+            || (inactiveSelectionEndElement_ > firstElem && inactiveSelectionEndElement_ <= lastElem)
+            || (inactiveSelectionStartElement_ < firstElem && inactiveSelectionEndElement_ >= lastElem))
         {
             if (next)
                 firstElem = inactiveSelectionEndElement_;
@@ -1352,7 +1353,7 @@ static TextElement* TextEl(const char* start, ulong_t len)
     char_t* text = UTF8_ToNative(start, len);
     if (NULL == text)
         return NULL;
-    
+
     TextElement* el = new_nt TextElement();
     if (NULL == el)
     {
@@ -1366,7 +1367,7 @@ static TextElement* TextEl(const char* start, ulong_t len)
     ErrCatch(ex) {
         err = ex;
     } ErrEndCatch
-    free(text);
+        free(text);
     if (errNone != err)
     {
         delete el;
@@ -1382,7 +1383,7 @@ status_t DefinitionParseSimple(DefinitionModel& out, const char* text, long text
 
 #define APP(elem) if (errNone != (err = out.append((elem)))) goto Error
 #define TXT(start, len) if (0 != (len)) {APP(TextEl((start), (len)));}
-         
+
     uint_t bold=0;
     status_t err = errNone;
     ulong_t tagLen; 
@@ -1460,9 +1461,9 @@ Error:
 }
 
 DefinitionModel::DefinitionModel():
-    styles_(NULL),
-    styleCount_(0),
-    title_(NULL)
+styles_(NULL),
+styleCount_(0),
+title_(NULL)
 {
 }
 
@@ -1492,7 +1493,7 @@ status_t DefinitionModel::append(DefinitionElement* e)
 {
     if (NULL == e)
         return memErrNotEnoughSpace;
-    
+
     status_t err = errNone; 
     ErrTry {
         elements.push_back(e);
@@ -1500,12 +1501,12 @@ status_t DefinitionModel::append(DefinitionElement* e)
     ErrCatch (ex) {
         err = ex;
     } ErrEndCatch
-   if (errNone != err)
-   {
-        delete e;
-        return err;
-   } 
-   return errNone;    
+        if (errNone != err)
+        {
+            delete e;
+            return err;
+        } 
+        return errNone;    
 }
 
 status_t DefinitionModel::appendText(const char_t* text, long len)
@@ -1524,12 +1525,12 @@ status_t DefinitionModel::appendText(const char_t* text, long len)
     ErrCatch (ex) {
         err = ex;
     } ErrEndCatch
-    if (errNone != err)
-    {
-        delete t;
-        return memErrNotEnoughSpace; 
-    }
-    return append(t); 
+        if (errNone != err)
+        {
+            delete t;
+            return memErrNotEnoughSpace; 
+        }
+        return append(t); 
 }
 
 status_t DefinitionModel::appendLineBreak()
@@ -1537,27 +1538,30 @@ status_t DefinitionModel::appendLineBreak()
     return append(new_nt LineBreakElement());
 }
 
-
+status_t DefinitionModel::appendBullet()
+{
+    return append(new_nt BulletElement());
+}
 
 void Definition::setSelection(Graphics& graphics, const ElementPosition_t& startElement, uint_t startProgress, const ElementPosition_t& endElement, uint_t endProgress, bool isHyperlink)
 {
     clearSelection(graphics);
-    
+
     assert(startElement >= begin());
     assert(startElement < end());
     assert(endElement >= begin());
     assert(endElement < end());
-    
+
 
     selectionStartElement_ = inactiveSelectionStartElement_ = startElement;
     selectionEndElement_ = inactiveSelectionEndElement_ = endElement;
     selectionStartProgress_ = startProgress;
     selectionEndProgress_ = endProgress;
-    
+
     selectionIsHyperlink_ = isHyperlink;
     if (isHyperlink)
         extendSelectionToFullHyperlink();
-                
+
     renderElementRange(graphics, startElement, endElement);
 }
 
@@ -1582,7 +1586,7 @@ void Definition::highlightHyperlink(Graphics& graphics, uint_t index)
             }
             else
                 ++count;
-                
+
         ++pos;
     }
 }

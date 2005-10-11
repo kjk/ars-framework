@@ -102,9 +102,7 @@ LRESULT Dialog::callback(UINT message, WPARAM wParam, LPARAM lParam)
     else 
         res = Window::callback(message, wParam, lParam); 
     if (modal_ && extEvent == message)
-    {
-        ExtEventGetID(lParam);
         ExtEventFree(lParam); 
-    }
+
     return res; 
 }
