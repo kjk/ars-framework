@@ -84,6 +84,8 @@ public:
             return false;
         return true;
     }
+    
+    ulong_t totalReceived() const {return totalReceived_;}
 
 };
 

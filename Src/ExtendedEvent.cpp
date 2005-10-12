@@ -101,7 +101,15 @@ void ExtEventRepost(Event& event EXT_EVENT_WINDOW_PARAM(wnd))
 void ExtEventFree(Event& event)
 {
     ExtEventData*& data = ExtEventExtractDataPtr(event);
-    assert(data != NULL);
+    if (NULL == data) // Event already freed
+        return;
+    
+    if (0 == data->postCount)
+    {
+        assert(false); // Should never happen - event with 0 postCount should be freed
+        return;
+    }
+        
     if (0 == --data->postCount)
     {
         if (extEventTypeObject == data->type)

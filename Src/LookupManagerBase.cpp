@@ -77,10 +77,10 @@ void DefaultLookupProgressReporter::showProgress(const LookupProgressReportingSu
 }
 
 LookupProgressReportingSupport::LookupProgressReportingSupport():
-    percentProgress_(percentProgressDisabled),
-    bytesProgress_(0),
-    progressReporter_(new_nt DefaultLookupProgressReporter()),
-    statusText(_T("")) 
+percentProgress_(percentProgressDisabled),
+bytesProgress_(0),
+progressReporter_(new_nt DefaultLookupProgressReporter()),
+statusText(_T("")) 
 {}
 
 LookupProgressReportingSupport::~LookupProgressReportingSupport()
@@ -93,22 +93,22 @@ void LookupProgressReportingSupport::showProgress(Graphics& graphics, const Rect
 }
 
 LookupManagerBase::LookupManagerBase(uint_t firstEvent): 
-	lookupInProgress_(false), 
-	lookupStartedEvent_(firstEvent) 
+lookupInProgress_(false), 
+lookupStartedEvent_(firstEvent) 
 {}
 
 void LookupManagerBase::handleLookupEvent(const Event& event)
 {
-	ulong_t id = ExtEventGetID(event);
-	if (lookupStartedEvent_ == id)
-		lookupInProgress_ = true;
-	else if (lookupStartedEvent_ + 2 == id)
-	{
+    ulong_t id = ExtEventGetID(event);
+    if (lookupStartedEvent_ == id)
+        lookupInProgress_ = true;
+    else if (lookupStartedEvent_ + 2 == id)
+    {
         lookupInProgress_ = false;
         setStatusText(_T(""));
         setPercentProgress(percentProgressDisabled);
         setBytesProgress(0);
-	}
+    }
 }
 
 void LookupManagerBase::abortConnections()
@@ -116,4 +116,4 @@ void LookupManagerBase::abortConnections()
     lookupInProgress_ = false;
     connectionManager().abortConnections();
 }
-    
+

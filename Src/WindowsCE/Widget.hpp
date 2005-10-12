@@ -172,6 +172,8 @@ protected:
     virtual LRESULT callback(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     LRESULT defaultCallback(UINT uMsg, WPARAM wParam, LPARAM lParam, HWND handle = NULL);
+    
+    void setDialogProcessing(bool val) {useDialogMessages_ = val;}
 
 protected: // message handlers
 
@@ -214,6 +216,7 @@ private:
     WNDPROC previousCallback_;
     LONG previousUserData_;
     AutoDeleteOption autoDelete_;
+    bool useDialogMessages_;
 
 };
 

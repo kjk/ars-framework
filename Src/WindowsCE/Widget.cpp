@@ -113,7 +113,8 @@ Widget::Widget(AutoDeleteOption ad):
 handle_(NULL),
 previousCallback_(NULL),
 previousUserData_(NULL),
-autoDelete_(ad)
+autoDelete_(ad),
+useDialogMessages_(false)
 {
 }
 
@@ -121,7 +122,8 @@ Widget::Widget(HWND handle, AutoDeleteOption ad):
 handle_(NULL),
 previousCallback_(NULL),
 previousUserData_(NULL),
-autoDelete_(ad)
+autoDelete_(ad),
+useDialogMessages_(false)
 {
     assert(NULL == fromHandle(handle));
     attach(handle);
@@ -263,11 +265,14 @@ ATOM Widget::registerClass(UINT style, HINSTANCE instance, HICON icon, HCURSOR c
     if (NULL == instance)
         instance = GetModuleHandle(NULL);
 
+    WNDCLASS cls;
+    GetClassInfo(NULL, _T("DIALOG"), &cls);
+
     WNDCLASS wc;
     ZeroMemory(&wc, sizeof(wc));
     wc.style = style;
     wc.cbClsExtra = 0;
-    wc.cbWndExtra = sizeof(Widget*);
+    wc.cbWndExtra = std::max<int>(sizeof(Widget*), cls.cbWndExtra);
     wc.hbrBackground = brush;
     wc.hCursor = cursor;
     wc.hIcon = icon;
@@ -326,7 +331,12 @@ LRESULT Widget::defaultCallback(UINT uMsg, WPARAM wParam, LPARAM lParam, HWND ha
         return res;
     }
     else
-        return DefWindowProc(handle, uMsg, wParam, lParam);
+    {
+        if (useDialogMessages_)
+            return DefDlgProc(handle, uMsg, wParam, lParam);
+        else
+            return DefWindowProc(handle, uMsg, wParam, lParam);
+    }
 }
 
 char_t* Widget::caption(ulong_t* len) const
