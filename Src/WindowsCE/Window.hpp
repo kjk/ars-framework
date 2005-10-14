@@ -55,4 +55,8 @@ private:
 
 };
 
+#ifndef WM_CONTEXTMENU
+#define WM_CONTEXTMENU                  0x007B
+#endif
+
 #endif

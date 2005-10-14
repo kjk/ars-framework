@@ -643,35 +643,35 @@ void DumpErrorMessage(status_t err)
 //{
 //    union {
 //        FILETIME ft; 
-//        unsigned long long it;
+//        unsigned __int64 it;
 //    };
 //    SystemTimeToFileTime(&st, &ft);   
 //    //24 * 60 * 60 * 1000 * 1000 * 10;
-//    long long d = 864000000000LL;
+//    __int64 d = 864000000000LL;
 //    d *= count;  
 //    it += d;
 //    FileTimeToSystemTime(&ft, &st);  
 //}
 
-static long long TimeDivider(TimeUnits units)
+static __int64 TimeDivider(TimeUnits units)
 {
-    long long d;
+    __int64 d;
     switch (units)
     {
         case timeUnitsMilliseconds:
-            d = 10000;
+            d = __int64(10000);
             break;
         case timeUnitsSeconds:
-            d = 10000000LL;
+            d = __int64(10000000);
             break;
         case timeUnitsMinutes:
-            d = 600000000LL;
+            d = __int64(600000000);
             break;
         case timeUnitsHours:
-            d = 36000000000LL;
+            d = __int64(36000000000);
             break;
         case timeUnitsDays:
-            d = 864000000000LL;
+            d = __int64(864000000000);
             break;
         default:
             assert(false);
@@ -683,10 +683,10 @@ void TimeRoll(SYSTEMTIME& st, TimeUnits units, int count)
 {
     union {
         FILETIME ft; 
-        unsigned long long it;
+        unsigned __int64 it;
     };
     SystemTimeToFileTime(&st, &ft);  
-    long long d = TimeDivider(units);  
+    __int64 d = TimeDivider(units);  
     d *= count;
     it += d;
     FileTimeToSystemTime(&ft, &st);   
@@ -703,9 +703,9 @@ long TimeDiff(const FILETIME& ft1, const FILETIME& ft2, TimeUnits units)
 {
     union {
         FILETIME ft;
-        long long ul;
+        __int64 ul;
     };
-    long long ul1; 
+    __int64 ul1; 
     ft = ft1;
     ul1 = ul;
     ft = ft2;
@@ -713,3 +713,28 @@ long TimeDiff(const FILETIME& ft1, const FILETIME& ft2, TimeUnits units)
     ul1 /= TimeDivider(units);
     return long(ul1);          
 }
+
+#if _MSC_VER < 1400
+
+// Seems runtime library for PPC doesn't implement time()
+time_t time(time_t* t)
+{
+    SYSTEMTIME st = {0};
+    st.wYear = 1970;
+    st.wMonth = 1;
+    st.wDay = 1;
+    FILETIME ft;
+    SystemTimeToFileTime(&st, &ft);
+    
+    SYSTEMTIME now;
+    GetSystemTime(&now);
+    FILETIME fnow;
+    SystemTimeToFileTime(&now, &fnow);
+    
+    time_t tt = TimeDiff(fnow, ft, timeUnitsSeconds);
+    if (NULL != t)
+        *t = tt;
+    return tt;
+}
+
+#endif

@@ -65,17 +65,18 @@ DEFINE_CONTROL_ALL(ListBox, WINDOW_CLASS_LISTBOX)
 
 DEFINE_CONTROL_ALL(ComboBox, WINDOW_CLASS_COMBOBOX)
 
-bool ComboBox::setDroppedRect(const RECT& r)
-{
-    COMBOBOXINFO info = {sizeof(info)};
-    if (0 == sendMessage(CB_GETCOMBOBOXINFO, 0, (LPARAM)&info))
-        return false;
-
-    if (NULL == info.hwndList)
-        return false;
-
-    return FALSE != MoveWindow(info.hwndList, r.left, r.top, r.right - r.left, r.bottom - r.top, FALSE); 
-}
+// This doesn't compile on PPC2002 and isn't used anywhere currently
+//bool ComboBox::setDroppedRect(const RECT& r)
+//{
+//    COMBOBOXINFO info = {sizeof(info)};
+//    if (0 == sendMessage(CB_GETCOMBOBOXINFO, 0, (LPARAM)&info))
+//        return false;
+//
+//    if (NULL == info.hwndList)
+//        return false;
+//
+//    return FALSE != MoveWindow(info.hwndList, r.left, r.top, r.right - r.left, r.bottom - r.top, FALSE); 
+//}
 
 long ComboBox::addString(UINT stringId)
 {
