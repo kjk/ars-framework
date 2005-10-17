@@ -18,8 +18,8 @@ class HistorySupport
     uint_t historyButtonId_;
 #endif
 #ifdef _WIN32
-	HWND window_;
-	UINT	commandId_;
+    HWND window_;
+    UINT	commandId_;
 #endif
     
     char_t* cacheName_;
@@ -54,7 +54,7 @@ public:
     HistorySupport(Form& form);
 #endif
 #ifdef _WIN32
-	HistorySupport(HWND wnd);
+    HistorySupport(HWND wnd);
 #endif
     
     ~HistorySupport();
@@ -65,9 +65,10 @@ public:
     bool handleEventInForm(EventType& event);
 #endif
 #ifdef _WIN32
-	status_t setup(const char_t* cacheName, UINT comandId, HyperlinkHandlerBase* hyperlinkHandler, CacheReadHandler_t cacheReadHandler);
+    status_t setup(const char_t* cacheName, UINT comandId, HyperlinkHandlerBase* hyperlinkHandler, CacheReadHandler_t cacheReadHandler);
 
-	LRESULT handleEventInForm(UINT msg, WPARAM wParam);
+    bool handleCommandInForm(ushort nc, ushort id, HWND sender);
+    
 #endif    
     /**
      * return index of that entry (entryNotFound if not found)
